@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 import SouschefProcessor.StepSplitter.Step;
 
-final class IngredientDetector {
+public final class IngredientDetector {
 
 
-    public ArrayList<IngredientUnitAmount> detectIngredients(String ingredientList){
+    public static ArrayList<IngredientUnitAmount> detectIngredients(String ingredientList){
         //TODO generate functionality
 
         //dummy
@@ -15,6 +15,9 @@ final class IngredientDetector {
         String[] list = ingredientList.split("\n");
 
         for(String ingredient: list){
+            if (ingredient.charAt(0) == ' '){
+                ingredient = ingredient.substring(1);
+            }
             String[] ingredientUnitAmount  = ingredient.split(" ");
 
 
@@ -36,7 +39,7 @@ final class IngredientDetector {
         return returnList;
     }
 
-    public ArrayList<IngredientUnitAmount> detectIngredients(Step step){
+    public static ArrayList<IngredientUnitAmount> detectIngredients(Step step){
         //TODO generate functionality
 
         //dummy

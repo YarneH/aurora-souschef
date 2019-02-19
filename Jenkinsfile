@@ -215,5 +215,5 @@ def slack_report(boolean successful, String text, JSONArray fields, failedStage=
 
     String token = successful ? 'TD60N85K8/BG960T35H/zH59dbicld2uw5Tfdaipg0oL' : 'TD60N85K8/BGABQ0CS3/xS539cEwbxr6cMPvk7LMu7Ve'
 
-    slackSend(channel: '#aurora', attachments: attachments.toString(), teamDomain: 'aurora1819', baseUrl: 'https://hooks.slack.com/services/', token: token)
+    slackSend(channel: '#souschef-builds', attachments: attachments.toString(), teamDomain: 'aurora1819', baseUrl: 'https://hooks.slack.com/services/', token: token)
 }

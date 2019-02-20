@@ -6,13 +6,16 @@ import java.util.ArrayList;
 
 import SouschefProcessor.IngredientDetector.IngredientDetector;
 import SouschefProcessor.IngredientDetector.IngredientUnitAmount;
+import SouschefProcessor.StepSplitter.Step;
 
 public class IngredientDetectorTest {
 
     @Test
-    public void IngredientDetector_not_empyt(){
+    public void IngredientDetector_ingredient_list_correct_size(){
         String test = "500 gram spaghetti \n 500 gram sauce";
-        ArrayList<IngredientUnitAmount> result = IngredientDetector.detectIngredients(test);
+        ArrayList<Step> steps = new ArrayList<>();
+        IngredientDetector detector = IngredientDetector.createIngredientDetector(test,steps);
+        ArrayList<IngredientUnitAmount> result = detector.getIngredientList();
 
         assert(result.size() == 2);
     }
@@ -20,7 +23,9 @@ public class IngredientDetectorTest {
     public void IngredientDetector_Ingredients_with_unit_filled_in() {
             //example with a unit
             String test = "500 gram spaghetti \n 500 gram sauce";
-            ArrayList<IngredientUnitAmount> result = IngredientDetector.detectIngredients(test);
+            ArrayList<Step> steps = new ArrayList<>();
+            IngredientDetector detector = IngredientDetector.createIngredientDetector(test,steps);
+            ArrayList<IngredientUnitAmount> result = detector.getIngredientList();
             for(IngredientUnitAmount ing: result){
 
                 assert(ing.getIngredient()!="" && ing.getAmount() != 0 && ing.getUnit() != "");

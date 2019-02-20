@@ -1,13 +1,47 @@
 package SouschefProcessor.IngredientDetector;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import SouschefProcessor.StepSplitter.Step;
 
-public final class IngredientDetector {
+public class IngredientDetector {
+
+    private ArrayList<IngredientUnitAmount> ingredientList;
+    private HashMap<Step, ArrayList<IngredientUnitAmount>> ingredientsPerStep;
 
 
-    public static ArrayList<IngredientUnitAmount> detectIngredients(String ingredientList){
+    private IngredientDetector(ArrayList<IngredientUnitAmount> ingredientList, HashMap<Step, ArrayList<IngredientUnitAmount>> ingredientsPerStep) {
+        this.ingredientList = ingredientList;
+        this.ingredientsPerStep = ingredientsPerStep;
+    }
+
+
+
+    public ArrayList<IngredientUnitAmount> getIngredientList() {
+        return ingredientList;
+    }
+
+    public HashMap<Step, ArrayList<IngredientUnitAmount>> getIngredientsPerStep() {
+       return ingredientsPerStep;
+    }
+
+
+    public static IngredientDetector createIngredientDetector(String ingredients, ArrayList<Step> steps){
+        //detect ingredients in list
+        ArrayList<IngredientUnitAmount> list = detectIngredients(ingredients);
+
+        //detect ingredients for steps
+        HashMap<Step, ArrayList<IngredientUnitAmount>> map = new HashMap<>();
+
+        for(Step s : steps){
+            ArrayList<IngredientUnitAmount> stepIngredients = detectIngredients(s);
+            map.put(s,stepIngredients);
+        }
+
+        return new IngredientDetector(list,map);
+    }
+    private static  ArrayList<IngredientUnitAmount> detectIngredients(String ingredientList){
         //TODO generate functionality
 
         //dummy
@@ -39,7 +73,7 @@ public final class IngredientDetector {
         return returnList;
     }
 
-    public static ArrayList<IngredientUnitAmount> detectIngredients(Step step){
+    private static ArrayList<IngredientUnitAmount> detectIngredients(Step step){
         //TODO generate functionality
 
         //dummy

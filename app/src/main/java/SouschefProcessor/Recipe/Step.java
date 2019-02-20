@@ -1,13 +1,15 @@
-package SouschefProcessor.StepSplitter;
+package SouschefProcessor.Recipe;
 
-import SouschefProcessor.IngredientDetector.IngredientUnitAmount;
+import java.util.Set;
+
+import SouschefProcessor.Recipe.IngredientUnitAmount;
 import SouschefProcessor.TimerDetector.Timer;
 public class Step {
 
-    private IngredientUnitAmount ingredientUnitAmount;
+    private Set<IngredientUnitAmount> ingredientUnitAmountSet;
     private Timer timer;
     private String description;
-    private boolean ingredientDetetected = false;
+    private boolean ingredientDetected = false;
     private boolean timerDetected = false;
 
     public Step(String description){

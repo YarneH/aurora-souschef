@@ -1,4 +1,4 @@
-package SouschefProcessor.IngredientDetector;
+package SouschefProcessor.Recipe;
 
 public class IngredientUnitAmount {
 
@@ -29,11 +29,22 @@ public class IngredientUnitAmount {
     @Override
     public String toString(){
         String res = amount + " ";
-        //if unit is not none, add the unit and a space to the result
+        //if unit is not "", add the unit and a space to the result
         if (unit != "") {
             res+=unit+" ";
         }
         return res+ingredient;
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if (o instanceof IngredientUnitAmount){
+            IngredientUnitAmount iua = (IngredientUnitAmount) o;
+            if(iua.getUnit().equals(unit) && iua.getAmount() == amount && iua.getIngredient().equals(ingredient)){
+                return true;
+            }
+        }
+        return false;
     }
 
 

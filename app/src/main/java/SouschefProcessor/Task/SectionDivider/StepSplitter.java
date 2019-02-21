@@ -1,21 +1,25 @@
 package SouschefProcessor.Task.SectionDivider;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadPoolExecutor;
+
 import SouschefProcessor.Recipe.RecipeInProgress;
 import SouschefProcessor.Recipe.Step;
 import SouschefProcessor.Task.Task;
 
-class StepSplitter implements Task {
+/**
+ * A Task that splits the string representing the steps into Step objects
+ */
+public class StepSplitter implements Task {
 
-
-    private String steps;
-
-    public StepSplitter (String steps){
-        this.steps = steps;
-    }
-
-    public void doTask(RecipeInProgress recipe){
-        ArrayList<Step> stepList = divideIntoSteps(steps);
+    /**
+     * This will split the stepsString in the RecipeInProgress Object into steps and modifies the
+     * recipe object so that the steps are set
+     * @param recipe The recipe on which to detect the steps and to modify the steps field
+     * @param threadPool a threadPool to use if the task can be parallelized
+     */
+    public void doTask(RecipeInProgress recipe, ThreadPoolExecutor threadPool){
+        ArrayList<Step> stepList = divideIntoSteps(recipe.getStepsString());
         recipe.setSteps(stepList);
     }
 

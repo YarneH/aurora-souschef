@@ -1,5 +1,12 @@
 package SouschefProcessor.Recipe;
 
+/**
+ * A data class that represents an ingredient in the ingredient list of the recipe or a step of the
+ * recipe. The class has three fields:
+ * ingredient: which is a description of the ingredient (e.g. sugar, tomato)
+ * unit: the unit of the ingredient (e.g. tablespoon, gram)
+ * amount: the amount of the unit (e.g. 500)
+ */
 public class IngredientUnitAmount {
 
     private String ingredient;

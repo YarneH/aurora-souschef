@@ -1,14 +1,10 @@
 package SouschefProcessor.Task.IngredientDetector;
 
-import java.util.ArrayList;
-
 import java.util.HashSet;
-
+import java.util.concurrent.ThreadPoolExecutor;
 
 import SouschefProcessor.Recipe.IngredientUnitAmount;
-
 import SouschefProcessor.Recipe.RecipeInProgress;
-import SouschefProcessor.Recipe.Step;
 import SouschefProcessor.Task.Task;
 
 /**
@@ -16,21 +12,24 @@ import SouschefProcessor.Task.Task;
  */
 public class IngredientDetectorList implements Task {
 
-    private String ingredientList;
-
-
-
-    public IngredientDetectorList(String ingredientList) {
-        this.ingredientList = ingredientList;
-    }
-
-
-    public void doTask(RecipeInProgress recipe){
-        HashSet<IngredientUnitAmount> set = detectIngredients(ingredientList);
+    /**
+     * Detects the ingredients presented in the ingredientsString and sets the ingredients field
+     * in the recipe to this set of ingredients.
+     * @param recipe The recipe on which to detect the ingredients and to modify
+     * @param threadPool The threadpool on which to execute threads within this task
+     */
+    public void doTask(RecipeInProgress recipe, ThreadPoolExecutor threadPool){
+        //TODO fallback if no ingredients can be detected
+        HashSet<IngredientUnitAmount> set = detectIngredients(recipe.getIngredientsString());
         recipe.setIngredients(set);
     }
 
-
+    /**
+     * Detetcs ingredients in a string representing an ingredient list, makes corresponding
+     * IngredientUnitAmount Objects and returns a set of these
+     * @param ingredientList
+     * @return A set of IngredientUnitAmount Objects detected in the string
+     */
     private HashSet<IngredientUnitAmount> detectIngredients(String ingredientList){
         //TODO generate functionality
 

@@ -1,22 +1,46 @@
 package SouschefProcessor.Recipe;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+/**
+ * A subclass of Recipe, representing a Recipe Object that is being constructed. It has three
+ * additional fields:
+ * ingredientsString: a string representing the ingredients list
+ * stepsString: a string representing the different steps in the recipe
+ */
 public class RecipeInProgress extends Recipe {
-    String ingredientsString;
-    String stepsString;
+    private String ingredientsString;
+    private String stepsString;
+    private String originalText;
 
-    public RecipeInProgress(Set<IngredientUnitAmount> ingredients, ArrayList<Step> steps, int amountOfPeople, String description) {
-        super(ingredients, steps, amountOfPeople, description);
+
+    public RecipeInProgress(String originalText){
+        super();
+        this.originalText = originalText;
     }
 
-    public void setIngredientsString(String ingredientsString) {
+    public synchronized void setIngredientsString(String ingredientsString) {
         this.ingredientsString = ingredientsString;
     }
 
-    public void setStepsString(String stepsString) {
+    public synchronized void setStepsString(String stepsString) {
         this.stepsString = stepsString;
+    }
+
+    public String getOriginalText(){
+        return originalText;
+    }
+    public String getStepsString(){
+        return stepsString;
+    }
+
+    public String getIngredientsString(){
+        return ingredientsString;
+    }
+
+    /**
+     * Converts the RecipeInProgress to a Recipe object by dropping the two additional fields
+     * @return the converted recipe
+     */
+    public Recipe convertToRecipe(){
+       return new Recipe(ingredients, steps, amountOfPeople, description);
     }
 }

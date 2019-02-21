@@ -13,8 +13,14 @@ public class Timer {
     private int lowerBound;
 
     public Timer(int upperBound, int lowerBound) {
-        this.upperBound = upperBound;
-        this.lowerBound = lowerBound;
+        if(upperBound<lowerBound){
+            this.lowerBound = upperBound;
+            this.upperBound = lowerBound;
+        }
+        else{
+            this.upperBound = upperBound;
+            this.lowerBound = lowerBound;
+        }
     }
 
     public Timer(int time){

@@ -55,4 +55,15 @@ public class IngredientUnitAmount {
     }
 
 
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + unit.hashCode();
+        result = 31 * result + Double.valueOf(amount).hashCode();
+        ;
+        result = 31 * result + ingredient.hashCode();
+        return result;
+    }
+
+
 }

@@ -30,7 +30,7 @@ public class IngredientDetectorList implements Task {
      * @param ingredientList
      * @return A set of IngredientUnitAmount Objects detected in the string
      */
-    private HashSet<IngredientUnitAmount> detectIngredients(String ingredientList){
+    public HashSet<IngredientUnitAmount> detectIngredients(String ingredientList){
         //TODO generate functionality
 
         //dummy

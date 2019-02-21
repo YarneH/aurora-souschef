@@ -12,35 +12,37 @@ public class RecipeInProgress extends Recipe {
     private String originalText;
 
 
-    public RecipeInProgress(String originalText){
+    public RecipeInProgress(String originalText) {
         super();
         this.originalText = originalText;
     }
 
-    public synchronized void setIngredientsString(String ingredientsString) {
-        this.ingredientsString = ingredientsString;
+    public String getOriginalText() {
+        return originalText;
+    }
+
+    public String getStepsString() {
+        return stepsString;
     }
 
     public synchronized void setStepsString(String stepsString) {
         this.stepsString = stepsString;
     }
 
-    public String getOriginalText(){
-        return originalText;
-    }
-    public String getStepsString(){
-        return stepsString;
+    public String getIngredientsString() {
+        return ingredientsString;
     }
 
-    public String getIngredientsString(){
-        return ingredientsString;
+    public synchronized void setIngredientsString(String ingredientsString) {
+        this.ingredientsString = ingredientsString;
     }
 
     /**
      * Converts the RecipeInProgress to a Recipe object by dropping the two additional fields
+     *
      * @return the converted recipe
      */
-    public Recipe convertToRecipe(){
-       return new Recipe(ingredients, steps, amountOfPeople, description);
+    public Recipe convertToRecipe() {
+        return new Recipe(ingredients, steps, amountOfPeople, description);
     }
 }

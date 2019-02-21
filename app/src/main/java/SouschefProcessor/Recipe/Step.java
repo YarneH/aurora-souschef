@@ -18,24 +18,61 @@ public class Step {
     private boolean ingredientDetected = false;
     private boolean timerDetected = false;
 
-    public Step(String description){
+    public Step(String description) {
         this.description = description;
     }
 
-    public String getDescription(){
-        return description;
+    public HashSet<IngredientUnitAmount> getIngredientUnitAmountSet() {
+        return ingredientUnitAmountSet;
     }
 
-    public synchronized void setIngredientUnitAmountSet(HashSet<IngredientUnitAmount> iuaSet){
+    public synchronized void setIngredientUnitAmountSet(HashSet<IngredientUnitAmount> iuaSet) {
         ingredientUnitAmountSet = iuaSet;
         ingredientDetected = true;
     }
 
-    public synchronized void setTimer(Timer t){
+    public Timer getTimer() {
+        return timer;
+    }
+
+    public synchronized void setTimer(Timer t) {
         timer = t;
         timerDetected = true;
     }
 
+    public boolean isIngredientDetected() {
+        return ingredientDetected;
+    }
+
+    public boolean isTimerDetected() {
+        return timerDetected;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public synchronized void unsetTimer() {
+        timer = null;
+        timerDetected = false;
+    }
+
+
+    @Override
+    public String toString() {
+        String ret = "Step:\n " + description + "\n ingredientDetected: " + ingredientDetected +
+                "\n ingredients:\n";
+        if (ingredientDetected) {
+            for (IngredientUnitAmount iua : ingredientUnitAmountSet) {
+                ret += "\t" + iua;
+            }
+        }
+        ret += "\n timerDetected: " + timerDetected;
+        if (timerDetected) {
+            ret += "\n Timer:" + timer;
+        }
+        return ret;
+    }
 
 
 }

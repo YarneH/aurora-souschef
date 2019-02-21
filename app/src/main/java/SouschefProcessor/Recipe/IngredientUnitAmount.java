@@ -34,20 +34,20 @@ public class IngredientUnitAmount {
 
 
     @Override
-    public String toString(){
+    public String toString() {
         String res = amount + " ";
         //if unit is not "", add the unit and a space to the result
         if (unit != "") {
-            res+=unit+" ";
+            res += unit + " ";
         }
-        return res+ingredient;
+        return res + ingredient;
     }
 
     @Override
-    public boolean equals(Object o){
-        if (o instanceof IngredientUnitAmount){
+    public boolean equals(Object o) {
+        if (o instanceof IngredientUnitAmount) {
             IngredientUnitAmount iua = (IngredientUnitAmount) o;
-            if(iua.getUnit().equals(unit) && iua.getAmount() == amount && iua.getIngredient().equals(ingredient)){
+            if (iua.getUnit().equals(unit) && iua.getAmount() == amount && iua.getIngredient().equals(ingredient)) {
                 return true;
             }
         }

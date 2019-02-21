@@ -1,7 +1,7 @@
 package SouschefProcessor.Facade;
 
-import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +21,7 @@ import SouschefProcessor.Task.TimerDetector.TimerDetector;
  */
 public class Delegator {
 
-    private static ThreadPoolExecutor threadPool;
+    private ThreadPoolExecutor threadPool;
     private SectionDivider sd;
     private StepSplitter ss;
     private IngredientDetectorStep ids;
@@ -31,7 +31,7 @@ public class Delegator {
     /**
      * Creates the ThreadPoolExecutor for the processing of the text, this is device-dependent
      */
-    private void setUpThreadPool(){
+    private void setUpThreadPool() {
         /*
          * Gets the number of available cores
          * (not always the same as the maximum number of cores)
@@ -58,55 +58,58 @@ public class Delegator {
     /**
      * This is the core function of the delegator, where the text is processed by applying the filters
      * This function should be able to at run time decide to do certain filters or not (graceful degradation)
+     *
      * @param text The text to be processed in to a recipe Object
      * @return A recipe object that was constructed from the text
      */
-    public Recipe processText(String text){
+    public Recipe processText(String text) {
         //TODO implement this function so that at runtime it is decided which tasks should be performed
-        if(threadPool == null){
+        if (threadPool == null) {
             setUpThreadPool();
         }
         setUpTasks();
 
         RecipeInProgress rip = new RecipeInProgress(text);
+
+        //divide into sections
         doTask(rip, sd, threadPool);
 
-        TaskThread idlThread = doTaskInThread(rip, idl, threadPool);
-        TaskThread ssThread = doTaskInThread(rip, ss, threadPool);
+        //detect ingredients in list
+        CountDownLatch idlLatch = new CountDownLatch(1);
+        TaskThread idlThread = doTaskInThread(rip, idl, threadPool,idlLatch);
 
-        try {
-            ssThread.join(); //later steps depend on splitting in steps
-        }
-        catch(InterruptedException ie){
-            //TODO, maybe let a higher stage handle this
-        }
+        //split into steps
+        CountDownLatch ssLatch = new CountDownLatch(1);
+        TaskThread ssThread = doTaskInThread(rip, ss, threadPool, ssLatch);
 
-        TaskThread idsThread = doTaskInThread(rip, ids, threadPool);
+        waitForLatch(ssLatch); //later steps depend on splitting in steps
 
-        try {
-            idlThread.join(); //later steps depend on ingredientlist
-        }
-        catch(InterruptedException ie){
-            //TODO
-        }
-        TaskThread tdThread = doTaskInThread(rip, td, threadPool);
+        //detectTimers in steps
+        CountDownLatch finishLatch = new CountDownLatch(2); //timerdetector and ingredient in step detector
+        TaskThread tdThread = doTaskInThread(rip, td, threadPool, finishLatch);
 
-        try{
-            //wait untill all threads have finished
-            idsThread.join();
-            tdThread.join();
-        }catch(InterruptedException ie){
-            //TODO
-        }
+        waitForLatch(idlLatch); //later steps depend on ingredientlist
+
+        //detect ingredients in steps
+        TaskThread idsThread = doTaskInThread(rip, ids, threadPool, finishLatch);
+
+        waitForLatch(finishLatch);
 
         return rip.convertToRecipe();
     }
 
+    private void waitForLatch(CountDownLatch latch){
+        try {
+            latch.await();
+        } catch (InterruptedException ie) {
+            //TODO, maybe let a higher stage handle this
+        }
+    }
     /**
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the c
      * codebase they should be created here as well.
      */
-    public void setUpTasks(){
+    public void setUpTasks() {
         sd = new SectionDivider();
         ss = new StepSplitter();
         idl = new IngredientDetectorList();
@@ -116,32 +119,33 @@ public class Delegator {
 
     /**
      * This performs a task on the recipe.
-     * @param rip The recipe on which to do the task
+     *
+     * @param rip  The recipe on which to do the task
      * @param task The task to be pefformed
      */
-    public void doTask(RecipeInProgress rip, Task task, ThreadPoolExecutor threadPool){
+    public void doTask(RecipeInProgress rip, Task task, ThreadPoolExecutor threadPool) {
         task.doTask(rip, threadPool);
     }
 
     /**
      * This performs a task on a recipe in a seperate thread.
-     * @param rip The recipe on which to do the task
+     *
+     * @param rip  The recipe on which to do the task
      * @param task The task to be performed
      * @return The thread in which the task is being performed.
      */
-    public TaskThread doTaskInThread(RecipeInProgress rip, Task task, ThreadPoolExecutor threadPool){
-        TaskThread t = new TaskThread(rip, task, threadPool);
+    public TaskThread doTaskInThread(RecipeInProgress rip, Task task, ThreadPoolExecutor threadPool, CountDownLatch latch) {
+        TaskThread t = new TaskThread(rip, task, threadPool, latch);
         threadPool.execute(t);
         return t;
     }
 
-    public ThreadPoolExecutor getThreadPool(){
-        if(threadPool == null){
+    public ThreadPoolExecutor getThreadPool() {
+        if (threadPool == null) {
             setUpThreadPool();
         }
         return threadPool;
     }
-
 
 
 }

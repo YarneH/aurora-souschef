@@ -9,14 +9,14 @@ import SouschefProcessor.Task.ProcessingTask;
 /**
  * A class in which a processingTask does its work
  */
-public class ProcssingTaskThread extends Thread {
+public class ProcessingTaskThread extends Thread {
 
     private RecipeInProgress recipeInProgress;
     private ProcessingTask processingTask;
     private ThreadPoolExecutor threadPoolExecutor;
     private CountDownLatch latch;
 
-    public ProcssingTaskThread(RecipeInProgress recipeInProgress, ProcessingTask processingTask, ThreadPoolExecutor threadPoolExecutor, CountDownLatch latch) {
+    public ProcessingTaskThread(RecipeInProgress recipeInProgress, ProcessingTask processingTask, ThreadPoolExecutor threadPoolExecutor, CountDownLatch latch) {
         this.recipeInProgress = recipeInProgress;
         this.processingTask = processingTask;
         this.threadPoolExecutor = threadPoolExecutor;
@@ -25,7 +25,8 @@ public class ProcssingTaskThread extends Thread {
 
     @Override
     public void run() {
-        processingTask.doTask(recipeInProgress, threadPoolExecutor);
+        //processingTask.doTask(recipeInProgress, threadPoolExecutor);
+        processingTask.doTask();
         latch.countDown();
 
     }

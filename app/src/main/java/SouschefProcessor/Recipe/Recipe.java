@@ -5,18 +5,18 @@ import java.util.HashSet;
 
 /**
  * A data class representing a recipe. It has 4 fields:
- * ingredients: a set of IngredientUnitAmount objecs, this represents the ingredients needed for
+ * ingredients: a set of Ingredient objecs, this represents the ingredients needed for
  * this recipe.
  * steps: A list of steps in this recipe
  * amountOfPeople: the amount of people the basic recipe is for
  */
 public class Recipe {
-    protected HashSet<IngredientUnitAmount> ingredients;
+    protected HashSet<Ingredient> ingredients;
     protected ArrayList<Step> steps;
     protected int amountOfPeople;
     protected String description;
 
-    public Recipe(HashSet<IngredientUnitAmount> ingredients, ArrayList<Step> steps, int amountOfPeople, String description) {
+    public Recipe(HashSet<Ingredient> ingredients, ArrayList<Step> steps, int amountOfPeople, String description) {
         this.ingredients = ingredients;
         this.steps = steps;
         this.amountOfPeople = amountOfPeople;
@@ -43,11 +43,11 @@ public class Recipe {
         this.steps = steps;
     }
 
-    public HashSet<IngredientUnitAmount> getIngredients() {
+    public HashSet<Ingredient> getIngredients() {
         return ingredients;
     }
 
-    public synchronized void setIngredients(HashSet<IngredientUnitAmount> ingredients) {
+    public synchronized void setIngredients(HashSet<Ingredient> ingredients) {
         this.ingredients = ingredients;
     }
 

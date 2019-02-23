@@ -7,13 +7,13 @@ import org.junit.Test;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import SouschefProcessor.Recipe.IngredientUnitAmount;
+import SouschefProcessor.Recipe.Ingredient;
 import SouschefProcessor.Recipe.RecipeInProgress;
-import SouschefProcessor.Task.IngredientDetector.IngredientDetectorList;
+import SouschefProcessor.Task.IngredientDetector.DetectIngredientsInListTask;
 
-public class IngredientDetectorListTest {
+public class DetectIngredientsInListTaskTest {
 
-    private static IngredientDetectorList detector;
+    private static DetectIngredientsInListTask detector;
     private static RecipeInProgress recipe;
     private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
     private static String originalText;
@@ -21,7 +21,7 @@ public class IngredientDetectorListTest {
 
     @BeforeClass
     public static void initialize() {
-        detector = new IngredientDetectorList();
+        detector = new DetectIngredientsInListTask();
         ingredientList = "500 gram spaghetti \n 500 gram sauce";
         originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
@@ -31,36 +31,40 @@ public class IngredientDetectorListTest {
     @After
     public void wipeRecipe() {
         recipe.setIngredients(null);
+        recipe.setIngredientsString(ingredientList);
     }
 
 
     @Test
-    public void IngredientDetectorList_doTask_setHasBeenSet() {
+    public void DetectIngredientsInList_doTask_setHasBeenSet() {
         detector.doTask(recipe, threadPoolExecutor);
         assert (recipe.getIngredients() != null);
     }
 
     @Test
-    public void IngredientDetectorList_doTask_setHasCorrectSize() {
+    public void DetectIngredientsInList_doTask_setHasCorrectSize() {
         detector.doTask(recipe, threadPoolExecutor);
+        System.out.println(recipe.getIngredients());
         assert (recipe.getIngredients().size() == 2);
     }
 
     @Test
-    public void IngredientDetectorList_doTask_setHasCorrectElements() {
+    public void DetectIngredientsInList_doTask_setHasCorrectElements() {
         detector.doTask(recipe, threadPoolExecutor);
-        IngredientUnitAmount spaghettiIngredient = new IngredientUnitAmount("spaghetti", "gram", 500);
-        IngredientUnitAmount sauceIngredient = new IngredientUnitAmount("sauce", "gram", 500);
+        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "gram", 500);
+        Ingredient sauceIngredient = new Ingredient("sauce", "gram", 500);
         boolean spaghetti = recipe.getIngredients().contains(spaghettiIngredient);
         boolean sauce = recipe.getIngredients().contains(sauceIngredient);
         assert (spaghetti);
         assert (sauce);
     }
 
-    public void IngredientDetectorList_doTask_ifNoIngredientsSetEmptyList() {
+    @Test
+    public void DetectIngredientsInList_doTask_ifNoIngredientsSetEmptyList() {
         recipe.setIngredientsString("");
         detector.doTask(recipe, threadPoolExecutor);
         assert (recipe.getIngredients() != null && recipe.getIngredients().size() == 0);
+
     }
 
 

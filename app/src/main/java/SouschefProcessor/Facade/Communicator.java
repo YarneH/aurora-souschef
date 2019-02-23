@@ -7,6 +7,9 @@ import SouschefProcessor.Recipe.Recipe;
  */
 public class Communicator {
 
+    private Delegator delegator = new Delegator();
+    //TODO add attribute kernelCommunicator to communicate with Aurora
+
     //Caution! this class heavily depends on the Aurora API
 
     /**
@@ -14,9 +17,8 @@ public class Communicator {
      *
      * @param text the text to be processed
      */
-    public void receiveTextFromAuroraKernel(String text) {
-        Delegator delegator = new Delegator();
-        Recipe recipe = delegator.processText(text);
+    public void process(String text) { //for now String, should be TextObject but not yet defined by Aurora
+        Recipe recipe = delegator.processText(text); //for now this is independent of the tasks sent
         sendObjectToAuroraKernel(recipe);
 
     }

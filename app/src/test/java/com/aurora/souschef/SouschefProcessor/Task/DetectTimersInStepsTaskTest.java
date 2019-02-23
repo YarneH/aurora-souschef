@@ -10,18 +10,18 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import SouschefProcessor.Recipe.RecipeInProgress;
 import SouschefProcessor.Recipe.Step;
-import SouschefProcessor.Task.TimerDetector.TimerDetector;
+import SouschefProcessor.Task.TimerDetector.DetectTimersInStepsTask;
 
-public class TimerDetectorTest {
+public class DetectTimersInStepsTaskTest {
 
-    private static TimerDetector detector;
+    private static DetectTimersInStepsTask detector;
     private static RecipeInProgress recipe;
     private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
     private static ArrayList<Step> steps;
 
     @BeforeClass
     public static void initialize() {
-        detector = new TimerDetector();
+        detector = new DetectTimersInStepsTask();
         steps = new ArrayList<>();
         Step s1 = new Step("Put 500 gram sauce in the microwave for 3 minutes");
         Step s2 = new Step("Put 500 gram spaghetti in boiling water 9 minutes");

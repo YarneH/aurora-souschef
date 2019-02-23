@@ -7,33 +7,33 @@ import java.util.concurrent.ThreadPoolExecutor;
 import SouschefProcessor.Recipe.RecipeInProgress;
 import SouschefProcessor.Recipe.Step;
 import SouschefProcessor.Recipe.Timer;
-import SouschefProcessor.Task.Task;
+import SouschefProcessor.Task.ProcessingTask;
 
 /**
  * A task that detects timers in steps
  */
-public class TimerDetector implements Task {
+public class DetectTimersInStepsTask implements ProcessingTask {
 
-    public TimerDetector() {
+    public DetectTimersInStepsTask() {
 
     }
 
     /**
      * Detects the Timer in all the steps
      *
-     * @param recipe The recipe containing the steps
+     * @param recipeInProgress The recipe containing the steps
      * @@param threadPool The threadpool on which to execute threads within this task
      */
-    public void doTask(RecipeInProgress recipe, ThreadPoolExecutor threadPool) {
+    public void doTask(RecipeInProgress recipeInProgress, ThreadPoolExecutor threadPoolExecutor) {
         //TODO fallback if no steps present
-        ArrayList<Step> steps = recipe.getSteps();
-        ArrayList<TimerDetectorThread> threads = new ArrayList<>();
+        ArrayList<Step> steps = recipeInProgress.getSteps();
+        ArrayList<DetectTimersInStepThread> threads = new ArrayList<>();
 
         CountDownLatch latch = new CountDownLatch(steps.size());
 
         for (Step s : steps) {
-            TimerDetectorThread thread = new TimerDetectorThread(s, latch);
-            threadPool.execute(thread);
+            DetectTimersInStepThread thread = new DetectTimersInStepThread(s, latch);
+            threadPoolExecutor.execute(thread);
         }
         waitForThreads(latch);
 
@@ -66,12 +66,12 @@ public class TimerDetector implements Task {
     /**
      * A thread that does the detecting of timer of a step
      */
-    private class TimerDetectorThread extends Thread {
+    private class DetectTimersInStepThread extends Thread {
 
         private Step step;
         private CountDownLatch latch;
 
-        public TimerDetectorThread(Step step, CountDownLatch latch) {
+        public DetectTimersInStepThread(Step step, CountDownLatch latch) {
             this.step = step;
             this.latch = latch;
         }

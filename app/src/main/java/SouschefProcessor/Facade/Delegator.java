@@ -8,12 +8,13 @@ import java.util.concurrent.TimeUnit;
 
 import SouschefProcessor.Recipe.Recipe;
 import SouschefProcessor.Recipe.RecipeInProgress;
-import SouschefProcessor.Task.IngredientDetector.IngredientDetectorList;
-import SouschefProcessor.Task.IngredientDetector.IngredientDetectorStep;
-import SouschefProcessor.Task.SectionDivider.SectionDivider;
-import SouschefProcessor.Task.SectionDivider.StepSplitter;
-import SouschefProcessor.Task.Task;
-import SouschefProcessor.Task.TimerDetector.TimerDetector;
+import SouschefProcessor.Task.IngredientDetector.DetectIngredientsInListTask;
+import SouschefProcessor.Task.IngredientDetector.DetectIngredientsInStepsTask;
+import SouschefProcessor.Task.ProcessingTask;
+import SouschefProcessor.Task.SectionDivider.DetectNumberOfPeopleTask;
+import SouschefProcessor.Task.SectionDivider.SplitStepsTask;
+import SouschefProcessor.Task.SectionDivider.SplitToMainSectionsTask;
+import SouschefProcessor.Task.TimerDetector.DetectTimersInStepsTask;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
@@ -21,12 +22,14 @@ import SouschefProcessor.Task.TimerDetector.TimerDetector;
  */
 public class Delegator {
 
-    private ThreadPoolExecutor threadPool;
-    private SectionDivider sd;
-    private StepSplitter ss;
-    private IngredientDetectorStep ids;
-    private IngredientDetectorList idl;
-    private TimerDetector td;
+    private ThreadPoolExecutor threadPoolExecutor;
+    private DetectNumberOfPeopleTask detectNumberOfPeopleTask;
+    private SplitToMainSectionsTask splitToMainSectionsTask;
+    private SplitStepsTask splitStepsTask;
+    private DetectIngredientsInStepsTask detectIngredientsInStepsTask;
+    private DetectIngredientsInListTask detectIngredientsInListTask;
+    private DetectTimersInStepsTask detectTimersInStepsTask;
+    private boolean tasksHaveBeenSetUp = false;
 
     /**
      * Creates the ThreadPoolExecutor for the processing of the text, this is device-dependent
@@ -47,7 +50,7 @@ public class Delegator {
         // Sets the Time Unit to seconds
         final TimeUnit KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
         // Creates a thread pool manager
-        threadPool = new ThreadPoolExecutor(
+        threadPoolExecutor = new ThreadPoolExecutor(
                 NUMBER_OF_CORES,       // Initial pool size
                 NUMBER_OF_CORES,       // Max pool size
                 KEEP_ALIVE_TIME,
@@ -64,88 +67,95 @@ public class Delegator {
      */
     public Recipe processText(String text) {
         //TODO implement this function so that at runtime it is decided which tasks should be performed
-        if (threadPool == null) {
+        if (threadPoolExecutor == null) {
             setUpThreadPool();
         }
-        setUpTasks();
+        if (!tasksHaveBeenSetUp) {
+            setUpPipeline();
+        }
 
-        RecipeInProgress rip = new RecipeInProgress(text);
+        RecipeInProgress recipeInProgress = new RecipeInProgress(text);
 
+        //detect number of people
+        doTask(recipeInProgress, detectNumberOfPeopleTask, threadPoolExecutor);
         //divide into sections
-        doTask(rip, sd, threadPool);
+        doTask(recipeInProgress, splitToMainSectionsTask, threadPoolExecutor);
 
         //detect ingredients in list
-        CountDownLatch idlLatch = new CountDownLatch(1);
-        TaskThread idlThread = doTaskInThread(rip, idl, threadPool,idlLatch);
+        CountDownLatch detectIngredientsInListLatch = new CountDownLatch(1);
+        ProcssingTaskThread detectIngredientsInListThread = doTaskInThread(recipeInProgress, detectIngredientsInListTask, threadPoolExecutor, detectIngredientsInListLatch);
 
         //split into steps
-        CountDownLatch ssLatch = new CountDownLatch(1);
-        TaskThread ssThread = doTaskInThread(rip, ss, threadPool, ssLatch);
+        CountDownLatch splitStepsLatch = new CountDownLatch(1);
+        ProcssingTaskThread splitStepsThread = doTaskInThread(recipeInProgress, splitStepsTask, threadPoolExecutor, splitStepsLatch);
 
-        waitForLatch(ssLatch); //later steps depend on splitting in steps
+        waitForLatch(splitStepsLatch); //later steps depend on splitting in steps
 
         //detectTimers in steps
         CountDownLatch finishLatch = new CountDownLatch(2); //timerdetector and ingredient in step detector
-        TaskThread tdThread = doTaskInThread(rip, td, threadPool, finishLatch);
+        ProcssingTaskThread detectTimersInStepsThread = doTaskInThread(recipeInProgress, detectTimersInStepsTask, threadPoolExecutor, finishLatch);
 
-        waitForLatch(idlLatch); //later steps depend on ingredientlist
+        waitForLatch(detectIngredientsInListLatch); //later steps depend on ingredientlist
 
         //detect ingredients in steps
-        TaskThread idsThread = doTaskInThread(rip, ids, threadPool, finishLatch);
 
         waitForLatch(finishLatch);
 
-        return rip.convertToRecipe();
+        return recipeInProgress.convertToRecipe();
     }
 
-    private void waitForLatch(CountDownLatch latch){
+    private void waitForLatch(CountDownLatch latch) {
         try {
             latch.await();
         } catch (InterruptedException ie) {
             //TODO, maybe let a higher stage handle this
         }
     }
+
     /**
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the c
      * codebase they should be created here as well.
      */
-    public void setUpTasks() {
-        sd = new SectionDivider();
-        ss = new StepSplitter();
-        idl = new IngredientDetectorList();
-        ids = new IngredientDetectorStep();
-        td = new TimerDetector();
+    public void setUpPipeline() {
+        detectNumberOfPeopleTask = new DetectNumberOfPeopleTask();
+        splitToMainSectionsTask = new SplitToMainSectionsTask();
+        splitStepsTask = new SplitStepsTask();
+        detectIngredientsInListTask = new DetectIngredientsInListTask();
+        detectIngredientsInStepsTask = new DetectIngredientsInStepsTask();
+        detectTimersInStepsTask = new DetectTimersInStepsTask();
+        tasksHaveBeenSetUp = true;
     }
 
     /**
-     * This performs a task on the recipe.
+     * This performs a processingTask on the recipe.
      *
-     * @param rip  The recipe on which to do the task
-     * @param task The task to be pefformed
+     * @param rip            The recipe on which to do the processingTask
+     * @param processingTask The processingTask to be performed
      */
-    public void doTask(RecipeInProgress rip, Task task, ThreadPoolExecutor threadPool) {
-        task.doTask(rip, threadPool);
+    public void doTask(RecipeInProgress rip, ProcessingTask processingTask, ThreadPoolExecutor threadPool) {
+        processingTask.doTask(rip, threadPool);
     }
 
     /**
-     * This performs a task on a recipe in a seperate thread.
+     * This performs a processingTask on a recipe in a seperate thread.
      *
-     * @param rip  The recipe on which to do the task
-     * @param task The task to be performed
-     * @return The thread in which the task is being performed.
+     * @param rip            The recipe on which to do the processingTask
+     * @param processingTask The processingTask to be performed
+     * @return The thread in which the processingTask is being performed.
      */
-    public TaskThread doTaskInThread(RecipeInProgress rip, Task task, ThreadPoolExecutor threadPool, CountDownLatch latch) {
-        TaskThread t = new TaskThread(rip, task, threadPool, latch);
+    public ProcssingTaskThread doTaskInThread(RecipeInProgress rip, ProcessingTask processingTask, ThreadPoolExecutor threadPool, CountDownLatch latch) {
+        ProcssingTaskThread t = new ProcssingTaskThread(rip, processingTask, threadPool, latch);
         threadPool.execute(t);
         return t;
     }
 
-    public ThreadPoolExecutor getThreadPool() {
-        if (threadPool == null) {
+    public ThreadPoolExecutor getThreadPoolExecutor() {
+        if (threadPoolExecutor == null) {
             setUpThreadPool();
         }
-        return threadPool;
+        return threadPoolExecutor;
     }
+
 
 
 }

@@ -10,18 +10,18 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import SouschefProcessor.Recipe.RecipeInProgress;
 import SouschefProcessor.Recipe.Step;
-import SouschefProcessor.Task.IngredientDetector.IngredientDetectorStep;
+import SouschefProcessor.Task.IngredientDetector.DetectIngredientsInStepsTask;
 
-public class IngredientDetectorStepTest {
+public class DetectIngredientsInStepTaskTest {
 
-    private static IngredientDetectorStep detector;
+    private static DetectIngredientsInStepsTask detector;
     private static RecipeInProgress recipe;
     private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
     private static ArrayList<Step> steps;
 
     @BeforeClass
     public static void initialize() {
-        detector = new IngredientDetectorStep();
+        detector = new DetectIngredientsInStepsTask();
         steps = new ArrayList<>();
         Step s1 = new Step("Put 500 gram sauce in the microwave");
         Step s2 = new Step("Put 500 gram spaghetti in boiling water");
@@ -59,8 +59,8 @@ public class IngredientDetectorStepTest {
     @Test
     public void IngredientDetectorList_doTask_setHasCorrectElements(){
         detector.doTask(recipe,threadPoolExecutor );
-        IngredientUnitAmount spaghettiIngredient = new IngredientUnitAmount("spaghetti", "gram", 500);
-        IngredientUnitAmount sauceIngredient = new IngredientUnitAmount("sauce", "gram", 500);
+        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "gram", 500);
+        Ingredient sauceIngredient = new Ingredient("sauce", "gram", 500);
         boolean spaghetti = recipe.getIngredients().contains(spaghettiIngredient);
         boolean sauce = recipe.getIngredients().contains(sauceIngredient);
         assert(spaghetti);

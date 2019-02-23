@@ -3,12 +3,12 @@ package SouschefProcessor.Task.SectionDivider;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import SouschefProcessor.Recipe.RecipeInProgress;
-import SouschefProcessor.Task.Task;
+import SouschefProcessor.Task.ProcessingTask;
 
 /**
- * A Task that divides the original text into usable sections
+ * A ProcessingTask that divides the original text into usable sections
  */
-public class SectionDivider implements Task {
+public class SplitToMainSectionsTask implements ProcessingTask {
 
 
     /**
@@ -17,18 +17,17 @@ public class SectionDivider implements Task {
      * representing the amount of people the orignal recipe is for. It will then modify the recipe
      * with these fields
      *
-     * @param recipe     The recipe to split into sections
-     * @param threadPool The threadpool on which to execute threads if threads are used
+     * @param recipeInProgress     The recipe to split into sections
+     * @param threadPoolExecutor The threadpool on which to execute threads if threads are used
      */
-    public void doTask(RecipeInProgress recipe, ThreadPoolExecutor threadPool) {
+    public void doTask(RecipeInProgress recipeInProgress, ThreadPoolExecutor threadPoolExecutor) {
         //TODO all of this could be in seperate threads
         //TODO add check that an original text is contained
-        String text = recipe.getOriginalText();
+        String text = recipeInProgress.getOriginalText();
         String ingredients = findIngredients(text);
         String steps = findSteps(text);
         String description = findDescription(text);
-        int amount = findAmountOfPeople(text);
-        modifyRecipe(recipe, ingredients, steps, description, amount);
+        modifyRecipe(recipeInProgress, ingredients, steps, description);
 
     }
 
@@ -40,13 +39,12 @@ public class SectionDivider implements Task {
      * @param ingredients The string representing the ingredients
      * @param steps       The string representing the steps
      * @param description The string representing the desription
-     * @param amount      The int representing the amount of people the recipe is for
      */
-    public void modifyRecipe(RecipeInProgress recipe, String ingredients, String steps, String description, int amount) {
+    public void modifyRecipe(RecipeInProgress recipe, String ingredients, String steps, String description) {
         recipe.setIngredientsString(ingredients);
         recipe.setStepsString(steps);
         recipe.setDescription(description);
-        recipe.setAmountOfPeople(amount);
+
 
     }
 
@@ -86,16 +84,7 @@ public class SectionDivider implements Task {
         return "A spaghetti recipe";
     }
 
-    /**
-     * Finds the amount of the people the recipe is for in a text
-     *
-     * @param text the text in which to search for the amount of people
-     * @return The int representing the amount of people
-     */
-    public int findAmountOfPeople(String text) {
-        //dummy
-        return 4;
-    }
+
 
 
 }

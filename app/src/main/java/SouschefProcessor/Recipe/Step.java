@@ -7,12 +7,12 @@ import java.util.HashSet;
  * ingredientAmountSet: a set of ingredients contained in this recipe (could be null)
  * timer: a timer contained in this recipe (could be null)
  * decription:  the textual description of this recipe, which was written in the original text
- * ingredientDetected: a boolean that indicates if the IngredientDetectorStep task has been done
- * timerDetected: a boolean that indicates if the TimerDetector task has been done on this step
+ * ingredientDetected: a boolean that indicates if the DetectIngredientsInStepsTask task has been done
+ * timerDetected: a boolean that indicates if the DetectTimersInStepsTask task has been done on this step
  */
 public class Step {
 
-    private HashSet<IngredientUnitAmount> ingredientUnitAmountSet; //this could become a hashmap, with key the IngredientUnitAmount and value the location in the description
+    private HashSet<Ingredient> ingredientUnitAmountSet; //this could become a hashmap, with key the Ingredient and value the location in the description
     private Timer timer;
     private String description;
     private boolean ingredientDetected = false;
@@ -22,11 +22,11 @@ public class Step {
         this.description = description;
     }
 
-    public HashSet<IngredientUnitAmount> getIngredientUnitAmountSet() {
+    public HashSet<Ingredient> getIngredientUnitAmountSet() {
         return ingredientUnitAmountSet;
     }
 
-    public synchronized void setIngredientUnitAmountSet(HashSet<IngredientUnitAmount> iuaSet) {
+    public synchronized void setIngredientUnitAmountSet(HashSet<Ingredient> iuaSet) {
         ingredientUnitAmountSet = iuaSet;
         ingredientDetected = true;
     }
@@ -63,7 +63,7 @@ public class Step {
         String ret = "Step:\n " + description + "\n ingredientDetected: " + ingredientDetected +
                 "\n ingredients:\n";
         if (ingredientDetected) {
-            for (IngredientUnitAmount iua : ingredientUnitAmountSet) {
+            for (Ingredient iua : ingredientUnitAmountSet) {
                 ret += "\t" + iua;
             }
         }

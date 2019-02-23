@@ -4,7 +4,7 @@ package SouschefProcessor.Recipe;
  * A subclass of Recipe, representing a Recipe Object that is being constructed. It has three
  * additional fields:
  * ingredientsString: a string representing the ingredients list
- * stepsString: a string representing the different steps in the recipe
+ * stepsString: a string representing the different recipeSteps in the recipe
  */
 public class RecipeInProgress extends Recipe {
     private String ingredientsString;
@@ -43,6 +43,6 @@ public class RecipeInProgress extends Recipe {
      * @return the converted recipe
      */
     public Recipe convertToRecipe() {
-        return new Recipe(ingredients, steps, amountOfPeople, description);
+        return new Recipe(ingredients, recipeSteps, amountOfPeople, description);
     }
 }

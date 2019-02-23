@@ -13,7 +13,7 @@ public class SplitToMainSectionsTask implements ProcessingTask {
 
     /**
      * Divides the original text into a string representing list of ingredients, string representing
-     * a list of steps, string representing the description of the recipe (if present) and an integer
+     * a list of recipeSteps, string representing the description of the recipe (if present) and an integer
      * representing the amount of people the orignal recipe is for. It will then modify the recipe
      * with these fields
      *
@@ -37,7 +37,7 @@ public class SplitToMainSectionsTask implements ProcessingTask {
      *
      * @param recipe      The recipe to modify
      * @param ingredients The string representing the ingredients
-     * @param steps       The string representing the steps
+     * @param steps       The string representing the recipeSteps
      * @param description The string representing the desription
      */
     public void modifyRecipe(RecipeInProgress recipe, String ingredients, String steps, String description) {
@@ -61,10 +61,10 @@ public class SplitToMainSectionsTask implements ProcessingTask {
     }
 
     /**
-     * Finds the steps in a text
+     * Finds the recipeSteps in a text
      *
-     * @param text the text in which to search for steps
-     * @return The string representing the steps
+     * @param text the text in which to search for recipeSteps
+     * @return The string representing the recipeSteps
      */
     public String findSteps(String text) {
         //dummy

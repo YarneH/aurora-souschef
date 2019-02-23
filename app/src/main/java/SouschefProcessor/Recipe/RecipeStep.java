@@ -1,5 +1,6 @@
 package SouschefProcessor.Recipe;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
@@ -10,33 +11,33 @@ import java.util.HashSet;
  * ingredientDetected: a boolean that indicates if the DetectIngredientsInStepsTask task has been done
  * timerDetected: a boolean that indicates if the DetectTimersInStepsTask task has been done on this step
  */
-public class Step {
+public class RecipeStep {
 
-    private HashSet<Ingredient> ingredientUnitAmountSet; //this could become a hashmap, with key the Ingredient and value the location in the description
-    private Timer timer;
+    private HashSet<Ingredient> ingredients; //this could become a hashmap, with key the Ingredient and value the location in the description
+    private ArrayList<RecipeTimer> recipeTimers;
     private String description;
     private boolean ingredientDetected = false;
     private boolean timerDetected = false;
 
-    public Step(String description) {
+    public RecipeStep(String description) {
         this.description = description;
     }
 
-    public HashSet<Ingredient> getIngredientUnitAmountSet() {
-        return ingredientUnitAmountSet;
+    public HashSet<Ingredient> getIngredients() {
+        return ingredients;
     }
 
-    public synchronized void setIngredientUnitAmountSet(HashSet<Ingredient> iuaSet) {
-        ingredientUnitAmountSet = iuaSet;
+    public synchronized void setIngredients(HashSet<Ingredient> ingredients) {
+        this.ingredients = ingredients;
         ingredientDetected = true;
     }
 
-    public Timer getTimer() {
-        return timer;
+    public ArrayList<RecipeTimer> getRecipeTimers() {
+        return recipeTimers;
     }
 
-    public synchronized void setTimer(Timer t) {
-        timer = t;
+    public synchronized void setRecipeTimers(ArrayList<RecipeTimer> recipeTimers) {
+        this.recipeTimers = recipeTimers;
         timerDetected = true;
     }
 
@@ -53,23 +54,26 @@ public class Step {
     }
 
     public synchronized void unsetTimer() {
-        timer = null;
+        recipeTimers = null;
         timerDetected = false;
     }
 
 
     @Override
     public String toString() {
-        String ret = "Step:\n " + description + "\n ingredientDetected: " + ingredientDetected +
+        String ret = "RecipeStep:\n " + description + "\n ingredientDetected: " + ingredientDetected +
                 "\n ingredients:\n";
         if (ingredientDetected) {
-            for (Ingredient iua : ingredientUnitAmountSet) {
-                ret += "\t" + iua;
+            for (Ingredient i : ingredients) {
+                ret += "\t" + i;
             }
         }
         ret += "\n timerDetected: " + timerDetected;
         if (timerDetected) {
-            ret += "\n Timer:" + timer;
+            for (RecipeTimer t : recipeTimers){
+                ret += "\n RecipeTimer:" + t;
+            }
+
         }
         return ret;
     }

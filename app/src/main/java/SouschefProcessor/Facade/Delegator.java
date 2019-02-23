@@ -85,19 +85,19 @@ public class Delegator {
         CountDownLatch detectIngredientsInListLatch = new CountDownLatch(1);
         ProcssingTaskThread detectIngredientsInListThread = doTaskInThread(recipeInProgress, detectIngredientsInListTask, threadPoolExecutor, detectIngredientsInListLatch);
 
-        //split into steps
+        //split into recipeSteps
         CountDownLatch splitStepsLatch = new CountDownLatch(1);
         ProcssingTaskThread splitStepsThread = doTaskInThread(recipeInProgress, splitStepsTask, threadPoolExecutor, splitStepsLatch);
 
-        waitForLatch(splitStepsLatch); //later steps depend on splitting in steps
+        waitForLatch(splitStepsLatch); //later recipeSteps depend on splitting in recipeSteps
 
-        //detectTimers in steps
+        //detectTimers in recipeSteps
         CountDownLatch finishLatch = new CountDownLatch(2); //timerdetector and ingredient in step detector
         ProcssingTaskThread detectTimersInStepsThread = doTaskInThread(recipeInProgress, detectTimersInStepsTask, threadPoolExecutor, finishLatch);
 
-        waitForLatch(detectIngredientsInListLatch); //later steps depend on ingredientlist
+        waitForLatch(detectIngredientsInListLatch); //later recipeSteps depend on ingredientlist
 
-        //detect ingredients in steps
+        //detect ingredients in recipeSteps
 
         waitForLatch(finishLatch);
 

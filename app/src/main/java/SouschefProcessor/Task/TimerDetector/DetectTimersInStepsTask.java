@@ -5,12 +5,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import SouschefProcessor.Recipe.RecipeInProgress;
-import SouschefProcessor.Recipe.Step;
-import SouschefProcessor.Recipe.Timer;
+import SouschefProcessor.Recipe.RecipeStep;
+import SouschefProcessor.Recipe.RecipeTimer;
 import SouschefProcessor.Task.ProcessingTask;
 
 /**
- * A task that detects timers in steps
+ * A task that detects timers in recipeSteps
  */
 public class DetectTimersInStepsTask implements ProcessingTask {
 
@@ -19,19 +19,19 @@ public class DetectTimersInStepsTask implements ProcessingTask {
     }
 
     /**
-     * Detects the Timer in all the steps
+     * Detects the RecipeTimer in all the recipeSteps
      *
-     * @param recipeInProgress The recipe containing the steps
+     * @param recipeInProgress The recipe containing the recipeSteps
      * @@param threadPool The threadpool on which to execute threads within this task
      */
     public void doTask(RecipeInProgress recipeInProgress, ThreadPoolExecutor threadPoolExecutor) {
-        //TODO fallback if no steps present
-        ArrayList<Step> steps = recipeInProgress.getSteps();
+        //TODO fallback if no recipeSteps present
+        ArrayList<RecipeStep> recipeSteps = recipeInProgress.getRecipeSteps();
         ArrayList<DetectTimersInStepThread> threads = new ArrayList<>();
 
-        CountDownLatch latch = new CountDownLatch(steps.size());
+        CountDownLatch latch = new CountDownLatch(recipeSteps.size());
 
-        for (Step s : steps) {
+        for (RecipeStep s : recipeSteps) {
             DetectTimersInStepThread thread = new DetectTimersInStepThread(s, latch);
             threadPoolExecutor.execute(thread);
         }
@@ -48,40 +48,48 @@ public class DetectTimersInStepsTask implements ProcessingTask {
     }
 
     /**
-     * Detects the timer in a step
+     * Detects the timer in a recipeStep
      *
-     * @param step The step in which to detect a timer
-     * @return A timer detected in the step
+     * @param recipeStep The recipeStep in which to detect a timer
+     * @return A timer detected in the recipeStep
      */
-    public Timer detectTimer(Step step) {
+    public ArrayList<RecipeTimer> detectTimer(RecipeStep recipeStep) {
 
         //dummy
-        if (step.getDescription().contains("9 minutes")) {
-            return new Timer(9 * 60);
-        } else {
-            return new Timer(3 * 60, 3 * 60);
+        ArrayList<RecipeTimer> list = new ArrayList<>();
+        try {
+
+            if (recipeStep.getDescription().contains("9 minutes")) {
+                list.add(new RecipeTimer(9 * 60));
+            } else {
+                list.add(new RecipeTimer(3 * 60, 3 * 60));
+            }
+
+        } catch (RecipeTimer.TimerValueInvalidException tvie) {
+            //TODO do something meaningful
         }
+        return list;
     }
 
     /**
-     * A thread that does the detecting of timer of a step
+     * A thread that does the detecting of timer of a recipeStep
      */
     private class DetectTimersInStepThread extends Thread {
 
-        private Step step;
+        private RecipeStep recipeStep;
         private CountDownLatch latch;
 
-        public DetectTimersInStepThread(Step step, CountDownLatch latch) {
-            this.step = step;
+        public DetectTimersInStepThread(RecipeStep recipeStep, CountDownLatch latch) {
+            this.recipeStep = recipeStep;
             this.latch = latch;
         }
 
         /**
-         * Detects the timer and sets the timer field in the step
+         * Detects the timer and sets the timer field in the recipeStep
          */
         public void run() {
-            Timer timer = detectTimer(step);
-            step.setTimer(timer);
+            ArrayList<RecipeTimer> recipeTimers = detectTimer(recipeStep);
+            recipeStep.setRecipeTimers(recipeTimers);
             latch.countDown();
         }
     }

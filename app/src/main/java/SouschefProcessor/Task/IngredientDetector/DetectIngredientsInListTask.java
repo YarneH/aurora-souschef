@@ -10,19 +10,20 @@ import SouschefProcessor.Task.ProcessingTask;
 /**
  * Detects the ingredients in the list of ingredients
  */
-public class DetectIngredientsInListTask implements ProcessingTask {
+public class DetectIngredientsInListTask extends ProcessingTask {
+
+    public DetectIngredientsInListTask(RecipeInProgress recipeInProgress){
+        super(recipeInProgress);
+    }
 
     /**
      * Detects the ingredients presented in the ingredientsString and sets the ingredients field
      * in the recipe to this set of ingredients.
-     *
-     * @param recipeInProgress     The recipe on which to detect the ingredients and to modify
-     * @param threadPoolExecutor The threadpool on which to execute threads within this task
      */
-    public void doTask(RecipeInProgress recipeInProgress, ThreadPoolExecutor threadPoolExecutor) {
+    public void doTask() {
         //TODO fallback if no ingredients can be detected
-        HashSet<Ingredient> set = detectIngredients(recipeInProgress.getIngredientsString());
-        recipeInProgress.setIngredients(set);
+        HashSet<Ingredient> set = detectIngredients(this.recipeInProgress.getIngredientsString());
+        this.recipeInProgress.setIngredients(set);
     }
 
     /**

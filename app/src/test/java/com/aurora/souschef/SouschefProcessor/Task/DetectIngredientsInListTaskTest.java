@@ -13,19 +13,19 @@ import SouschefProcessor.Task.IngredientDetector.DetectIngredientsInListTask;
 
 public class DetectIngredientsInListTaskTest {
 
-    private static DetectIngredientsInListTask detector;
     private static RecipeInProgress recipe;
+    private static DetectIngredientsInListTask detector;
     private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
     private static String originalText;
     private static String ingredientList;
 
     @BeforeClass
     public static void initialize() {
-        detector = new DetectIngredientsInListTask();
         ingredientList = "500 gram spaghetti \n 500 gram sauce";
         originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setIngredientsString(ingredientList);
+        detector = new DetectIngredientsInListTask(recipe);
     }
 
     @After
@@ -37,20 +37,20 @@ public class DetectIngredientsInListTaskTest {
 
     @Test
     public void DetectIngredientsInList_doTask_setHasBeenSet() {
-        detector.doTask(recipe, threadPoolExecutor);
+        detector.doTask();
         assert (recipe.getIngredients() != null);
     }
 
     @Test
     public void DetectIngredientsInList_doTask_setHasCorrectSize() {
-        detector.doTask(recipe, threadPoolExecutor);
+        detector.doTask();
         System.out.println(recipe.getIngredients());
         assert (recipe.getIngredients().size() == 2);
     }
 
     @Test
     public void DetectIngredientsInList_doTask_setHasCorrectElements() {
-        detector.doTask(recipe, threadPoolExecutor);
+        detector.doTask();
         Ingredient spaghettiIngredient = new Ingredient("spaghetti", "gram", 500);
         Ingredient sauceIngredient = new Ingredient("sauce", "gram", 500);
         boolean spaghetti = recipe.getIngredients().contains(spaghettiIngredient);
@@ -62,7 +62,7 @@ public class DetectIngredientsInListTaskTest {
     @Test
     public void DetectIngredientsInList_doTask_ifNoIngredientsSetEmptyList() {
         recipe.setIngredientsString("");
-        detector.doTask(recipe, threadPoolExecutor);
+        detector.doTask();
         assert (recipe.getIngredients() != null && recipe.getIngredients().size() == 0);
 
     }

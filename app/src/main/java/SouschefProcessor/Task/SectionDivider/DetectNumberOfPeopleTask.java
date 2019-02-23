@@ -5,11 +5,16 @@ import java.util.concurrent.ThreadPoolExecutor;
 import SouschefProcessor.Recipe.RecipeInProgress;
 import SouschefProcessor.Task.ProcessingTask;
 
-public class DetectNumberOfPeopleTask implements ProcessingTask {
+public class DetectNumberOfPeopleTask extends ProcessingTask {
 
-    public void doTask(RecipeInProgress recipeInProgress, ThreadPoolExecutor threadPoolExecutor){
-        String text = recipeInProgress.getOriginalText();
-        int amount = findAmountOfPeople(text);
+    public DetectNumberOfPeopleTask(RecipeInProgress recipeInProgress){
+        super(recipeInProgress);
+    }
+
+    public void doTask(){
+        String text = this.recipeInProgress.getOriginalText();
+        int number = findNumberOfPeople(text);
+        this.recipeInProgress.setNumberOfPeople(number);
     }
 
     /**
@@ -18,7 +23,7 @@ public class DetectNumberOfPeopleTask implements ProcessingTask {
      * @param text the text in which to search for the amount of people
      * @return The int representing the amount of people
      */
-    public int findAmountOfPeople(String text) {
+    private int findNumberOfPeople(String text) {
         //dummy
         return 4;
     }

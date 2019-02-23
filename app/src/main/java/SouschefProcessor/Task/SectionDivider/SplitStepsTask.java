@@ -10,18 +10,20 @@ import SouschefProcessor.Task.ProcessingTask;
 /**
  * A ProcessingTask that splits the string representing the recipeSteps into RecipeStep objects
  */
-public class SplitStepsTask implements ProcessingTask {
+public class SplitStepsTask extends ProcessingTask {
+
+    public SplitStepsTask(RecipeInProgress recipeInProgress){
+        super(recipeInProgress);
+    }
+
 
     /**
      * This will split the stepsString in the RecipeInProgress Object into recipeSteps and modifies the
      * recipe object so that the recipeSteps are set
-     *
-     * @param recipeInProgress     The recipe on which to detect the recipeSteps and to modify the recipeSteps field
-     * @param threadPoolExecutor a threadPool to use if the task can be parallelized
      */
-    public void doTask(RecipeInProgress recipeInProgress, ThreadPoolExecutor threadPoolExecutor) {
-        ArrayList<RecipeStep> recipeStepList = divideIntoSteps(recipeInProgress.getStepsString());
-        recipeInProgress.setRecipeSteps(recipeStepList);
+    public void doTask() {
+        ArrayList<RecipeStep> recipeStepList = divideIntoSteps(this.recipeInProgress.getStepsString());
+        this.recipeInProgress.setRecipeSteps(recipeStepList);
     }
 
     /**

@@ -13,13 +13,13 @@ import java.util.HashSet;
 public class Recipe {
     protected HashSet<Ingredient> ingredients;
     protected ArrayList<RecipeStep> recipeSteps;
-    protected int amountOfPeople;
+    protected int numberOfPeople;
     protected String description;
 
-    public Recipe(HashSet<Ingredient> ingredients, ArrayList<RecipeStep> recipeSteps, int amountOfPeople, String description) {
+    public Recipe(HashSet<Ingredient> ingredients, ArrayList<RecipeStep> recipeSteps, int numberOfPeople, String description) {
         this.ingredients = ingredients;
         this.recipeSteps = recipeSteps;
-        this.amountOfPeople = amountOfPeople;
+        this.numberOfPeople = numberOfPeople;
         this.description = description;
     }
 
@@ -27,8 +27,8 @@ public class Recipe {
 
     }
 
-    public synchronized void setAmountOfPeople(int amountOfPeople) {
-        this.amountOfPeople = amountOfPeople;
+    public synchronized void setNumberOfPeople(int numberOfPeople) {
+        this.numberOfPeople = numberOfPeople;
     }
 
     public synchronized void setDescription(String description) {

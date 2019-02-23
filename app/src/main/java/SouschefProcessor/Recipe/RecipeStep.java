@@ -5,11 +5,12 @@ import java.util.HashSet;
 
 /**
  * A dataclass representing a step it has  fields
- * ingredientAmountSet: a set of ingredients contained in this recipe (could be null)
- * timer: a timer contained in this recipe (could be null)
- * decription:  the textual description of this recipe, which was written in the original text
- * ingredientDetected: a boolean that indicates if the DetectIngredientsInStepsTask task has been done
- * timerDetected: a boolean that indicates if the DetectTimersInStepsTask task has been done on this step
+ * ingredients: a set of ingredients contained in this recipe (could be null)
+ * recipeTimers: a list of timers contained in this recipe (could be null)
+ * decription:  the textual description of this step, which was written in the original text,
+ * possibly updated to indicate references to elements in ingredients and recipeTimers
+ * ingredientDetected: a boolean that indicates if the DetectIngredientsInStepTask task has been done
+ * timerDetected: a boolean that indicates if the DetectTimersInStepTask task has been done on this step
  */
 public class RecipeStep {
 
@@ -32,6 +33,15 @@ public class RecipeStep {
         ingredientDetected = true;
     }
 
+    // This should maybe check if ingredients != null, but maybe also create the HashSet if it is null
+    // We could also initialize an empty HashSet in the constructor (but maybe still need to check if not null
+    // to deal with setIngredients possibly setting ingredients to null
+    public synchronized void addIngredient(Ingredient ingredient){
+        if (this.ingredients != null) {
+            this.ingredients.add(ingredient);
+        }
+    }
+
     public ArrayList<RecipeTimer> getRecipeTimers() {
         return recipeTimers;
     }
@@ -39,6 +49,13 @@ public class RecipeStep {
     public synchronized void setRecipeTimers(ArrayList<RecipeTimer> recipeTimers) {
         this.recipeTimers = recipeTimers;
         timerDetected = true;
+    }
+
+    // Same comment as for addIngredient
+    public synchronized void addRecipeTimer(RecipeTimer recipeTimer){
+        if (this.recipeTimers != null) {
+            this.recipeTimers.add(recipeTimer);
+        }
     }
 
     public boolean isIngredientDetected() {

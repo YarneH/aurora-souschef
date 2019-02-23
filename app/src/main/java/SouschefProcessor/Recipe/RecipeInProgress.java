@@ -43,6 +43,6 @@ public class RecipeInProgress extends Recipe {
      * @return the converted recipe
      */
     public Recipe convertToRecipe() {
-        return new Recipe(ingredients, recipeSteps, amountOfPeople, description);
+        return new Recipe(ingredients, recipeSteps, numberOfPeople, description);
     }
 }

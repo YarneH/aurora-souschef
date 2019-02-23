@@ -1,4 +1,4 @@
-package com.aurora.souschef.SouschefProcessor.Facade;
+package com.aurora.souschef.SouschefProcessor.Recipe;
 
 import org.junit.Test;
 

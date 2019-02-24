@@ -7,9 +7,9 @@ import org.junit.Test;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import SouschefProcessor.Recipe.Ingredient;
-import SouschefProcessor.Recipe.RecipeInProgress;
-import SouschefProcessor.Task.IngredientDetector.DetectIngredientsInListTask;
+import com.aurora.souschef.SouchefProcessor.Recipe.Ingredient;
+import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
+import com.aurora.souschef.SouchefProcessor.Task.IngredientDetector.DetectIngredientsInListTask;
 
 public class DetectIngredientsInListTaskTest {
 

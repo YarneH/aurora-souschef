@@ -2,12 +2,12 @@ package com.aurora.souschef.SouschefProcessor.Recipe;
 
 import org.junit.Test;
 
-import SouschefProcessor.Recipe.RecipeTimer;
+import com.aurora.souschef.SouchefProcessor.Recipe.RecipeTimer;
 
 public class RecipeTimerTest {
 
     @Test
-    public void RecipeTimer_Constructor_LowerBoundNotBiggerThanUpperBound() throws RecipeTimer.TimerValueInvalidException {
+    public void RecipeTimer_Constructor_LowerBoundNotBiggerThanUpperBound() throws IllegalArgumentException {
         //four cases
 
         //case 1 upperbound argument bigger than lowerbound
@@ -42,7 +42,7 @@ public class RecipeTimerTest {
         try{
             RecipeTimer recipeTimer = new RecipeTimer(upperbound, lowerbound);
         }
-        catch(RecipeTimer.TimerValueInvalidException tvie){
+        catch(IllegalArgumentException iae){
             thrown = true;
         }
         assert(thrown);
@@ -55,7 +55,7 @@ public class RecipeTimerTest {
         try{
             RecipeTimer recipeTimer = new RecipeTimer(upperbound, lowerbound);
         }
-        catch(RecipeTimer.TimerValueInvalidException tvie){
+        catch(IllegalArgumentException iae){
             thrown = true;
         }
         assert(thrown);
@@ -67,7 +67,7 @@ public class RecipeTimerTest {
         try{
             RecipeTimer recipeTimer = new RecipeTimer(time);
         }
-        catch(RecipeTimer.TimerValueInvalidException tvie){
+        catch(IllegalArgumentException iae){
             thrown = true;
         }
         assert(thrown);

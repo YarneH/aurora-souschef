@@ -1,10 +1,10 @@
-package SouschefProcessor.Facade;
+package com.aurora.souschef.SouchefProcessor.Facade;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import SouschefProcessor.Recipe.RecipeInProgress;
-import SouschefProcessor.Task.ProcessingTask;
+import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
+import com.aurora.souschef.SouchefProcessor.Task.ProcessingTask;
 
 /**
  * A class in which a processingTask does its work

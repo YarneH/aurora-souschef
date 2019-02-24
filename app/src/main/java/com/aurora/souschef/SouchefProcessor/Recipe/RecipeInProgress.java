@@ -1,40 +1,41 @@
-package SouschefProcessor.Recipe;
+package com.aurora.souschef.SouchefProcessor.Recipe;
 
 /**
  * A subclass of Recipe, representing a Recipe Object that is being constructed. It has three
  * additional fields:
- * ingredientsString: a string representing the ingredients list
- * stepsString: a string representing the different recipeSteps in the recipe
+ * mIngredientsString: a string representing the mIngredients list
+ * mStepsString: a string representing the different mRecipeSteps in the recipe
+ * mOriginalText: a string that is the original text that was extracted by Aurora
  */
 public class RecipeInProgress extends Recipe {
-    private String ingredientsString;
-    private String stepsString;
-    private String originalText;
+    private String mIngredientsString;
+    private String mStepsString;
+    private String mOriginalText;
 
 
     public RecipeInProgress(String originalText) {
         super();
-        this.originalText = originalText;
+        this.mOriginalText = originalText;
     }
 
     public String getOriginalText() {
-        return originalText;
+        return mOriginalText;
     }
 
     public String getStepsString() {
-        return stepsString;
+        return mStepsString;
     }
 
     public synchronized void setStepsString(String stepsString) {
-        this.stepsString = stepsString;
+        this.mStepsString = stepsString;
     }
 
     public String getIngredientsString() {
-        return ingredientsString;
+        return mIngredientsString;
     }
 
     public synchronized void setIngredientsString(String ingredientsString) {
-        this.ingredientsString = ingredientsString;
+        this.mIngredientsString = ingredientsString;
     }
 
     /**
@@ -43,6 +44,6 @@ public class RecipeInProgress extends Recipe {
      * @return the converted recipe
      */
     public Recipe convertToRecipe() {
-        return new Recipe(ingredients, recipeSteps, numberOfPeople, description);
+        return new Recipe(mIngredients, mRecipeSteps, mNumberOfPeople, mDescription);
     }
 }

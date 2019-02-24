@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
-import SouschefProcessor.Recipe.Ingredient;
+import com.aurora.souschef.SouchefProcessor.Recipe.Ingredient;
 
 public class IngredientTest {
 

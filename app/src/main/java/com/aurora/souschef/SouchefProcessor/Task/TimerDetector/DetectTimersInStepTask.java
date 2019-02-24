@@ -1,30 +1,34 @@
-package SouschefProcessor.Task.TimerDetector;
+package com.aurora.souschef.SouchefProcessor.Task.TimerDetector;
 
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadPoolExecutor;
 
-import SouschefProcessor.Recipe.RecipeInProgress;
-import SouschefProcessor.Recipe.RecipeStep;
-import SouschefProcessor.Recipe.RecipeTimer;
-import SouschefProcessor.Task.ProcessingTask;
+import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
+import com.aurora.souschef.SouchefProcessor.Recipe.RecipeStep;
+import com.aurora.souschef.SouchefProcessor.Recipe.RecipeTimer;
+import com.aurora.souschef.SouchefProcessor.Task.ProcessingTask;
 
 /**
- * A task that detects timers in recipeSteps
+ * A task that detects timers in mRecipeSteps
  */
 public class DetectTimersInStepTask extends ProcessingTask {
-    int stepIndex;
+    int mStepIndex;
 
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
-        this.stepIndex = stepIndex;
+        if(stepIndex < 0){
+            throw new IllegalArgumentException("Negative stepIndex passed");
+        }
+        if (stepIndex >= recipeInProgress.getRecipeSteps().size()){
+            throw new IllegalArgumentException("stepIndex passed too large, stepIndex: "+stepIndex +" ,size of list: "+recipeInProgress.getRecipeSteps().size());
+        }
+        this.mStepIndex = stepIndex;
     }
 
     /**
-     * Detects the RecipeTimer in all the recipeSteps
+     * Detects the RecipeTimer in all the mRecipeSteps
      */
     public void doTask() {
-        RecipeStep recipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
+        RecipeStep recipeStep = mRecipeInProgress.getRecipeSteps().get(mStepIndex);
         ArrayList<RecipeTimer> recipeTimers = detectTimer(recipeStep);
         recipeStep.setRecipeTimers(recipeTimers);
     }
@@ -48,7 +52,7 @@ public class DetectTimersInStepTask extends ProcessingTask {
                 list.add(new RecipeTimer(3 * 60, 3 * 60));
             }
 
-        } catch (RecipeTimer.TimerValueInvalidException tvie) {
+        } catch (IllegalArgumentException tvie) {
             //TODO do something meaningful
         }
         return list;

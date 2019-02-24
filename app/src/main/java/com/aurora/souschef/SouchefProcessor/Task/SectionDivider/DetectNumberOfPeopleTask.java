@@ -1,9 +1,7 @@
-package SouschefProcessor.Task.SectionDivider;
+package com.aurora.souschef.SouchefProcessor.Task.SectionDivider;
 
-import java.util.concurrent.ThreadPoolExecutor;
-
-import SouschefProcessor.Recipe.RecipeInProgress;
-import SouschefProcessor.Task.ProcessingTask;
+import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
+import com.aurora.souschef.SouchefProcessor.Task.ProcessingTask;
 
 public class DetectNumberOfPeopleTask extends ProcessingTask {
 
@@ -12,9 +10,9 @@ public class DetectNumberOfPeopleTask extends ProcessingTask {
     }
 
     public void doTask(){
-        String text = this.recipeInProgress.getOriginalText();
+        String text = this.mRecipeInProgress.getOriginalText();
         int number = findNumberOfPeople(text);
-        this.recipeInProgress.setNumberOfPeople(number);
+        this.mRecipeInProgress.setNumberOfPeople(number);
     }
 
     /**

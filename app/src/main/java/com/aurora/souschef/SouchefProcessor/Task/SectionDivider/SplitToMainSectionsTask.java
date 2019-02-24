@@ -1,9 +1,7 @@
-package SouschefProcessor.Task.SectionDivider;
+package com.aurora.souschef.SouchefProcessor.Task.SectionDivider;
 
-import java.util.concurrent.ThreadPoolExecutor;
-
-import SouschefProcessor.Recipe.RecipeInProgress;
-import SouschefProcessor.Task.ProcessingTask;
+import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
+import com.aurora.souschef.SouchefProcessor.Task.ProcessingTask;
 
 /**
  * A ProcessingTask that divides the original text into usable sections
@@ -15,29 +13,29 @@ public class SplitToMainSectionsTask extends ProcessingTask {
     }
 
     /**
-     * Divides the original text into a string representing list of ingredients, string representing
-     * a list of recipeSteps, string representing the description of the recipe (if present) and an integer
+     * Divides the original text into a string representing list of mIngredients, string representing
+     * a list of mRecipeSteps, string representing the mDescription of the recipe (if present) and an integer
      * representing the amount of people the orignal recipe is for. It will then modify the recipe
      * with these fields
      */
     public void doTask() {
         //TODO all of this could be in seperate threads
         //TODO add check that an original text is contained
-        String text = this.recipeInProgress.getOriginalText();
+        String text = this.mRecipeInProgress.getOriginalText();
         String ingredients = findIngredients(text);
         String steps = findSteps(text);
         String description = findDescription(text);
-        modifyRecipe(this.recipeInProgress, ingredients, steps, description);
+        modifyRecipe(this.mRecipeInProgress, ingredients, steps, description);
 
     }
 
     /**
-     * Modifies the recipe so that the ingredientsString, stepsString, description and amountOfPeople
+     * Modifies the recipe so that the ingredientsString, stepsString, mDescription and amountOfPeople
      * fields are set.
      *
      * @param recipe      The recipe to modify
-     * @param ingredients The string representing the ingredients
-     * @param steps       The string representing the recipeSteps
+     * @param ingredients The string representing the mIngredients
+     * @param steps       The string representing the mRecipeSteps
      * @param description The string representing the desription
      */
     public void modifyRecipe(RecipeInProgress recipe, String ingredients, String steps, String description) {
@@ -52,8 +50,8 @@ public class SplitToMainSectionsTask extends ProcessingTask {
     /**
      * Finds the ingredientslist in a text
      *
-     * @param text the text in which to search for ingredients
-     * @return The string representing the ingredients
+     * @param text the text in which to search for mIngredients
+     * @return The string representing the mIngredients
      */
     public String findIngredients(String text) {
         //dummy
@@ -61,10 +59,10 @@ public class SplitToMainSectionsTask extends ProcessingTask {
     }
 
     /**
-     * Finds the recipeSteps in a text
+     * Finds the mRecipeSteps in a text
      *
-     * @param text the text in which to search for recipeSteps
-     * @return The string representing the recipeSteps
+     * @param text the text in which to search for mRecipeSteps
+     * @return The string representing the mRecipeSteps
      */
     public String findSteps(String text) {
         //dummy
@@ -74,10 +72,10 @@ public class SplitToMainSectionsTask extends ProcessingTask {
     }
 
     /**
-     * Finds the description of the recipe in a text
+     * Finds the mDescription of the recipe in a text
      *
-     * @param text the text in which to search for the description of the recipe
-     * @return The string representing the description of the recipe
+     * @param text the text in which to search for the mDescription of the recipe
+     * @return The string representing the mDescription of the recipe
      */
     public String findDescription(String text) {
         //dummy

@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import SouschefProcessor.Recipe.RecipeInProgress;
-import SouschefProcessor.Recipe.RecipeStep;
-import SouschefProcessor.Task.TimerDetector.DetectTimersInStepTask;
+import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
+import com.aurora.souschef.SouchefProcessor.Recipe.RecipeStep;
+import com.aurora.souschef.SouchefProcessor.Task.TimerDetector.DetectTimersInStepTask;
 
 public class DetectTimersInStepTaskTest {
 

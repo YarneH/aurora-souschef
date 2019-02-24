@@ -1,4 +1,4 @@
-package SouschefProcessor.Facade;
+package com.aurora.souschef.SouchefProcessor.Facade;
 
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
@@ -6,14 +6,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import SouschefProcessor.Recipe.Recipe;
-import SouschefProcessor.Recipe.RecipeInProgress;
-import SouschefProcessor.Task.HelperTasks.ParallelizeStepsTask;
-import SouschefProcessor.Task.IngredientDetector.DetectIngredientsInListTask;
-import SouschefProcessor.Task.ProcessingTask;
-import SouschefProcessor.Task.SectionDivider.DetectNumberOfPeopleTask;
-import SouschefProcessor.Task.SectionDivider.SplitStepsTask;
-import SouschefProcessor.Task.SectionDivider.SplitToMainSectionsTask;
+import com.aurora.souschef.SouchefProcessor.Recipe.Recipe;
+import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
+import com.aurora.souschef.SouchefProcessor.Task.HelperTasks.ParallelizeStepsTask;
+import com.aurora.souschef.SouchefProcessor.Task.HelperTasks.ParallellizeableTaskNames;
+import com.aurora.souschef.SouchefProcessor.Task.IngredientDetector.DetectIngredientsInListTask;
+import com.aurora.souschef.SouchefProcessor.Task.ProcessingTask;
+import com.aurora.souschef.SouchefProcessor.Task.SectionDivider.DetectNumberOfPeopleTask;
+import com.aurora.souschef.SouchefProcessor.Task.SectionDivider.SplitStepsTask;
+import com.aurora.souschef.SouchefProcessor.Task.SectionDivider.SplitToMainSectionsTask;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
@@ -21,7 +22,7 @@ import SouschefProcessor.Task.SectionDivider.SplitToMainSectionsTask;
  */
 public class Delegator {
 
-    private ThreadPoolExecutor threadPoolExecutor; //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
+    private ThreadPoolExecutor mThreadPoolExecutor; //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
 
     /**
      * Creates the ThreadPoolExecutor for the processing of the text, this is device-dependent
@@ -42,7 +43,7 @@ public class Delegator {
         // Sets the Time Unit to seconds
         final TimeUnit KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
         // Creates a thread pool manager
-        threadPoolExecutor = new ThreadPoolExecutor(
+        mThreadPoolExecutor = new ThreadPoolExecutor(
                 NUMBER_OF_CORES,       // Initial pool size
                 NUMBER_OF_CORES,       // Max pool size
                 KEEP_ALIVE_TIME,
@@ -59,7 +60,7 @@ public class Delegator {
      */
     public Recipe processText(String text) {
         //TODO implement this function so that at runtime it is decided which tasks should be performed
-        if (threadPoolExecutor == null) {
+        if (mThreadPoolExecutor == null) {
             setUpThreadPool();
         }
         RecipeInProgress recipeInProgress = new RecipeInProgress(text);
@@ -77,7 +78,7 @@ public class Delegator {
 
 
     /**
-     * The function creates all the tasks that could be used for the processing. If new tasks are added to the c
+     * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
      */
     public ArrayList<ProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
@@ -86,17 +87,17 @@ public class Delegator {
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
         pipeline.add(new SplitStepsTask(recipeInProgress));
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress));
-        String[] taskNames = {"INGR", "TIMER"};
-        pipeline.add(new ParallelizeStepsTask(recipeInProgress, this.threadPoolExecutor, taskNames));
+        ParallellizeableTaskNames[] taskNames = {ParallellizeableTaskNames.INGR, ParallellizeableTaskNames.TIMER};
+        pipeline.add(new ParallelizeStepsTask(recipeInProgress, this.mThreadPoolExecutor, taskNames));
         return pipeline;
     }
 
 
     public ThreadPoolExecutor getThreadPoolExecutor() {
-        if (threadPoolExecutor == null) {
+        if (mThreadPoolExecutor == null) {
             setUpThreadPool();
         }
-        return threadPoolExecutor;
+        return mThreadPoolExecutor;
     }
 
 

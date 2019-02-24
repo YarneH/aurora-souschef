@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import SouschefProcessor.Recipe.Ingredient;
 import SouschefProcessor.Recipe.RecipeInProgress;
 import SouschefProcessor.Recipe.RecipeStep;
 import SouschefProcessor.Task.IngredientDetector.DetectIngredientsInStepTask;
@@ -55,29 +56,18 @@ public class DetectIngredientsInRecipeStepTaskTest {
             assert (s.getIngredients() != null);
         }
     }
-    /*
-    @Test
-    public void IngredientDetectorList_doTask_setHasCorrectSize(){
-        detector.doTask(recipe,threadPoolExecutor );
-        assert(recipe.getIngredients().size() == 2);
-    }
 
     @Test
-    public void IngredientDetectorList_doTask_setHasCorrectElements(){
-        detector.doTask(recipe,threadPoolExecutor );
+    public void DetectIngredientsInStep_doTask_stepsHaveCorrectElements() {
+        detector0.doTask();
+        detector1.doTask();
         Ingredient spaghettiIngredient = new Ingredient("spaghetti", "gram", 500);
         Ingredient sauceIngredient = new Ingredient("sauce", "gram", 500);
-        boolean spaghetti = recipe.getIngredients().contains(spaghettiIngredient);
-        boolean sauce = recipe.getIngredients().contains(sauceIngredient);
-        assert(spaghetti);
-        assert(sauce);
+        boolean spaghetti = recipe.getRecipeSteps().get(0).getIngredients().contains(sauceIngredient);
+        boolean sauce = recipe.getRecipeSteps().get(1).getIngredients().contains(spaghettiIngredient);
+        assert (spaghetti);
+        assert (sauce);
     }
-
-    public void IngredientDetectorList_doTask_ifNoIngredientsSetEmptyList(){
-        recipe.setIngredientsString("");
-        detector.doTask(recipe,threadPoolExecutor);
-        assert(recipe.getIngredients() != null && recipe.getIngredients().size() == 0);
-    }*/
 
 
 }

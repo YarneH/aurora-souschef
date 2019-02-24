@@ -36,7 +36,6 @@ public class Ingredient {
     @Override
     public String toString() {
         String res = amount + " ";
-        //if unit is not "", add the unit and a space to the result
         return res + ingredient;
     }
 

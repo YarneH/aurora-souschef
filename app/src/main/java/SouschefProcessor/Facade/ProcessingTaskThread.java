@@ -25,7 +25,6 @@ public class ProcessingTaskThread extends Thread {
 
     @Override
     public void run() {
-        //processingTask.doTask(recipeInProgress, threadPoolExecutor);
         processingTask.doTask();
         latch.countDown();
 

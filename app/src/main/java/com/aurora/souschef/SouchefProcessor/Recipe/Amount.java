@@ -1,5 +1,7 @@
 package com.aurora.souschef.SouchefProcessor.Recipe;
 
+import java.util.Objects;
+
 public class Amount {
 
     private double mValue;
@@ -20,10 +22,7 @@ public class Amount {
 
     @Override
     public int hashCode() {
-        int result = 17;
-        result = 31 * result + mUnit.hashCode();
-        result = 31 * result + Double.valueOf(mValue).hashCode();
-        return result;
+        return Objects.hash(mUnit, mValue);
     }
 
     @Override

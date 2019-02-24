@@ -7,6 +7,7 @@ import com.aurora.souschef.SouchefProcessor.Task.ProcessingTask;
 import com.aurora.souschef.SouchefProcessor.Task.TimerDetector.DetectTimersInStepTask;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -28,7 +29,7 @@ public class ParallelizeStepsTask extends ProcessingTask {
      * Launches parallel threads for each type of task submitted and for each step
      */
     public void doTask() {//TODO fallback if no mRecipeSteps present
-        ArrayList<RecipeStep> recipeSteps = mRecipeInProgress.getRecipeSteps();
+        List<RecipeStep> recipeSteps = mRecipeInProgress.getRecipeSteps();
         ArrayList<StepTaskThread> threads = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(recipeSteps.size() * mParallellizeableTaskNames.length); //for every step and for every parallelizeable task
 

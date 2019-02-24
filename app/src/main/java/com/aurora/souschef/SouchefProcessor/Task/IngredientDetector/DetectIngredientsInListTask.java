@@ -1,6 +1,7 @@
 package com.aurora.souschef.SouchefProcessor.Task.IngredientDetector;
 
 import java.util.HashSet;
+import java.util.Set;
 
 import com.aurora.souschef.SouchefProcessor.Recipe.Ingredient;
 import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
@@ -21,7 +22,7 @@ public class DetectIngredientsInListTask extends ProcessingTask {
      */
     public void doTask() {
         //TODO fallback if no mIngredients can be detected
-        HashSet<Ingredient> set = detectIngredients(this.mRecipeInProgress.getIngredientsString());
+        Set<Ingredient> set = detectIngredients(this.mRecipeInProgress.getIngredientsString());
         this.mRecipeInProgress.setIngredients(set);
     }
 
@@ -32,14 +33,14 @@ public class DetectIngredientsInListTask extends ProcessingTask {
      * @param ingredientList The string representing the ingredientList
      * @return A set of Ingredient Objects detected in the string
      */
-    private HashSet<Ingredient> detectIngredients(String ingredientList) {
+    private Set<Ingredient> detectIngredients(String ingredientList) {
         //TODO generate functionality
 
         //dummy
         if (ingredientList == null || ingredientList.equals("")) {
             return new HashSet<Ingredient>();
         }
-        HashSet<Ingredient> returnSet = new HashSet<Ingredient>();
+        Set<Ingredient> returnSet = new HashSet<Ingredient>();
         String[] list = ingredientList.split("\n");
 
         for (String ingredient : list) {

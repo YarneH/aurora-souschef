@@ -1,7 +1,7 @@
 package com.aurora.souschef.SouchefProcessor.Recipe;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A dataclass representing a step it has  fields
@@ -14,8 +14,8 @@ import java.util.HashSet;
  */
 public class RecipeStep {
 
-    private HashSet<Ingredient> mIngredients; //this could become a hashmap, with key the Ingredient and value the location in the mDescription
-    private ArrayList<RecipeTimer> mRecipeTimers;
+    private Set<Ingredient> mIngredients; //this could become a hashmap, with key the Ingredient and value the location in the mDescription
+    private List<RecipeTimer> mRecipeTimers;
     private String mDescription;
     private boolean mIngredientDetected = false;
     private boolean mTimerDetected = false;
@@ -24,11 +24,11 @@ public class RecipeStep {
         this.mDescription = description;
     }
 
-    public HashSet<Ingredient> getIngredients() {
+    public Set<Ingredient> getIngredients() {
         return mIngredients;
     }
 
-    public synchronized void setIngredients(HashSet<Ingredient> ingredients) {
+    public synchronized void setIngredients(Set<Ingredient> ingredients) {
         this.mIngredients = ingredients;
         mIngredientDetected = true;
     }
@@ -36,23 +36,23 @@ public class RecipeStep {
     // This should maybe check if mIngredients != null, but maybe also create the HashSet if it is null
     // We could also initialize an empty HashSet in the constructor (but maybe still need to check if not null
     // to deal with setIngredients possibly setting mIngredients to null
-    public synchronized void addIngredient(Ingredient ingredient){
+    public synchronized void addIngredient(Ingredient ingredient) {
         if (this.mIngredients != null) {
             this.mIngredients.add(ingredient);
         }
     }
 
-    public ArrayList<RecipeTimer> getRecipeTimers() {
+    public List<RecipeTimer> getRecipeTimers() {
         return mRecipeTimers;
     }
 
-    public synchronized void setRecipeTimers(ArrayList<RecipeTimer> recipeTimers) {
+    public synchronized void setRecipeTimers(List<RecipeTimer> recipeTimers) {
         this.mRecipeTimers = recipeTimers;
         mTimerDetected = true;
     }
 
     // Same comment as for addIngredient
-    public synchronized void addRecipeTimer(RecipeTimer recipeTimer){
+    public synchronized void addRecipeTimer(RecipeTimer recipeTimer) {
         if (this.mRecipeTimers != null) {
             this.mRecipeTimers.add(recipeTimer);
         }
@@ -87,7 +87,7 @@ public class RecipeStep {
         }
         ret += "\n mTimerDetected: " + mTimerDetected;
         if (mTimerDetected) {
-            for (RecipeTimer t : mRecipeTimers){
+            for (RecipeTimer t : mRecipeTimers) {
                 ret += "\n RecipeTimer:" + t;
             }
 

@@ -1,17 +1,18 @@
 package com.aurora.souschef.SouchefProcessor.Task.SectionDivider;
 
-import java.util.ArrayList;
-
 import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
 import com.aurora.souschef.SouchefProcessor.Recipe.RecipeStep;
 import com.aurora.souschef.SouchefProcessor.Task.ProcessingTask;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A ProcessingTask that splits the string representing the mRecipeSteps into RecipeStep objects
  */
 public class SplitStepsTask extends ProcessingTask {
 
-    public SplitStepsTask(RecipeInProgress recipeInProgress){
+    public SplitStepsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
     }
 
@@ -21,7 +22,7 @@ public class SplitStepsTask extends ProcessingTask {
      * recipe object so that the mRecipeSteps are set
      */
     public void doTask() {
-        ArrayList<RecipeStep> recipeStepList = divideIntoSteps(this.mRecipeInProgress.getStepsString());
+        List<RecipeStep> recipeStepList = divideIntoSteps(this.mRecipeInProgress.getStepsString());
         this.mRecipeInProgress.setRecipeSteps(recipeStepList);
     }
 
@@ -30,7 +31,7 @@ public class SplitStepsTask extends ProcessingTask {
      *
      * @return A list of all mRecipeSteps in order
      */
-    private ArrayList<RecipeStep> divideIntoSteps(String steps) {
+    private List<RecipeStep> divideIntoSteps(String steps) {
         //TODO generate functionality to split attribute stepsText
 
         //dummy code

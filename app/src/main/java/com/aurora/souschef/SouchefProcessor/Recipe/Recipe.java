@@ -1,7 +1,7 @@
 package com.aurora.souschef.SouchefProcessor.Recipe;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A data class representing a recipe. It has 4 fields:
@@ -12,13 +12,13 @@ import java.util.HashSet;
  * mDescription: a description of the recipe (could be that it is not present)
  */
 public class Recipe {
-    protected HashSet<Ingredient> mIngredients;
-    protected ArrayList<RecipeStep> mRecipeSteps;
+    protected Set<Ingredient> mIngredients;
+    protected List<RecipeStep> mRecipeSteps;
     protected int mNumberOfPeople;
     protected String mDescription;
 
 
-    public Recipe(HashSet<Ingredient> ingredients, ArrayList<RecipeStep> recipeSteps, int numberOfPeople, String description) {
+    public Recipe(Set<Ingredient> ingredients, List<RecipeStep> recipeSteps, int numberOfPeople, String description) {
         this.mIngredients = ingredients;
         this.mRecipeSteps = recipeSteps;
         this.mNumberOfPeople = numberOfPeople;
@@ -37,19 +37,19 @@ public class Recipe {
         this.mDescription = description;
     }
 
-    public ArrayList<RecipeStep> getRecipeSteps() {
+    public List<RecipeStep> getRecipeSteps() {
         return mRecipeSteps;
     }
 
-    public synchronized void setRecipeSteps(ArrayList<RecipeStep> recipeSteps) {
+    public synchronized void setRecipeSteps(List<RecipeStep> recipeSteps) {
         this.mRecipeSteps = recipeSteps;
     }
 
-    public HashSet<Ingredient> getIngredients() {
+    public Set<Ingredient> getIngredients() {
         return mIngredients;
     }
 
-    public synchronized void setIngredients(HashSet<Ingredient> ingredients) {
+    public synchronized void setIngredients(Set<Ingredient> ingredients) {
         this.mIngredients = ingredients;
     }
 

@@ -1,6 +1,7 @@
 package com.aurora.souschef.SouchefProcessor.Task.TimerDetector;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
 import com.aurora.souschef.SouchefProcessor.Recipe.RecipeStep;
@@ -29,7 +30,7 @@ public class DetectTimersInStepTask extends ProcessingTask {
      */
     public void doTask() {
         RecipeStep recipeStep = mRecipeInProgress.getRecipeSteps().get(mStepIndex);
-        ArrayList<RecipeTimer> recipeTimers = detectTimer(recipeStep);
+        List<RecipeTimer> recipeTimers = detectTimer(recipeStep);
         recipeStep.setRecipeTimers(recipeTimers);
     }
 
@@ -40,10 +41,10 @@ public class DetectTimersInStepTask extends ProcessingTask {
      * @param recipeStep The recipeStep in which to detect a timer
      * @return A timer detected in the recipeStep
      */
-    private ArrayList<RecipeTimer> detectTimer(RecipeStep recipeStep) {
+    private List<RecipeTimer> detectTimer(RecipeStep recipeStep) {
 
         //dummy
-        ArrayList<RecipeTimer> list = new ArrayList<>();
+        List<RecipeTimer> list = new ArrayList<>();
         try {
 
             if (recipeStep.getDescription().contains("9 minutes")) {

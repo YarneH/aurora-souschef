@@ -1,5 +1,7 @@
 package com.aurora.souschef.SouchefProcessor.Recipe;
 
+import java.util.Objects;
+
 /**
  * A data class that represents an mIngredient in the mIngredient list of the recipe or a step of the
  * recipe. The class has three fields:
@@ -12,9 +14,9 @@ public class Ingredient {
     private String mIngredient;
     private Amount mAmount;
 
-    public Ingredient(String ingredient, String unit, double amount) {
+    public Ingredient(String ingredient, String unit, double value) {
         this.mIngredient = ingredient;
-        this.mAmount = new Amount(amount, unit);
+        this.mAmount = new Amount(value, unit);
     }
 
     public String getIngredient() {
@@ -36,17 +38,14 @@ public class Ingredient {
 
     @Override
     public int hashCode() {
-        int result = 17;
-        result = 31 * mAmount.hashCode();
-        result = 31 * result + mIngredient.hashCode();
-        return result;
+        return Objects.hash(mAmount,mIngredient);
     }
 
     @Override
     public boolean equals(Object o) {
         if (o instanceof Ingredient) {
-            Ingredient iua = (Ingredient) o;
-            if (iua.getAmount().equals(mAmount) && iua.getIngredient().equals(mIngredient)) {
+            Ingredient ingredient = (Ingredient) o;
+            if (ingredient.getAmount().equals(mAmount) && ingredient.getIngredient().equals(mIngredient)) {
                 return true;
             }
         }

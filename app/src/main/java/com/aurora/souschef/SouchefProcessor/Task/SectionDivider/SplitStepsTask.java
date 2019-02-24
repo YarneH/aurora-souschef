@@ -35,7 +35,7 @@ public class SplitStepsTask extends ProcessingTask {
         //TODO generate functionality to split attribute stepsText
 
         //dummy code
-        ArrayList<RecipeStep> list = new ArrayList<>();
+        List<RecipeStep> list = new ArrayList<>();
         RecipeStep s1 = new RecipeStep("Put 500 gram spaghetti in boiling water for 9 minutes.");
         RecipeStep s2 = new RecipeStep("Put the sauce in the Microwave for 3 minutes");
         list.add(s1);

@@ -57,5 +57,14 @@ public class RecipeTimer {
         return false;
     }
 
+    @Override
+    public String toString(){
+        if(mUpperBound == mLowerBound){
+            return "Time: "+mUpperBound;
+        }
+        else{
+            return "Time: ["+mLowerBound+", "+mUpperBound+"]";
+        }
+    }
 
 }

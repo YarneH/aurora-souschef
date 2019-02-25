@@ -16,6 +16,7 @@ import edu.stanford.nlp.pipeline.AnnotationPipeline;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
+import edu.stanford.nlp.time.SUTime;
 import edu.stanford.nlp.time.TimeAnnotations;
 import edu.stanford.nlp.time.TimeAnnotator;
 import edu.stanford.nlp.time.TimeExpression;
@@ -72,16 +73,52 @@ public class DetectTimersInStepTask extends ProcessingTask {
         List<CoreMap> timexAnnotations = recipeStepAnnotated.get(TimeAnnotations.TimexAnnotations.class);
         for (CoreMap cm : timexAnnotations) {
             List<CoreLabel> tokens = cm.get(CoreAnnotations.TokensAnnotation.class);
-            int recipeStepSeconds = (int) cm.get(TimeExpression.Annotation.class).getTemporal()
-                    .getDuration().getJodaTimeDuration().getStandardSeconds();
-
-            try {
-                list.add(new RecipeTimer(recipeStepSeconds));
-            } catch (IllegalArgumentException tvie) {
-                //TODO do something meaningful
+            int recipeStepSeconds;
+            SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();
+            if (!temporal.includeTimexAltValue()) {
+                //only one value
+                recipeStepSeconds = (int) temporal
+                        .getDuration().getJodaTimeDuration().getStandardSeconds();
+                try {
+                    list.add(new RecipeTimer(recipeStepSeconds));
+                } catch (IllegalArgumentException iae) {
+                    //TODO do something meaningful
+                }
+            } else {
+                SUTime.Duration durationRange = temporal.getDuration();
+                //formattedstring is the only way to access private min and max fields
+                
+                String formattedString = temporal.toString();
+                String[] minAndMax = formattedString.split("/");
+                String min = minAndMax[0];
+                String max = minAndMax[1];
+                int lowerBound = getSecondsFromFormattedString(min);
+                int upperBound = getSecondsFromFormattedString(max);
+                try {
+                    list.add(new RecipeTimer(lowerBound, upperBound));
+                } catch (IllegalArgumentException iae) {
+                    //TODO do something meaningful
+                }
             }
+
         }
 
         return list;
+    }
+
+    private int getSecondsFromFormattedString(String string) {
+        //TODO maybe this can be done less hardcoded, although for souschef I think this is good enough
+        String number = string.substring(2, string.length() - 1);
+        int num = Integer.parseInt(number);
+        char unit = string.charAt(string.length() - 1);
+        if (unit == 'M') {
+            return num * 60;
+        } else if (unit == 'H') {
+            return num * 60 * 60;
+        } else if (unit == 'S') {
+            return num;
+        }
+        return 0;
+
     }
 }

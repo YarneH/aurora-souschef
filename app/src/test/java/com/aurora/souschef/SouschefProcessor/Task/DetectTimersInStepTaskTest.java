@@ -116,7 +116,7 @@ public class DetectTimersInStepTaskTest {
         //assert detection
         assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
         //assert correct detection
-        RecipeTimer timer = new RecipeTimer((int) 1.5 * 60 * 60);
+        RecipeTimer timer = new RecipeTimer((int) (60 * 60 * 1.5));
         assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
     }
 
@@ -141,6 +141,7 @@ public class DetectTimersInStepTaskTest {
         assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
         //assert correct detection
         RecipeTimer timer = new RecipeTimer(9 * 60, 7 * 60);
+        System.out.println(recipeSteps.get(stepIndex));
         assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
     }
 

@@ -1,28 +1,19 @@
 package com.aurora.souschef.SouchefProcessor.Task.TimerDetector;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
 import com.aurora.souschef.SouchefProcessor.Recipe.RecipeStep;
 import com.aurora.souschef.SouchefProcessor.Recipe.RecipeTimer;
 import com.aurora.souschef.SouchefProcessor.Task.ProcessingTask;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.time.TimeAnnotations;
@@ -38,11 +29,11 @@ public class DetectTimersInStepTask extends ProcessingTask {
 
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
-        if(stepIndex < 0){
+        if (stepIndex < 0) {
             throw new IllegalArgumentException("Negative stepIndex passed");
         }
-        if (stepIndex >= recipeInProgress.getRecipeSteps().size()){
-            throw new IllegalArgumentException("stepIndex passed too large, stepIndex: "+stepIndex +" ,size of list: "+recipeInProgress.getRecipeSteps().size());
+        if (stepIndex >= recipeInProgress.getRecipeSteps().size()) {
+            throw new IllegalArgumentException("stepIndex passed too large, stepIndex: " + stepIndex + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
         }
         this.mStepIndex = stepIndex;
     }
@@ -84,10 +75,9 @@ public class DetectTimersInStepTask extends ProcessingTask {
             int recipeStepSeconds = (int) cm.get(TimeExpression.Annotation.class).getTemporal()
                     .getDuration().getJodaTimeDuration().getStandardSeconds();
 
-            try{
+            try {
                 list.add(new RecipeTimer(recipeStepSeconds));
-            }
-            catch (IllegalArgumentException tvie) {
+            } catch (IllegalArgumentException tvie) {
                 //TODO do something meaningful
             }
         }

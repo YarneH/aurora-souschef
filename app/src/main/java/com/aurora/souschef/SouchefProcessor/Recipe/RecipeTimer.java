@@ -15,7 +15,7 @@ public class RecipeTimer {
 
     public RecipeTimer(int upperBound, int lowerBound) throws IllegalArgumentException {
         if (upperBound <= 0) {
-                throw new IllegalArgumentException("UpperBound is negative");
+            throw new IllegalArgumentException("UpperBound is negative");
         }
         if (lowerBound <= 0) {
             throw new IllegalArgumentException("LowerBound is negative");
@@ -46,7 +46,16 @@ public class RecipeTimer {
         return mLowerBound;
     }
 
-
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof RecipeTimer) {
+            RecipeTimer rt = (RecipeTimer) o;
+            if (rt.getLowerBound() == mLowerBound && rt.getUpperBound() == mUpperBound) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 
 }

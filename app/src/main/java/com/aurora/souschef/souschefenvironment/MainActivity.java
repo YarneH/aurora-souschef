@@ -1,7 +1,7 @@
-package com.aurora.souschef.SouschefEnvironment;
+package com.aurora.souschef.souschefenvironment;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import com.aurora.souschef.R;
 

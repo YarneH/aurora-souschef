@@ -1,10 +1,8 @@
-package com.aurora.souschef.SouschefProcessor.Recipe;
+package com.aurora.souschef.souschefprocessor.recipe;
 
 import org.junit.Test;
 
 import java.util.ArrayList;
-
-import com.aurora.souschef.SouchefProcessor.Recipe.Ingredient;
 
 public class IngredientTest {
 

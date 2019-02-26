@@ -1,8 +1,6 @@
-package com.aurora.souschef.SouschefProcessor.Recipe;
+package com.aurora.souschef.souschefprocessor.recipe;
 
 import org.junit.Test;
-
-import com.aurora.souschef.SouchefProcessor.Recipe.RecipeTimer;
 
 public class RecipeTimerTest {
 

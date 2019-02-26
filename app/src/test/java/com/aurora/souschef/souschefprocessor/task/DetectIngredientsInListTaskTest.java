@@ -1,4 +1,8 @@
-package com.aurora.souschef.SouschefProcessor.Task;
+package com.aurora.souschef.souschefprocessor.task;
+
+import com.aurora.souschef.souschefprocessor.recipe.Ingredient;
+import com.aurora.souschef.souschefprocessor.recipe.RecipeInProgress;
+import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -6,10 +10,6 @@ import org.junit.Test;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import com.aurora.souschef.SouchefProcessor.Recipe.Ingredient;
-import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
-import com.aurora.souschef.SouchefProcessor.Task.IngredientDetector.DetectIngredientsInListTask;
 
 public class DetectIngredientsInListTaskTest {
 

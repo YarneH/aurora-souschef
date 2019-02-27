@@ -1,4 +1,6 @@
-package com.aurora.souschef.souschefprocessor.recipe;
+package com.aurora.souschef.souschefprocessor.task;
+
+import com.aurora.souschef.recipe.Recipe;
 
 /**
  * A subclass of Recipe, representing a Recipe Object that is being constructed. It has three

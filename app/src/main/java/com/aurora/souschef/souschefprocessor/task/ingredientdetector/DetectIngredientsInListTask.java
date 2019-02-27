@@ -3,8 +3,8 @@ package com.aurora.souschef.souschefprocessor.task.ingredientdetector;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.aurora.souschef.souschefprocessor.recipe.Ingredient;
-import com.aurora.souschef.souschefprocessor.recipe.RecipeInProgress;
+import com.aurora.souschef.recipe.Ingredient;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
 
 /**

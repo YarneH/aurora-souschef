@@ -1,6 +1,6 @@
 package com.aurora.souschef.souschefprocessor.facade;
 
-import com.aurora.souschef.souschefprocessor.recipe.Recipe;
+import com.aurora.souschef.recipe.Recipe;
 
 /**
  * Communicates with the kernel

@@ -3,9 +3,9 @@ package com.aurora.souschef.souschefprocessor.task.timerdetector;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.aurora.souschef.souschefprocessor.recipe.RecipeInProgress;
-import com.aurora.souschef.souschefprocessor.recipe.RecipeStep;
-import com.aurora.souschef.souschefprocessor.recipe.RecipeTimer;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschef.recipe.RecipeStep;
+import com.aurora.souschef.recipe.RecipeTimer;
 import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
 
 /**

@@ -1,7 +1,5 @@
 package com.aurora.souschef.souschefprocessor.task;
 
-import com.aurora.souschef.souschefprocessor.recipe.RecipeInProgress;
-
 /**
  * An interface that has to be implemented by all tasks that do work on a recipe
  */

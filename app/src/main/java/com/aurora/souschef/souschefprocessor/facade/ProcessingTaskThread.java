@@ -3,7 +3,7 @@ package com.aurora.souschef.souschefprocessor.facade;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import com.aurora.souschef.souschefprocessor.recipe.RecipeInProgress;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
 
 /**

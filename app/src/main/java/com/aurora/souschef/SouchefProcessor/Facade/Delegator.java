@@ -1,11 +1,5 @@
 package com.aurora.souschef.SouchefProcessor.Facade;
 
-import java.util.ArrayList;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.aurora.souschef.SouchefProcessor.Recipe.Recipe;
 import com.aurora.souschef.SouchefProcessor.Recipe.RecipeInProgress;
 import com.aurora.souschef.SouchefProcessor.Task.HelperTasks.ParallelizeStepsTask;
@@ -15,6 +9,13 @@ import com.aurora.souschef.SouchefProcessor.Task.ProcessingTask;
 import com.aurora.souschef.SouchefProcessor.Task.SectionDivider.DetectNumberOfPeopleTask;
 import com.aurora.souschef.SouchefProcessor.Task.SectionDivider.SplitStepsTask;
 import com.aurora.souschef.SouchefProcessor.Task.SectionDivider.SplitToMainSectionsTask;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
@@ -64,7 +65,7 @@ public class Delegator {
             setUpThreadPool();
         }
         RecipeInProgress recipeInProgress = new RecipeInProgress(text);
-        ArrayList<ProcessingTask> pipeline = setUpPipeline(recipeInProgress);
+        List<ProcessingTask> pipeline = setUpPipeline(recipeInProgress);
         if (pipeline != null) {
             for (ProcessingTask task : pipeline) {
                 task.doTask();
@@ -76,13 +77,12 @@ public class Delegator {
     }
 
 
-
     /**
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
      */
-    public ArrayList<ProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
-        ArrayList<ProcessingTask> pipeline = new ArrayList<>();
+    public List<ProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
+        List<ProcessingTask> pipeline = new ArrayList<>();
         pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
         pipeline.add(new SplitStepsTask(recipeInProgress));

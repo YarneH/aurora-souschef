@@ -1,4 +1,4 @@
-package com.aurora.souschef.souschefprocessor.recipe;
+package com.aurora.souschef.recipe;
 
 import java.util.List;
 import java.util.Set;

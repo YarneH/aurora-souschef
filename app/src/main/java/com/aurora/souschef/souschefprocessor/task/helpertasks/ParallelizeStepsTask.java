@@ -1,7 +1,7 @@
 package com.aurora.souschef.souschefprocessor.task.helpertasks;
 
-import com.aurora.souschef.souschefprocessor.recipe.RecipeInProgress;
-import com.aurora.souschef.souschefprocessor.recipe.RecipeStep;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschef.recipe.RecipeStep;
 import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
 import com.aurora.souschef.souschefprocessor.task.timerdetector.DetectTimersInStepTask;

@@ -1,8 +1,8 @@
 package com.aurora.souschef.souschefprocessor.task.ingredientdetector;
 
-import com.aurora.souschef.souschefprocessor.recipe.Ingredient;
-import com.aurora.souschef.souschefprocessor.recipe.RecipeInProgress;
-import com.aurora.souschef.souschefprocessor.recipe.RecipeStep;
+import com.aurora.souschef.recipe.Ingredient;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschef.recipe.RecipeStep;
 import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
 
 import java.util.HashSet;

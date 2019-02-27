@@ -1,7 +1,6 @@
 package com.aurora.souschef.souschefprocessor.task;
 
-import com.aurora.souschef.souschefprocessor.recipe.RecipeInProgress;
-import com.aurora.souschef.souschefprocessor.recipe.RecipeStep;
+import com.aurora.souschef.recipe.RecipeStep;
 import com.aurora.souschef.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
 import org.junit.After;

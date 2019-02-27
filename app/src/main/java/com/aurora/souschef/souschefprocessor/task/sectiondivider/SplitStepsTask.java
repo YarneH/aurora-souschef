@@ -1,7 +1,7 @@
 package com.aurora.souschef.souschefprocessor.task.sectiondivider;
 
-import com.aurora.souschef.souschefprocessor.recipe.RecipeInProgress;
-import com.aurora.souschef.souschefprocessor.recipe.RecipeStep;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschef.recipe.RecipeStep;
 import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
 
 import java.util.ArrayList;

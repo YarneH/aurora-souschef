@@ -6,8 +6,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.aurora.souschef.souschefprocessor.recipe.Recipe;
-import com.aurora.souschef.souschefprocessor.recipe.RecipeInProgress;
+import com.aurora.souschef.recipe.Recipe;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.souschefprocessor.task.helpertasks.ParallelizeStepsTask;
 import com.aurora.souschef.souschefprocessor.task.helpertasks.ParallellizeableTaskNames;
 import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;

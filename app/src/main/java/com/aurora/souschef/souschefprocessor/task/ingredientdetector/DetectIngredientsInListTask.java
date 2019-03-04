@@ -12,6 +12,13 @@ import java.util.Set;
  */
 public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
+    //this is for the dummy detect code
+    private final int ingredientWithUnitSize = 3;
+    private final int ingredientWithoutUnitSize = 2;
+    private final int ingredientPlace = 2;
+    private final int unitPlace = 1;
+    private final int amountPlace = 0;
+
     public DetectIngredientsInListTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
     }
@@ -66,15 +73,12 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     private Ingredient detectIngredient(String[] line) {
         Ingredient ing = null;
 
-        int ingredientWithUnitSize = 3;
-        int ingredientWithoutUnitSize = 2;
+
         if (line.length == ingredientWithoutUnitSize) {
             ing = new Ingredient(line[1], "", Double.valueOf(line[0]));
         }
         if (line.length == ingredientWithUnitSize) {
-            int ingredientPlace = 2;
-            int unitPlace = 1;
-            int amountPlace = 0;
+
             ing = new Ingredient(line[ingredientPlace], line[unitPlace], Double.valueOf(line[amountPlace]));
         }
 

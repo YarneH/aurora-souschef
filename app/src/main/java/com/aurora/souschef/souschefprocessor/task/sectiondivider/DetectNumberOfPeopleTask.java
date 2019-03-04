@@ -5,6 +5,7 @@ import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 
 public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
 
+    private final int defaultNumber = 4;
     public DetectNumberOfPeopleTask(RecipeInProgress recipeInProgress){
         super(recipeInProgress);
     }
@@ -23,7 +24,7 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
      */
     private int findNumberOfPeople(String text) {
         //dummy
-        int defaultNumber = 4;
+
         if(("irrelevant").equals(text)){
 
             return defaultNumber;

@@ -24,7 +24,7 @@ public class RecipeStep {
         this.mDescription = description;
     }
 
-    public Set<Ingredient> getIngredients() {
+    public synchronized Set<Ingredient> getIngredients() {
         return mIngredients;
     }
 
@@ -42,7 +42,7 @@ public class RecipeStep {
         }
     }
 
-    public List<RecipeTimer> getRecipeTimers() {
+    public synchronized List<RecipeTimer> getRecipeTimers() {
         return mRecipeTimers;
     }
 

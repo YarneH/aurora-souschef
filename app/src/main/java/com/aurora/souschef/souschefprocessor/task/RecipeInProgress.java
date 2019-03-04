@@ -24,7 +24,7 @@ public class RecipeInProgress extends Recipe {
         return mOriginalText;
     }
 
-    public String getStepsString() {
+    public synchronized String getStepsString() {
         return mStepsString;
     }
 
@@ -32,7 +32,7 @@ public class RecipeInProgress extends Recipe {
         this.mStepsString = stepsString;
     }
 
-    public String getIngredientsString() {
+    public synchronized String getIngredientsString() {
         return mIngredientsString;
     }
 

@@ -65,6 +65,7 @@ public class ParallelizeStepsTask extends ProcessingTask {
             latch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
     }
 

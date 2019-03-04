@@ -23,6 +23,9 @@ public class DetectNumberOfPeopleTask extends ProcessingTask {
      */
     private int findNumberOfPeople(String text) {
         //dummy
-        return 4;
+        if(text.equals("irrelevant")){
+            return 4;
+        }
+        return 5;
     }
 }

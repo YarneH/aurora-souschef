@@ -11,15 +11,14 @@ import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
  */
 public class ProcessingTaskThread extends Thread {
 
-    private RecipeInProgress recipeInProgress;
+
     private ProcessingTask processingTask;
-    private ThreadPoolExecutor threadPoolExecutor;
+
     private CountDownLatch latch;
 
     public ProcessingTaskThread(RecipeInProgress recipeInProgress, ProcessingTask processingTask, ThreadPoolExecutor threadPoolExecutor, CountDownLatch latch) {
-        this.recipeInProgress = recipeInProgress;
+
         this.processingTask = processingTask;
-        this.threadPoolExecutor = threadPoolExecutor;
         this.latch = latch;
     }
 

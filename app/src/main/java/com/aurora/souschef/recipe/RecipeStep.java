@@ -78,21 +78,22 @@ public class RecipeStep {
 
     @Override
     public String toString() {
-        String ret = "RecipeStep:\n " + mDescription + "\n mIngredientDetected: " + mIngredientDetected +
-                "\n mIngredients:\n";
+        StringBuilder bld = new StringBuilder();
+        bld.append("RecipeStep:\n " + mDescription + "\n mIngredientDetected: " + mIngredientDetected +
+                "\n mIngredients:\n");
         if (mIngredientDetected) {
             for (Ingredient i : mIngredients) {
-                ret += "\t" + i;
+                bld.append("\t" + i);
             }
         }
-        ret += "\n mTimerDetected: " + mTimerDetected;
+        bld.append("\n mTimerDetected: " + mTimerDetected);
         if (mTimerDetected) {
             for (RecipeTimer t : mRecipeTimers) {
-                ret += "\n RecipeTimer:" + t;
+                bld.append("\n RecipeTimer:" + t);
             }
 
         }
-        return ret;
+        return bld.toString();
     }
 
 

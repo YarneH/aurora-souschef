@@ -1,6 +1,7 @@
 package com.aurora.souschef.souschefprocessor.facade;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -32,22 +33,22 @@ public class Delegator {
          * Gets the number of available cores
          * (not always the same as the maximum number of cores)
          */
-        int NUMBER_OF_CORES =
+        int numberOfCores =
                 Runtime.getRuntime().availableProcessors();
         // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue
-        decodeWorkQueue = new LinkedBlockingQueue<Runnable>();
+        decodeWorkQueue = new LinkedBlockingQueue<>();
         // Sets the amount of time an idle thread waits before terminating
         final int KEEP_ALIVE_TIME = 1;
         // Sets the Time Unit to seconds
-        final TimeUnit KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
+        final TimeUnit keepAliveTimeUnit = TimeUnit.SECONDS;
         // Creates a thread pool manager
         mThreadPoolExecutor = new ThreadPoolExecutor(
-                NUMBER_OF_CORES,       // Initial pool size
-                NUMBER_OF_CORES,       // Max pool size
+                numberOfCores,       // Initial pool size
+                numberOfCores,       // Max pool size
                 KEEP_ALIVE_TIME,
-                KEEP_ALIVE_TIME_UNIT,
+                keepAliveTimeUnit,
                 decodeWorkQueue);
     }
 
@@ -64,7 +65,7 @@ public class Delegator {
             setUpThreadPool();
         }
         RecipeInProgress recipeInProgress = new RecipeInProgress(text);
-        ArrayList<ProcessingTask> pipeline = setUpPipeline(recipeInProgress);
+        List<ProcessingTask> pipeline = setUpPipeline(recipeInProgress);
         if (pipeline != null) {
             for (ProcessingTask task : pipeline) {
                 task.doTask();
@@ -81,7 +82,7 @@ public class Delegator {
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
      */
-    public ArrayList<ProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
+    public List<ProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
         ArrayList<ProcessingTask> pipeline = new ArrayList<>();
         pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));

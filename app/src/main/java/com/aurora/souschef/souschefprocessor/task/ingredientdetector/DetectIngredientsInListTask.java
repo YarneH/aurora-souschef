@@ -1,18 +1,18 @@
 package com.aurora.souschef.souschefprocessor.task.ingredientdetector;
 
+import com.aurora.souschef.recipe.Ingredient;
+import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
+
 import java.util.HashSet;
 import java.util.Set;
-
-import com.aurora.souschef.recipe.Ingredient;
-import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
-import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
 
 /**
  * Detects the mIngredients in the list of mIngredients
  */
 public class DetectIngredientsInListTask extends ProcessingTask {
 
-    public DetectIngredientsInListTask(RecipeInProgress recipeInProgress){
+    public DetectIngredientsInListTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
     }
 
@@ -38,9 +38,9 @@ public class DetectIngredientsInListTask extends ProcessingTask {
 
         //dummy
         if (ingredientList == null || ingredientList.equals("")) {
-            return new HashSet<Ingredient>();
+            return new HashSet<>();
         }
-        Set<Ingredient> returnSet = new HashSet<Ingredient>();
+        Set<Ingredient> returnSet = new HashSet<>();
         String[] list = ingredientList.split("\n");
 
         for (String ingredient : list) {
@@ -48,21 +48,13 @@ public class DetectIngredientsInListTask extends ProcessingTask {
                 if (ingredient.charAt(0) == ' ') {
                     ingredient = ingredient.substring(1);
                 }
-                String[] ingredientUnitAmount = ingredient.split(" ");
-
+                String[] words = ingredient.split(" ");
 
                 try {
-                    Ingredient ing = null;
-
-                    if (ingredientUnitAmount.length == 2) {
-                        ing = new Ingredient(ingredientUnitAmount[1], "", Double.valueOf(ingredientUnitAmount[0]));
-                    } else if (ingredientUnitAmount.length == 3) {
-                        ing = new Ingredient(ingredientUnitAmount[2], ingredientUnitAmount[1], Double.valueOf(ingredientUnitAmount[0]));
-                    }
-                    if (ing != null){
+                    Ingredient ing = (detectIngredient(words));
+                    if(ing != null){
                         returnSet.add(ing);
                     }
-
                 } catch (NumberFormatException nfe) {
                     //TODO have appropriate catch if ingredient does not contain a number that is parseable to double
                 }
@@ -71,5 +63,15 @@ public class DetectIngredientsInListTask extends ProcessingTask {
         return returnSet;
     }
 
+    private Ingredient detectIngredient(String[] line) {
+        Ingredient ing = null;
 
+        if (line.length == 2) {
+            ing = new Ingredient(line[1], "", Double.valueOf(line[0]));
+        } else if (line.length == 3) {
+            ing = new Ingredient(line[2], line[1], Double.valueOf(line[0]));
+        }
+       return ing;
+
+    }
 }

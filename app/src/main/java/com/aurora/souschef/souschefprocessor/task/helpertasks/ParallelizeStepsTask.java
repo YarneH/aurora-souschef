@@ -1,5 +1,7 @@
 package com.aurora.souschef.souschefprocessor.task.helpertasks;
 
+import android.util.Log;
+
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.recipe.RecipeStep;
 import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
@@ -10,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * A task that detects timers in mRecipeSteps
@@ -30,7 +34,6 @@ public class ParallelizeStepsTask extends ProcessingTask {
      */
     public void doTask() {//TODO fallback if no mRecipeSteps present
         List<RecipeStep> recipeSteps = mRecipeInProgress.getRecipeSteps();
-        ArrayList<StepTaskThread> threads = new ArrayList<>();
         CountDownLatch latch = new CountDownLatch(recipeSteps.size() * mParallellizeableTaskNames.length); //for every step and for every parallelizeable task
 
         // TODO: it is possible to immediately pass the recipeStep to the Detect...InStepTasks.
@@ -64,7 +67,7 @@ public class ParallelizeStepsTask extends ProcessingTask {
         try {
             latch.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.e(TAG, "waitForThreads: ",e );
             Thread.currentThread().interrupt();
         }
     }
@@ -72,7 +75,7 @@ public class ParallelizeStepsTask extends ProcessingTask {
     /**
      * A thread that does the detecting of timer of a recipeStep
      */
-    private class StepTaskThread extends Thread {
+    private class StepTaskThread implements Runnable {
 
         private ProcessingTask task;
         private CountDownLatch latch;
@@ -85,6 +88,7 @@ public class ParallelizeStepsTask extends ProcessingTask {
         /**
          * executes the task in the thread
          */
+        @Override
         public void run() {
             task.doTask();
             latch.countDown();

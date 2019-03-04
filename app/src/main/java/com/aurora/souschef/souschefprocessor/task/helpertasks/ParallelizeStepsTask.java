@@ -59,11 +59,11 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
         StepTaskThread stepTaskThread = null;
 
         if (taskName.equals(ParallellizeableTaskNames.INGR)) {
-            //Ingredient
+            // Ingredient
             stepTaskThread = new StepTaskThread(new DetectIngredientsInStepTask(
                     this.mRecipeInProgress, stepIndex), latch);
         } else  {
-            //Timer
+            // Timer
             stepTaskThread = new StepTaskThread(new DetectTimersInStepTask(
                     this.mRecipeInProgress, stepIndex), latch);
         }

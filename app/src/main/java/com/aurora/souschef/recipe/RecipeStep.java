@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public class RecipeStep {
 
-    //this could become a hashmap, with key the Ingredient and value the location in the mDescription
+    // this could become a hashmap, with key the Ingredient and value the location in the mDescription
     private Set<Ingredient> mIngredients;
     private List<RecipeTimer> mRecipeTimers;
     private String mDescription;

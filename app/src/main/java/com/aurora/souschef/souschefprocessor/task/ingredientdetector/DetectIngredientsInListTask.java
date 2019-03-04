@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
-    //this is for the dummy detect code
+    // this is for the dummy detect code
     private static final  int INGREDIENT_WITH_UNIT_SIZE = 3;
     private static final  int INGREDIENT_WITHOUT_UNIT_SIZE = 2;
     private static final  int INGREDIENT_PLACE = 2;
@@ -41,9 +41,9 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * @return A set of Ingredient Objects detected in the string
      */
     private Set<Ingredient> detectIngredients(String ingredientList) {
-        //TODO generate functionality
+        // TODO generate functionality
 
-        //dummy
+        // dummy
         if (ingredientList == null || ("").equals(ingredientList)) {
             return new HashSet<>();
         }

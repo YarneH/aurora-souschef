@@ -24,8 +24,8 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
      * @return The int representing the amount of people
      */
     private static int findNumberOfPeople(String text) {
-        //dummy
-        //static modifier is for sonar but could change
+        // dummy
+        // static modifier is for sonar but could change
 
         if (("irrelevant").equals(text)) {
 

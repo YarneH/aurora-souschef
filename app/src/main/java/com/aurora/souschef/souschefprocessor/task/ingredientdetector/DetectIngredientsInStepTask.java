@@ -14,7 +14,7 @@ import java.util.Set;
 public class DetectIngredientsInStepTask extends AbstractProcessingTask {
     private int mStepIndex;
 
-    //fields for the dummy code
+    // fields for the dummy code
     private static final int AMOUNT = 500;
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
@@ -47,9 +47,9 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
      * @return A set of Ingredient objects that represent the mIngredients contained in the recipeStep
      */
     private Set<Ingredient> detectIngredients(RecipeStep recipeStep, Set<Ingredient> ingredientSetRecipe) {
-        //TODO generate functionality
+        // TODO generate functionality
 
-        //dummy
+        // dummy
         Set<Ingredient> set = new HashSet<>();
         if (ingredientSetRecipe != null) {
 

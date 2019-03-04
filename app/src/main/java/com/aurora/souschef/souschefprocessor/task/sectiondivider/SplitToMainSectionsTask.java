@@ -19,8 +19,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * with these fields
      */
     public void doTask() {
-        //TODO all of this could be in seperate threads
-        //TODO add check that an original text is contained
+        // TODO all of this could be in seperate threads
+        // TODO add check that an original text is contained
         String text = this.mRecipeInProgress.getOriginalText();
         String ingredients = findIngredients(text);
         String steps = findSteps(text);
@@ -54,7 +54,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return The string representing the mIngredients
      */
     public String findIngredients(String text) {
-        //dummy
+        // dummy
         return "500 gram sauce \n 500 gram spaghetti";
     }
 
@@ -65,7 +65,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return The string representing the mRecipeSteps
      */
     public String findSteps(String text) {
-        //dummy
+        // dummy
         return "Put 500 gram spaghetti in boiling water for 9 minutes.\n"
                 + "Put the sauce in the Microwave for 3 minutes \n"
                 + "Put them together.";
@@ -78,7 +78,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return The string representing the mDescription of the recipe
      */
     public String findDescription(String text) {
-        //dummy
+        // dummy
         return "A spaghetti recipe";
     }
 

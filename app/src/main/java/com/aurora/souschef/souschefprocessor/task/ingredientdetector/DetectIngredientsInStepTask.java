@@ -14,6 +14,8 @@ import java.util.Set;
 public class DetectIngredientsInStepTask extends AbstractProcessingTask {
     private int mStepIndex;
 
+    //fields for the dummy code
+    private final static int amount = 500;
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
         if (stepIndex < 0) {
@@ -50,7 +52,7 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         //dummy
         Set<Ingredient> set = new HashSet<>();
         if (ingredientSetRecipe != null) {
-            int amount = 500;
+
             if (recipeStep.getDescription().contains("sauce")) {
                 set.add(new Ingredient("sauce", "gram", amount));
             } else {

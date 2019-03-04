@@ -13,11 +13,11 @@ import java.util.Set;
 public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
     //this is for the dummy detect code
-    private final int ingredientWithUnitSize = 3;
-    private final int ingredientWithoutUnitSize = 2;
-    private final int ingredientPlace = 2;
-    private final int unitPlace = 1;
-    private final int amountPlace = 0;
+    private final static int ingredientWithUnitSize = 3;
+    private final static int ingredientWithoutUnitSize = 2;
+    private final static int ingredientPlace = 2;
+    private final static int unitPlace = 1;
+    private final static int amountPlace = 0;
 
     public DetectIngredientsInListTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);

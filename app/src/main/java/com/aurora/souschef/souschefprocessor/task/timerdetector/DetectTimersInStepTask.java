@@ -19,10 +19,10 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private int mStepIndex;
 
     //these are for the dummy detect code
-    private final int secondsInMinute = 60;
-    private final int minutes = 9;
-    private final int up = 4;
-    private final int low = 3;
+    private static final int secondsInMinute = 60;
+    private static final int minutes = 9;
+    private static final int up = 4;
+    private static final int low = 3;
 
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);

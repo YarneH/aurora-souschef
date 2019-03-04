@@ -1,12 +1,12 @@
 package com.aurora.souschef.souschefprocessor.task.sectiondivider;
 
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
-import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
+import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 
 /**
- * A ProcessingTask that divides the original text into usable sections
+ * A AbstractProcessingTask that divides the original text into usable sections
  */
-public class SplitToMainSectionsTask extends ProcessingTask {
+public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
     public SplitToMainSectionsTask(RecipeInProgress recipeInProgress){
         super(recipeInProgress);

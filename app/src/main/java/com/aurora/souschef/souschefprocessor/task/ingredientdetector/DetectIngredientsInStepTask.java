@@ -2,7 +2,7 @@ package com.aurora.souschef.souschefprocessor.task.ingredientdetector;
 
 import com.aurora.souschef.recipe.Ingredient;
 import com.aurora.souschef.recipe.RecipeStep;
-import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
+import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 
 import java.util.HashSet;
@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * Detects the mIngredients in the list of mIngredients
  */
-public class DetectIngredientsInStepTask extends ProcessingTask {
+public class DetectIngredientsInStepTask extends AbstractProcessingTask {
     private int mStepIndex;
 
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
@@ -20,7 +20,8 @@ public class DetectIngredientsInStepTask extends ProcessingTask {
             throw new IllegalArgumentException("Negative stepIndex passed");
         }
         if (stepIndex >= recipeInProgress.getRecipeSteps().size()) {
-            throw new IllegalArgumentException("stepIndex passed too large, stepIndex: " + stepIndex + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
+            throw new IllegalArgumentException("stepIndex passed too large, stepIndex: "
+                    + stepIndex + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
         }
         this.mStepIndex = stepIndex;
     }
@@ -49,10 +50,11 @@ public class DetectIngredientsInStepTask extends ProcessingTask {
         //dummy
         Set<Ingredient> set = new HashSet<>();
         if (ingredientSetRecipe != null) {
+            int amount = 500;
             if (recipeStep.getDescription().contains("sauce")) {
-                set.add(new Ingredient("sauce", "gram", 500));
+                set.add(new Ingredient("sauce", "gram", amount));
             } else {
-                set.add(new Ingredient("spaghetti", "gram", 500));
+                set.add(new Ingredient("spaghetti", "gram", amount));
             }
         }
         return set;

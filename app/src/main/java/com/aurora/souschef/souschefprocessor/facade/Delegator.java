@@ -8,11 +8,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.aurora.souschef.recipe.Recipe;
+import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.souschefprocessor.task.helpertasks.ParallelizeStepsTask;
 import com.aurora.souschef.souschefprocessor.task.helpertasks.ParallellizeableTaskNames;
 import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
-import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
 import com.aurora.souschef.souschefprocessor.task.sectiondivider.DetectNumberOfPeopleTask;
 import com.aurora.souschef.souschefprocessor.task.sectiondivider.SplitStepsTask;
 import com.aurora.souschef.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask;
@@ -23,8 +23,13 @@ import com.aurora.souschef.souschefprocessor.task.sectiondivider.SplitToMainSect
  */
 public class Delegator {
 
-    private ThreadPoolExecutor mThreadPoolExecutor; //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
+    //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
+    private ThreadPoolExecutor mThreadPoolExecutor;
 
+
+    public Delegator(){
+        mThreadPoolExecutor = null;
+    }
     /**
      * Creates the ThreadPoolExecutor for the processing of the text, this is device-dependent
      */
@@ -45,8 +50,10 @@ public class Delegator {
         final TimeUnit keepAliveTimeUnit = TimeUnit.SECONDS;
         // Creates a thread pool manager
         mThreadPoolExecutor = new ThreadPoolExecutor(
-                numberOfCores,       // Initial pool size
-                numberOfCores,       // Max pool size
+                // Initial pool size
+                numberOfCores,
+                // Max pool size
+                numberOfCores,
                 KEEP_ALIVE_TIME,
                 keepAliveTimeUnit,
                 decodeWorkQueue);
@@ -65,9 +72,9 @@ public class Delegator {
             setUpThreadPool();
         }
         RecipeInProgress recipeInProgress = new RecipeInProgress(text);
-        List<ProcessingTask> pipeline = setUpPipeline(recipeInProgress);
+        List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
         if (pipeline != null) {
-            for (ProcessingTask task : pipeline) {
+            for (AbstractProcessingTask task : pipeline) {
                 task.doTask();
             }
         }
@@ -82,8 +89,8 @@ public class Delegator {
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
      */
-    public List<ProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
-        ArrayList<ProcessingTask> pipeline = new ArrayList<>();
+    public List<AbstractProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
+        ArrayList<AbstractProcessingTask> pipeline = new ArrayList<>();
         pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
         pipeline.add(new SplitStepsTask(recipeInProgress));

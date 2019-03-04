@@ -14,11 +14,12 @@ import java.util.Set;
  */
 public class RecipeStep {
 
-    private Set<Ingredient> mIngredients; //this could become a hashmap, with key the Ingredient and value the location in the mDescription
+    //this could become a hashmap, with key the Ingredient and value the location in the mDescription
+    private Set<Ingredient> mIngredients;
     private List<RecipeTimer> mRecipeTimers;
     private String mDescription;
-    private boolean mIngredientDetected = false;
-    private boolean mTimerDetected = false;
+    private boolean mIngredientDetected;
+    private boolean mTimerDetected;
 
     public RecipeStep(String description) {
         this.mDescription = description;

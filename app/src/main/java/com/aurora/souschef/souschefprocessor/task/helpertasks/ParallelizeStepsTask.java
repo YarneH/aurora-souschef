@@ -3,7 +3,7 @@ package com.aurora.souschef.souschefprocessor.task.helpertasks;
 import android.util.Log;
 
 import com.aurora.souschef.recipe.RecipeStep;
-import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
+import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 import com.aurora.souschef.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
@@ -17,26 +17,31 @@ import static android.content.ContentValues.TAG;
 /**
  * A task that detects timers in mRecipeSteps
  */
-public class ParallelizeStepsTask extends ProcessingTask {
+public class ParallelizeStepsTask extends AbstractProcessingTask {
     private ThreadPoolExecutor mThreadPoolExecutor;
-    private ParallellizeableTaskNames[] mParallellizeableTaskNames; // Maybe update this to classes, so that taskClasses are given and can be detected through reflection
+    // Maybe update this to classes, so that taskClasses are given and can be detected through reflection
+    private ParallellizeableTaskNames[] mParallellizeableTaskNames;
 
 
-    public ParallelizeStepsTask(RecipeInProgress recipeInProgress, ThreadPoolExecutor threadPoolExecutor, ParallellizeableTaskNames[] parallellizeableTaskNames) {
+    public ParallelizeStepsTask(RecipeInProgress recipeInProgress,
+                                ThreadPoolExecutor threadPoolExecutor,
+                                ParallellizeableTaskNames[] parallellizeableTaskNames) {
         super(recipeInProgress);
         this.mThreadPoolExecutor = threadPoolExecutor;
-        this.mParallellizeableTaskNames = parallellizeableTaskNames; // should this be deep copied?
+        // should this be deep copied?
+        this.mParallellizeableTaskNames = parallellizeableTaskNames;
     }
 
     /**
      * Launches parallel threads for each type of task submitted and for each step
      */
-    public void doTask() {//TODO fallback if no mRecipeSteps present
+    public void doTask() {
+        //TODO fallback if no mRecipeSteps present
         List<RecipeStep> recipeSteps = mRecipeInProgress.getRecipeSteps();
-        CountDownLatch latch = new CountDownLatch(recipeSteps.size() * mParallellizeableTaskNames.length); //for every step and for every parallelizeable task
-
+        //for every step and for every parallelizeable task
+        CountDownLatch latch = new CountDownLatch(recipeSteps.size() * mParallellizeableTaskNames.length);
         // TODO: it is possible to immediately pass the recipeStep to the Detect...InStepTasks.
-        // In order to do this, these Detect...InStepTasks should not inherit ProcessingTask, but
+        // In order to do this, these Detect...InStepTasks should not inherit AbstractProcessingTask, but
         // inherit from something like StepProcessingTask (which has a RecipeStep instead of a RecipeInProgress)
         // that cannot be added directly in the pipeline,
         // but only through ParallelizeStepTask (or a wrapper task)
@@ -49,14 +54,20 @@ public class ParallelizeStepsTask extends ProcessingTask {
         waitForThreads(latch);
     }
 
-    private StepTaskThread createStepTaskThread(CountDownLatch latch, int stepIndex, ParallellizeableTaskNames taskName) {
+    private StepTaskThread createStepTaskThread(CountDownLatch latch, int stepIndex,
+                                                ParallellizeableTaskNames taskName) {
         StepTaskThread stepTaskThread = null;
 
         if (taskName.equals(ParallellizeableTaskNames.INGR)) {
-            stepTaskThread = new StepTaskThread(new DetectIngredientsInStepTask(this.mRecipeInProgress, stepIndex), latch);
-        } else if (taskName.equals(ParallellizeableTaskNames.TIMER)) {
-            stepTaskThread = new StepTaskThread(new DetectTimersInStepTask(this.mRecipeInProgress, stepIndex), latch);
+            //Ingredient
+            stepTaskThread = new StepTaskThread(new DetectIngredientsInStepTask(
+                    this.mRecipeInProgress, stepIndex), latch);
+        } else  {
+            //Timer
+            stepTaskThread = new StepTaskThread(new DetectTimersInStepTask(
+                    this.mRecipeInProgress, stepIndex), latch);
         }
+
         // TODO Is it necessary to add the thread to threads array? Did not seem to happen in original code
         return stepTaskThread;
     }
@@ -75,10 +86,10 @@ public class ParallelizeStepsTask extends ProcessingTask {
      */
     private class StepTaskThread implements Runnable {
 
-        private ProcessingTask task;
+        private AbstractProcessingTask task;
         private CountDownLatch latch;
 
-        public StepTaskThread(ProcessingTask task, CountDownLatch latch) {
+        public StepTaskThread(AbstractProcessingTask task, CountDownLatch latch) {
             this.task = task;
             this.latch = latch;
         }

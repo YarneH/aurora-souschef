@@ -17,8 +17,10 @@ public class Communicator {
      *
      * @param text the text to be processed
      */
-    public void process(String text) { //for now String, should be TextObject but not yet defined by Aurora
-        Recipe recipe = mDelegator.processText(text); //for now this is independent of the tasks sent
+    public void process(String text) {
+        //for now String, should be TextObject but not yet defined by Aurora
+        //for now this is independent of the tasks sent
+        Recipe recipe = mDelegator.processText(text);
         sendObjectToAuroraKernel(recipe);
 
     }

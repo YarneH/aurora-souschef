@@ -1,9 +1,9 @@
 package com.aurora.souschef.souschefprocessor.task.sectiondivider;
 
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
-import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
+import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 
-public class DetectNumberOfPeopleTask extends ProcessingTask {
+public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
 
     public DetectNumberOfPeopleTask(RecipeInProgress recipeInProgress){
         super(recipeInProgress);
@@ -23,9 +23,11 @@ public class DetectNumberOfPeopleTask extends ProcessingTask {
      */
     private int findNumberOfPeople(String text) {
         //dummy
-        if(text.equals("irrelevant")){
-            return 4;
+        int defaultNumber = 4;
+        if(("irrelevant").equals(text)){
+
+            return defaultNumber;
         }
-        return 5;
+        return defaultNumber*text.length();
     }
 }

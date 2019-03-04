@@ -1,6 +1,7 @@
-package com.aurora.souschef.souschefprocessor.task;
+package com.aurora.souschef.SouschefProcessor.task;
 
 import com.aurora.souschef.recipe.Ingredient;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 
 import org.junit.After;

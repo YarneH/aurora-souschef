@@ -1,7 +1,7 @@
 package com.aurora.souschef.souschefprocessor.task.ingredientdetector;
 
 import com.aurora.souschef.recipe.Ingredient;
-import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
+import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 
 import java.util.HashSet;
@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * Detects the mIngredients in the list of mIngredients
  */
-public class DetectIngredientsInListTask extends ProcessingTask {
+public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
     public DetectIngredientsInListTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
@@ -37,7 +37,7 @@ public class DetectIngredientsInListTask extends ProcessingTask {
         //TODO generate functionality
 
         //dummy
-        if (ingredientList == null || ingredientList.equals("")) {
+        if (ingredientList == null || ("").equals(ingredientList)) {
             return new HashSet<>();
         }
         Set<Ingredient> returnSet = new HashSet<>();
@@ -52,7 +52,7 @@ public class DetectIngredientsInListTask extends ProcessingTask {
 
                 try {
                     Ingredient ing = (detectIngredient(words));
-                    if(ing != null){
+                    if (ing != null) {
                         returnSet.add(ing);
                     }
                 } catch (NumberFormatException nfe) {
@@ -66,12 +66,19 @@ public class DetectIngredientsInListTask extends ProcessingTask {
     private Ingredient detectIngredient(String[] line) {
         Ingredient ing = null;
 
-        if (line.length == 2) {
+        int ingredientWithUnitSize = 3;
+        int ingredientWithoutUnitSize = 2;
+        if (line.length == ingredientWithoutUnitSize) {
             ing = new Ingredient(line[1], "", Double.valueOf(line[0]));
-        } else if (line.length == 3) {
-            ing = new Ingredient(line[2], line[1], Double.valueOf(line[0]));
         }
-       return ing;
+        if (line.length == ingredientWithUnitSize) {
+            int ingredientPlace = 2;
+            int unitPlace = 1;
+            int amountPlace = 0;
+            ing = new Ingredient(line[ingredientPlace], line[unitPlace], Double.valueOf(line[amountPlace]));
+        }
+
+        return ing;
 
     }
 }

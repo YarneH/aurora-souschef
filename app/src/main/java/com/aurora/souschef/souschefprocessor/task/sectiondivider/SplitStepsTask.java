@@ -2,15 +2,15 @@ package com.aurora.souschef.souschefprocessor.task.sectiondivider;
 
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.recipe.RecipeStep;
-import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
+import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A ProcessingTask that splits the string representing the mRecipeSteps into RecipeStep objects
+ * A AbstractProcessingTask that splits the string representing the mRecipeSteps into RecipeStep objects
  */
-public class SplitStepsTask extends ProcessingTask {
+public class SplitStepsTask extends AbstractProcessingTask {
 
     public SplitStepsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);

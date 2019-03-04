@@ -15,7 +15,7 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
     private int mStepIndex;
 
     //fields for the dummy code
-    private final static int amount = 500;
+    private final static int AMOUNT = 500;
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
         if (stepIndex < 0) {
@@ -54,9 +54,9 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         if (ingredientSetRecipe != null) {
 
             if (recipeStep.getDescription().contains("sauce")) {
-                set.add(new Ingredient("sauce", "gram", amount));
+                set.add(new Ingredient("sauce", "gram", AMOUNT));
             } else {
-                set.add(new Ingredient("spaghetti", "gram", amount));
+                set.add(new Ingredient("spaghetti", "gram", AMOUNT));
             }
         }
         return set;

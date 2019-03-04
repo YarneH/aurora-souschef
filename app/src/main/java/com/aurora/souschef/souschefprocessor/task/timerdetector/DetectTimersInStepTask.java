@@ -19,10 +19,10 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private int mStepIndex;
 
     //these are for the dummy detect code
-    private static final int secondsInMinute = 60;
-    private static final int minutes = 9;
-    private static final int up = 4;
-    private static final int low = 3;
+    private static final int SECONDS_IN_MINUTE = 60;
+    private static final int STEP_MINUTES = 9;
+    private static final int UP = 4;
+    private static final int LOW = 3;
 
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
@@ -61,10 +61,10 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             if (recipeStep.getDescription().contains("9 minutes")) {
 
 
-                list.add(new RecipeTimer(minutes * secondsInMinute));
+                list.add(new RecipeTimer(STEP_MINUTES * SECONDS_IN_MINUTE));
             } else {
 
-                list.add(new RecipeTimer(up * secondsInMinute, low * secondsInMinute));
+                list.add(new RecipeTimer(UP * SECONDS_IN_MINUTE, LOW * SECONDS_IN_MINUTE));
             }
 
         } catch (IllegalArgumentException iae) {

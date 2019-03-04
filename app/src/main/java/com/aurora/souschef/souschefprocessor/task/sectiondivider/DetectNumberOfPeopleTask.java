@@ -5,7 +5,7 @@ import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 
 public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
 
-    private static final int defaultNumber = 4;
+    private static final int DEFAULT_NUMBER = 4;
 
     public DetectNumberOfPeopleTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
@@ -23,13 +23,14 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
      * @param text the text in which to search for the amount of people
      * @return The int representing the amount of people
      */
-    private int findNumberOfPeople(String text) {
+    private static int findNumberOfPeople(String text) {
         //dummy
+        //static modifier is for sonar but could change
 
         if (("irrelevant").equals(text)) {
 
-            return defaultNumber;
+            return DEFAULT_NUMBER;
         }
-        return defaultNumber * text.length();
+        return DEFAULT_NUMBER * text.length();
     }
 }

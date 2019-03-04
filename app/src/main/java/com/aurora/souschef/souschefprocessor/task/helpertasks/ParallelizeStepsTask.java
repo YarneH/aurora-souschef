@@ -2,13 +2,12 @@ package com.aurora.souschef.souschefprocessor.task.helpertasks;
 
 import android.util.Log;
 
-import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.recipe.RecipeStep;
-import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 import com.aurora.souschef.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -20,7 +19,7 @@ import static android.content.ContentValues.TAG;
  */
 public class ParallelizeStepsTask extends ProcessingTask {
     ThreadPoolExecutor mThreadPoolExecutor;
-    ParallellizeableTaskNames [] mParallellizeableTaskNames; // Maybe update this to classes, so that taskClasses are given and can be detected through reflection
+    ParallellizeableTaskNames[] mParallellizeableTaskNames; // Maybe update this to classes, so that taskClasses are given and can be detected through reflection
 
 
     public ParallelizeStepsTask(RecipeInProgress recipeInProgress, ThreadPoolExecutor threadPoolExecutor, ParallellizeableTaskNames[] parallellizeableTaskNames) {
@@ -41,7 +40,7 @@ public class ParallelizeStepsTask extends ProcessingTask {
         // inherit from something like StepProcessingTask (which has a RecipeStep instead of a RecipeInProgress)
         // that cannot be added directly in the pipeline,
         // but only through ParallelizeStepTask (or a wrapper task)
-        for (int i = 0; i < recipeSteps.size(); i++){
+        for (int i = 0; i < recipeSteps.size(); i++) {
             for (ParallellizeableTaskNames taskName : mParallellizeableTaskNames) {
                 StepTaskThread thread = createStepTaskThread(latch, i, taskName);
                 mThreadPoolExecutor.execute(thread);
@@ -50,13 +49,12 @@ public class ParallelizeStepsTask extends ProcessingTask {
         waitForThreads(latch);
     }
 
-    private StepTaskThread createStepTaskThread(CountDownLatch latch, int stepIndex, ParallellizeableTaskNames taskName){
+    private StepTaskThread createStepTaskThread(CountDownLatch latch, int stepIndex, ParallellizeableTaskNames taskName) {
         StepTaskThread stepTaskThread = null;
 
         if (taskName.equals(ParallellizeableTaskNames.INGR)) {
             stepTaskThread = new StepTaskThread(new DetectIngredientsInStepTask(this.mRecipeInProgress, stepIndex), latch);
-        }
-        else if (taskName.equals(ParallellizeableTaskNames.TIMER)) {
+        } else if (taskName.equals(ParallellizeableTaskNames.TIMER)) {
             stepTaskThread = new StepTaskThread(new DetectTimersInStepTask(this.mRecipeInProgress, stepIndex), latch);
         }
         // TODO Is it necessary to add the thread to threads array? Did not seem to happen in original code
@@ -67,7 +65,7 @@ public class ParallelizeStepsTask extends ProcessingTask {
         try {
             latch.await();
         } catch (InterruptedException e) {
-            Log.e(TAG, "waitForThreads: ",e );
+            Log.e(TAG, "waitForThreads: ", e);
             Thread.currentThread().interrupt();
         }
     }

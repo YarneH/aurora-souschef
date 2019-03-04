@@ -43,24 +43,27 @@ pipeline {
             }
         } // Unit test stage
 
-        stage('Static analysis') {
+        stage('SonarQube') {
             steps {
-                // Run Lint and analyse the results
-                sh './gradlew lintDebug'
-                androidLint pattern: '**/lint-results-*.xml', unstableTotalAll: '5', failedNewHigh: '0', failedTotalAll: '20'
+                withSonarQubeEnv("Aurora SonarQube") {
+                    sh "${scannerHome}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.branch=${env.BRANCH_NAME}"
+                }
+                script {
+                    timeout(time: 1, unit: 'HOURS') {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error 'Sonarqube failed.'
+                        }
+                    }
+                }
             }
 
             post {
-                unstable {
-                    slack_error_analysis_unstable()
-                }
-
                 failure {
-                    slack_error_analysis()
+                    slack_error_sonar()
                 }
-
             }
-        } // Static analysis stage
+        } // SonarQube stage
     } // Stages
 
     post {
@@ -86,22 +89,9 @@ def slack_error_test() {
     slack_report(false, ':x: Tests failed', null, 'Unit Test')
 }
 
-
 /**
- * Gets called when static analysis fails
+ * Gets called when sonar fails
  */
-def slack_error_analysis() {
-    slack_report(false, ':x: Static analysis failed', null, 'Static analysis')
-}
-
-
-/**
- * Gets called when static analysis is unstable
- */
-def slack_error_analysis_unstable() {
-    slack_report(false, ':heavy_multiplication_x: Static analysis unstable', null, 'Static analysis')
-}
-
 def slack_error_sonar() {
     slack_report(false, ':x: Sonar failed', null, 'SonarQube analysis')
 }
@@ -197,6 +187,22 @@ def slack_report(boolean successful, String text, JSONArray fields, failedStage=
     }
 
     actions.add(actionViewBuild)
+
+    // Add a button 'sonar log' to message that links to sonar (if sonar failed or if build was successful)
+    if (successful || failedStage == 'SonarQube analysis') {
+        JSONObject actionViewSonar = new JSONObject()
+        actionViewSonar.put('type', 'button')
+        actionViewSonar.put('text', 'Sonar log')
+        actionViewSonar.put('url', 'http://sonarqube.aurora-files.ml/projects')
+
+        if (successful) {
+            actionViewSonar.put('style', 'primary')
+        } else {
+            actionViewSonar.put('style', 'danger')
+        }
+
+        actions.add(actionViewSonar)
+    }
 
     attachment.put('actions', actions)
 

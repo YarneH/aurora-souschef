@@ -14,17 +14,18 @@ import java.util.Set;
  */
 public class RecipeStep {
 
-    private Set<Ingredient> mIngredients; //this could become a hashmap, with key the Ingredient and value the location in the mDescription
+    // this could become a hashmap, with key the Ingredient and value the location in the mDescription
+    private Set<Ingredient> mIngredients;
     private List<RecipeTimer> mRecipeTimers;
     private String mDescription;
-    private boolean mIngredientDetected = false;
-    private boolean mTimerDetected = false;
+    private boolean mIngredientDetected;
+    private boolean mTimerDetected;
 
     public RecipeStep(String description) {
         this.mDescription = description;
     }
 
-    public Set<Ingredient> getIngredients() {
+    public synchronized Set<Ingredient> getIngredients() {
         return mIngredients;
     }
 
@@ -42,7 +43,7 @@ public class RecipeStep {
         }
     }
 
-    public List<RecipeTimer> getRecipeTimers() {
+    public synchronized List<RecipeTimer> getRecipeTimers() {
         return mRecipeTimers;
     }
 
@@ -78,21 +79,22 @@ public class RecipeStep {
 
     @Override
     public String toString() {
-        String ret = "RecipeStep:\n " + mDescription + "\n mIngredientDetected: " + mIngredientDetected +
-                "\n mIngredients:\n";
+        StringBuilder bld = new StringBuilder();
+        bld.append("RecipeStep:\n " + mDescription + "\n mIngredientDetected: " + mIngredientDetected +
+                "\n mIngredients:\n");
         if (mIngredientDetected) {
             for (Ingredient i : mIngredients) {
-                ret += "\t" + i;
+                bld.append("\t" + i);
             }
         }
-        ret += "\n mTimerDetected: " + mTimerDetected;
+        bld.append("\n mTimerDetected: " + mTimerDetected);
         if (mTimerDetected) {
             for (RecipeTimer t : mRecipeTimers) {
-                ret += "\n RecipeTimer:" + t;
+                bld.append("\n RecipeTimer:" + t);
             }
 
         }
-        return ret;
+        return bld.toString();
     }
 
 

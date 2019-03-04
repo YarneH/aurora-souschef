@@ -1,9 +1,9 @@
 package com.aurora.souschef.souschefprocessor.task.ingredientdetector;
 
 import com.aurora.souschef.recipe.Ingredient;
-import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.recipe.RecipeStep;
-import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
+import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,16 +11,19 @@ import java.util.Set;
 /**
  * Detects the mIngredients in the list of mIngredients
  */
-public class DetectIngredientsInStepTask extends ProcessingTask {
-    int mStepIndex;
+public class DetectIngredientsInStepTask extends AbstractProcessingTask {
+    private int mStepIndex;
 
+    // fields for the dummy code
+    private static final int AMOUNT = 500;
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
         if (stepIndex < 0) {
             throw new IllegalArgumentException("Negative stepIndex passed");
         }
         if (stepIndex >= recipeInProgress.getRecipeSteps().size()) {
-            throw new IllegalArgumentException("stepIndex passed too large, stepIndex: " + stepIndex + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
+            throw new IllegalArgumentException("stepIndex passed too large, stepIndex: "
+                    + stepIndex + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
         }
         this.mStepIndex = stepIndex;
     }
@@ -44,14 +47,17 @@ public class DetectIngredientsInStepTask extends ProcessingTask {
      * @return A set of Ingredient objects that represent the mIngredients contained in the recipeStep
      */
     private Set<Ingredient> detectIngredients(RecipeStep recipeStep, Set<Ingredient> ingredientSetRecipe) {
-        //TODO generate functionality
+        // TODO generate functionality
 
-        //dummy
+        // dummy
         Set<Ingredient> set = new HashSet<>();
-        if (recipeStep.getDescription().contains("sauce")) {
-            set.add(new Ingredient("sauce", "gram", 500));
-        } else {
-            set.add(new Ingredient("spaghetti", "gram", 500));
+        if (ingredientSetRecipe != null) {
+
+            if (recipeStep.getDescription().contains("sauce")) {
+                set.add(new Ingredient("sauce", "gram", AMOUNT));
+            } else {
+                set.add(new Ingredient("spaghetti", "gram", AMOUNT));
+            }
         }
         return set;
     }

@@ -1,7 +1,8 @@
-package com.aurora.souschef.souschefprocessor.task;
+package com.aurora.souschef.SouschefProcessor.task;
 
 import com.aurora.souschef.recipe.Ingredient;
 import com.aurora.souschef.recipe.RecipeStep;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 
 import org.junit.After;
@@ -9,6 +10,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -32,6 +35,8 @@ public class DetectIngredientsInRecipeStepTaskTest {
         String originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setRecipeSteps(recipeSteps);
+        Set<Ingredient> set = new HashSet<>();
+        recipe.setIngredients(set);
 
         detector0 = new DetectIngredientsInStepTask(recipe, stepIndex0);
         detector1 = new DetectIngredientsInStepTask(recipe, stepIndex1);
@@ -58,6 +63,7 @@ public class DetectIngredientsInRecipeStepTaskTest {
 
     @Test
     public void DetectIngredientsInStep_doTask_stepsHaveCorrectElements() {
+
         detector0.doTask();
         detector1.doTask();
         Ingredient spaghettiIngredient = new Ingredient("spaghetti", "gram", 500);

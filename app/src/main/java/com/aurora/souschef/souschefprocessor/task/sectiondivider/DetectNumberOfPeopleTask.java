@@ -1,15 +1,17 @@
 package com.aurora.souschef.souschefprocessor.task.sectiondivider;
 
+import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
-import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
 
-public class DetectNumberOfPeopleTask extends ProcessingTask {
+public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
 
-    public DetectNumberOfPeopleTask(RecipeInProgress recipeInProgress){
+    private static final int DEFAULT_NUMBER = 4;
+
+    public DetectNumberOfPeopleTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
     }
 
-    public void doTask(){
+    public void doTask() {
         String text = this.mRecipeInProgress.getOriginalText();
         int number = findNumberOfPeople(text);
         this.mRecipeInProgress.setNumberOfPeople(number);
@@ -21,8 +23,14 @@ public class DetectNumberOfPeopleTask extends ProcessingTask {
      * @param text the text in which to search for the amount of people
      * @return The int representing the amount of people
      */
-    private int findNumberOfPeople(String text) {
-        //dummy
-        return 4;
+    private static int findNumberOfPeople(String text) {
+        // dummy
+        // static modifier is for sonar but could change
+
+        if (("irrelevant").equals(text)) {
+
+            return DEFAULT_NUMBER;
+        }
+        return DEFAULT_NUMBER * text.length();
     }
 }

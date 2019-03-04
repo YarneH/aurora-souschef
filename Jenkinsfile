@@ -5,6 +5,10 @@ import net.sf.json.JSONObject
 pipeline {
     agent any
 
+    environment {
+        scannerHome = tool 'sonarscanner'
+    }
+
     stages {
         stage('Compile') {
 

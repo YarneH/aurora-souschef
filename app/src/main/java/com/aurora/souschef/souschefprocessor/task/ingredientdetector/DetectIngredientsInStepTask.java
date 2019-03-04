@@ -12,7 +12,7 @@ import java.util.Set;
  * Detects the mIngredients in the list of mIngredients
  */
 public class DetectIngredientsInStepTask extends ProcessingTask {
-    int mStepIndex;
+    private int mStepIndex;
 
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);

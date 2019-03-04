@@ -18,8 +18,8 @@ import static android.content.ContentValues.TAG;
  * A task that detects timers in mRecipeSteps
  */
 public class ParallelizeStepsTask extends ProcessingTask {
-    ThreadPoolExecutor mThreadPoolExecutor;
-    ParallellizeableTaskNames[] mParallellizeableTaskNames; // Maybe update this to classes, so that taskClasses are given and can be detected through reflection
+    private ThreadPoolExecutor mThreadPoolExecutor;
+    private ParallellizeableTaskNames[] mParallellizeableTaskNames; // Maybe update this to classes, so that taskClasses are given and can be detected through reflection
 
 
     public ParallelizeStepsTask(RecipeInProgress recipeInProgress, ThreadPoolExecutor threadPoolExecutor, ParallellizeableTaskNames[] parallellizeableTaskNames) {

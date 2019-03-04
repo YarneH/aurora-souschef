@@ -12,7 +12,7 @@ import com.aurora.souschef.souschefprocessor.task.ProcessingTask;
  * A task that detects timers in mRecipeSteps
  */
 public class DetectTimersInStepTask extends ProcessingTask {
-    int mStepIndex;
+    private int mStepIndex;
 
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);

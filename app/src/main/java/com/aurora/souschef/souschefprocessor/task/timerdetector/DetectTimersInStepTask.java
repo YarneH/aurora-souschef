@@ -16,13 +16,12 @@ import static android.content.ContentValues.TAG;
  * A task that detects timers in mRecipeSteps
  */
 public class DetectTimersInStepTask extends AbstractProcessingTask {
-    private int mStepIndex;
-
     //these are for the dummy detect code
     private static final int SECONDS_IN_MINUTE = 60;
     private static final int STEP_MINUTES = 9;
     private static final int UP = 4;
     private static final int LOW = 3;
+    private int mStepIndex;
 
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);

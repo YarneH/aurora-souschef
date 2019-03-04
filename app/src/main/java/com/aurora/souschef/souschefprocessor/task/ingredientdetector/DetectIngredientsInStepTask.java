@@ -15,7 +15,7 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
     private int mStepIndex;
 
     //fields for the dummy code
-    private final static int AMOUNT = 500;
+    private static final int AMOUNT = 500;
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
         if (stepIndex < 0) {

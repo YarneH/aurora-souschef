@@ -18,6 +18,12 @@ import static android.content.ContentValues.TAG;
 public class DetectTimersInStepTask extends AbstractProcessingTask {
     private int mStepIndex;
 
+    //these are for the dummy detect code
+    private int secondsInMinute = 60;
+    private int minutes = 9;
+    private int up = 4;
+    private int low = 3;
+
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
         if (stepIndex < 0) {
@@ -51,15 +57,14 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         //dummy
         List<RecipeTimer> list = new ArrayList<>();
         try {
-            int seconds = 60;
-            if (recipeStep.getDescription().contains("9 minutes")) {
-                int minutes = 9;
 
-                list.add(new RecipeTimer(minutes * seconds));
+            if (recipeStep.getDescription().contains("9 minutes")) {
+
+
+                list.add(new RecipeTimer(minutes * secondsInMinute));
             } else {
-                int up = 4;
-                int low = 3;
-                list.add(new RecipeTimer(up * seconds, low * seconds));
+
+                list.add(new RecipeTimer(up * secondsInMinute, low * secondsInMinute));
             }
 
         } catch (IllegalArgumentException iae) {

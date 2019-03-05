@@ -1,5 +1,7 @@
 package com.aurora.souschef.SouschefProcessor.task;
 
+import android.content.Context;
+
 import com.aurora.souschef.recipe.Ingredient;
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
@@ -11,6 +13,8 @@ import org.junit.Test;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import androidx.test.InstrumentationRegistry;
+
 public class DetectIngredientsInListTaskTest {
 
     private static RecipeInProgress recipe;
@@ -21,10 +25,11 @@ public class DetectIngredientsInListTaskTest {
 
     @BeforeClass
     public static void initialize() {
-        ingredientList = "500 gram spaghetti \n 500 gram sauce";
+        ingredientList = "500 ounces spaghetti \n 500 ounces sauce";
         originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setIngredientsString(ingredientList);
+
         detector = new DetectIngredientsInListTask(recipe);
     }
 
@@ -51,8 +56,8 @@ public class DetectIngredientsInListTaskTest {
     @Test
     public void DetectIngredientsInList_doTask_setHasCorrectElements() {
         detector.doTask();
-        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "gram", 500);
-        Ingredient sauceIngredient = new Ingredient("sauce", "gram", 500);
+        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "ounces", 500);
+        Ingredient sauceIngredient = new Ingredient("sauce", "ounces", 500);
         boolean spaghetti = recipe.getIngredients().contains(spaghettiIngredient);
         boolean sauce = recipe.getIngredients().contains(sauceIngredient);
         assert (spaghetti);

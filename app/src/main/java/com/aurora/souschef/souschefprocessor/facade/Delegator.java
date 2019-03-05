@@ -1,5 +1,7 @@
 package com.aurora.souschef.souschefprocessor.facade;
 
+import android.content.Context;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -8,6 +10,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.aurora.souschef.recipe.Recipe;
+import com.aurora.souschef.souschefenvironment.MainActivity;
 import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.souschefprocessor.task.helpertasks.ParallelizeStepsTask;

@@ -123,7 +123,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             ing = new Ingredient(name, unit, quantity);
             return ing;
         } catch (IOException | ClassNotFoundException exception) {
-            Log.e(TAG, "detect ingredients in list: classifier not loaded");
+            Log.e(TAG, "detect ingredients in list: classifier not loaded ", exception);
         }
         return null;
 

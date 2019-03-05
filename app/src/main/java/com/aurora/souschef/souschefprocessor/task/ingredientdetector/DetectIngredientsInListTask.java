@@ -1,5 +1,7 @@
 package com.aurora.souschef.souschefprocessor.task.ingredientdetector;
 
+import android.util.Log;
+
 import com.aurora.souschef.recipe.Ingredient;
 import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
@@ -16,18 +18,20 @@ import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 
+import static android.content.ContentValues.TAG;
+
 /**
  * Detects the mIngredients in the list of mIngredients
  */
 public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
-    private CRFClassifier<CoreLabel> crf;
     // this is for the dummy detect code
     private static final int INGREDIENT_WITH_UNIT_SIZE = 3;
     private static final int INGREDIENT_WITHOUT_UNIT_SIZE = 2;
     private static final int INGREDIENT_PLACE = 2;
     private static final int UNIT_PLACE = 1;
     private static final int AMOUNT_PLACE = 0;
+    private CRFClassifier<CoreLabel> crf;
 
     public DetectIngredientsInListTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
@@ -80,7 +84,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     private Ingredient detectIngredient(String line) {
         Ingredient ing = null;
         try {
-            if(crf==null) {
+            if (crf == null) {
                 //if classifier not loaded yet load the classifier
                 String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
                 crf = CRFClassifier.getClassifier(modelName);
@@ -118,10 +122,8 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             }
             ing = new Ingredient(name, unit, quantity);
             return ing;
-        } catch (IOException ioe) {
-
-        } catch (ClassNotFoundException cnfe) {
-
+        } catch (IOException | ClassNotFoundException exception) {
+            Log.e(TAG, "detect ingredients in list: classifier not loaded");
         }
         return null;
 

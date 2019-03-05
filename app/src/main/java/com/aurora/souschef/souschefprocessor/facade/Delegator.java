@@ -1,16 +1,6 @@
 package com.aurora.souschef.souschefprocessor.facade;
 
-import android.content.Context;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.aurora.souschef.recipe.Recipe;
-import com.aurora.souschef.souschefenvironment.MainActivity;
 import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.souschefprocessor.task.helpertasks.ParallelizeStepsTask;
@@ -19,6 +9,13 @@ import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngre
 import com.aurora.souschef.souschefprocessor.task.sectiondivider.DetectNumberOfPeopleTask;
 import com.aurora.souschef.souschefprocessor.task.sectiondivider.SplitStepsTask;
 import com.aurora.souschef.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
@@ -30,9 +27,10 @@ public class Delegator {
     private ThreadPoolExecutor mThreadPoolExecutor;
 
 
-    public Delegator(){
+    public Delegator() {
         mThreadPoolExecutor = null;
     }
+
     /**
      * Creates the ThreadPoolExecutor for the processing of the text, this is device-dependent
      */
@@ -85,7 +83,6 @@ public class Delegator {
 
         return recipeInProgress.convertToRecipe();
     }
-
 
 
     /**

@@ -93,31 +93,37 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         StringBuilder bld = new StringBuilder();
         char[] chars = line.toCharArray();
 
-        for (int i = 0; i < chars.length - 2; i++) {
-            char first = chars[i];
-            char second = chars[i + 1];
-            char third = chars[i + 2];
+        // add the first character
+        bld.append(chars[0]);
 
-            if (spaceNeeded(first, second)) {
-                bld.append(first + " ");
+        for (int i = 1; i < chars.length - 1; i++) {
+
+            char previous = chars[i - 1];
+            char current = chars[i];
+            char next = chars[i + 1];
+
+            if (spaceNeededBetweenPreviousAndCurrent(previous, current)) {
+
+                bld.append(" " + current);
             }
 
-            if (spaceNeeded(first, second, third)) {
+            if (spaceNeededBetweenCurrentAndNext(previous, current, next)) {
                 // if a slash or dash is followed by a number and is not preceded by a number
-                // add a space
-                bld.append(first + second + " ");
-                i++;
+                // add a space between current and next
+                bld.append(current + " " );
             } else {
-                bld.append(first);
+                bld.append(current);
             }
         }
-        bld.append(chars[chars.length - 1]);
 
+        // add the last character
+        bld.append(chars[chars.length - 1]);
+        // return the builded string
         return bld.toString();
 
     }
 
-    private static boolean spaceNeeded(char first, char second) {
+    private static boolean spaceNeededBetweenPreviousAndCurrent(char first, char second) {
         if ((Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)
                 && Character.isAlphabetic(second)) {
             // if a number is followed by a letter add a space
@@ -129,10 +135,10 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         return false;
     }
 
-    private static boolean spaceNeeded(char first, char second, char third) {
+    private static boolean spaceNeededBetweenCurrentAndNext(char first, char second, char third) {
         if (second == '/' || second == '-') {
             if (Character.isDigit(third) || Character.getType(third) == Character.OTHER_NUMBER) {
-                if ((Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)) {
+                if (!(Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)) {
                     return true;
                 }
             }

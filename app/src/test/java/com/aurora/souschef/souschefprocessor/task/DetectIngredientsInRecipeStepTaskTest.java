@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -35,7 +36,7 @@ public class DetectIngredientsInRecipeStepTaskTest {
         String originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setRecipeSteps(recipeSteps);
-        Set<Ingredient> set = new HashSet<>();
+        List<Ingredient> set = new ArrayList<>();
         recipe.setIngredients(set);
 
         detector0 = new DetectIngredientsInStepTask(recipe, stepIndex0);

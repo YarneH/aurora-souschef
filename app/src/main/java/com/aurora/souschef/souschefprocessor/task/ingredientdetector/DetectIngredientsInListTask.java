@@ -9,11 +9,9 @@ import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations;
@@ -48,6 +46,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     private static final String QUANTITY = "QUANTITY";
     private static final String UNIT = "UNIT";
     private static final String NAME = "NAME";
+
 
     //The classifier to detect ingredients
     private CRFClassifier<CoreLabel> crf;
@@ -89,8 +88,8 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      */
     public void doTask() {
         //TODO fallback if no mIngredients can be detected
-        Set<Ingredient> set = detectIngredients(this.mRecipeInProgress.getIngredientsString());
-        this.mRecipeInProgress.setIngredients(set);
+        List<Ingredient> list = detectIngredients(this.mRecipeInProgress.getIngredientsString());
+        this.mRecipeInProgress.setIngredients(list);
     }
 
     /**
@@ -100,28 +99,25 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * @param ingredientList The string representing the ingredientList
      * @return A set of Ingredient Objects detected in the string
      */
-    private Set<Ingredient> detectIngredients(String ingredientList) {
-        // TODO generate functionality
+    private List<Ingredient> detectIngredients(String ingredientList) {
 
-        // dummy
         if (ingredientList == null || ("").equals(ingredientList)) {
-            return new HashSet<>();
+            return new ArrayList<>();
         }
-        Set<Ingredient> returnSet = new HashSet<>();
+
+        List<Ingredient> returnList = new ArrayList<>();
         String[] list = ingredientList.split("\n");
 
         for (String ingredient : list) {
             if (ingredient != null) {
+                Ingredient ing = (detectIngredient(addSpaces(ingredient)));
 
-
-                Ingredient ing = (detectIngredient(ingredient));
                 if (ing != null) {
-                    returnSet.add(ing);
+                    returnList.add(ing);
                 }
-
             }
         }
-        return returnSet;
+        return returnList;
     }
 
     /**
@@ -131,7 +127,10 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * @return an Ingredient object constructed with the information from the line
      */
     private Ingredient detectIngredient(String line) {
+        // TODO optimize model further
+        // TODO quantity detection fails on 1¼ (should be 1.25 gets 1) and on 1 1/2-ounce can (should be 1 gets 1.5)
         // Initialize
+
         Ingredient ing = null;
         Map<String, List<CoreLabel>> map = new HashMap<>();
         // if no value present, default to 1.0 'one'
@@ -258,5 +257,44 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             return 1.0;
         }
         return result;
+    }
+
+    /**
+     * Adds spaces in a line, for example 250g/3oz is turned into 250 g / 3 oz so the classifier sees
+     * these as different tokens
+     * @param line The line on which to add spaces
+     * @return The line with the spaces added
+     */
+    private String addSpaces(String line) {
+        StringBuilder bld = new StringBuilder();
+        char[] chars = line.toCharArray();
+
+        for (int i = 0; i < chars.length - 1; i++) {
+            char c = chars[i];
+            char follow = chars[i + 1];
+
+
+            if ((Character.isDigit(c) || Character.getType(c) == Character.OTHER_NUMBER) && Character.isAlphabetic(follow)) {
+                // if a number is followed by a letter add a space
+                bld.append(c + " ");
+            } else if (Character.isAlphabetic(c) && follow == '/') {
+                // if a letter is followed by a slash add a space
+                bld.append(c + " ");
+
+            } else if(Character.isDigit(c) && Character.getType(follow) == Character.OTHER_NUMBER){
+                bld.append(c + " ");
+
+            } else if ((c == '/' || c == '-') && (Character.isDigit(follow) || Character.getType(follow) == Character.OTHER_NUMBER)
+                    && !(i >= 1 && (Character.isDigit(chars[i - 1]) || Character.getType(chars[i - 1]) == Character.OTHER_NUMBER))) {
+                // if a slash or dash is followed by a number and is not preceded by a number add a space
+                bld.append(c + " ");
+            } else {
+                bld.append(c);
+            }
+        }
+        bld.append(chars[chars.length - 1]);
+
+        return bld.toString();
+
     }
 }

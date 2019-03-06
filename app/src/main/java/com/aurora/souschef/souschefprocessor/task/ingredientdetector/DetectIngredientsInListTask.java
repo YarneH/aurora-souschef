@@ -110,7 +110,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             if (spaceNeededBetweenCurrentAndNext(previous, current, next)) {
                 // if a slash or dash is followed by a number and is not preceded by a number
                 // add a space between current and next
-                bld.append(current + " " );
+                bld.append(current + " ");
             } else {
                 bld.append(current);
             }
@@ -118,7 +118,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         // add the last character
         bld.append(chars[chars.length - 1]);
-        // return the builded string
+        // return the builder
         return bld.toString();
 
     }
@@ -131,17 +131,17 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         } else if (Character.isAlphabetic(first) && second == '/') {
             // if a letter is followed by a slash add a space
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     private static boolean spaceNeededBetweenCurrentAndNext(char first, char second, char third) {
-        if (second == '/' || second == '-') {
-            if (Character.isDigit(third) || Character.getType(third) == Character.OTHER_NUMBER) {
-                if (!(Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)) {
-                    return true;
-                }
-            }
+        boolean secondIsSlashOrDash = (second == '/' || second == '-');
+        boolean thirdIsNumber = (Character.isDigit(third) || Character.getType(third) == Character.OTHER_NUMBER);
+        boolean firstIsNumber = (Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER);
+        if (secondIsSlashOrDash && thirdIsNumber && !firstIsNumber) {
+            return true;
         }
         return false;
     }

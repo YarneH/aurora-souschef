@@ -83,6 +83,64 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     }
 
     /**
+     * Adds spaces in a line, for example 250g/3oz is turned into 250 g / 3 oz so the
+     * classifier sees these as different tokens
+     *
+     * @param line The line on which to add spaces
+     * @return The line with the spaces added
+     */
+    private static String addSpaces(String line) {
+        StringBuilder bld = new StringBuilder();
+        char[] chars = line.toCharArray();
+
+        for (int i = 0; i < chars.length - 2; i++) {
+            char first = chars[i];
+            char second = chars[i + 1];
+            char third = chars[i + 2];
+
+            if (spaceNeeded(first, second)) {
+                bld.append(first + " ");
+            }
+
+            if (spaceNeeded(first, second, third)) {
+                // if a slash or dash is followed by a number and is not preceded by a number
+                // add a space
+                bld.append(first + second + " ");
+                i++;
+            } else {
+                bld.append(first);
+            }
+        }
+        bld.append(chars[chars.length - 1]);
+
+        return bld.toString();
+
+    }
+
+    private static boolean spaceNeeded(char first, char second) {
+        if ((Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)
+                && Character.isAlphabetic(second)) {
+            // if a number is followed by a letter add a space
+            return true;
+        } else if (Character.isAlphabetic(first) && second == '/') {
+            // if a letter is followed by a slash add a space
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean spaceNeeded(char first, char second, char third) {
+        if (second == '/' || second == '-') {
+            if (Character.isDigit(third) || Character.getType(third) == Character.OTHER_NUMBER) {
+                if ((Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Detects the mIngredients presented in the ingredientsString and sets the mIngredients field
      * in the recipe to this set of mIngredients.
      */
@@ -129,14 +187,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     private Ingredient detectIngredient(String line) {
         // TODO optimize model further
         // TODO quantity detection fails on 1¼ (should be 1.25 gets 1) and on 1 1/2-ounce can (should be 1 gets 1.5)
-        // Initialize
 
-        Ingredient ing = null;
-        Map<String, List<CoreLabel>> map = new HashMap<>();
-        // if no value present, default to 1.0 'one'
-        double quantity = 1.0;
-        String unit = "";
-        String name = "";
         try {
             if (crf == null) {
                 // if classifier not loaded yet load the classifier
@@ -150,6 +201,9 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         // classify the line
         List<List<CoreLabel>> classifiedList = crf.classify(line);
+
+        // map to put classes and labeled tokens
+        Map<String, List<CoreLabel>> map = new HashMap<>();
 
         for (List<CoreLabel> l : classifiedList) {
             for (CoreLabel cl : l) {
@@ -166,6 +220,10 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             }
         }
 
+        // if no value present, default to 1.0 'one'
+        double quantity = 1.0;
+        String unit = "";
+        String name = "";
 
         //for now get the first element
         if (map.get(UNIT) != null) {
@@ -186,8 +244,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             quantity = -quantity;
         }
 
-        ing = new Ingredient(name, unit, quantity);
-        return ing;
+        return new Ingredient(name, unit, quantity);
     }
 
     /**
@@ -257,44 +314,5 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             return 1.0;
         }
         return result;
-    }
-
-    /**
-     * Adds spaces in a line, for example 250g/3oz is turned into 250 g / 3 oz so the classifier sees
-     * these as different tokens
-     * @param line The line on which to add spaces
-     * @return The line with the spaces added
-     */
-    private String addSpaces(String line) {
-        StringBuilder bld = new StringBuilder();
-        char[] chars = line.toCharArray();
-
-        for (int i = 0; i < chars.length - 1; i++) {
-            char c = chars[i];
-            char follow = chars[i + 1];
-
-
-            if ((Character.isDigit(c) || Character.getType(c) == Character.OTHER_NUMBER) && Character.isAlphabetic(follow)) {
-                // if a number is followed by a letter add a space
-                bld.append(c + " ");
-            } else if (Character.isAlphabetic(c) && follow == '/') {
-                // if a letter is followed by a slash add a space
-                bld.append(c + " ");
-
-            } else if(Character.isDigit(c) && Character.getType(follow) == Character.OTHER_NUMBER){
-                bld.append(c + " ");
-
-            } else if ((c == '/' || c == '-') && (Character.isDigit(follow) || Character.getType(follow) == Character.OTHER_NUMBER)
-                    && !(i >= 1 && (Character.isDigit(chars[i - 1]) || Character.getType(chars[i - 1]) == Character.OTHER_NUMBER))) {
-                // if a slash or dash is followed by a number and is not preceded by a number add a space
-                bld.append(c + " ");
-            } else {
-                bld.append(c);
-            }
-        }
-        bld.append(chars[chars.length - 1]);
-
-        return bld.toString();
-
     }
 }

@@ -1,7 +1,6 @@
 package com.aurora.souschef.recipe;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * A data class representing a recipe. It has 4 fields:

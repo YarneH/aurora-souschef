@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,11 +28,14 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
 
     // generally numbers greater than twelve are not spelled out
-    private static final String[] NUMBERS_TO_TWELVE = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"};
+    private static final String[] NUMBERS_TO_TWELVE = {"zero", "one", "two", "three", "four", "five",
+            "six", "seven", "eight", "nine", "ten", "eleven", "twelve"};
     // multiples of ten are also spelled out
-    private static final String[] MULTIPLES_OF_TEN = {"zero", "ten", "twenty", "thirty", "fourty", "fifty", "sixty", "seventy", "eighty", "ninety", "hundred"};
+    private static final String[] MULTIPLES_OF_TEN = {"zero", "ten", "twenty", "thirty", "fourty",
+            "fifty", "sixty", "seventy", "eighty", "ninety", "hundred"};
     private static final int FRACTION_SIZE = 2;
     private static final int NON_FRACTION_LENGTH = 1;
+    private static final double TEN = 10;
     private CRFClassifier<CoreLabel> crf;
 
     public DetectIngredientsInListTask(RecipeInProgress recipeInProgress) {
@@ -123,18 +127,12 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             if (map.get("QUANTITY") != null) {
                 quantity += calculateQuantity(map.get("QUANTITY"));
             }
-
-
+            // if quantity is seen as negative revert
+            quantity = quantity < 0 ? -quantity : quantity;
             ing = new Ingredient(name, unit, quantity);
             return ing;
         } catch (IOException | ClassNotFoundException exception) {
             Log.e(TAG, "detect ingredients in list: classifier not loaded ", exception);
-        } catch (IllegalArgumentException iae) {
-            // If an IllegalArgumentException is thrown, this means the quantiy was negative
-
-
-            ing = new Ingredient(name, unit, -quantity);
-            return ing;
         }
         return null;
     }
@@ -183,8 +181,8 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         return result;
     }
 
-    private double calculateNonParsableQuantity(String s) {
-        String lower = s.toLowerCase();
+    private static double calculateNonParsableQuantity(String s) {
+        String lower = s.toLowerCase(Locale.ENGLISH);
         // check if  number is 0-12
         for (int i = 0; i < NUMBERS_TO_TWELVE.length; i++) {
             if (lower.equals(NUMBERS_TO_TWELVE[i])) {
@@ -195,7 +193,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         // check is string is a multiple of ten
         for (int i = 0; i < MULTIPLES_OF_TEN.length; i++) {
             if (lower.equals(MULTIPLES_OF_TEN[i])) {
-                return i * 10;
+                return i * TEN;
             }
         }
 

@@ -172,7 +172,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
             }
             if (map.get(QUANTITY) != null) {
-                quantity += calculateQuantity(map.get(QUANTITY));
+                quantity = calculateQuantity(map.get(QUANTITY));
             }
             // if quantity is seen as negative revert
             if (quantity < 0.0) {
@@ -247,6 +247,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
                 result += calculateNonParsableQuantity(s);
             }
         }
+ 
         if (result == 0.0) {
             // if no quantity value was detected return 1.0 "one"
             return 1.0;

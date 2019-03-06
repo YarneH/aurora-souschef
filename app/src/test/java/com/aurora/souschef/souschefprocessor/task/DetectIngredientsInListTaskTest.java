@@ -1,7 +1,5 @@
 package com.aurora.souschef.SouschefProcessor.task;
 
-import android.content.Context;
-
 import com.aurora.souschef.recipe.Ingredient;
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
@@ -12,8 +10,6 @@ import org.junit.Test;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import androidx.test.InstrumentationRegistry;
 
 public class DetectIngredientsInListTaskTest {
 
@@ -64,7 +60,7 @@ public class DetectIngredientsInListTaskTest {
         boolean meat = recipe.getIngredients().contains(meatIngredient);
         assert (spaghetti);
         assert (sauce);
-        assert(meat);
+        assert (meat);
     }
 
     @Test

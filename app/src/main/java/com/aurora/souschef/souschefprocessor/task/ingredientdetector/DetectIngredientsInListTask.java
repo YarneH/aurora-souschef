@@ -59,6 +59,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
     /**
      * Checks if the string is a spelled out version of the numbers 0 to 12 or a multiple of 10 (up to 100)
+     *
      * @param s The string to be checked
      * @return The numeric representation of the string
      */
@@ -132,59 +133,62 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     private Ingredient detectIngredient(String line) {
         // Initialize
         Ingredient ing = null;
+        Map<String, List<CoreLabel>> map = new HashMap<>();
         // if no value present, default to 1.0 'one'
         double quantity = 1.0;
         String unit = "";
         String name = "";
         try {
             if (crf == null) {
-                //if classifier not loaded yet load the classifier
+                // if classifier not loaded yet load the classifier
                 String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
                 crf = CRFClassifier.getClassifier(modelName);
             }
-
-            List<List<CoreLabel>> classifiedList = crf.classify(line);
-            Map<String, List<CoreLabel>> map = new HashMap<>();
-
-            for (List<CoreLabel> l : classifiedList) {
-                for (CoreLabel cl : l) {
-                    String entity = (cl.get(CoreAnnotations.AnswerAnnotation.class));
-                    if (map.get(entity) == null) {
-                        List<CoreLabel> list = new ArrayList<>();
-                        list.add(cl);
-                        map.put(entity, list);
-                    } else {
-                        map.get(entity).add(cl);
-                    }
-
-                }
-            }
-
-
-            //for now get the first element
-            if (map.get(UNIT) != null) {
-                unit = map.get(UNIT).get(0).toString();
-            }
-            // return everything labeled name
-            List<CoreLabel> nameList = map.get(NAME);
-            if (nameList != null) {
-                name = buildName(nameList);
-
-            }
-            if (map.get(QUANTITY) != null) {
-                quantity = calculateQuantity(map.get(QUANTITY));
-            }
-            // if quantity is seen as negative revert
-            if (quantity < 0.0) {
-                quantity = -quantity;
-            }
-
-            ing = new Ingredient(name, unit, quantity);
-            return ing;
         } catch (IOException | ClassNotFoundException exception) {
             Log.e(TAG, "detect ingredients in list: classifier not loaded ", exception);
+            return null;
         }
-        return null;
+
+        // classify the line
+        List<List<CoreLabel>> classifiedList = crf.classify(line);
+
+        for (List<CoreLabel> l : classifiedList) {
+            for (CoreLabel cl : l) {
+                String classifiedClass = (cl.get(CoreAnnotations.AnswerAnnotation.class));
+                if (map.get(classifiedClass) == null) {
+                    // if this key is not yet in the map construct a list and add the label to the list
+                    List<CoreLabel> list = new ArrayList<>();
+                    list.add(cl);
+                    map.put(classifiedClass, list);
+                } else {
+                    map.get(classifiedClass).add(cl);
+                }
+
+            }
+        }
+
+
+        //for now get the first element
+        if (map.get(UNIT) != null) {
+            unit = map.get(UNIT).get(0).toString();
+        }
+
+        List<CoreLabel> nameList = map.get(NAME);
+        if (nameList != null) {
+            // build the name using the list of tokens in the nameList
+            name = buildName(nameList);
+        }
+        if (map.get(QUANTITY) != null) {
+            // calculate the quantity using the list of tokens in labeled QUANTITY
+            quantity = calculateQuantity(map.get(QUANTITY));
+        }
+        // if quantity is seen as negative revert
+        if (quantity < 0.0) {
+            quantity = -quantity;
+        }
+
+        ing = new Ingredient(name, unit, quantity);
+        return ing;
     }
 
     /**
@@ -232,6 +236,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
             String[] fraction = s.split("/");
             try {
+                // if the string was splitted in to two parts it was a fraction
                 if (fraction.length == FRACTION_LENGTH) {
 
                     double numerator = Double.parseDouble(fraction[0]);
@@ -247,7 +252,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
                 result += calculateNonParsableQuantity(s);
             }
         }
- 
+
         if (result == 0.0) {
             // if no quantity value was detected return 1.0 "one"
             return 1.0;

@@ -21,7 +21,7 @@ public class DetectIngredientsInListTaskTest {
 
     @BeforeClass
     public static void initialize() {
-        ingredientList = "500 ounces spaghetti \n500 ounces sauce \n1 1/2 pounds minced meat";
+        ingredientList = "500 ounces spaghetti \n500 ounces sauce \n1 1/2 pounds minced meat\n 1 clove garlic\n twenty basil leaves";
         originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setIngredientsString(ingredientList);
@@ -46,7 +46,7 @@ public class DetectIngredientsInListTaskTest {
     public void DetectIngredientsInList_doTask_setHasCorrectSize() {
         detector.doTask();
         System.out.println(recipe.getIngredients());
-        assert (recipe.getIngredients().size() == 3);
+        assert (recipe.getIngredients().size() == 5);
     }
 
     @Test
@@ -55,12 +55,18 @@ public class DetectIngredientsInListTaskTest {
         Ingredient spaghettiIngredient = new Ingredient("spaghetti", "ounces", 500);
         Ingredient sauceIngredient = new Ingredient("sauce", "ounces", 500);
         Ingredient meatIngredient = new Ingredient("minced meat", "pounds", 1.5);
+        Ingredient garlicIngredient = new Ingredient("garlic", "clove", 1.0);
+        Ingredient basilIngredient = new Ingredient("basil leaves", "", 20.0);
         boolean spaghetti = recipe.getIngredients().contains(spaghettiIngredient);
         boolean sauce = recipe.getIngredients().contains(sauceIngredient);
         boolean meat = recipe.getIngredients().contains(meatIngredient);
+        boolean garlic = recipe.getIngredients().contains(garlicIngredient);
+        boolean basil = recipe.getIngredients().contains(basilIngredient);
         assert (spaghetti);
         assert (sauce);
         assert (meat);
+        assert(garlic);
+        assert(basil);
     }
 
     @Test
@@ -68,6 +74,22 @@ public class DetectIngredientsInListTaskTest {
         recipe.setIngredientsString("");
         detector.doTask();
         assert (recipe.getIngredients() != null && recipe.getIngredients().size() == 0);
+
+    }
+
+    @Test
+    public void DetectIngredientsInList_doTask_randomInputStringDoesNotThrowError(){
+        boolean thrown = false;
+
+        recipe.setIngredientsString("20 pound xxx \n jqkfdksqfjkd// \n 45055 450 47d dkjq4 kdj  4 dqfd/n \n kjfqkf 450 ounce lfqj \n 20 pound xxx\"");
+        try{
+            detector.doTask();
+        }catch(Exception e){
+            thrown = true;
+        }
+        assert(!thrown);
+
+
 
     }
 

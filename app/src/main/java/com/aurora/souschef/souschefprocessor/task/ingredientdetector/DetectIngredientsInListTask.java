@@ -43,6 +43,26 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
     }
 
+    private static double calculateNonParsableQuantity(String s) {
+        String lower = s.toLowerCase(Locale.ENGLISH);
+        // check if  number is 0-12
+        for (int i = 0; i < NUMBERS_TO_TWELVE.length; i++) {
+            if (lower.equals(NUMBERS_TO_TWELVE[i])) {
+                return i;
+            }
+        }
+
+        // check is string is a multiple of ten
+        for (int i = 0; i < MULTIPLES_OF_TEN.length; i++) {
+            if (lower.equals(MULTIPLES_OF_TEN[i])) {
+                return i * TEN;
+            }
+        }
+
+        // if not one of the previous cases consider wrongly labeled and return zero
+        return 0.0;
+    }
+
     /**
      * Detects the mIngredients presented in the ingredientsString and sets the mIngredients field
      * in the recipe to this set of mIngredients.
@@ -128,7 +148,10 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
                 quantity += calculateQuantity(map.get("QUANTITY"));
             }
             // if quantity is seen as negative revert
-            quantity = quantity < 0 ? -quantity : quantity;
+            if (quantity < 0.0) {
+                quantity = -quantity;
+            }
+         
             ing = new Ingredient(name, unit, quantity);
             return ing;
         } catch (IOException | ClassNotFoundException exception) {
@@ -164,7 +187,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
                     double numerator = Double.parseDouble(fraction[0]);
                     double denominator = Double.parseDouble(fraction[1]);
-                    System.out.println(numerator + " "+ denominator);
                     result += numerator / denominator;
                 }
 
@@ -179,25 +201,5 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
 
         return result;
-    }
-
-    private static double calculateNonParsableQuantity(String s) {
-        String lower = s.toLowerCase(Locale.ENGLISH);
-        // check if  number is 0-12
-        for (int i = 0; i < NUMBERS_TO_TWELVE.length; i++) {
-            if (lower.equals(NUMBERS_TO_TWELVE[i])) {
-                return i;
-            }
-        }
-
-        // check is string is a multiple of ten
-        for (int i = 0; i < MULTIPLES_OF_TEN.length; i++) {
-            if (lower.equals(MULTIPLES_OF_TEN[i])) {
-                return i * TEN;
-            }
-        }
-
-        // if not one of the previous cases consider wrongly labeled and return zero
-        return 0.0;
     }
 }

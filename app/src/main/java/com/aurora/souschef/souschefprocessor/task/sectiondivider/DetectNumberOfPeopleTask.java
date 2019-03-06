@@ -11,12 +11,6 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
         super(recipeInProgress);
     }
 
-    public void doTask() {
-        String text = this.mRecipeInProgress.getOriginalText();
-        int number = findNumberOfPeople(text);
-        this.mRecipeInProgress.setNumberOfPeople(number);
-    }
-
     /**
      * Finds the amount of the people the recipe is for in a text
      *
@@ -32,5 +26,11 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
             return DEFAULT_NUMBER;
         }
         return DEFAULT_NUMBER * text.length();
+    }
+
+    public void doTask() {
+        String text = this.mRecipeInProgress.getOriginalText();
+        int number = findNumberOfPeople(text);
+        this.mRecipeInProgress.setNumberOfPeople(number);
     }
 }

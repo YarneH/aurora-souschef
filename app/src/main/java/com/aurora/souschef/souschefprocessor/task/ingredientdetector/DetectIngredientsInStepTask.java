@@ -12,10 +12,10 @@ import java.util.Set;
  * Detects the mIngredients in the list of mIngredients
  */
 public class DetectIngredientsInStepTask extends AbstractProcessingTask {
-    private int mStepIndex;
-
     // fields for the dummy code
     private static final int AMOUNT = 500;
+    private int mStepIndex;
+
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
         if (stepIndex < 0) {

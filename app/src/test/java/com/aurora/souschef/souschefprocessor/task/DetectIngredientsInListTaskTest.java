@@ -25,7 +25,7 @@ public class DetectIngredientsInListTaskTest {
 
     @BeforeClass
     public static void initialize() {
-        ingredientList = "500 ounces spaghetti \n 500 ounces sauce";
+        ingredientList = "500 ounces spaghetti \n500 ounces sauce \n1 1/2 pounds minced meat";
         originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setIngredientsString(ingredientList);
@@ -50,7 +50,7 @@ public class DetectIngredientsInListTaskTest {
     public void DetectIngredientsInList_doTask_setHasCorrectSize() {
         detector.doTask();
         System.out.println(recipe.getIngredients());
-        assert (recipe.getIngredients().size() == 2);
+        assert (recipe.getIngredients().size() == 3);
     }
 
     @Test
@@ -58,10 +58,13 @@ public class DetectIngredientsInListTaskTest {
         detector.doTask();
         Ingredient spaghettiIngredient = new Ingredient("spaghetti", "ounces", 500);
         Ingredient sauceIngredient = new Ingredient("sauce", "ounces", 500);
+        Ingredient meatIngredient = new Ingredient("minced meat", "pounds", 1.5);
         boolean spaghetti = recipe.getIngredients().contains(spaghettiIngredient);
         boolean sauce = recipe.getIngredients().contains(sauceIngredient);
+        boolean meat = recipe.getIngredients().contains(meatIngredient);
         assert (spaghetti);
         assert (sauce);
+        assert(meat);
     }
 
     @Test

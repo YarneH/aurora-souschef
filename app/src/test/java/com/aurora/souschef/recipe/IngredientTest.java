@@ -7,6 +7,19 @@ import java.util.ArrayList;
 public class IngredientTest {
 
     @Test
+    public void Ingredient_NegativeAmountTrowsIllegalArgumentException() {
+        boolean thrown = false;
+        try {
+
+            Ingredient ing = new Ingredient("spaghetti", "ounces", -500);
+        } catch (IllegalArgumentException iae) {
+            thrown = true;
+        }
+        assert (thrown);
+
+    }
+
+    @Test
     public void Ingredient_Equals_BehavesExpectedely() {
         Ingredient iua1 = new Ingredient("spaghetti", "gram", 500);
         Ingredient iua2 = new Ingredient("spaghetti", "gram", 500);

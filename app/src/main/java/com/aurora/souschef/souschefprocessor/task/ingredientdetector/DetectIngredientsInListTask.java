@@ -25,12 +25,13 @@ import static android.content.ContentValues.TAG;
  */
 public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
-    // this is for the dummy detect code
-    private static final int INGREDIENT_WITH_UNIT_SIZE = 3;
-    private static final int INGREDIENT_WITHOUT_UNIT_SIZE = 2;
-    private static final int INGREDIENT_PLACE = 2;
-    private static final int UNIT_PLACE = 1;
-    private static final int AMOUNT_PLACE = 0;
+
+    // generally numbers greater than twelve are not spelled out
+    private static final String[] NUMBERS_TO_TWELVE = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"};
+    // multiples of ten are also spelled out
+    private static final String[] MULTIPLES_OF_TEN = {"zero", "ten", "twenty", "thirty", "fourty", "fifty", "sixty", "seventy", "eighty", "ninety", "hundred"};
+    private static final int FRACTION_SIZE = 2;
+    private static final int NON_FRACTION_LENGTH = 1;
     private CRFClassifier<CoreLabel> crf;
 
     public DetectIngredientsInListTask(RecipeInProgress recipeInProgress) {
@@ -68,14 +69,12 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         for (String ingredient : list) {
             if (ingredient != null) {
 
-                try {
-                    Ingredient ing = (detectIngredient(ingredient));
-                    if (ing != null) {
-                        returnSet.add(ing);
-                    }
-                } catch (NumberFormatException nfe) {
-                    //TODO have appropriate catch if ingredient does not contain a number that is parseable to double
+
+                Ingredient ing = (detectIngredient(ingredient));
+                if (ing != null) {
+                    returnSet.add(ing);
                 }
+
             }
         }
         return returnSet;
@@ -83,6 +82,9 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
     private Ingredient detectIngredient(String line) {
         Ingredient ing = null;
+        double quantity = 0.0;
+        String unit = "";
+        String name = "";
         try {
             if (crf == null) {
                 //if classifier not loaded yet load the classifier
@@ -106,27 +108,98 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
                 }
             }
-            double quantity = 0.0;
-            String unit = "";
-            String name = "";
+
 
             //for now get the first element
-            if (map.get("QUANTITY") != null) {
-                quantity += Double.parseDouble(map.get("QUANTITY").get(0).toString());
-            }
             if (map.get("UNIT") != null) {
                 unit = map.get("UNIT").get(0).toString();
             }
-            if (map.get("NAME") != null) {
-                name = map.get("NAME").get(0).toString();
+            // return everything labeled name
+            List<CoreLabel> nameList = map.get("NAME");
+            if (nameList != null) {
+                name = buildName(nameList);
+
             }
+            if (map.get("QUANTITY") != null) {
+                quantity += calculateQuantity(map.get("QUANTITY"));
+            }
+
+
             ing = new Ingredient(name, unit, quantity);
             return ing;
         } catch (IOException | ClassNotFoundException exception) {
             Log.e(TAG, "detect ingredients in list: classifier not loaded ", exception);
+        } catch (IllegalArgumentException iae) {
+            // If an IllegalArgumentException is thrown, this means the quantiy was negative
+
+
+            ing = new Ingredient(name, unit, -quantity);
+            return ing;
         }
         return null;
+    }
+
+    private String buildName(List<CoreLabel> nameList) {
+        // return everey entity labeled name
+        StringBuilder bld = new StringBuilder();
+        for (CoreLabel cl : nameList) {
+            bld.append(cl.word() + " ");
+        }
+        // delete last added space
+        bld.deleteCharAt(bld.length() - 1);
+        return bld.toString();
+    }
+
+    private double calculateQuantity(List<CoreLabel> list) {
+        double result = 0.0;
+        // for now first element
+        CoreLabel element = list.get(0);
+        String representation = element.word();
+
+        // split on all whitespace characters
+        String[] array = representation.split("[\\s\\xA0]+");
+        for (String s : array) {
+
+            String[] fraction = s.split("/");
+            try {
+                if (fraction.length == FRACTION_SIZE) {
+
+                    double numerator = Double.parseDouble(fraction[0]);
+                    double denominator = Double.parseDouble(fraction[1]);
+                    System.out.println(numerator + " "+ denominator);
+                    result += numerator / denominator;
+                }
+
+                if (fraction.length == NON_FRACTION_LENGTH) {
+                    result += Double.parseDouble(s);
+                }
+            } catch (NumberFormatException iae) {
+                // String identified as quantity is not parsable...
+                result += calculateNonParsableQuantity(s);
+            }
+        }
 
 
+        return result;
+    }
+
+    private double calculateNonParsableQuantity(String s) {
+        String lower = s.toLowerCase();
+        // check if  number is 0-12
+        for (int i = 0; i < NUMBERS_TO_TWELVE.length; i++) {
+            if (lower.equals(NUMBERS_TO_TWELVE[i])) {
+                return i;
+            }
+        }
+
+        // check is string is a multiple of ten
+        for (int i = 0; i < MULTIPLES_OF_TEN.length; i++) {
+            if (lower.equals(MULTIPLES_OF_TEN[i])) {
+                return i * 10;
+            }
+        }
+
+        // if not one of the previous cases consider wrongly labeled and return zero
+        return 0.0;
     }
 }

@@ -38,7 +38,7 @@ public class Ingredient {
 
     @Override
     public int hashCode() {
-        return Objects.hash(mAmount,mIngredient);
+        return Objects.hash(mAmount, mIngredient);
     }
 
     @Override

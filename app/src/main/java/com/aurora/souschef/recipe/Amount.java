@@ -8,6 +8,9 @@ public class Amount {
     private String mUnit;
 
     public Amount(double mValue, String unit) {
+        if (mValue < 0.0) {
+            throw new IllegalArgumentException("Value is negative");
+        }
         this.mValue = mValue;
         this.mUnit = unit;
     }

@@ -402,9 +402,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
                 // this element does not belong to the needed class, if an element of the class has
                 // already been found then set listComplete to true in order to break the for loop
                 listComplete = true;
-            } else {
-                // first element has not been found yet, the list is not complete
-                listComplete = false;
             }
 
 

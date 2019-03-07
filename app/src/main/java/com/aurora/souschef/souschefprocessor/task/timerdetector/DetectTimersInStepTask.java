@@ -83,7 +83,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             List<CoreLabel> tokens = cm.get(CoreAnnotations.TokensAnnotation.class);
             int recipeStepSeconds;
             SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();
-            if (!temporal.includeTimexAltValue()) {
+            if (!(temporal.getDuration() instanceof SUTime.DurationRange)) {
                 //only one value
                 recipeStepSeconds = (int) temporal
                         .getDuration().getJodaTimeDuration().getStandardSeconds();
@@ -93,8 +93,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     //TODO do something meaningful
                 }
             } else {
+                //formattedstring is the only way to access private min and max fields in DurationRange object
                 SUTime.Duration durationRange = temporal.getDuration();
-                //formattedstring is the only way to access private min and max fields
 
                 String formattedString = temporal.toString();
                 String[] minAndMax = formattedString.split("/");

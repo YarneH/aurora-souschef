@@ -132,11 +132,10 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
                 && Character.isAlphabetic(second)) {
             // if a number is followed by a letter, add a space
             return true;
-        } else if (Character.isAlphabetic(first) && second == '/') {
-            // if a letter is followed by a slash, add a space
-            return true;
         } else {
-            return false;
+            // if a letter is followed by a slash, add a space
+            return Character.isAlphabetic(first) && second == '/';
+
         }
     }
 
@@ -151,14 +150,13 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * @param third  The third character of the sequence
      * @return
      */
-    private static boolean spaceNeededBetweenCurrentAndNext(char first, char second, char third) {
+    private static boolean spaceNeededBetweenCurrentAndNext(char first, char second,
+                                                            char third) {
         boolean secondIsSlashOrDash = (second == '/' || second == '-');
         boolean thirdIsNumber = (Character.isDigit(third) || Character.getType(third) == Character.OTHER_NUMBER);
         boolean firstIsNumber = (Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER);
-        if (secondIsSlashOrDash && thirdIsNumber && !firstIsNumber) {
-            return true;
-        }
-        return false;
+
+        return (secondIsSlashOrDash && thirdIsNumber && !firstIsNumber);
     }
 
     /**
@@ -365,11 +363,11 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * the labels were classified.
      *
      * @param list  The list of labeled elements
-     * @param CLASS The class for which th first sequence if found
+     * @param classLabel The class for which th first sequence if found
      * @return
      */
-    private List<CoreLabel> getSucceedingElements(List<CoreLabel> list, String CLASS) {
-        // for now first element labeled as CLASS and the succeeding elements
+    private List<CoreLabel> getSucceedingElements(List<CoreLabel> list, String classLabel) {
+        // for now first element labeled as classLabel and the succeeding elements
         // (endposition + 1 = beginposition) or endposition = beginposition
         // at most one char apart
 
@@ -382,7 +380,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         for (int i = 0; i < list.size() && !listComplete; i++) {
             element = list.get(i);
             // check if the element belongs to the needed class
-            if (CLASS.equals(element.get(CoreAnnotations.AnswerAnnotation.class))) {
+            if (classLabel.equals(element.get(CoreAnnotations.AnswerAnnotation.class))) {
                 if (!firstFound) {
                     //if the first element is not found yet add this element to the list and toggle
                     // firstFound
@@ -400,13 +398,13 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
                         listComplete = true;
                     }
                 }
-            } else {
+            } else if (firstFound) {
                 // this element does not belong to the needed class, if an element of the class has
-                // already been found then set listComplet to true in order to break the for loop
-                if (firstFound) {
-                    listComplete = true;
-                }
+                // already been found then set listComplete to true in order to break the for loop
+                listComplete = true;
             }
+
+
         }
         return tokenQuantities;
     }

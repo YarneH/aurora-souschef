@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.aurora.souschef"
-        minSdkVersion 26
+        minSdkVersion 22
         targetSdkVersion 28
         versionCode 1
         versionName "0.1"
@@ -34,8 +34,9 @@ dependencies {
     testImplementation 'androidx.test:core:1.1.0'
     // Optional -- Mockito framework
     testImplementation 'org.mockito:mockito-core:1.10.19'
-    implementation ('edu.stanford.nlp:stanford-corenlp:3.9.2'){
+    implementation ('edu.stanford.nlp:stanford-corenlp:3.7.0'){
         exclude group: 'com.sun.xml.bind'
+        exclude group: 'org.apache.lucene'
     }
     //implementation 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
 }

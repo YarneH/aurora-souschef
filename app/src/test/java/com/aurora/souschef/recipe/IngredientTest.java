@@ -11,7 +11,7 @@ public class IngredientTest {
         boolean thrown = false;
         try {
 
-            Ingredient ing = new Ingredient("spaghetti", "ounces", -500);
+            Ingredient ing = new Ingredient("spaghetti", "ounces", -500, "irrelevant");
         } catch (IllegalArgumentException iae) {
             thrown = true;
         }
@@ -21,9 +21,9 @@ public class IngredientTest {
 
     @Test
     public void Ingredient_Equals_BehavesExpectedely() {
-        Ingredient iua1 = new Ingredient("spaghetti", "gram", 500);
-        Ingredient iua2 = new Ingredient("spaghetti", "gram", 500);
-        Ingredient iua3 = new Ingredient("sauce", "gram", 500);
+        Ingredient iua1 = new Ingredient("spaghetti", "gram", 500, "irrelevant");
+        Ingredient iua2 = new Ingredient("spaghetti", "gram", 500, "irrelevant");
+        Ingredient iua3 = new Ingredient("sauce", "gram", 500, "irrelevant");
         assert (iua1.equals(iua2));
         assert (!iua1.equals(iua3));
         String randomobject = "3";
@@ -40,7 +40,7 @@ public class IngredientTest {
             for (String ing : ingredients) {
                 for (String uni : units) {
                     for (double a : amounts) {
-                        iuas.add(new Ingredient(ing, uni, a));
+                        iuas.add(new Ingredient(ing, uni, a, "irrelevant"));
                     }
                 }
             }

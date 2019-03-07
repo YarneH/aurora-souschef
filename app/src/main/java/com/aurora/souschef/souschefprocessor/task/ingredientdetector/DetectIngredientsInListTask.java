@@ -53,7 +53,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
     public DetectIngredientsInListTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
-
     }
 
     /**
@@ -97,7 +96,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         bld.append(chars[0]);
 
         for (int i = 1; i < chars.length - 1; i++) {
-
             char previous = chars[i - 1];
             char current = chars[i];
             char next = chars[i + 1];
@@ -105,9 +103,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             if (spaceNeededBetweenPreviousAndCurrent(previous, current)) {
 
                 bld.append(" " + current);
-            }
-
-            if (spaceNeededBetweenCurrentAndNext(previous, current, next)) {
+            } else if (spaceNeededBetweenCurrentAndNext(previous, current, next)) {
                 // if a slash or dash is followed by a number and is not preceded by a number
                 // add a space between current and next
                 bld.append(current + " ");
@@ -123,19 +119,38 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
     }
 
+    /**
+     * Checks if a space is needed between the first and second character. this is the case if either
+     * a number is followed by a letter or a letter is followed by a dash or a slash
+     *
+     * @param first  The first character
+     * @param second The second character
+     * @return
+     */
     private static boolean spaceNeededBetweenPreviousAndCurrent(char first, char second) {
         if ((Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)
                 && Character.isAlphabetic(second)) {
-            // if a number is followed by a letter add a space
+            // if a number is followed by a letter, add a space
             return true;
         } else if (Character.isAlphabetic(first) && second == '/') {
-            // if a letter is followed by a slash add a space
+            // if a letter is followed by a slash, add a space
             return true;
         } else {
             return false;
         }
     }
 
+    /**
+     * Checks if a space is needed between the second and third character this is the case if
+     * the first character is not a number, the second character is a slash or a dash and the third
+     * character is a number (e.g. 500ml/250oz will need a space between the l and / so that the
+     * classifier sees this as two different words)
+     *
+     * @param first  The first character of the sequence
+     * @param second The second character of the sequence
+     * @param third  The third character of the sequence
+     * @return
+     */
     private static boolean spaceNeededBetweenCurrentAndNext(char first, char second, char third) {
         boolean secondIsSlashOrDash = (second == '/' || second == '-');
         boolean thirdIsNumber = (Character.isDigit(third) || Character.getType(third) == Character.OTHER_NUMBER);
@@ -157,7 +172,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     }
 
     /**
-     * Detetcs ingredients in a string representing an ingredient list, makes corresponding
+     * Detetects ingredients in a string representing an ingredient list, makes corresponding
      * Ingredient Objects and returns a set of these
      *
      * @param ingredientList The string representing the ingredientList
@@ -165,11 +180,13 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      */
     private List<Ingredient> detectIngredients(String ingredientList) {
 
+        // if no ingredientList is provided return an empty list
         if (ingredientList == null || ("").equals(ingredientList)) {
             return new ArrayList<>();
         }
 
         List<Ingredient> returnList = new ArrayList<>();
+        // Split the list on new lines
         String[] list = ingredientList.split("\n");
 
         for (String ingredient : list) {
@@ -207,7 +224,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         // classify the line
         List<List<CoreLabel>> classifiedList = crf.classify(line);
-
         // map to put classes and labeled tokens
         Map<String, List<CoreLabel>> map = new HashMap<>();
 
@@ -228,12 +244,14 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         // if no value present, default to 1.0 'one'
         double quantity = 1.0;
+        // if no value present, default to empty string
         String unit = "";
         String name = "";
 
-        //for now get the first element
+
         if (map.get(UNIT) != null) {
-            unit = map.get(UNIT).get(0).toString();
+            // build the unit (gets the first succeeding elements labeled unit)
+            unit = buildUnit(map.get(UNIT));
         }
 
         List<CoreLabel> nameList = map.get(NAME);
@@ -250,7 +268,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             quantity = -quantity;
         }
 
-        return new Ingredient(name, unit, quantity);
+        return new Ingredient(name, unit, quantity, line);
     }
 
     /**
@@ -272,6 +290,25 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         return bld.toString();
     }
 
+
+    /**
+     * Builds the name of the ingredient using a list of tokens that were classified as NAME
+     *
+     * @param unitList the list of tokens
+     * @return a string which is a concatenation of all the succeeding words in the list
+     */
+    private String buildUnit(List<CoreLabel> unitList) {
+        // return every succeeding entity labeled UNIT
+        List<CoreLabel> tokenQuantities = getSucceedingElements(unitList, UNIT);
+        StringBuilder bld = new StringBuilder();
+        for (CoreLabel cl : tokenQuantities) {
+            bld.append(cl.word() + " ");
+        }
+        // delete last added space
+        bld.deleteCharAt(bld.length() - 1);
+        return bld.toString();
+    }
+
     /**
      * Calculates the quantity based on list with tokens labeled quantity
      *
@@ -281,16 +318,15 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      */
     private double calculateQuantity(List<CoreLabel> list) {
         double result = 0.0;
-        // for now first element labeled as quantity
-        boolean found = false;
-        CoreLabel element = null;
-        for (int i = 0; i < list.size() && !found; i++) {
-            element = list.get(i);
-            if (QUANTITY.equals(element.get(CoreAnnotations.AnswerAnnotation.class))) {
-                found = true;
-            }
+        // for now first element labeled as quantity and the succeeding elements
+        // (endposition + 1 = beginposition) or endposition = beginposition
+        List<CoreLabel> tokenQuantities = getSucceedingElements(list, QUANTITY);
+        StringBuilder bld = new StringBuilder();
+        for (CoreLabel cl : tokenQuantities) {
+            bld.append(cl.word() + " ");
         }
-        String representation = element.word();
+
+        String representation = bld.toString();
 
         // split on all whitespace characters
         String[] array = representation.split("[\\s\\xA0]+");
@@ -320,5 +356,58 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             return 1.0;
         }
         return result;
+    }
+
+
+    /**
+     * Gets the first sequence of succeeding elements of a class in a list of labels.
+     * An element succeeds another element if they are at most one char apart in the string on which
+     * the labels were classified.
+     *
+     * @param list  The list of labeled elements
+     * @param CLASS The class for which th first sequence if found
+     * @return
+     */
+    private List<CoreLabel> getSucceedingElements(List<CoreLabel> list, String CLASS) {
+        // for now first element labeled as CLASS and the succeeding elements
+        // (endposition + 1 = beginposition) or endposition = beginposition
+        // at most one char apart
+
+        boolean firstFound = false;
+        boolean listComplete = false;
+        int endIndex = -1;
+        CoreLabel element = null;
+        List<CoreLabel> tokenQuantities = new ArrayList<>();
+
+        for (int i = 0; i < list.size() && !listComplete; i++) {
+            element = list.get(i);
+            // check if the element belongs to the needed class
+            if (CLASS.equals(element.get(CoreAnnotations.AnswerAnnotation.class))) {
+                if (!firstFound) {
+                    //if the first element is not found yet add this element to the list and toggle
+                    // firstFound
+                    tokenQuantities.add(element);
+                    firstFound = true;
+                    //endIndex is the position of the first char not in the string of this element
+                    endIndex = element.endPosition();
+                } else {
+                    // the first element of the sequence has been found, check if this element is
+                    // at most one char apart
+                    if (element.beginPosition() == endIndex + 1 || element.beginPosition() == endIndex) {
+                        tokenQuantities.add(element);
+                        endIndex = element.endPosition();
+                    } else {
+                        listComplete = true;
+                    }
+                }
+            } else {
+                // this element does not belong to the needed class, if an element of the class has
+                // already been found then set listComplet to true in order to break the for loop
+                if (firstFound) {
+                    listComplete = true;
+                }
+            }
+        }
+        return tokenQuantities;
     }
 }

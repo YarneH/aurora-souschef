@@ -43,7 +43,7 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
      * Detects the set of mIngredients in a recipeStep. It also checks if this corresponds with the mIngredients of the
      * recipe.
      *
-     * @param recipeStep          The recipeStep on which to detect the mIngredients
+     * @param recipeStep           The recipeStep on which to detect the mIngredients
      * @param ingredientListRecipe The set of mIngredients contained in the recipe of which the recipeStep is a part
      * @return A set of Ingredient objects that represent the mIngredients contained in the recipeStep
      */
@@ -55,9 +55,9 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         if (ingredientListRecipe != null) {
 
             if (recipeStep.getDescription().contains("sauce")) {
-                set.add(new Ingredient("sauce", "gram", AMOUNT));
+                set.add(new Ingredient("sauce", "gram", AMOUNT, recipeStep.getDescription()));
             } else {
-                set.add(new Ingredient("spaghetti", "gram", AMOUNT));
+                set.add(new Ingredient("spaghetti", "gram", AMOUNT, recipeStep.getDescription()));
             }
         }
         return set;

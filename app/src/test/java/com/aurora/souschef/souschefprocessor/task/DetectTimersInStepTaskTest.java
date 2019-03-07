@@ -9,15 +9,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class DetectTimersInStepTaskTest {
 
     private static DetectTimersInStepTask detector0;
     private static DetectTimersInStepTask detector1;
     private static RecipeInProgress recipe;
-    private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
     private static ArrayList<RecipeStep> recipeSteps;
 
     @BeforeClass
@@ -34,7 +31,6 @@ public class DetectTimersInStepTaskTest {
         recipe.setRecipeSteps(recipeSteps);
         detector0 = new DetectTimersInStepTask(recipe, stepIndex0);
         detector1 = new DetectTimersInStepTask(recipe, stepIndex1);
-
 
 
     }

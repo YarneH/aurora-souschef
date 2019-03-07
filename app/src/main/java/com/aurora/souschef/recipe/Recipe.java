@@ -1,7 +1,6 @@
 package com.aurora.souschef.recipe;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * A data class representing a recipe. It has 4 fields:
@@ -12,13 +11,13 @@ import java.util.Set;
  * mDescription: a description of the recipe (could be that it is not present)
  */
 public class Recipe {
-    protected Set<Ingredient> mIngredients;
+    protected List<Ingredient> mIngredients;
     protected List<RecipeStep> mRecipeSteps;
     protected int mNumberOfPeople;
     protected String mDescription;
 
 
-    public Recipe(Set<Ingredient> ingredients, List<RecipeStep> recipeSteps, int numberOfPeople, String description) {
+    public Recipe(List<Ingredient> ingredients, List<RecipeStep> recipeSteps, int numberOfPeople, String description) {
         this.mIngredients = ingredients;
         this.mRecipeSteps = recipeSteps;
         this.mNumberOfPeople = numberOfPeople;
@@ -45,11 +44,11 @@ public class Recipe {
         this.mRecipeSteps = recipeSteps;
     }
 
-    public synchronized Set<Ingredient> getIngredients() {
+    public synchronized List<Ingredient> getIngredients() {
         return mIngredients;
     }
 
-    public synchronized void setIngredients(Set<Ingredient> ingredients) {
+    public synchronized void setIngredients(List<Ingredient> ingredients) {
         this.mIngredients = ingredients;
     }
 

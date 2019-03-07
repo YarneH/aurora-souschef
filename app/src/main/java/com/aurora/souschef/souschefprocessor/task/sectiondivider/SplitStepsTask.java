@@ -1,8 +1,8 @@
 package com.aurora.souschef.souschefprocessor.task.sectiondivider;
 
-import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.recipe.RecipeStep;
 import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
+import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
         // dummy code
         String[] array = steps.split("\n");
         List<RecipeStep> list = new ArrayList<>();
-        for(String step : array){
+        for (String step : array) {
             list.add(new RecipeStep(step));
         }
         return list;

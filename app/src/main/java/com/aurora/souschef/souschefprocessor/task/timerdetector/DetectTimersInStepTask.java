@@ -10,14 +10,8 @@ import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import static android.content.ContentValues.TAG;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -38,8 +32,14 @@ import edu.stanford.nlp.util.CoreMap;
 public class DetectTimersInStepTask extends AbstractProcessingTask {
     private int mStepIndex;
 
+    //TODO change detection of fractions and symbol notations into a non hard-coded solution
     private static final String FRACTION_HALF = "half";
+    private static final Double FRACTION_HALF_MUL = 0.5;
     private static final String FRACTION_QUARTER = "quarter";
+    private static final Double FRACTION_QUARTER_MUL = 0.25;
+    private static final Integer MAX_FRACTION_DISTANCE = 15;
+    private static final Integer MIN_TO_SECONDS = 60;
+    private static final Integer HOUR_TO_SECONDS = 60*60;
 
     private Map<String, Double> fractionMultipliers = new HashMap<>();
 
@@ -53,8 +53,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
         }
         this.mStepIndex = stepIndex;
-        this.fractionMultipliers.put(FRACTION_HALF, 0.5);
-        this.fractionMultipliers.put(FRACTION_QUARTER, 0.25);
+        this.fractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
+        this.fractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
     }
 
     /**
@@ -75,42 +75,17 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private List<RecipeTimer> detectTimer(RecipeStep recipeStep) {
         List<RecipeTimer> list = new ArrayList<>();
 
-        Properties props = new Properties();
-
-        AnnotationPipeline pipeline = new AnnotationPipeline();
-        pipeline.addAnnotator(new TokenizerAnnotator(false));
-        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-        pipeline.addAnnotator(new POSTaggerAnnotator(false));
-        pipeline.addAnnotator(new TimeAnnotator("sutime", props));
-
+        AnnotationPipeline pipeline = createTimerAnnotationPipeline();
         Annotation recipeStepAnnotated = new Annotation(recipeStep.getDescription());
-
         pipeline.annotate(recipeStepAnnotated);
 
-        // Map fractions to their start position in the recipe step
-        // to compare their relative position to NER DURATION tags
-        HashMap<Integer, String> fractionPositions = new HashMap<>();
-
-        // Pattern for smybol notations
-        String pattern = "(\\d+)[h|m|s|H|M|S]";
-        Pattern symbolPattern = Pattern.compile(pattern);
-
         List<CoreLabel> allTokens = recipeStepAnnotated.get(CoreAnnotations.TokensAnnotation.class);
-        for(CoreLabel token : allTokens){
-            if(token.originalText().equals(FRACTION_HALF) ){
-                fractionPositions.put(token.beginPosition(), FRACTION_HALF);
-            }
-            else if(token.originalText().equals(FRACTION_QUARTER)){
-                fractionPositions.put(token.beginPosition(), FRACTION_QUARTER);
-            }
-            if(token.originalText().matches(pattern)){
-                try {
-                    list.add(new RecipeTimer(getSecondsFromFormattedString("PT" + token.originalText())));
-                } catch (IllegalArgumentException iae) {
-                    //TODO do something meaningful
-                };
-            }
-        }
+
+        // Map fractions to their start position in the recipe step
+        Map<Integer, String> fractionPositions = getFractionPositions(allTokens);
+
+        // Detect and calculate symbol notations for time durations in the recipeStep
+        detectSymbolPattern(list, allTokens);
 
         List<CoreMap> timexAnnotations = recipeStepAnnotated.get(TimeAnnotations.TimexAnnotations.class);
         for (CoreMap cm : timexAnnotations) {
@@ -123,60 +98,121 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                         .getDuration().getJodaTimeDuration().getStandardSeconds();
 
                 CoreLabel timexToken = cm.get(CoreAnnotations.TokensAnnotation.class).get(0);
-                if(!fractionPositions.isEmpty()){
-                    for (Map.Entry<Integer, String> fractionPosition : fractionPositions.entrySet()) {
-                        int relPosition = fractionPosition.getKey() - timexToken.beginPosition();
-                        // Fraction in front of timex tag is assumed to be a decreasing multiplier
-                        // e.g. "half an hour" = 0.5 * 3600s
-                        if(-15 < relPosition && relPosition < 0){
-                            recipeStepSeconds *= fractionMultipliers.get(fractionPosition.getValue());
-                        }
-                        // Fraction behind timex tag is assumed to be an increasing multiplier
-                        // e.g. "for an hour and a half" = 1.5 * 3600s
-                        else if(0 < relPosition && relPosition < 15){
-                            recipeStepSeconds *= (1+fractionMultipliers.get(fractionPosition.getValue()));
-                        }
-                    }
-                }
+                recipeStepSeconds = changeToFractions(fractionPositions, timexToken, recipeStepSeconds);
                 try {
                     list.add(new RecipeTimer(recipeStepSeconds));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
+                    Log.e(DetectTimersInStepTask.class.toString(), iae.getMessage());
                 }
             } else {
                 //formattedstring is the only way to access private min and max fields in DurationRange object
-                SUTime.Duration durationRange = temporal.getDuration();
-
-                String formattedString = temporal.toString();
+                SUTime.DurationRange durationRange = (SUTime.DurationRange) temporal.getDuration();
+                String formattedString = durationRange.toString();
                 String[] minAndMax = formattedString.split("/");
-                String min = minAndMax[0];
-                String max = minAndMax[1];
-                int lowerBound = getSecondsFromFormattedString(min);
-                int upperBound = getSecondsFromFormattedString(max);
+                int lowerBound = getSecondsFromFormattedString(minAndMax[0]);
+                int upperBound = getSecondsFromFormattedString(minAndMax[1]);
                 try {
                     list.add(new RecipeTimer(lowerBound, upperBound));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
+                    Log.e(DetectTimersInStepTask.class.toString(), iae.getMessage());
                 }
             }
         }
-
         return list;
     }
 
-    private int getSecondsFromFormattedString(String string) {
+    /**
+     * Creates custom annotation pipeline for timers
+     * @return Annotation pipeline
+     */
+    private AnnotationPipeline createTimerAnnotationPipeline(){
+        Properties props = new Properties();
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+        pipeline.addAnnotator(new TokenizerAnnotator(false));
+        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
+        pipeline.addAnnotator(new POSTaggerAnnotator(false));
+        pipeline.addAnnotator(new TimeAnnotator("sutime", props));
+        return pipeline;
+    }
+
+    /**
+     * Retrieves positions of fractions in the recipe step
+     * @param allTokens tokens in a recipe step
+     * @return Mapping of fractions to their position in the recipe step
+     */
+    private Map<Integer, String> getFractionPositions(List<CoreLabel> allTokens) {
+        Map<Integer, String> fractionPositions = new HashMap<>();
+        for(CoreLabel token : allTokens) {
+            if (token.originalText().equals(FRACTION_HALF)) {
+                fractionPositions.put(token.beginPosition(), FRACTION_HALF);
+            } else if (token.originalText().equals(FRACTION_QUARTER)) {
+                fractionPositions.put(token.beginPosition(), FRACTION_QUARTER);
+            }
+        }
+        return fractionPositions;
+    }
+
+    /**
+     * Detects symbol notations for timers in the recipe step
+     * and adds their timer to the list of recipeTimers
+     * @param recipeTimers list containing the recipeTimers in this recipe step
+     * @param allTokens tokens in a recipe step
+     */
+    private void detectSymbolPattern(List<RecipeTimer> recipeTimers, List<CoreLabel> allTokens){
+        for(CoreLabel token : allTokens) {
+            if(token.originalText().matches("(\\d+)[h|m|s|H|M|S]")){
+                try {
+                    recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString("PT" + token.originalText())));
+                } catch (IllegalArgumentException iae) {
+                    //TODO do something meaningful
+                };
+            }
+        }
+    }
+
+    /**
+     * Checks if fractions are in proximity to the timex token and adapts
+     * the recipeStepSeconds to these fractions
+     * @param fractionPositions position of fractions in the recipe step
+     * @param timexToken token representing the time in this recipe step
+     * @param recipeStepSeconds the seconds detected in this timex token
+     * @return
+     */
+    private Integer changeToFractions(Map<Integer, String> fractionPositions, CoreLabel timexToken, int recipeStepSeconds){
+        if(!fractionPositions.isEmpty()){
+            for (Map.Entry<Integer, String> fractionPosition : fractionPositions.entrySet()) {
+                int relPosition = fractionPosition.getKey() - timexToken.beginPosition();
+                // Fraction in front of timex tag is assumed to be a decreasing multiplier (e.g. half an hour)
+                // Fraction behind timex tag is assumed to be an increasing multiplier (e.g. for an hour and a half)
+                if(-MAX_FRACTION_DISTANCE < relPosition && relPosition < 0){
+                    recipeStepSeconds *= fractionMultipliers.get(fractionPosition.getValue());
+                } else if(0 < relPosition && relPosition < MAX_FRACTION_DISTANCE){
+                    recipeStepSeconds *= (1+fractionMultipliers.get(fractionPosition.getValue()));
+                }
+            }
+        }
+        return recipeStepSeconds;
+    }
+
+    /**
+     * Returns format to actual seconds
+     * e.g. PT1H to 1 * 60 60 (3600) seconds
+     * @param string
+     * @return seconds
+     */
+    private static int getSecondsFromFormattedString(String string) {
         //TODO maybe this can be done less hardcoded, although for souschef I think this is good enough
-        String number = string.substring(2, string.length() - 1);
+        int numberPosition = 2;
+        String number = string.substring(numberPosition, string.length() - 1);
         int num = Integer.parseInt(number);
         char unit = string.charAt(string.length() - 1);
         if (Character.toLowerCase(unit) == 'm') {
-            return num * 60;
+            return num * MIN_TO_SECONDS;
         } else if (Character.toLowerCase(unit) == 'h') {
-            return num * 60 * 60;
-        } else if (Character.toLowerCase(unit) == 's') {
-            return num;
+            return num * HOUR_TO_SECONDS;
         }
-        return 0;
-
+        return num;
     }
 }

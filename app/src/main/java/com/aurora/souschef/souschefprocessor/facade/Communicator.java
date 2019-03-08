@@ -1,11 +1,6 @@
 package com.aurora.souschef.souschefprocessor.facade;
 
-import android.content.Context;
-
 import com.aurora.souschef.recipe.Recipe;
-
-import java.io.IOException;
-import java.util.zip.GZIPInputStream;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -20,15 +15,15 @@ public class Communicator {
 
     // Caution! this class heavily depends on the Aurora API
 
-    public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier){
+    public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
         /* TODO load in the classifier using this code, or let it be loaded in by an activity
-        try {
-            GZIPInputStream is =
-                    new GZIPInputStream(getResources().openRawResource(R.raw.detect_ingr_list_model));
-            CRFClassifier crf = CRFClassifier.getClassifier(is);
-            DetectIngredientsInListTask detector = new DetectIngredientsInListTask(rip, crf);
-            detector.doTask();
-        } catch (IOException | ClassNotFoundException e) {
+        TODO try {
+        TODO    GZIPInputStream is =
+        TODO            new GZIPInputStream(getResources().openRawResource(R.raw.detect_ingr_list_model));
+        TODO   CRFClassifier crf = CRFClassifier.getClassifier(is);
+        TODO    DetectIngredientsInListTask detector = new DetectIngredientsInListTask(rip, crf);
+        TODO    detector.doTask();
+        TODO } catch (IOException | ClassNotFoundException e) {
 
         }*/
         mDelegator = new Delegator(ingredientsClassifier);

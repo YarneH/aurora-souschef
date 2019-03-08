@@ -186,7 +186,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
                 mCRFClassifier = CRFClassifier.getClassifier(modelName);
             } catch (IOException | ClassNotFoundException exception) {
                 Log.e(TAG, "detect ingredients in list: classifier not loaded ", exception);
-                return null;
+
             }
         }
         // if no ingredientList is provided return an empty list
@@ -202,9 +202,8 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             if (ingredient != null) {
                 Ingredient ing = (detectIngredient(addSpaces(ingredient)));
 
-                if (ing != null) {
-                    returnList.add(ing);
-                }
+                returnList.add(ing);
+
             }
         }
         return returnList;

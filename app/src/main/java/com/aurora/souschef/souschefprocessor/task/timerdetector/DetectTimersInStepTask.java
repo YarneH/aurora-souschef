@@ -7,6 +7,8 @@ import com.aurora.souschef.recipe.RecipeTimer;
 import com.aurora.souschef.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 
+import static android.content.ContentValues.TAG;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,8 +40,12 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private static final String FRACTION_QUARTER = "quarter";
     private static final Double FRACTION_QUARTER_MUL = 0.25;
     private static final Integer MAX_FRACTION_DISTANCE = 15;
+
     private static final Integer MIN_TO_SECONDS = 60;
     private static final Integer HOUR_TO_SECONDS = 60*60;
+
+    // Position of number in timex3 format (e.g. PT1H)
+    private static final Integer TIMEX_NUM_POSITION = 2;
 
     private Map<String, Double> fractionMultipliers = new HashMap<>();
 
@@ -103,7 +109,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     list.add(new RecipeTimer(recipeStepSeconds));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
-                    Log.e(DetectTimersInStepTask.class.toString(), iae.getMessage());
+                    Log.e(TAG, iae.getMessage());
                 }
             } else {
                 //formattedstring is the only way to access private min and max fields in DurationRange object
@@ -116,7 +122,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     list.add(new RecipeTimer(lowerBound, upperBound));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
-                    Log.e(DetectTimersInStepTask.class.toString(), iae.getMessage());
+                    Log.e(TAG, iae.getMessage());
                 }
             }
         }
@@ -167,6 +173,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString("PT" + token.originalText())));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
+                    Log.e(TAG, iae.getMessage());
                 };
             }
         }
@@ -180,7 +187,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * @param recipeStepSeconds the seconds detected in this timex token
      * @return
      */
-    private Integer changeToFractions(Map<Integer, String> fractionPositions, CoreLabel timexToken, int recipeStepSeconds){
+    private Integer changeToFractions(Map<Integer, String> fractionPositions,
+                                      CoreLabel timexToken, int recipeStepSeconds){
         if(!fractionPositions.isEmpty()){
             for (Map.Entry<Integer, String> fractionPosition : fractionPositions.entrySet()) {
                 int relPosition = fractionPosition.getKey() - timexToken.beginPosition();
@@ -197,15 +205,14 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     }
 
     /**
-     * Returns format to actual seconds
+     * Converts formatted string to actual seconds
      * e.g. PT1H to 1 * 60 60 (3600) seconds
-     * @param string
+     * @param string formatted string
      * @return seconds
      */
     private static int getSecondsFromFormattedString(String string) {
         //TODO maybe this can be done less hardcoded, although for souschef I think this is good enough
-        int numberPosition = 2;
-        String number = string.substring(numberPosition, string.length() - 1);
+        String number = string.substring(TIMEX_NUM_POSITION, string.length() - 1);
         int num = Integer.parseInt(number);
         char unit = string.charAt(string.length() - 1);
         if (Character.toLowerCase(unit) == 'm') {

@@ -112,7 +112,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             }
         }
 
-
         List<CoreMap> timexAnnotations = recipeStepAnnotated.get(TimeAnnotations.TimexAnnotations.class);
         for (CoreMap cm : timexAnnotations) {
             int recipeStepSeconds;
@@ -139,7 +138,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                         }
                     }
                 }
-
                 try {
                     list.add(new RecipeTimer(recipeStepSeconds));
                 } catch (IllegalArgumentException iae) {

@@ -46,4 +46,20 @@ public class RecipeTimer {
         return mLowerBound;
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof RecipeTimer) {
+            RecipeTimer rt = (RecipeTimer) o;
+            if (rt.getLowerBound() == mLowerBound && rt.getUpperBound() == mUpperBound) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

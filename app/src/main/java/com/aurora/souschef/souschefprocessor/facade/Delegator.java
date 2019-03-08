@@ -17,6 +17,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.ling.CoreLabel;
+
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
  * described in the architecture.
@@ -25,11 +28,14 @@ public class Delegator {
 
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
     private ThreadPoolExecutor mThreadPoolExecutor;
+    private CRFClassifier<CoreLabel> mIngredientClassifier;
 
 
-    public Delegator() {
+    public Delegator(CRFClassifier<CoreLabel> ingredientClassifier) {
         mThreadPoolExecutor = null;
+        mIngredientClassifier = ingredientClassifier;
     }
+
 
     /**
      * Creates the ThreadPoolExecutor for the processing of the text, this is device-dependent
@@ -94,7 +100,7 @@ public class Delegator {
         pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
         pipeline.add(new SplitStepsTask(recipeInProgress));
-        pipeline.add(new DetectIngredientsInListTask(recipeInProgress));
+        pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));
         ParallellizeableTaskNames[] taskNames = {ParallellizeableTaskNames.INGR, ParallellizeableTaskNames.TIMER};
         pipeline.add(new ParallelizeStepsTask(recipeInProgress, this.mThreadPoolExecutor, taskNames));
         return pipeline;

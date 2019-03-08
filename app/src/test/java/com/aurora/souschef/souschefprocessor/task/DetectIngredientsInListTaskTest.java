@@ -1,18 +1,25 @@
-package com.aurora.souschef.SouschefProcessor.task;
+package com.aurora.souschef.souschefprocessor.task;
+
+import android.util.Log;
 
 import com.aurora.souschef.recipe.Ingredient;
-import com.aurora.souschef.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschef.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.ling.CoreLabel;
+
+import static android.content.ContentValues.TAG;
 
 public class DetectIngredientsInListTaskTest {
 
@@ -30,14 +37,24 @@ public class DetectIngredientsInListTaskTest {
     private static RecipeInProgress testRecipe;
     private static DetectIngredientsInListTask testDetector;
 
+    private static CRFClassifier<CoreLabel> crfClassifier;
+
     @BeforeClass
     public static void initialize() {
+        try {
+
+            String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
+            crfClassifier = CRFClassifier.getClassifier(modelName);
+
+        } catch (IOException | ClassNotFoundException exception) {
+            Log.e(TAG, "detect ingredients in list: classifier not loaded ", exception);
+        }
         ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 pounds minced meat\n 1 clove garlic\n twenty basil leaves";
         originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setIngredientsString(ingredientList);
 
-        detector = new DetectIngredientsInListTask(recipe);
+        detector = new DetectIngredientsInListTask(recipe, crfClassifier);
     }
 
     @After
@@ -326,7 +343,7 @@ public class DetectIngredientsInListTaskTest {
 
         testRecipe = new RecipeInProgress(originalText);
         testRecipe.setIngredientsString(listForRecipe);
-        testDetector = new DetectIngredientsInListTask(testRecipe);
+        testDetector = new DetectIngredientsInListTask(testRecipe, crfClassifier);
         testIngredientsInitialized = true;
 
 

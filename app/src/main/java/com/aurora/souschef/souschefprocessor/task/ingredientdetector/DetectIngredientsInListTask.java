@@ -49,10 +49,11 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
 
     //The classifier to detect ingredients
-    private CRFClassifier<CoreLabel> crf;
+    private CRFClassifier<CoreLabel> mCRFClassifier;
 
-    public DetectIngredientsInListTask(RecipeInProgress recipeInProgress) {
+    public DetectIngredientsInListTask(RecipeInProgress recipeInProgress, CRFClassifier<CoreLabel> crfClassifier) {
         super(recipeInProgress);
+        mCRFClassifier = crfClassifier;
     }
 
     /**
@@ -209,19 +210,10 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         // TODO optimize model further
         // TODO quantity detection fails on 1¼ (should be 1.25 gets 1) and on 1 1/2-ounce can (should be 1 gets 1.5)
 
-        try {
-            if (crf == null) {
-                // if classifier not loaded yet load the classifier
-                String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
-                crf = CRFClassifier.getClassifier(modelName);
-            }
-        } catch (IOException | ClassNotFoundException exception) {
-            Log.e(TAG, "detect ingredients in list: classifier not loaded ", exception);
-            return null;
-        }
+
 
         // classify the line
-        List<List<CoreLabel>> classifiedList = crf.classify(line);
+        List<List<CoreLabel>> classifiedList = mCRFClassifier.classify(line);
         // map to put classes and labeled tokens
         Map<String, List<CoreLabel>> map = new HashMap<>();
 

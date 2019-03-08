@@ -109,7 +109,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     list.add(new RecipeTimer(recipeStepSeconds));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
-                    Log.e(TAG, iae.getMessage());
+                    Log.e(TAG, "detectTimer: ", iae);
                 }
             } else {
                 //formattedstring is the only way to access private min and max fields in DurationRange object
@@ -122,7 +122,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     list.add(new RecipeTimer(lowerBound, upperBound));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
-                    Log.e(TAG, iae.getMessage());
+                    Log.e(TAG, "detectTimer: ", iae);
                 }
             }
         }
@@ -173,7 +173,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString("PT" + token.originalText())));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
-                    Log.e(TAG, iae.getMessage());
+                    Log.e(TAG, "detectTimer: ", iae);
                 };
             }
         }
@@ -216,7 +216,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         int num = Integer.parseInt(number);
         char unit = string.charAt(string.length() - 1);
         if (Character.toLowerCase(unit) == 'm') {
-            return num * MIN_TO_SECONDS;
+            return nsum * MIN_TO_SECONDS;
         } else if (Character.toLowerCase(unit) == 'h') {
             return num * HOUR_TO_SECONDS;
         }

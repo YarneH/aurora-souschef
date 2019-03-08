@@ -216,7 +216,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         int num = Integer.parseInt(number);
         char unit = string.charAt(string.length() - 1);
         if (Character.toLowerCase(unit) == 'm') {
-            return nsum * MIN_TO_SECONDS;
+            return num * MIN_TO_SECONDS;
         } else if (Character.toLowerCase(unit) == 'h') {
             return num * HOUR_TO_SECONDS;
         }

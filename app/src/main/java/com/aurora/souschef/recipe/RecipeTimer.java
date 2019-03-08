@@ -13,7 +13,7 @@ public class RecipeTimer {
     private int mLowerBound;
 
 
-    public RecipeTimer(int upperBound, int lowerBound)  {
+    public RecipeTimer(int upperBound, int lowerBound) {
         if (upperBound <= 0) {
             throw new IllegalArgumentException("UpperBound is negative");
         }
@@ -30,7 +30,7 @@ public class RecipeTimer {
         }
     }
 
-    public RecipeTimer(int time)  {
+    public RecipeTimer(int time) {
         if (time <= 0) {
             throw new IllegalArgumentException("Time is negative");
         }
@@ -61,5 +61,4 @@ public class RecipeTimer {
         }
         return false;
     }
-
 }

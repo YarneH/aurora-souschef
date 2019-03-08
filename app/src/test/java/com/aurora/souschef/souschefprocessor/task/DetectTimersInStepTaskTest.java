@@ -38,7 +38,6 @@ public class DetectTimersInStepTaskTest {
             detectors.add(new DetectTimersInStepTask(recipe, stepIndex));
         }
 
-
     }
 
     @After

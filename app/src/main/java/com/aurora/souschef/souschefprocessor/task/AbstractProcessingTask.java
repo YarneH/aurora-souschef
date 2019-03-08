@@ -6,12 +6,13 @@ package com.aurora.souschef.souschefprocessor.task;
 public abstract class AbstractProcessingTask {
     /**
      * A task to be done on a mRecipeInProgress
+     *
      * @param mRecipeInProgress The mRecipeInProgress on which to do the task
      */
 
     protected RecipeInProgress mRecipeInProgress;
 
-    public AbstractProcessingTask(RecipeInProgress recipeInProgress){
+    public AbstractProcessingTask(RecipeInProgress recipeInProgress) {
         this.mRecipeInProgress = recipeInProgress;
     }
 

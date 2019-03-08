@@ -41,20 +41,13 @@ public class DetectIngredientsInListTaskTest {
 
     @BeforeClass
     public static void initialize() {
-        try {
 
-            String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
-            crfClassifier = CRFClassifier.getClassifier(modelName);
-
-        } catch (IOException | ClassNotFoundException exception) {
-            Log.e(TAG, "detect ingredients in list: classifier not loaded ", exception);
-        }
         ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 pounds minced meat\n 1 clove garlic\n twenty basil leaves";
         originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setIngredientsString(ingredientList);
 
-        detector = new DetectIngredientsInListTask(recipe, crfClassifier);
+        detector = new DetectIngredientsInListTask(recipe, null);
     }
 
     @After
@@ -343,7 +336,7 @@ public class DetectIngredientsInListTaskTest {
 
         testRecipe = new RecipeInProgress(originalText);
         testRecipe.setIngredientsString(listForRecipe);
-        testDetector = new DetectIngredientsInListTask(testRecipe, crfClassifier);
+        testDetector = new DetectIngredientsInListTask(testRecipe, null);
         testIngredientsInitialized = true;
 
 

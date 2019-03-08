@@ -179,6 +179,16 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      */
     private List<Ingredient> detectIngredients(String ingredientList) {
 
+        if (mCRFClassifier == null) {
+            try {
+                // if classifier not loaded yet load the classifier
+                String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
+                mCRFClassifier = CRFClassifier.getClassifier(modelName);
+            } catch (IOException | ClassNotFoundException exception) {
+                Log.e(TAG, "detect ingredients in list: classifier not loaded ", exception);
+                return null;
+            }
+        }
         // if no ingredientList is provided return an empty list
         if (ingredientList == null || ("").equals(ingredientList)) {
             return new ArrayList<>();
@@ -209,7 +219,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     private Ingredient detectIngredient(String line) {
         // TODO optimize model further
         // TODO quantity detection fails on 1¼ (should be 1.25 gets 1) and on 1 1/2-ounce can (should be 1 gets 1.5)
-
 
 
         // classify the line

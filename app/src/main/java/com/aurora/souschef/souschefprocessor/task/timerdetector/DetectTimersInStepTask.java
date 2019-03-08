@@ -36,15 +36,12 @@ import edu.stanford.nlp.util.CoreMap;
  * A task that detects timers in mRecipeSteps
  */
 public class DetectTimersInStepTask extends AbstractProcessingTask {
-    int mStepIndex;
+    private int mStepIndex;
 
     private static final String FRACTION_HALF = "half";
     private static final String FRACTION_QUARTER = "quarter";
 
-    Map<String, Double> fractionMultiplier = new HashMap<String, Double>() {{
-        put(FRACTION_HALF, 0.5);
-        put(FRACTION_QUARTER, 0.25);
-    }};
+    private Map<String, Double> fractionMultipliers = new HashMap<>();
 
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
@@ -56,6 +53,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
         }
         this.mStepIndex = stepIndex;
+        this.fractionMultipliers.put(FRACTION_HALF, 0.5);
+        this.fractionMultipliers.put(FRACTION_QUARTER, 0.25);
     }
 
     /**
@@ -131,12 +130,12 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                         // Fraction in front of timex tag is assumed to be a decreasing multiplier
                         // e.g. "half an hour" = 0.5 * 3600s
                         if(-15 < relPosition && relPosition < 0){
-                            recipeStepSeconds *= fractionMultiplier.get(fractionPosition.getValue());
+                            recipeStepSeconds *= fractionMultipliers.get(fractionPosition.getValue());
                         }
                         // Fraction behind timex tag is assumed to be an increasing multiplier
                         // e.g. "for an hour and a half" = 1.5 * 3600s
                         else if(0 < relPosition && relPosition < 15){
-                            recipeStepSeconds *= (1+fractionMultiplier.get(fractionPosition.getValue()));
+                            recipeStepSeconds *= (1+fractionMultipliers.get(fractionPosition.getValue()));
                         }
                     }
                 }

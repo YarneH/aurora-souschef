@@ -103,9 +103,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             boolean nexIsNumber = Character.isDigit(next);
 
             if (previousIsNumber && currentIsDash && nexIsNumber) {
-                bld.append(" " + current + " " + next);
-                // the next element has already been added, so increase index by one
-                index++;
+                bld.append(" " + current + " ");
             } else {
                 bld.append(current);
             }
@@ -232,7 +230,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     //TODO do something meaningful
                     Log.e(TAG, "detectTimer: ", iae);
                 }
-                ;
             }
         }
     }

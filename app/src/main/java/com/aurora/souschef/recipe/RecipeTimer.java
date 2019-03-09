@@ -1,5 +1,7 @@
 package com.aurora.souschef.recipe;
 
+import java.util.Objects;
+
 /**
  * A DataClass representing a timer it has two fields
  * mUpperBound: an integer, representing the maximum time in seconds of the timer
@@ -48,7 +50,7 @@ public class RecipeTimer {
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        return Objects.hash(mLowerBound, mUpperBound);
     }
 
     @Override

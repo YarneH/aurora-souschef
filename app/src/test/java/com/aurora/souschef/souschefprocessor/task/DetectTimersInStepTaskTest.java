@@ -1,4 +1,4 @@
-package com.aurora.souschef.SouschefProcessor.task;
+package com.aurora.souschef.souschefprocessor.task;
 
 import com.aurora.souschef.recipe.RecipeStep;
 import com.aurora.souschef.recipe.RecipeTimer;
@@ -22,12 +22,13 @@ public class DetectTimersInStepTaskTest {
     public static void initialize() {
         recipeSteps = new ArrayList<>();
         recipeSteps.add(new RecipeStep("Put 500 gram sauce in the microwave for 3 minutes")); //0 minutes
-        recipeSteps.add(new RecipeStep("Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //1 (upperbound and lowerbound different)
+        recipeSteps.add(new RecipeStep("Heat the oil in a saucepan and gently fry the onion until softened, about 4-5 minutes.")); //1 upperbound and lowerbound with dash //"Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //1 (upperbound and lowerbound different)
         recipeSteps.add(new RecipeStep("Put in the oven for 30 minutes and let rest for 20 minutes.")); //2 (two timers)
         recipeSteps.add(new RecipeStep("Grate cheese for 30 seconds")); //3 (seconds)
         recipeSteps.add(new RecipeStep("Wait for 4 hours")); //4 (hours)
         recipeSteps.add(new RecipeStep("Let cool down for an hour and a half.")); //5 (verbose hour)
         recipeSteps.add(new RecipeStep("Put the lasagna in the oven for 1h"));//6 (symbol hour)
+        recipeSteps.add(new RecipeStep("Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //7 (upperbound and lowerbound different)))
 
         int stepIndex0 = 0;
         int stepIndex1 = 1;
@@ -132,8 +133,21 @@ public class DetectTimersInStepTaskTest {
     }
 
     @Test
-    public void DetectTimersInStep_doTask_upperBoundAndLowerBoundNotEqual() {
+    public void DetectTimersInStep_doTask_upperBoundAndLowerBoundNotEqualWithDash() {
         int stepIndex = 1; //index 1 has upper and lower bound
+        DetectTimersInStepTask detector = detectors.get(stepIndex);
+        detector.doTask();
+        //assert detection
+        assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
+        //assert correct detection
+        RecipeTimer timer = new RecipeTimer(5 * 60, 4 * 60);
+        assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
+
+    }
+
+    @Test
+    public void DetectTimersInStep_doTask_upperBoundAndLowerBoundNotEqualWithoutDash() {
+        int stepIndex = 7; //index 1 has upper and lower bound
         DetectTimersInStepTask detector = detectors.get(stepIndex);
         detector.doTask();
         //assert detection
@@ -141,6 +155,7 @@ public class DetectTimersInStepTaskTest {
         //assert correct detection
         RecipeTimer timer = new RecipeTimer(9 * 60, 7 * 60);
         assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
+
     }
 
 }

@@ -56,7 +56,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
 
     private StepTaskThread createStepTaskThread(CountDownLatch latch, int stepIndex,
                                                 ParallellizeableTaskNames taskName) {
-        StepTaskThread stepTaskThread = null;
+        StepTaskThread stepTaskThread;
 
         if (taskName.equals(ParallellizeableTaskNames.INGR)) {
             // Ingredient

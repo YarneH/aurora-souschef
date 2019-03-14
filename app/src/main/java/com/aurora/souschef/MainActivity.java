@@ -14,15 +14,15 @@ import android.widget.TextView;
 import com.aurora.auroralib.Constants;
 
 public class MainActivity extends AppCompatActivity {
-    private final static int AMOUNT_SEC_IN_HOUR = 3600;
-    private final static int AMOUNT_SEC_IN_HALF_HOUR = 1800;
-    private final static int AMOUNT_SEC_IN_QUARTER = 900;
-    private final static int AMOUNT_SEC_IN_MIN = 60;
-    private final static int MINUTE_STEP = 60;
-    private final static int HALF_MINUTE_STEP = 30;
-    private final static int QUARTER_MINUTE_STEP = 15;
-    private final static int SECOND_STEP = 1;
-    private final static int PERCENT = 100;
+    private static final int AMOUNT_SEC_IN_HOUR = 3600;
+    private static final int AMOUNT_SEC_IN_HALF_HOUR = 1800;
+    private static final int AMOUNT_SEC_IN_QUARTER = 900;
+    private static final int AMOUNT_SEC_IN_MIN = 60;
+    private static final int MINUTE_STEP = 60;
+    private static final int HALF_MINUTE_STEP = 30;
+    private static final int QUARTER_MINUTE_STEP = 15;
+    private static final int SECOND_STEP = 1;
+    private static final int PERCENT = 100;
 
     // TODO: remove dummy values
     private final static int DUMMY_LOWERBOUND = 45 * AMOUNT_SEC_IN_MIN;
@@ -47,22 +47,22 @@ public class MainActivity extends AppCompatActivity {
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
                 String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
                 mTextView.setText(inputText);
-                // Not implemented yet Recipe recipe = Communicator.delegate(inputText);
-                // Not implemented yet String result = basicPluginObject.getResult();
-                // Not implemented yet mTextView.setText(result);
+                // Not implemented yet Recipe recipe = Communicator.delegate(inputText)
+                // Not implemented yet String result = basicPluginObject.getResult()
+                // Not implemented yet mTextView.setText(result)
             } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
-                // TODO handle a PluginObject that was cached
+                // TODO: Handle a PluginObject that was cached
                 //dummy
                 Log.d("NO IMPLEMENTATION", "not implemented yet");
 
             }
         }
 
-        // TODO Change location of timer
+        // TODO: Change location of timer
         setTimerPopup();
     }
 
-    // TODO Change location of timer
+    // TODO: Change location of timer
     public void setTimerPopup() {
         LayoutInflater li = LayoutInflater.from(this);
         View promptView = li.inflate(R.layout.card_timer, null);
@@ -117,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        // TODO: Set new value of timer
                     }
                 });
 
@@ -125,8 +126,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String convertTimeToString(int time) {
-        int amountHours = (int) Math.floor(time / AMOUNT_SEC_IN_HOUR);
-        int amountMins = (int) Math.floor((time - amountHours * AMOUNT_SEC_IN_HOUR) / AMOUNT_SEC_IN_MIN);
+        int amountHours = time / AMOUNT_SEC_IN_HOUR;
+        int amountMins = (time - amountHours * AMOUNT_SEC_IN_HOUR) / AMOUNT_SEC_IN_MIN;
         int amountSec = time - amountHours * AMOUNT_SEC_IN_HOUR - amountMins * AMOUNT_SEC_IN_MIN;
 
         String timerText = "";

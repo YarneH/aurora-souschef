@@ -1,4 +1,4 @@
-package com.aurora.souschefprocessor.facade;
+package com.aurora.souschefprocessor.task;
 
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
@@ -8,6 +8,7 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +37,7 @@ public class DetectIngredientsInListTaskTest {
     private static CRFClassifier<CoreLabel> crfClassifier;
 
     @BeforeClass
-    public static void initialize() {
+    public static void initialize() throws IOException,ClassNotFoundException {
 
         ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 pounds minced meat\n 1 clove garlic\n twenty basil leaves";
         originalText = "irrelevant";

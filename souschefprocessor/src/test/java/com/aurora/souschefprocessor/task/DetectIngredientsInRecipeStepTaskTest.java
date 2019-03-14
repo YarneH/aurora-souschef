@@ -1,4 +1,4 @@
-package com.aurora.souschefprocessor.facade;
+package com.aurora.souschefprocessor.task;
 
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.RecipeStep;

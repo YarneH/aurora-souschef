@@ -25,8 +25,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERCENT = 100;
 
     // TODO: remove dummy values
-    private final static int DUMMY_LOWERBOUND = 45 * AMOUNT_SEC_IN_MIN;
-    private final static int DUMMY_UPPERBOUND = 90 * AMOUNT_SEC_IN_MIN;
+    private static final int DUMMY_LOWERBOUND = 45 * AMOUNT_SEC_IN_MIN;
+    private static final int DUMMY_UPPERBOUND = 90 * AMOUNT_SEC_IN_MIN;
 
 
     private TextView mTextView;
@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private String convertTimeToString(int time) {
+    private static String convertTimeToString(int time) {
         int amountHours = time / AMOUNT_SEC_IN_HOUR;
         int amountMins = (time - amountHours * AMOUNT_SEC_IN_HOUR) / AMOUNT_SEC_IN_MIN;
         int amountSec = time - amountHours * AMOUNT_SEC_IN_HOUR - amountMins * AMOUNT_SEC_IN_MIN;

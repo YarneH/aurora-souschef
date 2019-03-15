@@ -18,9 +18,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        // TODO: Change back to the correct view
+        setContentView(R.layout.activity_steps);
 
         mTextView = (TextView) findViewById(R.id.textView);
+
+        Intent intent = new Intent(this, StepsActivity.class);
+        startActivity(intent);
 
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {

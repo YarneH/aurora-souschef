@@ -1,6 +1,7 @@
 package com.aurora.souschef;
 
 import android.os.CountDownTimer;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v4.app.Fragment;
@@ -42,12 +43,14 @@ public class StepsActivity extends AppCompatActivity {
             "Take the food out of the package",
             "Put the food in the microwave",
             "Serve the hot food on a plate",
-            "Enjoy your meal!"};
+            "Enjoy your meal!"
+    };
     private static final int[] DUMMY_TIMER = {
             60,
             180,
             30,
-            3600};
+            3600
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,8 +95,7 @@ public class StepsActivity extends AppCompatActivity {
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             int index = getArguments().getInt(ARG_SECTION_NUMBER);
 
             // Inflate the CardView
@@ -105,28 +107,35 @@ public class StepsActivity extends AppCompatActivity {
             titleTextView.setText(getString(R.string.section_format, index + 1));
             stepTextView.setText(DUMMY_STEPS[index]);
 
-            // Inflate and save the Timers TODO: Add loop for more timers
+            // Inflate and save the Timers
+            // TODO: Add loop for more timers
+            // TODO: Set TextView to the right start-time
             View timerView = inflater.inflate(R.layout.timer_card, null);
             ViewGroup insertPoint = (ViewGroup) rootView.findViewById(R.id.ll_step);
-            mCardViewTimers.add((CardView) timerView);
-            CountDownTimer test = new CountDownTimer(DUMMY_TIMER[index] * 1000, 1000) {
-                TextView mTextViewTimer = (TextView) timerView.findViewById(R.id.tv_timer);
 
-                public void onTick(long millisUntilFinished) {
-                    // TODO: Add convertTimetoString (in ui-timer branch)
-                    mTextViewTimer.setText(String.valueOf(millisUntilFinished / 1000));
-                }
+            UITimer uiTimer = new UITimer(DUMMY_TIMER[index], DUMMY_TIMER[index], timerView.findViewById(R.id.tv_timer));
 
-                public void onFinish() {
-                    mTextViewTimer.setText("Done!");
-                }
-            };
-            mCountDownTimers.add(test);
-
+            // Add a listener for a short click (Pausing and resuming)
             timerView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    test.start();
+                    if (uiTimer.isRunning()) {
+                        uiTimer.pauseTimer();
+                    } else {
+                        uiTimer.startTimer();
+                    }
+                }
+            });
+
+            // Add a listener for a long click (Show an input for setting the timer, if timer isn't running)
+            timerView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    uiTimer.pauseTimer();
+                    Snackbar.make(view.getRootView(), "This will show the timer setup",Snackbar.LENGTH_SHORT).show();
+
+                    // Returning true means the click is consumed, so onClick will not be called.
+                    return true;
                 }
             });
 

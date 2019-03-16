@@ -1,7 +1,7 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.souschefprocessor.recipe.Ingredient;
-import com.aurora.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 
 import org.junit.After;
@@ -11,6 +11,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -33,11 +34,11 @@ public class DetectIngredientsInListTaskTest {
     private static boolean testIngredientsInitialized = false;
     private static RecipeInProgress testRecipe;
     private static DetectIngredientsInListTask testDetector;
-
     private static CRFClassifier<CoreLabel> crfClassifier;
+    private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
 
     @BeforeClass
-    public static void initialize() throws IOException,ClassNotFoundException {
+    public static void initialize() throws IOException, ClassNotFoundException {
 
         ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 pounds minced meat\n 1 clove garlic\n twenty basil leaves";
         originalText = "irrelevant";
@@ -45,6 +46,11 @@ public class DetectIngredientsInListTaskTest {
         recipe.setIngredientsString(ingredientList);
 
         detector = new DetectIngredientsInListTask(recipe, null);
+
+        Position pos = new Position(0, 1);
+        for (Ingredient.PositionKey key : Ingredient.PositionKey.values()) {
+            irrelevantPositions.put(key, pos);
+        }
     }
 
     @After
@@ -68,13 +74,14 @@ public class DetectIngredientsInListTaskTest {
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_setHasCorrectElements() {
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityNoPosition() {
         detector.doTask();
-        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "g", 500, "irrelevant");
-        Ingredient sauceIngredient = new Ingredient("sauce", "ounces", 500, "irrelevant");
-        Ingredient meatIngredient = new Ingredient("minced meat", "pounds", 1.5, "irrelevant");
-        Ingredient garlicIngredient = new Ingredient("garlic", "clove", 1.0, "irrelevant");
-        Ingredient basilIngredient = new Ingredient("basil leaves", "", 20.0, "irrelevant");
+
+        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "g", 500, "irrelevant", irrelevantPositions);
+        Ingredient sauceIngredient = new Ingredient("sauce", "ounces", 500, "irrelevant", irrelevantPositions);
+        Ingredient meatIngredient = new Ingredient("minced meat", "pounds", 1.5, "irrelevant", irrelevantPositions);
+        Ingredient garlicIngredient = new Ingredient("garlic", "clove", 1.0, "irrelevant", irrelevantPositions);
+        Ingredient basilIngredient = new Ingredient("basil leaves", "", 20.0, "irrelevant", irrelevantPositions);
         boolean spaghetti = recipe.getIngredients().contains(spaghettiIngredient);
         boolean sauce = recipe.getIngredients().contains(sauceIngredient);
         boolean meat = recipe.getIngredients().contains(meatIngredient);
@@ -158,6 +165,60 @@ public class DetectIngredientsInListTaskTest {
         assert (correct + correctButOneCharOff >= 80);
         assert (correctButOneCharOff < 5);
         System.out.println(correct + " units were correctly set and " + correctButOneCharOff + " were correct with one char off");
+    }
+
+    @Test
+    public void DetectIngredientsInList_CorrectPositons() {
+        detector.doTask();
+
+        // first ingredient: 500 g spaghetti (spaces are added between numbers and letters)
+        Position quantityPos = new Position(0, 3);
+        Position unitPos = new Position(4, 5);
+        Position namePos = new Position(6, 15);
+
+        Ingredient ingredient = recipe.getIngredients().get(0);
+        assert (ingredient.getNamePosition().equals(namePos));
+        assert (ingredient.getQuantityPosition().equals(quantityPos));
+        assert (ingredient.getUnitPosition().equals(unitPos));
+
+        ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 pounds minced meat\n 1 clove garlic\n twenty basil leaves";
+
+        // second ingredient: 500 ounces sauce
+        quantityPos = new Position(0, 3);
+        unitPos = new Position(4, 10);
+        namePos = new Position(11, 16);
+
+        ingredient = recipe.getIngredients().get(1);
+        assert (ingredient.getNamePosition().equals(namePos));
+        assert (ingredient.getQuantityPosition().equals(quantityPos));
+        assert (ingredient.getUnitPosition().equals(unitPos));
+
+        // third ingredient 1 1/2 pounds minced meat
+        quantityPos = new Position(0, 5);
+        unitPos = new Position(6, 12);
+        namePos = new Position(13, 24);
+
+        ingredient = recipe.getIngredients().get(2);
+
+        assert (ingredient.getQuantityPosition().equals(quantityPos));
+        assert (ingredient.getUnitPosition().equals(unitPos));
+
+        assert (ingredient.getNamePosition().equals(namePos));
+
+        // fourth ingredient 1 clove garlic
+        quantityPos = new Position(0, 1);
+        unitPos = new Position(2, 7);
+        namePos = new Position(8, 14);
+
+        ingredient = recipe.getIngredients().get(3);
+        assert (ingredient.getNamePosition().equals(namePos));
+
+        assert (ingredient.getQuantityPosition().equals(quantityPos));
+        assert (ingredient.getUnitPosition().equals(unitPos));
+
+        // fifth ingredient twenty basil leaves
+
+
     }
 
     private boolean oneCharOff(String a, String b) {

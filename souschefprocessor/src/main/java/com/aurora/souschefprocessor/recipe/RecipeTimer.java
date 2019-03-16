@@ -14,8 +14,10 @@ public class RecipeTimer {
     private int mUpperBound;
     private int mLowerBound;
 
+    //private Position mPosition;
 
-    public RecipeTimer(int upperBound, int lowerBound) {
+
+    public RecipeTimer(int upperBound, int lowerBound) {// Position position) {
         if (upperBound <= 0) {
             throw new IllegalArgumentException("UpperBound is negative");
         }
@@ -30,14 +32,16 @@ public class RecipeTimer {
             this.mLowerBound = upperBound;
             this.mUpperBound = lowerBound;
         }
+        //this.mPosition = position;
     }
 
-    public RecipeTimer(int time) {
+    public RecipeTimer(int time) {//, Position position) {
         if (time <= 0) {
             throw new IllegalArgumentException("Time is negative");
         }
         this.mUpperBound = time;
         this.mLowerBound = time;
+        //this.mPosition = position;
     }
 
     public int getUpperBound() {
@@ -47,6 +51,10 @@ public class RecipeTimer {
     public int getLowerBound() {
         return mLowerBound;
     }
+
+   /* public Position getPosition(){
+        return  mPosition;
+    }*/
 
     @Override
     public int hashCode() {

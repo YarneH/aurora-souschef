@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.task.ingredientdetector;
 import android.util.Log;
 
 import com.aurora.souschefprocessor.recipe.Ingredient;
+import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
@@ -90,6 +91,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * @return The line with the spaces added
      */
     private static String addSpaces(String line) {
+        line = line.trim();
         StringBuilder bld = new StringBuilder();
         char[] chars = line.toCharArray();
 
@@ -217,7 +219,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      */
     private Ingredient detectIngredient(String line) {
         // TODO optimize model further
-        // TODO quantity detection fails on 1¼ (should be 1.25 gets 1) and on 1 1/2-ounce can (should be 1 gets 1.5)
+        // TODO quantity detection fails on  1 1/2-ounce can (should be 1 gets 1.5)
 
 
         // classify the line
@@ -239,7 +241,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
             }
         }
-
+        Map<Ingredient.PositionKey, Position> positions = new HashMap<>();
         // if no value present, default to 1.0 'one'
         double quantity = 1.0;
         // if no value present, default to empty string
@@ -249,24 +251,53 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         if (map.get(UNIT) != null) {
             // build the unit (gets the first succeeding elements labeled unit)
-            unit = buildUnit(map.get(UNIT));
+            List<CoreLabel> succeedingUnits = getSucceedingElements(map.get(UNIT), UNIT);
+            unit = buildUnit(succeedingUnits);
+
+            // Calculate the position and add it to the map
+            // beginPosition of the first element and endPosition of the last element
+            int beginPosition = succeedingUnits.get(0).beginPosition();
+            int endPosition = succeedingUnits.get(succeedingUnits.size() - 1).endPosition();
+            positions.put(Ingredient.PositionKey.UNIT, new Position(beginPosition, endPosition));
+        } else {
+            // if no unit detected make the position the whole string
+            positions.put(Ingredient.PositionKey.UNIT, new Position(0, line.length()));
         }
 
         List<CoreLabel> nameList = map.get(NAME);
         if (nameList != null) {
             // build the name using the list of tokens in the nameList
             name = buildName(nameList);
+
+            // Calculate the position and add it to the map
+            // beginPosition of the first element and endPosition of the last element
+            int beginPosition = nameList.get(0).beginPosition();
+            int endPosition = nameList.get(nameList.size() - 1).endPosition();
+            positions.put(Ingredient.PositionKey.NAME, new Position(beginPosition, endPosition));
+        } else {
+            // if no name detected make the position the whole string
+            positions.put(Ingredient.PositionKey.NAME, new Position(0, line.length()));
         }
         if (map.get(QUANTITY) != null) {
             // calculate the quantity using the list of tokens in labeled QUANTITY
-            quantity = calculateQuantity(map.get(QUANTITY));
-        }
-        // if quantity is seen as negative revert
-        if (quantity < 0.0) {
-            quantity = -quantity;
+            // for now first element labeled as quantity and the succeeding elements
+            // (endposition + 1 = beginposition) or endposition = beginposition
+            List<CoreLabel> succeedingQuantities = getSucceedingElements(map.get(QUANTITY), QUANTITY);
+            quantity = calculateQuantity(succeedingQuantities);
+
+            // Calculate the position and add it to the map
+            // beginPosition of the first element and endPosition of the last element
+            int beginPosition = succeedingQuantities.get(0).beginPosition();
+            int endPosition = succeedingQuantities.get(succeedingQuantities.size() - 1).endPosition();
+            positions.put(Ingredient.PositionKey.QUANTITY, new Position(beginPosition, endPosition));
+
+
+        } else {
+            // if no quantity detected make the position the whole string
+            positions.put(Ingredient.PositionKey.QUANTITY, new Position(0, line.length()));
         }
 
-        return new Ingredient(name, unit, quantity, line);
+        return new Ingredient(name, unit, quantity, line, positions);
     }
 
     /**
@@ -290,16 +321,15 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
 
     /**
-     * Builds the name of the ingredient using a list of tokens that were classified as NAME
+     * Builds the name of the ingredient using a list of succeeding tokens that were classified as UNIT
      *
-     * @param unitList the list of tokens
+     * @param succeedingUnitList the list of succeeding tokens
      * @return a string which is a concatenation of all the succeeding words in the list
      */
-    private String buildUnit(List<CoreLabel> unitList) {
-        // return every succeeding entity labeled UNIT
-        List<CoreLabel> tokenQuantities = getSucceedingElements(unitList, UNIT);
+    private String buildUnit(List<CoreLabel> succeedingUnitList) {
+
         StringBuilder bld = new StringBuilder();
-        for (CoreLabel cl : tokenQuantities) {
+        for (CoreLabel cl : succeedingUnitList) {
             bld.append(cl.word() + " ");
         }
         // delete last added space
@@ -316,11 +346,9 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      */
     private double calculateQuantity(List<CoreLabel> list) {
         double result = 0.0;
-        // for now first element labeled as quantity and the succeeding elements
-        // (endposition + 1 = beginposition) or endposition = beginposition
-        List<CoreLabel> tokenQuantities = getSucceedingElements(list, QUANTITY);
+
         StringBuilder bld = new StringBuilder();
-        for (CoreLabel cl : tokenQuantities) {
+        for (CoreLabel cl : list) {
             bld.append(cl.word() + " ");
         }
 

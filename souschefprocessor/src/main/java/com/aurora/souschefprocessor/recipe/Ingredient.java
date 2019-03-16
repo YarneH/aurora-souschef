@@ -1,5 +1,6 @@
 package com.aurora.souschefprocessor.recipe;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -14,10 +15,38 @@ public class Ingredient {
     private Amount mAmount;
     private String mOrignalLine;
 
-    public Ingredient(String name, String unit, double value, String originalText) {
+
+    private Map<PositionKey, Position> mPositions;
+
+    public Ingredient(String name, String unit, double value, String originalText, Map<PositionKey, Position> positions) {
         this.mName = name;
         this.mAmount = new Amount(value, unit);
         this.mOrignalLine = originalText;
+
+        // check if the positions are legal
+        for (PositionKey key : PositionKey.values()) {
+            Position position = positions.get(key);
+
+            if (position == null) {
+                throw new IllegalArgumentException("Position of " + key + " cannot be null");
+            }
+            if (!position.isLegalInString(originalText)) {
+                throw new IllegalArgumentException("Position of " + key + " is too big");
+            }
+        }
+        this.mPositions = positions;
+    }
+
+    public Position getNamePosition() {
+        return mPositions.get(PositionKey.NAME);
+    }
+
+    public Position getQuantityPosition() {
+        return mPositions.get(PositionKey.QUANTITY);
+    }
+
+    public Position getUnitPosition() {
+        return mPositions.get(PositionKey.UNIT);
     }
 
     public String getOriginalLine() {
@@ -27,7 +56,6 @@ public class Ingredient {
     public String getName() {
         return mName;
     }
-
 
     public String getUnit() {
         return mAmount.getUnit();
@@ -61,6 +89,10 @@ public class Ingredient {
     public String toString() {
         String res = mAmount + " ";
         return res + mName;
+    }
+
+    public enum PositionKey {
+        NAME, QUANTITY, UNIT
     }
 
 

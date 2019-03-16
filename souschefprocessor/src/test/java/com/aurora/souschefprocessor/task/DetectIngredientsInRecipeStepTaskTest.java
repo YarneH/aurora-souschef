@@ -1,8 +1,8 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.souschefprocessor.recipe.Ingredient;
+import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
-import com.aurora.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 
 import org.junit.After;
@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -21,6 +22,7 @@ public class DetectIngredientsInRecipeStepTaskTest {
     private static RecipeInProgress recipe;
     private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
     private static ArrayList<RecipeStep> recipeSteps;
+    HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
 
     @BeforeClass
     public static void initialize() {
@@ -65,8 +67,8 @@ public class DetectIngredientsInRecipeStepTaskTest {
 
         detector0.doTask();
         detector1.doTask();
-        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "gram", 500, "irrelevant");
-        Ingredient sauceIngredient = new Ingredient("sauce", "gram", 500, "irrelevant");
+        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "gram", 500, "irrelevant", irrelevantPositions);
+        Ingredient sauceIngredient = new Ingredient("sauce", "gram", 500, "irrelevant", irrelevantPositions);
         boolean spaghetti = recipe.getRecipeSteps().get(0).getIngredients().contains(sauceIngredient);
         boolean sauce = recipe.getRecipeSteps().get(1).getIngredients().contains(spaghettiIngredient);
         assert (spaghetti);

@@ -1,10 +1,12 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
 import com.aurora.souschefprocessor.recipe.Ingredient;
+import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,9 +57,9 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         if (ingredientListRecipe != null) {
 
             if (recipeStep.getDescription().contains("sauce")) {
-                set.add(new Ingredient("sauce", "gram", AMOUNT, recipeStep.getDescription()));
+                set.add(new Ingredient("sauce", "gram", AMOUNT, recipeStep.getDescription(), new HashMap<Ingredient.PositionKey, Position>()));
             } else {
-                set.add(new Ingredient("spaghetti", "gram", AMOUNT, recipeStep.getDescription()));
+                set.add(new Ingredient("spaghetti", "gram", AMOUNT, recipeStep.getDescription(), new HashMap<Ingredient.PositionKey, Position>()));
             }
         }
         return set;

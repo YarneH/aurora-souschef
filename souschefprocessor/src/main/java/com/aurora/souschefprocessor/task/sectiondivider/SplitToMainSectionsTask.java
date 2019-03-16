@@ -46,7 +46,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
     }
 
-
     /**
      * Finds the ingredientslist in a text
      *
@@ -55,7 +54,13 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     public String findIngredients(String text) {
         // dummy
-        return "500 gram sauce \n 500 gram spaghetti";
+        // return "500 gram sauce \n 500 gram spaghetti";
+
+        return "8 thin slices baguette\n" +
+                "100g (3 oz) smoked salmon, sliced\n" +
+                "sour cream\n" +
+                "capers\n" +
+                "lemon cheeks, to serve";
     }
 
     /**
@@ -66,9 +71,13 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     public String findSteps(String text) {
         // dummy
-        return "Put 500 gram spaghetti in boiling water for 9 minutes.\n"
-                + "Put the sauce in the Microwave for 3 minutes \n"
-                + "Put them together.";
+        // return "Put 500 gram spaghetti in boiling water for 9 minutes.\n"
+        // + "Put the sauce in the Microwave for 3 minutes \n"
+        //        + "Put them together.";
+
+        return "Toast baguette slices lightly on one side. Layer each round with smoked salmon, top with a dollup of sour \n" +
+                "cream and sprinkle with a few capers and lots of freshly ground black pepper.";
+
     }
 
     /**
@@ -79,7 +88,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     public String findDescription(String text) {
         // dummy
-        return "A spaghetti recipe";
+        // return "A spaghetti recipe";
+        return "crostini with smoked salmon & sour cream";
     }
 
 

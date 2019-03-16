@@ -13,7 +13,6 @@ public class DetectNumberOfPeopleTaskTest {
     private static RecipeInProgress recipe;
     private static DetectNumberOfPeopleTask detectNumberOfPeopleTask;
     private static String originalText;
-    private static String originalTextNoNumber;
 
     @BeforeClass
     public static void initialize() {

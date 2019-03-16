@@ -42,6 +42,10 @@ public class Recipe extends PluginObject {
         this.mDescription = description;
     }
 
+    public String getDescription() {
+        return mDescription;
+    }
+
     public synchronized List<RecipeStep> getRecipeSteps() {
         return mRecipeSteps;
     }

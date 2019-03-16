@@ -178,9 +178,7 @@ public class DetectTimersInStepTaskTest {
             DetectTimersInStepTask detector = new DetectTimersInStepTask(rip, 0);
             detector.doTask();
 
-
             List<RecipeTimer> timers = step.getRecipeTimers();
-
 
             if (tag.equals("NO_TIMER")) {
                 // No timers but one detected

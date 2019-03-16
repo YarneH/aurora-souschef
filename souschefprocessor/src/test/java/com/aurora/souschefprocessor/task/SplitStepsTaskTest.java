@@ -74,10 +74,6 @@ public class SplitStepsTaskTest {
     @Test
     public void SplitStepsTask_doTask_setHasCorrectValuesAcrossNewline() {
         splitStepsTaskAcrossNewline.doTask();
-        for(int i = 0; i < recipeAcrossNewline.getRecipeSteps().size(); i++){
-            System.out.println(recipeAcrossNewline.getRecipeSteps().get(i).getDescription());
-        }
-        System.out.println(recipeAcrossNewline.getRecipeSteps().get(1).getDescription());
         assert(recipeAcrossNewline.getRecipeSteps().get(0).getDescription()
                 .equals("Heat the oil in a medium skillet over medium heat."));
         assert(recipeAcrossNewline.getRecipeSteps().get(1).getDescription()

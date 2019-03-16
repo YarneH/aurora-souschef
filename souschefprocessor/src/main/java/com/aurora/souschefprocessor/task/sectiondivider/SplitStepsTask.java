@@ -42,7 +42,8 @@ public class SplitStepsTask extends AbstractProcessingTask {
             array = steps.split("\\.");
         }
         for (String step : array) {
-            list.add(new RecipeStep(step.trim() + "."));
+            step = step.replace(".", "").trim();
+            list.add(new RecipeStep( step + "."));
         }
         return list;
     }

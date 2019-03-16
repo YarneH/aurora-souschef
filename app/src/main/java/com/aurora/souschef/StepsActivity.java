@@ -1,24 +1,17 @@
 package com.aurora.souschef;
 
-import android.os.CountDownTimer;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.support.v7.widget.CardView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import java.util.ArrayList;
 
 public class StepsActivity extends AppCompatActivity {
     private static final int TIMER_MARGIN = 10;
@@ -38,8 +31,6 @@ public class StepsActivity extends AppCompatActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
-    private static ArrayList<CardView> mCardViewTimers = new ArrayList<>();
-    private static ArrayList<CountDownTimer> mCountDownTimers = new ArrayList<>();
 
     private static final String[] DUMMY_STEPS = {
             "Take the food out of the package",
@@ -47,12 +38,19 @@ public class StepsActivity extends AppCompatActivity {
             "Serve the hot food on a plate",
             "Enjoy your meal!"
     };
-    
-    private static final int[] DUMMY_TIMER = {
+
+    private static final int[] DUMMY_TIMER_LOWER = {
             60,
             180,
             30,
             3600
+    };
+
+    private static final int[] DUMMY_TIMER_UPPER = {
+            120,
+            200,
+            45,
+            4000
     };
 
     public StepsActivity() {
@@ -74,6 +72,7 @@ public class StepsActivity extends AppCompatActivity {
         // Prevent ViewPager from resetting timers
         mViewPager.setOffscreenPageLimit(mSectionsPagerAdapter.getCount());
 
+        // TODO: Add input from SouschefProc and delete DUMMY values
     }
 
     /**
@@ -117,35 +116,11 @@ public class StepsActivity extends AppCompatActivity {
 
             // Inflate and save the Timers
             // TODO: Add loop for more timers
-            // TODO: Set TextView to the right start-time
             View timerView = inflater.inflate(R.layout.timer_card, null);
 
+            // Create the UITimer, which handles all the clicks by himself
             UITimer uiTimer =
-                    new UITimer(DUMMY_TIMER[index], DUMMY_TIMER[index], timerView.findViewById(R.id.tv_timer));
-
-            // Add a listener for a short click (Pausing and resuming)
-            timerView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (uiTimer.isRunning()) {
-                        uiTimer.pauseTimer();
-                    } else {
-                        uiTimer.startTimer();
-                    }
-                }
-            });
-
-            // Add a listener for a long click (Show an input for setting the timer, if timer isn't running)
-            timerView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
-                    uiTimer.pauseTimer();
-                    Snackbar.make(view.getRootView(), "This will show the timer setup", Snackbar.LENGTH_SHORT).show();
-
-                    // Returning true means the click is consumed, so onClick will not be called.
-                    return true;
-                }
-            });
+                    new UITimer(DUMMY_TIMER_LOWER[index], DUMMY_TIMER_UPPER[index], timerView.findViewById(R.id.tv_timer));
 
             // Set the right layoutparams for the timerView
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(

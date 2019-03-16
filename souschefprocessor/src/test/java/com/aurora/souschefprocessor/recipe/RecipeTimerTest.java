@@ -3,7 +3,7 @@ package com.aurora.souschefprocessor.recipe;
 import org.junit.Test;
 
 public class RecipeTimerTest {
-    private Position irrelevant = new Position(1, 1);
+    private Position irrelevant = new Position(0, 1);
 
     @Test
     public void RecipeTimer_Constructor_LowerBoundNotBiggerThanUpperBound() throws IllegalArgumentException {

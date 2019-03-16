@@ -22,7 +22,7 @@ public class DetectIngredientsInRecipeStepTaskTest {
     private static RecipeInProgress recipe;
     private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
     private static ArrayList<RecipeStep> recipeSteps;
-    HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
+    private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
 
     @BeforeClass
     public static void initialize() {
@@ -41,6 +41,11 @@ public class DetectIngredientsInRecipeStepTaskTest {
 
         detector0 = new DetectIngredientsInStepTask(recipe, stepIndex0);
         detector1 = new DetectIngredientsInStepTask(recipe, stepIndex1);
+
+        Position pos = new Position(0, 1);
+        for (Ingredient.PositionKey key : Ingredient.PositionKey.values()) {
+            irrelevantPositions.put(key, pos);
+        }
     }
 
     @After

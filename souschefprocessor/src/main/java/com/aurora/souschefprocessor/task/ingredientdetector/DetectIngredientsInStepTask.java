@@ -55,11 +55,16 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         // dummy
         Set<Ingredient> set = new HashSet<>();
         if (ingredientListRecipe != null) {
+            HashMap<Ingredient.PositionKey, Position> map = new HashMap<>();
+            Position pos = new Position(0, 1);
+            for (Ingredient.PositionKey key : Ingredient.PositionKey.values()) {
+                map.put(key, pos);
+            }
 
             if (recipeStep.getDescription().contains("sauce")) {
-                set.add(new Ingredient("sauce", "gram", AMOUNT, recipeStep.getDescription(), new HashMap<Ingredient.PositionKey, Position>()));
+                set.add(new Ingredient("sauce", "gram", AMOUNT, recipeStep.getDescription(), map));
             } else {
-                set.add(new Ingredient("spaghetti", "gram", AMOUNT, recipeStep.getDescription(), new HashMap<Ingredient.PositionKey, Position>()));
+                set.add(new Ingredient("spaghetti", "gram", AMOUNT, recipeStep.getDescription(), map));
             }
         }
         return set;

@@ -31,9 +31,9 @@ public class MainActivity extends AppCompatActivity {
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
                 String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
                 mTextView.setText(inputText);
-                // Not implemented yet Recipe recipe = Communicator.delegate(inputText);
-                // Not implemented yet String result = basicPluginObject.getResult();
-                // Not implemented yet mTextView.setText(result);
+                // Not implemented yet Recipe recipe = Communicator.delegate(inputText)
+                // Not implemented yet String result = basicPluginObject.getResult()
+                // Not implemented yet mTextView.setText(result)
             } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
                 // TODO handle a PluginObject that was cached
                 //dummy

@@ -22,7 +22,7 @@ public class UITimer extends RecipeTimer {
         mTimeSetByUser = lowerBound;
         mTextViewTimer = textView;
         // One is subtracted to make sure the timer shows the correct value when started
-        mMillisLeft = mTimeSetByUser * AMOUNT_MILLISEC_IN_SEC - 1;
+        mMillisLeft = (long) mTimeSetByUser * AMOUNT_MILLISEC_IN_SEC - 1;
     }
 
     public void setTimeSetByUser(int value) {
@@ -64,7 +64,7 @@ public class UITimer extends RecipeTimer {
         return mRunning;
     }
 
-    private String convertTimeToString(int time) {
+    private static String convertTimeToString(int time) {
         int amountHours = time / AMOUNT_SEC_IN_HOUR;
         int amountMins = (time - amountHours * AMOUNT_SEC_IN_HOUR) / AMOUNT_SEC_IN_MIN;
         int amountSec = time - amountHours * AMOUNT_SEC_IN_HOUR - amountMins * AMOUNT_SEC_IN_MIN;

@@ -43,7 +43,6 @@ public class UITimer extends RecipeTimer {
         mTextViewTimer = textView;
 
         resetTimer();
-        setOnClickListeners();
     }
 
     /**
@@ -104,7 +103,7 @@ public class UITimer extends RecipeTimer {
     /**
      * Create a new onClickListener and onLongClickListener for the Timer TextView
      */
-    private void setOnClickListeners() {
+    public void setOnClickListeners() {
         // Add a listener for a short click (Pausing and resuming)
         mTextViewTimer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -121,11 +120,9 @@ public class UITimer extends RecipeTimer {
         mTextViewTimer.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                if (!mRunning) {
-                    if (getLowerBound() != getUpperBound()) {
-                        pauseTimer();
-                        setTimerPopup();
-                    }
+                if (!mRunning && getLowerBound() != getUpperBound()) {
+                    pauseTimer();
+                    setTimerPopup();
                 }
                 return true;
             }

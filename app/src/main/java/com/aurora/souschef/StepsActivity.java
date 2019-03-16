@@ -119,8 +119,9 @@ public class StepsActivity extends AppCompatActivity {
             View timerView = inflater.inflate(R.layout.timer_card, null);
 
             // Create the UITimer, which handles all the clicks by himself
-            UITimer uiTimer =
-                    new UITimer(DUMMY_TIMER_LOWER[index], DUMMY_TIMER_UPPER[index], timerView.findViewById(R.id.tv_timer));
+            UITimer uiTimer = new UITimer(DUMMY_TIMER_LOWER[index],
+                    DUMMY_TIMER_UPPER[index], timerView.findViewById(R.id.tv_timer));
+            uiTimer.setOnClickListeners();
 
             // Set the right layoutparams for the timerView
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(

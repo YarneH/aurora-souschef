@@ -41,22 +41,23 @@ public class StepsActivity extends AppCompatActivity {
     private static ArrayList<CardView> mCardViewTimers = new ArrayList<>();
     private static ArrayList<CountDownTimer> mCountDownTimers = new ArrayList<>();
 
-    public StepsActivity() {
-        // default constructor
-    }
-
     private static final String[] DUMMY_STEPS = {
             "Take the food out of the package",
             "Put the food in the microwave",
             "Serve the hot food on a plate",
             "Enjoy your meal!"
     };
+    
     private static final int[] DUMMY_TIMER = {
             60,
             180,
             30,
             3600
     };
+
+    public StepsActivity() {
+        // default constructor
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

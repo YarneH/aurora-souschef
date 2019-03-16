@@ -56,8 +56,10 @@ public class UITimer extends RecipeTimer {
     }
 
     public void pauseTimer() {
-        mRunning = false;
-        mCountDownTimer.cancel();
+        if (mCountDownTimer != null) {
+            mRunning = false;
+            mCountDownTimer.cancel();
+        }
     }
 
     public boolean isRunning() {

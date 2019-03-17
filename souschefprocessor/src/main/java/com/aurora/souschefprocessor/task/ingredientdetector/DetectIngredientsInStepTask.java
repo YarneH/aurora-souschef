@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
 import com.aurora.souschefprocessor.recipe.Ingredient;
+import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
@@ -36,7 +37,7 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
      */
     public void doTask() {
         RecipeStep recipeStep = mRecipeInProgress.getRecipeSteps().get(mStepIndex);
-        List<Ingredient> ingredientListRecipe = mRecipeInProgress.getIngredients();
+        List<ListIngredient> ingredientListRecipe = mRecipeInProgress.getIngredients();
         Set<Ingredient> iuaSet = detectIngredients(recipeStep, ingredientListRecipe);
         recipeStep.setIngredients(iuaSet);
     }
@@ -49,7 +50,7 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
      * @param ingredientListRecipe The set of mIngredients contained in the recipe of which the recipeStep is a part
      * @return A set of Ingredient objects that represent the mIngredients contained in the recipeStep
      */
-    private Set<Ingredient> detectIngredients(RecipeStep recipeStep, List<Ingredient> ingredientListRecipe) {
+    private Set<Ingredient> detectIngredients(RecipeStep recipeStep, List<ListIngredient> ingredientListRecipe) {
         // TODO generate functionality
 
         // dummy
@@ -62,9 +63,9 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
             }
 
             if (recipeStep.getDescription().contains("sauce")) {
-                set.add(new Ingredient("sauce", "gram", AMOUNT, recipeStep.getDescription(), map));
+                set.add(new Ingredient("sauce", "gram", AMOUNT, map));
             } else {
-                set.add(new Ingredient("spaghetti", "gram", AMOUNT, recipeStep.getDescription(), map));
+                set.add(new Ingredient("spaghetti", "gram", AMOUNT, map));
             }
         }
         return set;

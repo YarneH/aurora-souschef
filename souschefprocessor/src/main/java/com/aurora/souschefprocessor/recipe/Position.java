@@ -27,6 +27,14 @@ public class Position {
         }
     }
 
+    /**
+     * A function to check if the beginIndex and endIndex are legal. An index cannot be negative,
+     * nor can begin and endindex be equal. If they are not legal an IllegalArgumentException is
+     * thrown
+     *
+     * @param beginIndex The beginIndex
+     * @param endIndex   The endIndex
+     */
     private void checkLegality(int beginIndex, int endIndex) {
         if (beginIndex < 0 || endIndex < 0) {
             throw new IllegalArgumentException("At least one of the indexes is negative!");
@@ -36,6 +44,13 @@ public class Position {
         }
     }
 
+    /**
+     * A function that checks is the beginIndex is smaller than the index
+     *
+     * @param beginIndex the beginIndex
+     * @param endIndex   the endIndex
+     * @return A boolean indicating if the beginindex is smaller than the endIndex
+     */
     private boolean beginSmallerThanEnd(int beginIndex, int endIndex) {
         return beginIndex < endIndex;
     }
@@ -76,6 +91,14 @@ public class Position {
         }
     }
 
+    /**
+     * A function that checks if this Position is legal in a String. A position is legal if the
+     * beginIndex is at most the index of the last character of the string and the endIndex is at most
+     * the length of the string (index after the last character)
+     *
+     * @param string
+     * @return
+     */
     public boolean isLegalInString(String string) {
         int length = string.length();
 

@@ -22,7 +22,7 @@ public class IngredientTest {
         boolean thrown = false;
         try {
 
-            Ingredient ing = new Ingredient("spaghetti", "ounces", -500, "irrelevant", irrelevantPositions);
+            Ingredient ing = new Ingredient("spaghetti", "ounces", -500, irrelevantPositions);
         } catch (IllegalArgumentException iae) {
             thrown = true;
         }
@@ -31,7 +31,7 @@ public class IngredientTest {
     }
 
     @Test
-    public void Ingredient_QuantityPositionBiggerThanLengthOfOrriginalTextThrowsException() {
+    public void ListIngredient_QuantityPositionBiggerThanLengthOfOrriginalTextThrowsException() {
         HashMap<Ingredient.PositionKey, Position> positions = new HashMap<>();
         String originalText = "This is the original Text";
         int beginIndexNameAndUnit = 0;
@@ -48,7 +48,7 @@ public class IngredientTest {
         try {
             Position pos = new Position(beginIndexQuantity, endIndexQuantity);
             positions.put(Ingredient.PositionKey.QUANTITY, pos);
-            Ingredient ing = new Ingredient("irrelevant", "irrelevant", 0.0, originalText, positions);
+            Ingredient ing = new ListIngredient("irrelevant", "irrelevant", 0.0, originalText, positions);
 
         } catch (IllegalArgumentException iae) {
             case1Thrown = true;
@@ -62,7 +62,7 @@ public class IngredientTest {
         try {
             Position pos = new Position(beginIndexQuantity, endIndexQuantity);
             positions.put(Ingredient.PositionKey.UNIT, pos);
-            Ingredient ing = new Ingredient("irrelevant", "irrelevant", 0.0, originalText, positions);
+            Ingredient ing = new ListIngredient("irrelevant", "irrelevant", 0.0, originalText, positions);
 
         } catch (IllegalArgumentException iae) {
             case2Thrown = true;
@@ -90,7 +90,7 @@ public class IngredientTest {
         try {
             Position pos = new Position(beginIndexName, endIndexName);
             positions.put(Ingredient.PositionKey.NAME, pos);
-            Ingredient ing = new Ingredient("irrelevant", "irrelevant", 0.0, originalText, positions);
+            Ingredient ing = new ListIngredient("irrelevant", "irrelevant", 0.0, originalText, positions);
 
         } catch (IllegalArgumentException iae) {
             case1Thrown = true;
@@ -103,7 +103,7 @@ public class IngredientTest {
         try {
             Position pos = new Position(beginIndexName, endIndexName);
             positions.put(Ingredient.PositionKey.UNIT, pos);
-            Ingredient ing = new Ingredient("irrelevant", "irrelevant", 0.0, originalText, positions);
+            Ingredient ing = new ListIngredient("irrelevant", "irrelevant", 0.0, originalText, positions);
 
         } catch (IllegalArgumentException iae) {
             case2Thrown = true;
@@ -130,7 +130,7 @@ public class IngredientTest {
         try {
             Position pos = new Position(beginIndexUnit, endIndexUnit);
             positions.put(Ingredient.PositionKey.UNIT, pos);
-            Ingredient ing = new Ingredient("irrelevant", "irrelevant", 0.0, originalText, positions);
+            Ingredient ing = new ListIngredient("irrelevant", "irrelevant", 0.0, originalText, positions);
 
         } catch (IllegalArgumentException iae) {
             case1Thrown = true;
@@ -143,7 +143,7 @@ public class IngredientTest {
         try {
             Position pos = new Position(beginIndexUnit, endIndexUnit);
             positions.put(Ingredient.PositionKey.UNIT, pos);
-            Ingredient ing = new Ingredient("irrelevant", "irrelevant", 0.0, originalText, positions);
+            Ingredient ing = new ListIngredient("irrelevant", "irrelevant", 0.0, originalText, positions);
 
         } catch (IllegalArgumentException iae) {
             case2Thrown = true;
@@ -153,13 +153,13 @@ public class IngredientTest {
 
     @Test
     public void Ingredient_Equals_BehavesExpectedely() {
-        Ingredient iua1 = new Ingredient("spaghetti", "gram", 500, "irrelevant", irrelevantPositions);
-        Ingredient iua2 = new Ingredient("spaghetti", "gram", 500, "irrelevant", irrelevantPositions);
-        Ingredient iua3 = new Ingredient("sauce", "gram", 500, "irrelevant", irrelevantPositions);
+        Ingredient iua1 = new Ingredient("spaghetti", "gram", 500, irrelevantPositions);
+        Ingredient iua2 = new Ingredient("spaghetti", "gram", 500, irrelevantPositions);
+        Ingredient iua3 = new Ingredient("sauce", "gram", 500, irrelevantPositions);
         assert (iua1.equals(iua2));
         assert (!iua1.equals(iua3));
-        String randomobject = "3";
-        assert (!iua1.equals(randomobject));
+        String randomObject = "3";
+        assert (!iua1.equals(randomObject));
     }
 
     @Test
@@ -172,7 +172,7 @@ public class IngredientTest {
             for (String ing : ingredients) {
                 for (String uni : units) {
                     for (double a : amounts) {
-                        iuas.add(new Ingredient(ing, uni, a, "irrelevant", irrelevantPositions));
+                        iuas.add(new Ingredient(ing, uni, a, irrelevantPositions));
                     }
                 }
             }

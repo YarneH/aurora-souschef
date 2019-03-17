@@ -3,9 +3,10 @@ package com.aurora.souschefprocessor.recipe;
 import java.util.Objects;
 
 /**
- * A DataClass representing a timer it has two fields
+ * A DataClass representing a timer it has three fields
  * mUpperBound: an integer, representing the maximum time in seconds of the timer
  * mLowerBound: an integer, representing the minimum time in seconds of the timer
+ * mPosition: the position of the timer in the text where it was detected
  * If the timer has only one value for the time, then mUpperBound == mLowerBound
  */
 public class RecipeTimer {
@@ -52,8 +53,8 @@ public class RecipeTimer {
         return mLowerBound;
     }
 
-   public Position getPosition(){
-        return  mPosition;
+    public Position getPosition() {
+        return mPosition;
     }
 
     @Override

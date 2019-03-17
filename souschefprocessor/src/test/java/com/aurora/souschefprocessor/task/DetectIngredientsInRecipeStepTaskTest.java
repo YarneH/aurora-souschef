@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.souschefprocessor.recipe.Ingredient;
+import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
@@ -36,7 +37,7 @@ public class DetectIngredientsInRecipeStepTaskTest {
         String originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setRecipeSteps(recipeSteps);
-        List<Ingredient> set = new ArrayList<>();
+        List<ListIngredient> set = new ArrayList<>();
         recipe.setIngredients(set);
 
         detector0 = new DetectIngredientsInStepTask(recipe, stepIndex0);
@@ -72,8 +73,8 @@ public class DetectIngredientsInRecipeStepTaskTest {
 
         detector0.doTask();
         detector1.doTask();
-        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "gram", 500, "irrelevant", irrelevantPositions);
-        Ingredient sauceIngredient = new Ingredient("sauce", "gram", 500, "irrelevant", irrelevantPositions);
+        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "gram", 500,  irrelevantPositions);
+        Ingredient sauceIngredient = new Ingredient("sauce", "gram", 500,  irrelevantPositions);
         boolean spaghetti = recipe.getRecipeSteps().get(0).getIngredients().contains(sauceIngredient);
         boolean sauce = recipe.getRecipeSteps().get(1).getIngredients().contains(spaghettiIngredient);
         assert (spaghetti);

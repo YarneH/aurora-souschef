@@ -83,7 +83,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
     /**
      * Add spaces in a recipestep, needed for detection of timers. A space is needed if a dash is
-     * present between two numbers so that the pipeline can see this as seperate tokens (e.g. 4-5 minutes
+     * present between two numbers so that the pipeline can see this as seprate tokens (e.g. 4-5 minutes
      * should become 4 - 5 minutes)
      *
      * @param recipeStepDescription The description in which to add spaces
@@ -118,7 +118,9 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     }
 
     /**
-     * Detects the RecipeTimer in all the mRecipeSteps
+     * Detects the RecipeTimer in all the mRecipeSteps. It first adds spaces to the description so
+     * that tokens can be recognized (e.g. "4-5 minutes" should be "4 - 5 minutes"). Afterwards the
+     * timers of this step are set to the detected timers.
      */
     public void doTask() {
         RecipeStep recipeStep = mRecipeInProgress.getRecipeSteps().get(mStepIndex);
@@ -150,22 +152,22 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         detectSymbolPattern(list, allTokens);
 
 
-
         List<CoreMap> timexAnnotations = recipeStepAnnotated.get(TimeAnnotations.TimexAnnotations.class);
         for (CoreMap cm : timexAnnotations) {
             // the detected seconds
             int recipeStepSeconds;
 
             List<CoreLabel> labelList = cm.get(CoreAnnotations.TokensAnnotation.class);
+
             // The first detected token
             CoreLabel firstTimexToken = labelList.get(0);
             // the last detected token
             CoreLabel lastTimexToken = labelList.get(labelList.size() - 1);
 
-            // The position of the detected timer
+            // The position of the detected timer = beginIndex of the first token, endIndex of the last token
             Position timerPosition = new Position(firstTimexToken.beginPosition(), lastTimexToken.endPosition());
 
-            // The dected annotation
+            // The detected annotation
             SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();
 
             // two cases: DurationRange or Single value
@@ -261,12 +263,12 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * the recipeStepSeconds to these fractions
      *
      * @param fractionPositions timerPosition of fractions in the recipe step
-     * @param originalPosition        token representing the time in this recipe step
+     * @param originalPosition  token representing the time in this recipe step
      * @param recipeStepSeconds the seconds detected in this timex token
      * @return The updated value of recipeStepSeconds
      */
     private int changeToFractions(Map<Integer, String> fractionPositions,
-                                      Position originalPosition, int recipeStepSeconds) {
+                                  Position originalPosition, int recipeStepSeconds) {
         if (!fractionPositions.isEmpty()) {
             for (Map.Entry<Integer, String> fractionPosition : fractionPositions.entrySet()) {
                 int relPosition = fractionPosition.getKey() - originalPosition.getBeginIndex();

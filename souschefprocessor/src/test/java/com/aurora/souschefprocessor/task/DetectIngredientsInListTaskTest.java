@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.souschefprocessor.recipe.Ingredient;
+import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 
@@ -77,11 +78,11 @@ public class DetectIngredientsInListTaskTest {
     public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityNoPosition() {
         detector.doTask();
 
-        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "g", 500, "irrelevant", irrelevantPositions);
-        Ingredient sauceIngredient = new Ingredient("sauce", "ounces", 500, "irrelevant", irrelevantPositions);
-        Ingredient meatIngredient = new Ingredient("minced meat", "pounds", 1.5, "irrelevant", irrelevantPositions);
-        Ingredient garlicIngredient = new Ingredient("garlic", "clove", 1.0, "irrelevant", irrelevantPositions);
-        Ingredient basilIngredient = new Ingredient("basil leaves", "", 20.0, "irrelevant", irrelevantPositions);
+        Ingredient spaghettiIngredient = new ListIngredient("spaghetti", "g", 500, "irrelevant", irrelevantPositions);
+        Ingredient sauceIngredient = new ListIngredient("sauce", "ounces", 500, "irrelevant", irrelevantPositions);
+        Ingredient meatIngredient = new ListIngredient("minced meat", "pounds", 1.5, "irrelevant", irrelevantPositions);
+        Ingredient garlicIngredient = new ListIngredient("garlic", "clove", 1.0, "irrelevant", irrelevantPositions);
+        Ingredient basilIngredient = new ListIngredient("basil leaves", "", 20.0, "irrelevant", irrelevantPositions);
         boolean spaghetti = recipe.getIngredients().contains(spaghettiIngredient);
         boolean sauce = recipe.getIngredients().contains(sauceIngredient);
         boolean meat = recipe.getIngredients().contains(meatIngredient);
@@ -124,7 +125,7 @@ public class DetectIngredientsInListTaskTest {
         testDetector.doTask();
 
         int correct = 0;
-        List<Ingredient> list = testRecipe.getIngredients();
+        List<ListIngredient> list = testRecipe.getIngredients();
         for (int i = 0; i < 100; i++) {
             // check if they are equal up to 3 decimal places
             if ((int) (1000 * list.get(i).getValue()) == (int) (1000 * testIngredientsQuantities[i])) {
@@ -148,7 +149,7 @@ public class DetectIngredientsInListTaskTest {
 
         int correct = 0;
         int correctButOneCharOff = 0;
-        List<Ingredient> list = testRecipe.getIngredients();
+        List<ListIngredient> list = testRecipe.getIngredients();
         for (int i = 0; i < 100; i++) {
             // check if they are equal up to 3 decimal places
             if ((testIngredientsUnits[i]).equals(list.get(i).getUnit())) {
@@ -225,7 +226,6 @@ public class DetectIngredientsInListTaskTest {
         assert (ingredient.getQuantityPosition().equals(quantityPos));
         assert (ingredient.getUnitPosition().equals(unitPos));
         assert (ingredient.getNamePosition().equals(namePos));
-
 
 
     }

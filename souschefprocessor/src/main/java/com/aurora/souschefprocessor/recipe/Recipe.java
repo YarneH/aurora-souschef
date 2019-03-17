@@ -6,20 +6,20 @@ import java.util.List;
 
 /**
  * A data class representing a recipe. It has 4 fields:
- * mIngredients: a set of Ingredient objecs, this represents the mIngredients needed for
+ * mIngredients: a set of ListIngredient objecs, this represents the ListIngredients needed for
  * this recipe.
- * mRecipeSteps: A list of mRecipeSteps in this recipe
+ * mRecipeSteps: A list of RecipeSteps in this recipe
  * mNumberOfPeople: the amount of people the basic recipe is for
  * mDescription: a description of the recipe (could be that it is not present)
  */
 public class Recipe extends PluginObject {
-    protected List<Ingredient> mIngredients;
+    protected List<ListIngredient> mIngredients;
     protected List<RecipeStep> mRecipeSteps;
     protected int mNumberOfPeople;
     protected String mDescription;
 
 
-    public Recipe(List<Ingredient> ingredients, List<RecipeStep> recipeSteps, int numberOfPeople, String description) {
+    public Recipe(List<ListIngredient> ingredients, List<RecipeStep> recipeSteps, int numberOfPeople, String description) {
         this.mIngredients = ingredients;
         this.mRecipeSteps = recipeSteps;
         this.mNumberOfPeople = numberOfPeople;
@@ -46,11 +46,11 @@ public class Recipe extends PluginObject {
         this.mRecipeSteps = recipeSteps;
     }
 
-    public synchronized List<Ingredient> getIngredients() {
+    public synchronized List<ListIngredient> getIngredients() {
         return mIngredients;
     }
 
-    public synchronized void setIngredients(List<Ingredient> ingredients) {
+    public synchronized void setIngredients(List<ListIngredient> ingredients) {
         this.mIngredients = ingredients;
     }
 

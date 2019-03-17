@@ -9,7 +9,7 @@ import java.util.Set;
  * A dataclass representing a step it has  fields
  * mIngredients: a set of mIngredients contained in this recipe (could be null)
  * mRecipeTimers: a list of timers contained in this recipe (could be null)
- * decription:  the textual mDescription of this step, which was written in the original text,
+ * mDescription:  the textual mDescription of this step, which was written in the original text,
  * possibly updated to indicate references to elements in mIngredients and mRecipeTimers
  * mIngredientDetected: a boolean that indicates if the DetectIngredientsInStepTask task has been done
  * mTimerDetected: a boolean that indicates if the DetectTimersInStepTask task has been done on this step

@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.task.ingredientdetector;
 import android.util.Log;
 
 import com.aurora.souschefprocessor.recipe.Ingredient;
+import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
@@ -21,7 +22,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 import static android.content.ContentValues.TAG;
 
 /**
- * Detects the mIngredients in the list of mIngredients
+ * Detects the ListIngredients in the list of ingredients of a RecipeInProgress
  * It has a CRFClassifier that classifies a sentence containing an ingredient to UNIT, QUANTITY
  * and NAME
  */
@@ -128,7 +129,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      *
      * @param first  The first character
      * @param second The second character
-     * @return
+     * @return a boolean indicating if a space is needed
      */
     private static boolean spaceNeededBetweenPreviousAndCurrent(char first, char second) {
         if ((Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)
@@ -151,7 +152,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * @param first  The first character of the sequence
      * @param second The second character of the sequence
      * @param third  The third character of the sequence
-     * @return
+     * @return a boolean indicating if a space is needed
      */
     private static boolean spaceNeededBetweenCurrentAndNext(char first, char second,
                                                             char third) {
@@ -163,12 +164,12 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     }
 
     /**
-     * Detects the mIngredients presented in the ingredientsString and sets the mIngredients field
-     * in the recipe to this set of mIngredients.
+     * Detects the ListIngredients presented in the ingredientsString and sets the mIngredients field
+     * in the recipe to this set of ListIngredients.
      */
     public void doTask() {
         //TODO fallback if no mIngredients can be detected
-        List<Ingredient> list = detectIngredients(this.mRecipeInProgress.getIngredientsString());
+        List<ListIngredient> list = detectIngredients(this.mRecipeInProgress.getIngredientsString());
         this.mRecipeInProgress.setIngredients(list);
     }
 
@@ -177,9 +178,9 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * Ingredient Objects and returns a set of these
      *
      * @param ingredientList The string representing the ingredientList
-     * @return A set of Ingredient Objects detected in the string
+     * @return A list of ListIngredient Objects detected in the string
      */
-    private List<Ingredient> detectIngredients(String ingredientList) {
+    private List<ListIngredient> detectIngredients(String ingredientList) {
 
         if (mCRFClassifier == null) {
             try {
@@ -196,13 +197,13 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             return new ArrayList<>();
         }
 
-        List<Ingredient> returnList = new ArrayList<>();
+        List<ListIngredient> returnList = new ArrayList<>();
         // Split the list on new lines
         String[] list = ingredientList.split("\n");
 
         for (String ingredient : list) {
             if (ingredient != null) {
-                Ingredient ing = (detectIngredient(addSpaces(ingredient)));
+                ListIngredient ing = (detectIngredient(addSpaces(ingredient)));
 
                 returnList.add(ing);
 
@@ -215,9 +216,9 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * Detects the ingredient described in the line and constructs an Ingredient object with this information
      *
      * @param line The line in which the ingredient is to be detected
-     * @return an Ingredient object constructed with the information from the line
+     * @return a ListIngredient object constructed with the information from the line
      */
-    private Ingredient detectIngredient(String line) {
+    private ListIngredient detectIngredient(String line) {
         // TODO optimize model further
         // TODO quantity detection fails on  1 1/2-ounce can (should be 1 gets 1.5)
 
@@ -241,6 +242,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
             }
         }
+        // the map for the positions of the detected ingredients
         Map<Ingredient.PositionKey, Position> positions = new HashMap<>();
         // if no value present, default to 1.0 'one'
         double quantity = 1.0;
@@ -297,7 +299,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             positions.put(Ingredient.PositionKey.QUANTITY, new Position(0, line.length()));
         }
 
-        return new Ingredient(name, unit, quantity, line, positions);
+        return new ListIngredient(name, unit, quantity, line, positions);
     }
 
     /**

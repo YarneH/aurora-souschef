@@ -160,6 +160,7 @@ public class DetectTimersInStepTaskTest {
 
     @Test
     public void DetectTimersInStep_doTask_PositionOfTimersCorrectlyDetected() {
+        // TODO: make these seprate tests
 
         // first case: "Put 500 gram sauce in the microwave for 3 minutes"
         // timer = "3 minutes"
@@ -170,7 +171,7 @@ public class DetectTimersInStepTaskTest {
         String description = recipeSteps.get(index).getDescription();
 
         String substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert(substring.equals(timeString));
+        assert (substring.equals(timeString));
 
         // second case: "Heat the oil in a saucepan and gently fry the onion until softened, about 4-5 minutes."
         // timer = "about 4 - 5 minutes" (spaces added for seperate tokens)
@@ -181,7 +182,7 @@ public class DetectTimersInStepTaskTest {
         description = recipeSteps.get(index).getDescription();
 
         substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert(substring.equals(timeString));
+        assert (substring.equals(timeString));
 
         // third case:  "Put in the oven for 30 minutes and let rest for 20 minutes."
         // timer 1: 30 minutes
@@ -192,12 +193,12 @@ public class DetectTimersInStepTaskTest {
         pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
         description = recipeSteps.get(index).getDescription();
         substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert(substring.equals(timeString));
+        assert (substring.equals(timeString));
 
         timeString = "20 minutes";
         pos = recipeSteps.get(index).getRecipeTimers().get(1).getPosition();
         substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert(substring.equals(timeString));
+        assert (substring.equals(timeString));
 
         // fourth case: "Grate cheese for 30 seconds"
         // timer: "30 seconds"
@@ -207,7 +208,7 @@ public class DetectTimersInStepTaskTest {
         pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
         description = recipeSteps.get(index).getDescription();
         substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert(substring.equals(timeString));
+        assert (substring.equals(timeString));
 
         // fifth case:  "Wait for 4 hours"
         // timer = "4 hours"
@@ -217,7 +218,7 @@ public class DetectTimersInStepTaskTest {
         pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
         description = recipeSteps.get(index).getDescription();
         substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert(substring.equals(timeString));
+        assert (substring.equals(timeString));
 
         // sixth case: "Let cool down for an hour and a half."
         // timer: "an hour and a half"
@@ -227,7 +228,7 @@ public class DetectTimersInStepTaskTest {
         pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
         description = recipeSteps.get(index).getDescription();
         substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert(substring.equals(timeString));
+        assert (substring.equals(timeString));
 
         // seventh case: "Put the lasagna in the oven for 1h"
         // timer: "1h"
@@ -237,8 +238,7 @@ public class DetectTimersInStepTaskTest {
         pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
         description = recipeSteps.get(index).getDescription();
         substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        System.out.println(substring);
-        assert(substring.equals(timeString));
+        assert (substring.equals(timeString));
 
 
         // eight case: "Put 500 gram spaghetti in boiling water 7 to 9 minutes"
@@ -249,7 +249,7 @@ public class DetectTimersInStepTaskTest {
         pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
         description = recipeSteps.get(index).getDescription();
         substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert(substring.equals(timeString));
+        assert (substring.equals(timeString));
 
 
     }

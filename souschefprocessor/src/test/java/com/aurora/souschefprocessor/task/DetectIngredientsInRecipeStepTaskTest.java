@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.task;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 
 import org.junit.After;
@@ -18,6 +19,8 @@ public class DetectIngredientsInRecipeStepTaskTest {
 
     private static DetectIngredientsInStepTask detector0;
     private static DetectIngredientsInStepTask detector1;
+    private static DetectIngredientsInStepTask detector2;
+    private static DetectIngredientsInStepTask detector3;
     private static RecipeInProgress recipe;
     private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
     private static ArrayList<RecipeStep> recipeSteps;
@@ -35,6 +38,8 @@ public class DetectIngredientsInRecipeStepTaskTest {
         recipe = new RecipeInProgress(originalText);
         recipe.setRecipeSteps(recipeSteps);
         List<Ingredient> set = new ArrayList<>();
+        set.add(new Ingredient("spaghetti", "gram", 500, "irrelevant"));
+        set.add(new Ingredient("sauce", "gram", 500, "irrelevant"));
         recipe.setIngredients(set);
 
         detector0 = new DetectIngredientsInStepTask(recipe, stepIndex0);
@@ -47,7 +52,6 @@ public class DetectIngredientsInRecipeStepTaskTest {
             s.setIngredients(null);
         }
     }
-
 
     @Test
     public void IngredientDetectorStep_doTask_setHasBeenSetForAllSteps() {

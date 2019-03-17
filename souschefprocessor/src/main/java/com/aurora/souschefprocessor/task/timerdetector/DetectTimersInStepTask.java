@@ -2,6 +2,7 @@ package com.aurora.souschefprocessor.task.timerdetector;
 
 import android.util.Log;
 
+import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
@@ -44,6 +45,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private static final Integer TIMEX_NUM_POSITION = 2;
     private int mStepIndex;
     private Map<String, Double> mFractionMultipliers = new HashMap<>();
+
 
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
@@ -120,6 +122,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      */
     public void doTask() {
         RecipeStep recipeStep = mRecipeInProgress.getRecipeSteps().get(mStepIndex);
+        // trim and add spaces to the description
+        recipeStep.setDescription(addSpaces(recipeStep.getDescription().trim()));
         List<RecipeTimer> recipeTimers = detectTimer(recipeStep);
         recipeStep.setRecipeTimers(recipeTimers);
     }
@@ -134,44 +138,61 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         List<RecipeTimer> list = new ArrayList<>();
 
         AnnotationPipeline pipeline = createTimerAnnotationPipeline();
-        Annotation recipeStepAnnotated = new Annotation(addSpaces(recipeStep.getDescription()));
+        Annotation recipeStepAnnotated = new Annotation((recipeStep.getDescription()));
         pipeline.annotate(recipeStepAnnotated);
 
         List<CoreLabel> allTokens = recipeStepAnnotated.get(CoreAnnotations.TokensAnnotation.class);
 
-        // Map fractions to their start position in the recipe step
+        // Map fractions to their start timerPosition in the recipe step
         Map<Integer, String> fractionPositions = getFractionPositions(allTokens);
 
         // Detect and calculate symbol notations for time durations in the recipeStep
         detectSymbolPattern(list, allTokens);
 
+
+
         List<CoreMap> timexAnnotations = recipeStepAnnotated.get(TimeAnnotations.TimexAnnotations.class);
         for (CoreMap cm : timexAnnotations) {
-
+            // the detected seconds
             int recipeStepSeconds;
+
+            List<CoreLabel> labelList = cm.get(CoreAnnotations.TokensAnnotation.class);
+            // The first detected token
+            CoreLabel firstTimexToken = labelList.get(0);
+            // the last detected token
+            CoreLabel lastTimexToken = labelList.get(labelList.size() - 1);
+
+            // The position of the detected timer
+            Position timerPosition = new Position(firstTimexToken.beginPosition(), lastTimexToken.endPosition());
+
+            // The dected annotation
             SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();
-            //only one value
+
+            // two cases: DurationRange or Single value
             if (!(temporal.getDuration() instanceof SUTime.DurationRange)) {
+                // single value
+
                 recipeStepSeconds = (int) temporal
                         .getDuration().getJodaTimeDuration().getStandardSeconds();
 
-                CoreLabel timexToken = cm.get(CoreAnnotations.TokensAnnotation.class).get(0);
-                recipeStepSeconds = changeToFractions(fractionPositions, timexToken, recipeStepSeconds);
+                recipeStepSeconds = changeToFractions(fractionPositions, timerPosition, recipeStepSeconds);
                 try {
-                    list.add(new RecipeTimer(recipeStepSeconds));
+                    list.add(new RecipeTimer(recipeStepSeconds, timerPosition));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
                     Log.e(TAG, "detectTimer: ", iae);
                 }
             } else {
+                // case: durationRange
                 //formattedstring is the only way to access private min and max fields in DurationRange object
+                System.out.println(firstTimexToken+" "+ lastTimexToken);
                 SUTime.DurationRange durationRange = (SUTime.DurationRange) temporal.getDuration();
                 String formattedString = durationRange.toString();
                 String[] minAndMax = formattedString.split("/");
                 int lowerBound = getSecondsFromFormattedString(minAndMax[0]);
                 int upperBound = getSecondsFromFormattedString(minAndMax[1]);
                 try {
-                    list.add(new RecipeTimer(lowerBound, upperBound));
+                    list.add(new RecipeTimer(lowerBound, upperBound, timerPosition));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
                     Log.e(TAG, "detectTimer: ", iae);
@@ -200,7 +221,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * Retrieves positions of fractions in the recipe step
      *
      * @param allTokens tokens in a recipe step
-     * @return Mapping of fractions to their position in the recipe step
+     * @return Mapping of fractions to their timerPosition in the recipe step
      */
     private Map<Integer, String> getFractionPositions(List<CoreLabel> allTokens) {
         Map<Integer, String> fractionPositions = new HashMap<>();
@@ -225,7 +246,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         for (CoreLabel token : allTokens) {
             if (token.originalText().matches("(\\d+)[h|m|s|H|M|S]")) {
                 try {
-                    recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString("PT" + token.originalText())));
+                    Position timerPosition = new Position(token.beginPosition(), token.endPosition());
+                    recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString("PT" + token.originalText()), timerPosition));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
                     Log.e(TAG, "detectTimer: ", iae);
@@ -238,22 +260,26 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * Checks if fractions are in proximity to the timex token and adapts
      * the recipeStepSeconds to these fractions
      *
-     * @param fractionPositions position of fractions in the recipe step
-     * @param timexToken        token representing the time in this recipe step
+     * @param fractionPositions timerPosition of fractions in the recipe step
+     * @param originalPosition        token representing the time in this recipe step
      * @param recipeStepSeconds the seconds detected in this timex token
      * @return The updated value of recipeStepSeconds
      */
-    private Integer changeToFractions(Map<Integer, String> fractionPositions,
-                                      CoreLabel timexToken, int recipeStepSeconds) {
+    private int changeToFractions(Map<Integer, String> fractionPositions,
+                                      Position originalPosition, int recipeStepSeconds) {
         if (!fractionPositions.isEmpty()) {
             for (Map.Entry<Integer, String> fractionPosition : fractionPositions.entrySet()) {
-                int relPosition = fractionPosition.getKey() - timexToken.beginPosition();
+                int relPosition = fractionPosition.getKey() - originalPosition.getBeginIndex();
                 // Fraction in front of timex tag is assumed to be a decreasing multiplier (e.g. half an hour)
                 // Fraction behind timex tag is assumed to be an increasing multiplier (e.g. for an hour and a half)
                 if (-MAX_FRACTION_DISTANCE < relPosition && relPosition < 0) {
                     recipeStepSeconds *= mFractionMultipliers.get(fractionPosition.getValue());
+                    // change the position so that the multiplier is included in the position
+                    originalPosition.setBeginIndex(fractionPosition.getKey());
                 } else if (0 < relPosition && relPosition < MAX_FRACTION_DISTANCE) {
                     recipeStepSeconds *= (1 + mFractionMultipliers.get(fractionPosition.getValue()));
+                    // change the position so that the multiplier is included in the position
+                    originalPosition.setEndIndex(fractionPosition.getKey());
                 }
             }
         }

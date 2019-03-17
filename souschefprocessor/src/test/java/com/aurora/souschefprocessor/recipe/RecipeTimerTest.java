@@ -13,21 +13,21 @@ public class RecipeTimerTest {
         //case 1 upperbound argument bigger than lowerbound
         int upperbound = 20;
         int lowerbound = 10;
-        RecipeTimer recipeTimer = new RecipeTimer(upperbound, lowerbound);
+        RecipeTimer recipeTimer = new RecipeTimer(upperbound, lowerbound, irrelevant);
         assert (recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
 
         //case 2 upperbound argument same as lowerbound
         lowerbound = upperbound;
-        recipeTimer = new RecipeTimer(upperbound, lowerbound);
+        recipeTimer = new RecipeTimer(upperbound, lowerbound, irrelevant);
         assert (recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
 
         //case 3 only one argument
-        recipeTimer = new RecipeTimer(upperbound);
+        recipeTimer = new RecipeTimer(upperbound, irrelevant);
         assert (recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
 
         //case 4 upperbound argument smaller than lowerbound argument
         lowerbound = 100;
-        recipeTimer = new RecipeTimer(upperbound, lowerbound);
+        recipeTimer = new RecipeTimer(upperbound, lowerbound, irrelevant);
         assert (recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
 
 
@@ -41,7 +41,7 @@ public class RecipeTimerTest {
         boolean thrown = false;
 
         try {
-            RecipeTimer recipeTimer = new RecipeTimer(upperbound, lowerbound);
+            RecipeTimer recipeTimer = new RecipeTimer(upperbound, lowerbound, irrelevant);
         } catch (IllegalArgumentException iae) {
             thrown = true;
         }
@@ -53,7 +53,7 @@ public class RecipeTimerTest {
         thrown = false;
 
         try {
-            RecipeTimer recipeTimer = new RecipeTimer(upperbound, lowerbound);
+            RecipeTimer recipeTimer = new RecipeTimer(upperbound, lowerbound, irrelevant);
         } catch (IllegalArgumentException iae) {
             thrown = true;
         }
@@ -64,7 +64,7 @@ public class RecipeTimerTest {
         thrown = false;
 
         try {
-            RecipeTimer recipeTimer = new RecipeTimer(time);
+            RecipeTimer recipeTimer = new RecipeTimer(time, irrelevant);
         } catch (IllegalArgumentException iae) {
             thrown = true;
         }
@@ -72,4 +72,7 @@ public class RecipeTimerTest {
 
 
     }
+
+
+
 }

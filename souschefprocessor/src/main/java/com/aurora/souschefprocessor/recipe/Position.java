@@ -14,13 +14,11 @@ public class Position {
     private int mEndIndex;
 
     public Position(int beginIndex, int endIndex) {
-        if (beginIndex < 0 || endIndex < 0) {
-            throw new IllegalArgumentException("At least one of the indexes is negative!");
-        }
-        if (beginIndex == endIndex) {
-            throw new IllegalArgumentException("Begin index cannot be equal to end index");
-        }
-        if (endIndex < beginIndex) {
+        // check if the arguments are legal
+        checkLegality(beginIndex, endIndex);
+
+        // make sure beginindex is smaller than endindex
+        if (!beginSmallerThanEnd(beginIndex, endIndex)) {
             mBeginIndex = endIndex;
             mEndIndex = beginIndex;
         } else {
@@ -29,12 +27,53 @@ public class Position {
         }
     }
 
+    private void checkLegality(int beginIndex, int endIndex) {
+        if (beginIndex < 0 || endIndex < 0) {
+            throw new IllegalArgumentException("At least one of the indexes is negative!");
+        }
+        if (beginIndex == endIndex) {
+            throw new IllegalArgumentException("Begin index cannot be equal to end index");
+        }
+    }
+
+    private boolean beginSmallerThanEnd(int beginIndex, int endIndex) {
+        return beginIndex < endIndex;
+    }
+
     public int getBeginIndex() {
         return mBeginIndex;
     }
 
+    public void setBeginIndex(int beginIndex) {
+        // first check if this is a legal argument and throw if illegal
+        checkLegality(beginIndex, mEndIndex);
+
+        // check if begin is still smaller than end
+        // else throw an exception
+        if (beginSmallerThanEnd(beginIndex, mEndIndex)) {
+
+            mBeginIndex = beginIndex;
+        } else {
+            throw new IllegalArgumentException("The new beginIndex cannot be bigger than the endIndex!");
+        }
+    }
+
     public int getEndIndex() {
         return mEndIndex;
+    }
+
+    public void setEndIndex(int endIndex) {
+        // first check if this is a legal argument and throw if illegal
+        checkLegality(mBeginIndex, endIndex);
+
+        // check if begin is still smaller than end
+        // else throw an exception
+        if (beginSmallerThanEnd(mBeginIndex, endIndex)) {
+
+            mEndIndex = endIndex;
+        } else {
+            throw new IllegalArgumentException("The new endIndex cannot be smaller than the beginIndex!");
+        }
     }
 
     public boolean isLegalInString(String string) {

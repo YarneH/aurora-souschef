@@ -217,6 +217,15 @@ public class DetectIngredientsInListTaskTest {
         assert (ingredient.getUnitPosition().equals(unitPos));
 
         // fifth ingredient twenty basil leaves
+        quantityPos = new Position(0, 6);
+        unitPos = new Position(0, 19); // the whole string because no unit
+        namePos = new Position(7, 19);
+
+        ingredient = recipe.getIngredients().get(4);
+        assert (ingredient.getQuantityPosition().equals(quantityPos));
+        assert (ingredient.getUnitPosition().equals(unitPos));
+        assert (ingredient.getNamePosition().equals(namePos));
+
 
 
     }

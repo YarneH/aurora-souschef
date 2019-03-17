@@ -69,6 +69,15 @@ public class Ingredient {
         return mAmount;
     }
 
+    public boolean arePositionsLegalInString(String string) {
+        for (PositionKey key : PositionKey.values()) {
+            if (!mPositions.get(key).isLegalInString(string)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(mAmount, mName);

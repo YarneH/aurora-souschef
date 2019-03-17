@@ -72,4 +72,14 @@ public class RecipeTimer {
         }
         return false;
     }
+
+    @Override
+    public String toString() {
+        if (mLowerBound == mUpperBound) {
+            return mLowerBound + " seconds";
+        } else {
+            return mLowerBound + " - " +
+                    mUpperBound + " seconds";
+        }
+    }
 }

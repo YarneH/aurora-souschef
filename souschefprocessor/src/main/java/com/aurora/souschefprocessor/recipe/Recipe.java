@@ -30,8 +30,16 @@ public class Recipe extends PluginObject {
 
     }
 
+    public synchronized int getNumberOfPeople() {
+        return mNumberOfPeople;
+    }
+
     public synchronized void setNumberOfPeople(int numberOfPeople) {
         this.mNumberOfPeople = numberOfPeople;
+    }
+
+    public String getDescription() {
+        return mDescription;
     }
 
     public synchronized void setDescription(String description) {

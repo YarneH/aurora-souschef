@@ -33,12 +33,17 @@ public class SplitStepsTask extends AbstractProcessingTask {
      */
     private List<RecipeStep> divideIntoSteps(String steps) {
         //TODO generate functionality to split attribute stepsText
+        List<RecipeStep> list = new ArrayList<>();
 
         // dummy code
         String[] array = steps.split("\n");
-        List<RecipeStep> list = new ArrayList<>();
+        if (steps.startsWith("Heat")) {
+            steps = steps.replace('\n', ' ').trim();
+            array = steps.split("\\.");
+        }
         for (String step : array) {
-            list.add(new RecipeStep(step));
+            step = step.replace(".", "").trim();
+            list.add(new RecipeStep(step + "."));
         }
         return list;
     }

@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.recipe;
 
+import android.util.ArraySet;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -37,17 +39,18 @@ public class RecipeStep {
                 // this also checks if the position of the ingredient is valid
                 add(ingredient);
             }
-            mIngredientDetected = true;
+
         } else {
-            mIngredients = null;
+            mIngredients = new HashSet<>();
         }
+        mIngredientDetected = true;
     }
 
     // This should maybe check if mIngredients != null, but maybe also create the HashSet if it is null
     // We could also initialize an empty HashSet in the constructor (but maybe still need to check if not null
     // to deal with setIngredients possibly setting mIngredients to null
     public synchronized void add(Ingredient ingredient) {
-        if (ingredient.arePositionsLegalInString(mDescription)) {
+        if (ingredient != null && ingredient.arePositionsLegalInString(mDescription)) {
             if (this.mIngredients == null) {
                 this.mIngredients = new HashSet<>();
             }
@@ -62,15 +65,15 @@ public class RecipeStep {
     }
 
     public synchronized void setRecipeTimers(List<RecipeTimer> recipeTimers) {
-        if (recipeTimers != null) {
+        if (recipeTimers != null && !recipeTimers.isEmpty()) {
             for (RecipeTimer timer : recipeTimers) {
                 // this also checks if the position of the timer is valid
                 add(timer);
             }
-            mTimerDetected = true;
         } else {
-            mRecipeTimers = null;
+            mRecipeTimers = new ArrayList<>();
         }
+        mTimerDetected = true;
     }
 
     // Same comment as for addIngredient

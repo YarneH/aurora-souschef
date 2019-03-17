@@ -32,11 +32,15 @@ public class RecipeStep {
     }
 
     public synchronized void setIngredients(Set<Ingredient> ingredients) {
-        for (Ingredient ingredient : ingredients) {
-            // this also checks if the position of the ingredient is valid
-            add(ingredient);
+        if (ingredients != null) {
+            for (Ingredient ingredient : ingredients) {
+                // this also checks if the position of the ingredient is valid
+                add(ingredient);
+            }
+            mIngredientDetected = true;
+        } else {
+            mIngredients = null;
         }
-        mIngredientDetected = true;
     }
 
     // This should maybe check if mIngredients != null, but maybe also create the HashSet if it is null
@@ -90,13 +94,13 @@ public class RecipeStep {
         return mDescription;
     }
 
+    public void setDescription(String description) {
+        mDescription = description;
+    }
+
     public synchronized void unsetTimer() {
         mRecipeTimers = null;
         mTimerDetected = false;
-    }
-
-    public void setDescription(String description) {
-        mDescription = description;
     }
 
     @Override

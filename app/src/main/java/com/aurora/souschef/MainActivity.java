@@ -17,6 +17,10 @@ public class MainActivity extends AppCompatActivity {
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
+    private static final int TAB_OVERVIEW = 0;
+    private static final int TAB_INGREDIENTS = 1;
+    private static final int TAB_STEPS = 2;
+    private static final int NUMBER_OF_TABS = 3;
 
 
     @Override
@@ -61,35 +65,45 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
+            Fragment tabFragment = null;
             switch (position) {
-                case 0:
-                    return new Tab1Overview();
-                case 1:
-                    return new Tab2Ingredients();
-                case 2:
-                    return new Tab3Steps();
+                case TAB_OVERVIEW:
+                    tabFragment = new Tab1Overview();
+                    break;
+                case TAB_INGREDIENTS:
+                    tabFragment = new Tab2Ingredients();
+                    break;
+                case TAB_STEPS:
+                    tabFragment = new Tab3Steps();
+                    break;
                 default:
-                    return null;
+                    tabFragment = null;
+                    break;
             }
+            return tabFragment;
         }
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
-            return 3;
+            // Show 3 total tabs.
+            return NUMBER_OF_TABS;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
+            String tabName = null;
             switch (position) {
-                case 0:
-                    return getString(R.string.overview);
-                case 1:
-                    return getString(R.string.ingredients);
-                case 2:
-                    return getString(R.string.steps);
+                case TAB_OVERVIEW:
+                    tabName = getString(R.string.overview);
+                case TAB_INGREDIENTS:
+                    tabName = getString(R.string.ingredients);
+                case TAB_STEPS:
+                    tabName = getString(R.string.steps);
+                default:
+                    // this should not happen
+                    tabName = null;
             }
-            return null;
+            return tabName;
         }
     }
 }

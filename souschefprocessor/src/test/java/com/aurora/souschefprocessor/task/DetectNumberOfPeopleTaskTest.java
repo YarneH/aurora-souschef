@@ -21,57 +21,6 @@ public class DetectNumberOfPeopleTaskTest {
         detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipe);
     }
 
-    @After
-    public void wipeRecipe() {
-        recipe.setNumberOfPeople(0);
-    }
-
-    @Test
-    public void DetectNumberOfPeopleTask_doTask_valueHasBeenRead() {
-        detectNumberOfPeopleTask.doTask();
-        assert (recipe.getNumberOfPeople() == DEFAULT_NUMBER);
-    }
-
-    @Test
-    public void DetectNumberOfPeopleTask_doTask_noNumberOfPeople(){
-        String originalTextNoNumber = originalText.substring(originalText.indexOf('\n')+1);
-        RecipeInProgress recipeNoNumber = new RecipeInProgress(originalTextNoNumber);
-        DetectNumberOfPeopleTask detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipeNoNumber);
-        detectNumberOfPeopleTask.doTask();
-        assert(recipeNoNumber.getNumberOfPeople() == DEFAULT_NO_NUMBER);
-    }
-
-    @Test
-    public void DetectNumberOfPeopleTask_doTask_acceptanceTest95PercentAccuracy(){
-        String[] dataSet = initializeDataSet();
-        String[] dataSetTags = initializeDataSetTags();
-        int amount = dataSet.length;
-        int correct = amount;
-
-        for (int i = 1; i <= dataSet.length; i++) {
-            String recipeText = dataSet[i - 1];
-            String recipeTag = dataSetTags[i - 1];
-
-            RecipeInProgress recipe = new RecipeInProgress(recipeText);
-            DetectNumberOfPeopleTask detector = new DetectNumberOfPeopleTask(recipe);
-            detector.doTask();
-
-            if (recipeTag.equals("NO_NUMBER")) {
-                if(recipe.getNumberOfPeople() != -1){
-                    correct--;
-                }
-            }
-            else if(recipeTag.equals("NUMBER")){
-                if(recipe.getNumberOfPeople() <= 0){
-                    correct--;
-                }
-            }
-        }
-
-        System.out.println(correct + " correct out of " + amount + " tested. Accuracy: " + correct * 100.0 / amount);
-        assert (correct * 100.0 / amount > 95);
-    }
-
     private static String initializeRecipeText() {
         return ("crostini with smoked salmon & sour cream\n" +
                 "serves 1\n\n" +
@@ -79,7 +28,7 @@ public class DetectNumberOfPeopleTaskTest {
                 "but can be made in a flash from ingredients from your supermarket.\n\n" +
                 "If  you  don't  have  access  to  capers,  chopped  chives  or  parsley  would work well.\n" +
                 "It's more about getting some visual greenery and freshness.\n\n" +
-                "Baguettes are lovely for crostini but I've also used crackers or larger slices of sourdough cut into small,\n"  +
+                "Baguettes are lovely for crostini but I've also used crackers or larger slices of sourdough cut into small,\n" +
                 "bite sized pieces.\n\n" +
                 "8 thin slices baguette\n" +
                 "100g (3 oz) smoked salmon, sliced\n" +
@@ -91,8 +40,8 @@ public class DetectNumberOfPeopleTaskTest {
         );
     }
 
-    private static String[] initializeDataSetTags(){
-        return("NO_NUMBER\n" +
+    private static String[] initializeDataSetTags() {
+        return ("NO_NUMBER\n" +
                 "NUMBER\n" +
                 "NUMBER\n").split("\n");
     }
@@ -148,6 +97,56 @@ public class DetectNumberOfPeopleTaskTest {
                 "minute or until noodles are only just cooked (see note above).\n\n" +
                 "Remove from the heat. Taste and add extra soy if needed. Serve \n" +
                 "hot.\n\n\n").split("\n\n\n");
+    }
+
+    @After
+    public void wipeRecipe() {
+        recipe.setNumberOfPeople(0);
+    }
+
+    @Test
+    public void DetectNumberOfPeopleTask_doTask_valueHasBeenRead() {
+        detectNumberOfPeopleTask.doTask();
+        assert (recipe.getNumberOfPeople() == DEFAULT_NUMBER);
+    }
+
+    @Test
+    public void DetectNumberOfPeopleTask_doTask_noNumberOfPeople() {
+        String originalTextNoNumber = originalText.substring(originalText.indexOf('\n') + 1);
+        RecipeInProgress recipeNoNumber = new RecipeInProgress(originalTextNoNumber);
+        DetectNumberOfPeopleTask detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipeNoNumber);
+        detectNumberOfPeopleTask.doTask();
+        assert (recipeNoNumber.getNumberOfPeople() == DEFAULT_NO_NUMBER);
+    }
+
+    @Test
+    public void DetectNumberOfPeopleTask_doTask_acceptanceTest95PercentAccuracy() {
+        String[] dataSet = initializeDataSet();
+        String[] dataSetTags = initializeDataSetTags();
+        int amount = dataSet.length;
+        int correct = amount;
+
+        for (int i = 1; i <= dataSet.length; i++) {
+            String recipeText = dataSet[i - 1];
+            String recipeTag = dataSetTags[i - 1];
+
+            RecipeInProgress recipe = new RecipeInProgress(recipeText);
+            DetectNumberOfPeopleTask detector = new DetectNumberOfPeopleTask(recipe);
+            detector.doTask();
+
+            if (recipeTag.equals("NO_NUMBER")) {
+                if (recipe.getNumberOfPeople() != -1) {
+                    correct--;
+                }
+            } else if (recipeTag.equals("NUMBER")) {
+                if (recipe.getNumberOfPeople() <= 0) {
+                    correct--;
+                }
+            }
+        }
+
+        System.out.println(correct + " correct out of " + amount + " tested. Accuracy: " + correct * 100.0 / amount);
+        assert (correct * 100.0 / amount > 95);
     }
 
 }

@@ -31,7 +31,7 @@ public class Delegator {
     private CRFClassifier<CoreLabel> mIngredientClassifier;
 
 
-     protected Delegator(CRFClassifier<CoreLabel> ingredientClassifier) {
+    protected Delegator(CRFClassifier<CoreLabel> ingredientClassifier) {
         mThreadPoolExecutor = null;
         mIngredientClassifier = ingredientClassifier;
     }

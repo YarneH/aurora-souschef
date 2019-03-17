@@ -37,13 +37,13 @@ public class SplitStepsTask extends AbstractProcessingTask {
 
         // dummy code
         String[] array = steps.split("\n");
-        if(steps.startsWith("Heat")) {
+        if (steps.startsWith("Heat")) {
             steps = steps.replace('\n', ' ').trim();
             array = steps.split("\\.");
         }
         for (String step : array) {
             step = step.replace(".", "").trim();
-            list.add(new RecipeStep( step + "."));
+            list.add(new RecipeStep(step + "."));
         }
         return list;
     }

@@ -17,15 +17,14 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
      *
      * @param text the text in which to search for the amount of people
      * @return The int representing the amount of people
-     *  returns -1 if no amount of people was detected in the recipe text
+     * returns -1 if no amount of people was detected in the recipe text
      */
     private static int findNumberOfPeople(String text) {
         // dummy
         // No amount detected in first line
-        if(!text.split("\n")[1].matches(".*\\d+.*")){
+        if (!text.split("\n")[1].matches(".*\\d+.*")) {
             return DEFAULT_NO_NUMBER;
-        }
-        else {
+        } else {
             return DEFAULT_NUMBER;
         }
     }

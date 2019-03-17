@@ -1,5 +1,6 @@
 package com.aurora.souschefprocessor.task;
 
+import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
@@ -16,6 +17,7 @@ public class DetectTimersInStepTaskTest {
     private static List<DetectTimersInStepTask> detectors = new ArrayList<>();
     private static RecipeInProgress recipe;
     private static ArrayList<RecipeStep> recipeSteps;
+    private static Position irrelevantPosition = new Position(0, 1);
 
     @BeforeClass
     public static void initialize() {
@@ -29,8 +31,7 @@ public class DetectTimersInStepTaskTest {
         recipeSteps.add(new RecipeStep("Put the lasagna in the oven for 1h"));//6 (symbol hour)
         recipeSteps.add(new RecipeStep("Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //7 (upperbound and lowerbound different)))
 
-        int stepIndex0 = 0;
-        int stepIndex1 = 1;
+
         String originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setRecipeSteps(recipeSteps);
@@ -67,7 +68,7 @@ public class DetectTimersInStepTaskTest {
         //assert detection
         assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
         //assert correct detection
-        RecipeTimer timer = new RecipeTimer(3 * 60);
+        RecipeTimer timer = new RecipeTimer(3 * 60, irrelevantPosition);
         assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
 
     }
@@ -77,7 +78,7 @@ public class DetectTimersInStepTaskTest {
         int stepIndex = 4; //index four has hours
         DetectTimersInStepTask detector = detectors.get(stepIndex);
         detector.doTask();
-        RecipeTimer timer = new RecipeTimer(4 * 60 * 60);
+        RecipeTimer timer = new RecipeTimer(4 * 60 * 60, irrelevantPosition);
         assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
     }
 
@@ -89,7 +90,7 @@ public class DetectTimersInStepTaskTest {
         //assert detection
         assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
         //assert correct detection
-        RecipeTimer timer = new RecipeTimer(30);
+        RecipeTimer timer = new RecipeTimer(30, irrelevantPosition);
         assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
     }
 
@@ -101,8 +102,8 @@ public class DetectTimersInStepTaskTest {
         //assert detection
         assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
         //assert correct detection
-        RecipeTimer timer1 = new RecipeTimer(30 * 60);
-        RecipeTimer timer2 = new RecipeTimer(20 * 60);
+        RecipeTimer timer1 = new RecipeTimer(30 * 60, irrelevantPosition);
+        RecipeTimer timer2 = new RecipeTimer(20 * 60, irrelevantPosition);
         assert (recipeSteps.get(stepIndex).getRecipeTimers().contains(timer1));
         assert (recipeSteps.get(stepIndex).getRecipeTimers().contains(timer2));
     }
@@ -115,7 +116,7 @@ public class DetectTimersInStepTaskTest {
         //assert detection
         assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
         //assert correct detection
-        RecipeTimer timer = new RecipeTimer((int) (60 * 60 * 1.5));
+        RecipeTimer timer = new RecipeTimer((int) (60 * 60 * 1.5), irrelevantPosition);
         assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
     }
 
@@ -127,7 +128,7 @@ public class DetectTimersInStepTaskTest {
         //assert detection
         assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
         //assert correct detection
-        RecipeTimer timer = new RecipeTimer(60 * 60);
+        RecipeTimer timer = new RecipeTimer(60 * 60, irrelevantPosition);
         assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
     }
 
@@ -139,7 +140,7 @@ public class DetectTimersInStepTaskTest {
         //assert detection
         assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
         //assert correct detection
-        RecipeTimer timer = new RecipeTimer(5 * 60, 4 * 60);
+        RecipeTimer timer = new RecipeTimer(5 * 60, 4 * 60, irrelevantPosition);
         assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
 
     }
@@ -152,8 +153,103 @@ public class DetectTimersInStepTaskTest {
         //assert detection
         assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
         //assert correct detection
-        RecipeTimer timer = new RecipeTimer(9 * 60, 7 * 60);
+        RecipeTimer timer = new RecipeTimer(9 * 60, 7 * 60, irrelevantPosition);
         assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
+
+    }
+
+    @Test
+    public void DetectTimersInStep_doTask_PositionOfTimersCorrectlyDetected() {
+        // TODO: make these seprate tests
+
+        // first case: "Put 500 gram sauce in the microwave for 3 minutes"
+        // timer = "3 minutes"
+        int index = 0;
+        detectors.get(index).doTask();
+        String timeString = "3 minutes";
+        Position pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
+        String description = recipeSteps.get(index).getDescription();
+
+        String substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
+        assert (substring.equals(timeString));
+
+        // second case: "Heat the oil in a saucepan and gently fry the onion until softened, about 4-5 minutes."
+        // timer = "about 4 - 5 minutes" (spaces added for seperate tokens)
+        index = 1;
+        detectors.get(index).doTask();
+        timeString = "about 4 - 5 minutes";
+        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
+        description = recipeSteps.get(index).getDescription();
+
+        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
+        assert (substring.equals(timeString));
+
+        // third case:  "Put in the oven for 30 minutes and let rest for 20 minutes."
+        // timer 1: 30 minutes
+        // timer 2: 20 minutes
+        index = 2;
+        detectors.get(index).doTask();
+        timeString = "30 minutes";
+        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
+        description = recipeSteps.get(index).getDescription();
+        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
+        assert (substring.equals(timeString));
+
+        timeString = "20 minutes";
+        pos = recipeSteps.get(index).getRecipeTimers().get(1).getPosition();
+        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
+        assert (substring.equals(timeString));
+
+        // fourth case: "Grate cheese for 30 seconds"
+        // timer: "30 seconds"
+        index = 3;
+        detectors.get(index).doTask();
+        timeString = "30 seconds";
+        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
+        description = recipeSteps.get(index).getDescription();
+        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
+        assert (substring.equals(timeString));
+
+        // fifth case:  "Wait for 4 hours"
+        // timer = "4 hours"
+        index = 4;
+        detectors.get(index).doTask();
+        timeString = "4 hours";
+        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
+        description = recipeSteps.get(index).getDescription();
+        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
+        assert (substring.equals(timeString));
+
+        // sixth case: "Let cool down for an hour and a half."
+        // timer: "an hour and a half"
+        index = 5;
+        detectors.get(index).doTask();
+        timeString = "an hour and a half";
+        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
+        description = recipeSteps.get(index).getDescription();
+        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
+        assert (substring.equals(timeString));
+
+        // seventh case: "Put the lasagna in the oven for 1h"
+        // timer: "1h"
+        index = 6;
+        detectors.get(index).doTask();
+        timeString = "1h";
+        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
+        description = recipeSteps.get(index).getDescription();
+        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
+        assert (substring.equals(timeString));
+
+
+        // eight case: "Put 500 gram spaghetti in boiling water 7 to 9 minutes"
+        // timer: "7 to 9 minutes"
+        index = 7;
+        detectors.get(index).doTask();
+        timeString = "7 to 9 minutes";
+        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
+        description = recipeSteps.get(index).getDescription();
+        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
+        assert (substring.equals(timeString));
 
     }
 
@@ -232,9 +328,9 @@ public class DetectTimersInStepTaskTest {
         if (amounts.length == 2) {
             int up = Integer.parseInt(amounts[0]) * multiplier;
             int low = Integer.parseInt(amounts[1]) * multiplier;
-            return new RecipeTimer(up, low);
+            return new RecipeTimer(up, low, irrelevantPosition);
         } else {
-            return new RecipeTimer(Integer.parseInt(amounts[0]) * multiplier);
+            return new RecipeTimer(Integer.parseInt(amounts[0]) * multiplier, irrelevantPosition);
         }
     }
 

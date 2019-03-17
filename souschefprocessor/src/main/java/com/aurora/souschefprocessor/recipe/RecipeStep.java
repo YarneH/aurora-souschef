@@ -62,11 +62,15 @@ public class RecipeStep {
     }
 
     public synchronized void setRecipeTimers(List<RecipeTimer> recipeTimers) {
-        for (RecipeTimer timer : recipeTimers) {
-            // this also checks if the position of the timer is valid
-            add(timer);
+        if (recipeTimers != null) {
+            for (RecipeTimer timer : recipeTimers) {
+                // this also checks if the position of the timer is valid
+                add(timer);
+            }
+            mTimerDetected = true;
+        } else {
+            mRecipeTimers = null;
         }
-        mTimerDetected = true;
     }
 
     // Same comment as for addIngredient

@@ -185,7 +185,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             } else {
                 // case: durationRange
                 //formattedstring is the only way to access private min and max fields in DurationRange object
-                System.out.println(firstTimexToken+" "+ lastTimexToken);
+
                 SUTime.DurationRange durationRange = (SUTime.DurationRange) temporal.getDuration();
                 String formattedString = durationRange.toString();
                 String[] minAndMax = formattedString.split("/");
@@ -279,7 +279,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                 } else if (0 < relPosition && relPosition < MAX_FRACTION_DISTANCE) {
                     recipeStepSeconds *= (1 + mFractionMultipliers.get(fractionPosition.getValue()));
                     // change the position so that the multiplier is included in the position
-                    originalPosition.setEndIndex(fractionPosition.getKey());
+                    originalPosition.setEndIndex(fractionPosition.getKey() + fractionPosition.getValue().length());
                 }
             }
         }

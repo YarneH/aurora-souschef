@@ -152,25 +152,43 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();
             //only one value
             if (!(temporal.getDuration() instanceof SUTime.DurationRange)) {
-                recipeStepSeconds = (int) temporal
-                        .getDuration().getJodaTimeDuration().getStandardSeconds();
-
                 CoreLabel timexToken = cm.get(CoreAnnotations.TokensAnnotation.class).get(0);
+                if (cm.toString().equals("overnight")) {
+                    // overnight should not be a timer
+                    // this might be expanded to other tokens that do not require a timer
+                    recipeStepSeconds = 0;
+                } else if (!(temporal.getDuration() == null)) {
+                    recipeStepSeconds = (int) temporal
+                            .getDuration().getJodaTimeDuration().getStandardSeconds();
+
+                } else {
+                    // duration was null, try with formatted string
+                    try {
+                        recipeStepSeconds = getSecondsFromFormattedString(temporal.toString());
+                    } catch (NumberFormatException nfe) {
+                        Log.e("TIMERS", "DetectTimer: ", nfe);
+                        recipeStepSeconds = 0;
+                    }
+
+                }
                 recipeStepSeconds = changeToFractions(fractionPositions, timexToken, recipeStepSeconds);
+
                 try {
                     list.add(new RecipeTimer(recipeStepSeconds));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
                     Log.e(TAG, "detectTimer: ", iae);
                 }
+
             } else {
                 //formattedstring is the only way to access private min and max fields in DurationRange object
                 SUTime.DurationRange durationRange = (SUTime.DurationRange) temporal.getDuration();
                 String formattedString = durationRange.toString();
                 String[] minAndMax = formattedString.split("/");
-                int lowerBound = getSecondsFromFormattedString(minAndMax[0]);
-                int upperBound = getSecondsFromFormattedString(minAndMax[1]);
                 try {
+                    int lowerBound = getSecondsFromFormattedString(minAndMax[0]);
+                    int upperBound = getSecondsFromFormattedString(minAndMax[1]);
+
                     list.add(new RecipeTimer(lowerBound, upperBound));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful

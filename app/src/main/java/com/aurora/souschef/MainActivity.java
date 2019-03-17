@@ -95,13 +95,17 @@ public class MainActivity extends AppCompatActivity {
             switch (position) {
                 case TAB_OVERVIEW:
                     tabName = getString(R.string.overview);
+                    break;
                 case TAB_INGREDIENTS:
                     tabName = getString(R.string.ingredients);
+                    break;
                 case TAB_STEPS:
                     tabName = getString(R.string.steps);
+                    break;
                 default:
                     // this should not happen
                     tabName = null;
+                    break;
             }
             return tabName;
         }

@@ -4,6 +4,8 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.aurora.souschefprocessor.recipe.Ingredient;
+import com.aurora.souschefprocessor.recipe.ListIngredient;
+import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
@@ -11,6 +13,7 @@ import com.aurora.souschefprocessor.task.RecipeInProgress;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -54,7 +57,7 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
      */
     public void doTask() {
         RecipeStep recipeStep = mRecipeInProgress.getRecipeSteps().get(mStepIndex);
-        List<Ingredient> ingredientListRecipe = mRecipeInProgress.getIngredients();
+        List<ListIngredient> ingredientListRecipe = mRecipeInProgress.getIngredients();
         Set<Ingredient> iuaSet = detectIngredients(recipeStep, ingredientListRecipe);
         recipeStep.setIngredients(iuaSet);
     }
@@ -67,10 +70,13 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
      * @param ingredientListRecipe The set of mIngredients contained in the recipe of which the recipeStep is a part
      * @return A set of Ingredient objects that represent the mIngredients contained in the recipeStep
      */
-    private Set<Ingredient> detectIngredients(RecipeStep recipeStep, List<Ingredient> ingredientListRecipe) {
+    private Set<Ingredient> detectIngredients(RecipeStep recipeStep, List<ListIngredient> ingredientListRecipe) {
         // TODO generate functionality
+
+        // dummy
         Set<Ingredient> set = new HashSet<>();
         if (ingredientListRecipe != null) {
+            HashMap<Ingredient.PositionKey, Position> map = new HashMap<>();
             //Creates temporary rule file
             File tempRuleFile = null;
             try {
@@ -97,7 +103,7 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
                 for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
                     // this is the NER label of the token
                     String nerTag = token.get(CoreAnnotations.NamedEntityTagAnnotation.class);
-                    if(nerTag.equals(INGREDIENT_NER_TAG)){
+                    if(nerTag.equals(NAME_NER_TAG)){
                         Ingredient ingr = findInIngredientList(token.originalText(), ingredientListRecipe);
                         if(ingr != null){
                             set.add(ingr);
@@ -107,32 +113,6 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
             }
         }
         return set;
-    }
-
-    public Ingredient findInIngredientList(String ingredientName, List<Ingredient> ingredientListRecipe){
-        for(Ingredient ingr : ingredientListRecipe){
-            if(ingr.getName().equals(ingredientName)){
-                return ingr;
-            }
-        }
-        return null;
-    }
-
-
-    /**
-     * Creates custom annotation pipeline for detecting ingredients in a recipe step
-     * Uses statistical NER tagging before applying a custom NER rule file defined in regexnerMappingPath
-     *
-     * @param regexnerMappingPath   Path to rule file
-     * @return Annotation pipeline
-     */
-    private AnnotationPipeline createIngredientAnnotationPipeline(String regexnerMappingPath) {
-        //TODO try to customise the pipeline
-        Properties props = new Properties();
-        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, regexner");
-        props.put("regexner.mapping", regexnerMappingPath);
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-        return pipeline;
     }
 
 

@@ -3,9 +3,10 @@ package com.aurora.souschefprocessor.recipe;
 import java.util.Objects;
 
 /**
- * A DataClass representing a timer it has two fields
+ * A DataClass representing a timer it has three fields
  * mUpperBound: an integer, representing the maximum time in seconds of the timer
  * mLowerBound: an integer, representing the minimum time in seconds of the timer
+ * mPosition: the position of the timer in the text where it was detected
  * If the timer has only one value for the time, then mUpperBound == mLowerBound
  */
 public class RecipeTimer {
@@ -14,8 +15,10 @@ public class RecipeTimer {
     private int mUpperBound;
     private int mLowerBound;
 
+    private Position mPosition;
 
-    public RecipeTimer(int upperBound, int lowerBound) {
+
+    public RecipeTimer(int upperBound, int lowerBound, Position position) {
         if (upperBound <= 0) {
             throw new IllegalArgumentException("UpperBound is negative");
         }
@@ -30,14 +33,16 @@ public class RecipeTimer {
             this.mLowerBound = upperBound;
             this.mUpperBound = lowerBound;
         }
+        this.mPosition = position;
     }
 
-    public RecipeTimer(int time) {
+    public RecipeTimer(int time, Position position) {
         if (time <= 0) {
             throw new IllegalArgumentException("Time is negative");
         }
         this.mUpperBound = time;
         this.mLowerBound = time;
+        this.mPosition = position;
     }
 
     public int getUpperBound() {
@@ -46,6 +51,10 @@ public class RecipeTimer {
 
     public int getLowerBound() {
         return mLowerBound;
+    }
+
+    public Position getPosition() {
+        return mPosition;
     }
 
     @Override
@@ -62,5 +71,15 @@ public class RecipeTimer {
             }
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        if (mLowerBound == mUpperBound) {
+            return mLowerBound + " seconds";
+        } else {
+            return mLowerBound + " - " +
+                    mUpperBound + " seconds";
+        }
     }
 }

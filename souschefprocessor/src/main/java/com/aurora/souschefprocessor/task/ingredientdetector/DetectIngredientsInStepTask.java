@@ -33,7 +33,10 @@ import static android.content.ContentValues.TAG;
  */
 public class DetectIngredientsInStepTask extends AbstractProcessingTask {
     private static final String RAW_RESOURCE_DIR = "src/main/res/raw/";
-    private static final String INGREDIENT_NER_TAG = "INGREDIENT";
+
+    private static final String QUANTITY = "QUANTITY";
+    private static final String UNIT = "UNIT";
+    private static final String NAME = "NAME";
 
     private int mStepIndex;
 
@@ -84,7 +87,7 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
                 tempRuleFile.deleteOnExit();
                 FileWriter writer = new FileWriter(tempRuleFile);
                 for (Ingredient ingr : ingredientListRecipe){
-                    writer.write(ingr.getName() + "\t" + INGREDIENT_NER_TAG + "\n");
+                    writer.write(ingr.getName() + "\t" + NAME + "\n");
                 }
                 if(writer != null){
                     writer.close();
@@ -101,18 +104,46 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
             List<CoreMap> sentences = recipeStepAnnotated.get(CoreAnnotations.SentencesAnnotation.class);
             for(CoreMap sentence : sentences){
                 for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-                    // this is the NER label of the token
+                    // Set default values for ingredient fields
+                    String name = "";
+                    map.put(Ingredient.PositionKey.NAME, new Position(0, recipeStep.getDescription().length()));
+                    String unit = "";
+                    map.put(Ingredient.PositionKey.UNIT, new Position(0, recipeStep.getDescription().length()));
+                    Double quantity = 0.0;
+                    map.put(Ingredient.PositionKey.QUANTITY, new Position(0, recipeStep.getDescription().length()));
+
                     String nerTag = token.get(CoreAnnotations.NamedEntityTagAnnotation.class);
-                    if(nerTag.equals(NAME_NER_TAG)){
-                        Ingredient ingr = findInIngredientList(token.originalText(), ingredientListRecipe);
-                        if(ingr != null){
-                            set.add(ingr);
-                        }
+                    if(nerTag.equals(NAME)){
+                        name = token.originalText();
+                        map.put(Ingredient.PositionKey.NAME, new Position(token.beginPosition(), token.endPosition()));
+                    } else if(nerTag.equals(UNIT)){
+                        unit = token.originalText();
+                        map.put(Ingredient.PositionKey.UNIT, new Position(token.beginPosition(), token.endPosition()));
+                    } else if(nerTag.equals(QUANTITY)){
+                        Double.parseDouble(token.originalText());
+                        map.put(Ingredient.PositionKey.QUANTITY, new Position(token.beginPosition(), token.endPosition()));
                     }
+                    set.add(new Ingredient(name, unit, quantity, map));
                 }
             }
         }
         return set;
+    }
+
+    /**
+     * Creates custom annotation pipeline for detecting ingredients in a recipe step
+     * Uses statistical NER tagging before applying a custom NER rule file defined in regexnerMappingPath
+     *
+     * @param regexnerMappingPath   Path to rule file
+     * @return Annotation pipeline
+     */
+    private AnnotationPipeline createIngredientAnnotationPipeline(String regexnerMappingPath) {
+        //TODO try to customise the pipeline
+        Properties props = new Properties();
+        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, regexner");
+        props.put("regexner.mapping", regexnerMappingPath);
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+        return pipeline;
     }
 
 

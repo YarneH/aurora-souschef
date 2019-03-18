@@ -20,10 +20,6 @@ public class ListIngredient extends Ingredient {
         // check if the positions are legal
         for (PositionKey key : PositionKey.values()) {
             Position position = positions.get(key);
-
-            if (position == null) {
-                throw new IllegalArgumentException("Position of " + key + " cannot be null");
-            }
             if (!position.isLegalInString(originalText)) {
                 throw new IllegalArgumentException("Position of " + key + " is too big");
             }

@@ -24,6 +24,14 @@ public class Ingredient {
     public Ingredient(String name, String unit, double value, Map<PositionKey, Position> positions) {
         this.mName = name;
         this.mAmount = new Amount(value, unit);
+
+        //Check if the positions are not null
+        for (PositionKey key : PositionKey.values()) {
+            Position position = positions.get(key);
+            if (position == null) {
+                throw new IllegalArgumentException("Position of " + key + " cannot be null");
+            }
+        }
         this.mPositions = positions;
     }
 

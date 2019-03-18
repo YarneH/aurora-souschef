@@ -3,10 +3,19 @@ package com.aurora.souschefprocessor.task.sectiondivider;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import edu.stanford.nlp.wordseg.AffixDictionary;
+
 public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
 
     private static final int DEFAULT_NUMBER = 4;
     private static final int DEFAULT_NO_NUMBER = -1;
+    private static final String[] BEFORE_DIGIT_WORDS = {"yields", "serves", "servings", "makes", "portion of"};
+    private static final String[] AFTER_DIGIT_WORDS = {"persons", "people", "servings"};
+    private static final String[] SEPERATOR_CHARACTERS = {":", " ", "(about)"};
+    private static String regex = "";
 
     public DetectNumberOfPeopleTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
@@ -22,11 +31,63 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
     private static int findNumberOfPeople(String text) {
         // dummy
         // No amount detected in first line
-        if (!text.split("\n")[1].matches(".*\\d+.*")) {
-            return DEFAULT_NO_NUMBER;
-        } else {
-            return DEFAULT_NUMBER;
+        if (("").equals(regex)) {
+            buildRegex();
         }
+        String[] lines = text.split("\n");
+
+        for (String line : lines) {
+            Matcher match = Pattern.compile(regex).matcher(line);
+            if (match.find()) {
+                Matcher digitMatcher = Pattern.compile("\\d+").matcher((match.group()));
+                if (digitMatcher.find()) {
+                    String number = digitMatcher.group();
+                    int num = Integer.parseInt(number);
+                    return num;
+                }
+            }
+        }
+
+        return DEFAULT_NO_NUMBER;
+
+    }
+
+    /**
+     * Builds the regex to match with the first words being the BEFORE_ words and the last the after
+     * words
+     * string to match = ((yields|serves)[ :]*\d+.*)|(.*\d+[ :]*(servings|people))
+     */
+    private static void buildRegex() {
+        // start with two opening parentheses
+        StringBuilder bld = new StringBuilder("((");
+        // add the before words seperated by or
+        for (String word : BEFORE_DIGIT_WORDS) {
+            bld.append(word + "|");
+        }
+        // remove last added "|"
+        bld.deleteCharAt(bld.length() - 1);
+
+        bld.append(")[");
+
+        for (String c : SEPERATOR_CHARACTERS) {
+            bld.append(c);
+        }
+        bld.append("]*\\d+.*)|(.*\\d+[");
+
+        for (String c : SEPERATOR_CHARACTERS) {
+            bld.append(c);
+        }
+
+        bld.append("]*(");
+        for (String word: AFTER_DIGIT_WORDS){
+            bld.append(word+ "|");
+        }
+        // remove last added "|"
+        bld.deleteCharAt(bld.length() - 1);
+        bld.append("))");
+
+        regex = bld.toString();
+
     }
 
     public void doTask() {

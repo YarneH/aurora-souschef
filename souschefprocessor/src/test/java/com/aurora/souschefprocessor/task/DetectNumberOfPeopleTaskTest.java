@@ -45,6 +45,7 @@ public class DetectNumberOfPeopleTaskTest {
         return ("NO_NUMBER\n" +
                 "NUMBER\t2\n" +
                 "NUMBER\t1\n" +
+                "NUMBER\t4\n" +
                 "NUMBER\t4\n").split("\n");
     }
 
@@ -126,7 +127,8 @@ public class DetectNumberOfPeopleTaskTest {
                 "        While pasta cooks, pour tomatoes into a fine-mesh sieve set over a medium bowl. Shake to release as much juice as possible, then let tomatoes drain in sieve, collecting juices in bowl, until ready to use.\n" +
                 "        Heat 1/4 cup oil in a large deep-sided skillet over medium-high. Add capers and cook, swirling pan occasionally, until they burst and are crisp, about 3 minutes. Using a slotted spoon, transfer capers to a paper towel–lined plate, reserving oil in skillet.\n" +
                 "        Combine anchovies, tomato paste, and drained tomatoes in skillet. Cook over medium-high heat, stirring occasionally, until tomatoes begin to caramelize and anchovies start to break down, about 5 minutes. Add collected tomato juices, olives, oregano, and red pepper flakes and bring to a simmer. Cook, stirring occasionally, until sauce is slightly thickened, about 5 minutes. Add pasta, remaining 1/4 cup oil, and 3/4 cup pasta cooking liquid to pan. Cook over medium heat, stirring and adding remaining 1/4 cup pasta cooking liquid to loosen if needed, until sauce is thickened and emulsified, about 2 minutes. Flake tuna into pasta and toss to combine.\n" +
-                "        Divide pasta among plates. Top with fried capers. \n\n\n").split("\n\n\n");
+                "        Divide pasta among plates. Top with fried capers. \n\n\n" +
+                "Yields about 4-5 servings\n\n\n").split("\n\n\n");
     }
 
     @After
@@ -142,7 +144,7 @@ public class DetectNumberOfPeopleTaskTest {
 
     @Test
     public void DetectNumberOfPeopleTask_doTask_noNumberOfPeople() {
-        String originalTextNoNumber = originalText.substring(0,originalText.indexOf('\n') + 1);
+        String originalTextNoNumber = originalText.substring(0, originalText.indexOf('\n') + 1);
         RecipeInProgress recipeNoNumber = new RecipeInProgress(originalTextNoNumber);
         DetectNumberOfPeopleTask detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipeNoNumber);
         detectNumberOfPeopleTask.doTask();

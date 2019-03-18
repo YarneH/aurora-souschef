@@ -6,16 +6,14 @@ import com.aurora.souschefprocessor.task.RecipeInProgress;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.stanford.nlp.wordseg.AffixDictionary;
-
 public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
 
     private static final int DEFAULT_NUMBER = 4;
     private static final int DEFAULT_NO_NUMBER = -1;
-    private static final String[] BEFORE_DIGIT_WORDS = {"yields", "serves", "servings", "makes", "portion of"};
+    private static final String[] BEFORE_DIGIT_WORDS = {"yields", "yield", "serves", "servings", "makes", "portion of"};
     private static final String[] AFTER_DIGIT_WORDS = {"persons", "people", "servings"};
     private static final String[] SEPERATOR_CHARACTERS = {":", " ", "(about)"};
-    private static String regex = "";
+    private static String regex = buildRegex();
 
     public DetectNumberOfPeopleTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
@@ -29,11 +27,7 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
      * returns -1 if no amount of people was detected in the recipe text
      */
     private static int findNumberOfPeople(String text) {
-        // dummy
-        // No amount detected in first line
-        if (("").equals(regex)) {
-            buildRegex();
-        }
+
         String[] lines = text.split("\n");
 
         for (String line : lines) {
@@ -57,7 +51,7 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
      * words
      * string to match = ((yields|serves)[ :]*\d+.*)|(.*\d+[ :]*(servings|people))
      */
-    private static void buildRegex() {
+    private static String buildRegex() {
         // start with two opening parentheses
         StringBuilder bld = new StringBuilder("((");
         // add the before words seperated by or
@@ -79,14 +73,14 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
         }
 
         bld.append("]*(");
-        for (String word: AFTER_DIGIT_WORDS){
-            bld.append(word+ "|");
+        for (String word : AFTER_DIGIT_WORDS) {
+            bld.append(word + "|");
         }
         // remove last added "|"
         bld.deleteCharAt(bld.length() - 1);
         bld.append("))");
 
-        regex = bld.toString();
+        return bld.toString();
 
     }
 

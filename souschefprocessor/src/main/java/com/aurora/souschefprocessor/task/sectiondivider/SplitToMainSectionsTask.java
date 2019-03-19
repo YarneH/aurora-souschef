@@ -73,7 +73,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         // dummy
         // return "Put 500 gram spaghetti in boiling water for 9 minutes.\n"
         // + "Put the sauce in the Microwave for 3 minutes \n"
-        //        + "Put them together.";
+        //        + "Put them together."
 
         return "Toast baguette slices lightly on one side. Layer each round with smoked salmon, top with a dollup of sour \n" +
                 "cream and sprinkle with a few capers and lots of freshly ground black pepper.";
@@ -88,7 +88,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     public String findDescription(String text) {
         // dummy
-        // return "A spaghetti recipe";
+        // return "A spaghetti recipe"
         return "crostini with smoked salmon & sour cream";
     }
 

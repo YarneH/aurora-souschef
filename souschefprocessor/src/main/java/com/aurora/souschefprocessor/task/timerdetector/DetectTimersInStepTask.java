@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.task.timerdetector;
 import android.util.Log;
 
 import com.aurora.souschefprocessor.recipe.Position;
+import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
@@ -174,11 +175,11 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             if (!(temporal.getDuration() instanceof SUTime.DurationRange)) {
 
                 // single value
-                if (cm.toString().equals("overnight")) {
+                if ("overnight".equals(cm.toString())) {
                     // overnight should not be a timer
                     // this might be expanded to other tokens that do not require a timer
                     recipeStepSeconds = 0;
-                } else if (!(temporal.getDuration() == null)) {
+                } else if ((temporal.getDuration() != null)) {
                     recipeStepSeconds = (int) temporal
                             .getDuration().getJodaTimeDuration().getStandardSeconds();
 
@@ -205,23 +206,27 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             } else {
                 // case: durationRange
                 //formattedstring is the only way to access private min and max fields in DurationRange object
+                addDurationToList(temporal, list, timerPosition);
 
-                SUTime.DurationRange durationRange = (SUTime.DurationRange) temporal.getDuration();
-                String formattedString = durationRange.toString();
-                String[] minAndMax = formattedString.split("/");
-                try {
-
-                    int lowerBound = getSecondsFromFormattedString(minAndMax[0]);
-                    int upperBound = getSecondsFromFormattedString(minAndMax[1]);
-                    list.add(new RecipeTimer(lowerBound, upperBound, timerPosition));
-
-                } catch (IllegalArgumentException iae) {
-                    //TODO do something meaningful
-                    Log.e(TAG, "detectTimer: ", iae);
-                }
             }
         }
         return list;
+    }
+
+    private static void addDurationToList(SUTime.Temporal temporal, List<RecipeTimer> list, Position timerPosition){
+        SUTime.DurationRange durationRange = (SUTime.DurationRange) temporal.getDuration();
+        String formattedString = durationRange.toString();
+        String[] minAndMax = formattedString.split("/");
+        try {
+
+            int lowerBound = getSecondsFromFormattedString(minAndMax[0]);
+            int upperBound = getSecondsFromFormattedString(minAndMax[1]);
+            list.add(new RecipeTimer(lowerBound, upperBound, timerPosition));
+
+        } catch (IllegalArgumentException iae) {
+            //TODO do something meaningful
+            Log.e(TAG, "detectTimer: ", iae);
+        }
     }
 
     /**
@@ -269,7 +274,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             if (token.originalText().matches("(\\d+)[h|m|s|H|M|S]")) {
                 try {
                     Position timerPosition = new Position(token.beginPosition(), token.endPosition());
-                    recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString("PT" + token.originalText()), timerPosition));
+                    recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString
+                            ("PT" + token.originalText()), timerPosition));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
                     Log.e(TAG, "detectTimer: ", iae);

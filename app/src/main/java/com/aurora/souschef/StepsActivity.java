@@ -67,11 +67,10 @@ public class StepsActivity extends AppCompatActivity {
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager = (ViewPager) findViewById(R.id.vp_steps);
         mViewPager.setAdapter(mSectionsPagerAdapter);
         // Prevent ViewPager from resetting timers
         mViewPager.setOffscreenPageLimit(mSectionsPagerAdapter.getCount());
-
         // TODO: Add input from SouschefProc and delete DUMMY values
     }
 

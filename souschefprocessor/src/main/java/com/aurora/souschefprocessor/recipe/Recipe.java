@@ -63,4 +63,13 @@ public class Recipe extends PluginObject {
     }
 
 
+    @Override
+    public String toString() {
+        return "Recipe{" +
+                "mIngredients=" + mIngredients +
+                ", mRecipeSteps=" + mRecipeSteps +
+                ", mNumberOfPeople=" + mNumberOfPeople +
+                ", mDescription='" + mDescription + '\'' +
+                '}';
+    }
 }

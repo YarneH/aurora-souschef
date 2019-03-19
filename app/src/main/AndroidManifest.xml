@@ -15,10 +15,10 @@
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".MainActivity">
             <intent-filter>
-                <!-- <action android:name="com.aurora.auroralib.AURORA_PLUGIN" />
-                <category android:name="android.intent.category.DEFAULT" /> -->
-                <action android:name="android.intent.action.MAIN"></action>
-                <category android:name="android.intent.category.LAUNCHER"></category>
+                <action android:name="com.aurora.auroralib.AURORA_PLUGIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <!-- <action android:name="android.intent.action.MAIN"></action>
+                <category android:name="android.intent.category.LAUNCHER"></category> -->
             </intent-filter>
         </activity>
     </application>

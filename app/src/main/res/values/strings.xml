@@ -3,4 +3,7 @@
     <string name="title_activity_steps">StepsActivity</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Step %1$d</string>
+    <string name="overview">Overview</string>
+    <string name="ingredients">Ingredients</string>
+    <string name="steps">Steps</string>
 </resources>

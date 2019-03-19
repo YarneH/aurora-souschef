@@ -24,6 +24,16 @@ android {
 
 }
 
+apply plugin: 'jacoco-android'
+
+jacoco {
+    toolVersion = "0.8.3"
+}
+
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
@@ -32,12 +42,10 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    //Stanford coreNLP
-    //implementation 'edu.stanford.nlp:stanford-corenlp:3.9.2'
-    //
-    //
+
     // to solve issue for now with stanford-corenlp using old version of slf4j logging
     implementation 'org.slf4j:slf4j-nop:1.7.25'
+    // Stanford CoreNlP
     implementation ('edu.stanford.nlp:stanford-corenlp:3.9.2'){
         exclude group: 'com.sun.xml.bind'
         exclude group: 'org.apache.lucene'
@@ -45,9 +53,5 @@ dependencies {
     compileOnly 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
     testImplementation 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
 
-    /*
-    implementation ('edu.stanford.nlp:stanford-corenlp:3.7.0:models'){
-        exclude group: 'com.sun.xml.bind'
-        exclude group: 'org.apache.lucene'
-    }*/
+
 }

@@ -1,5 +1,9 @@
 package com.aurora.souschefprocessor.recipe;
 
+import android.util.ArraySet;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -7,7 +11,7 @@ import java.util.Set;
  * A dataclass representing a step it has  fields
  * mIngredients: a set of mIngredients contained in this recipe (could be null)
  * mRecipeTimers: a list of timers contained in this recipe (could be null)
- * decription:  the textual mDescription of this step, which was written in the original text,
+ * mDescription:  the textual mDescription of this step, which was written in the original text,
  * possibly updated to indicate references to elements in mIngredients and mRecipeTimers
  * mIngredientDetected: a boolean that indicates if the DetectIngredientsInStepTask task has been done
  * mTimerDetected: a boolean that indicates if the DetectTimersInStepTask task has been done on this step
@@ -30,16 +34,29 @@ public class RecipeStep {
     }
 
     public synchronized void setIngredients(Set<Ingredient> ingredients) {
-        this.mIngredients = ingredients;
+        if (ingredients != null) {
+            for (Ingredient ingredient : ingredients) {
+                // this also checks if the position of the ingredient is valid
+                add(ingredient);
+            }
+
+        } else {
+            mIngredients = new HashSet<>();
+        }
         mIngredientDetected = true;
     }
 
     // This should maybe check if mIngredients != null, but maybe also create the HashSet if it is null
     // We could also initialize an empty HashSet in the constructor (but maybe still need to check if not null
     // to deal with setIngredients possibly setting mIngredients to null
-    public synchronized void addIngredient(Ingredient ingredient) {
-        if (this.mIngredients != null) {
+    public synchronized void add(Ingredient ingredient) {
+        if (ingredient != null && ingredient.arePositionsLegalInString(mDescription)) {
+            if (this.mIngredients == null) {
+                this.mIngredients = new HashSet<>();
+            }
             this.mIngredients.add(ingredient);
+        } else {
+            throw new IllegalArgumentException("Positions of ingredient are not legal!");
         }
     }
 
@@ -48,15 +65,28 @@ public class RecipeStep {
     }
 
     public synchronized void setRecipeTimers(List<RecipeTimer> recipeTimers) {
-        this.mRecipeTimers = recipeTimers;
+        if (recipeTimers != null && !recipeTimers.isEmpty()) {
+            for (RecipeTimer timer : recipeTimers) {
+                // this also checks if the position of the timer is valid
+                add(timer);
+            }
+        } else {
+            mRecipeTimers = new ArrayList<>();
+        }
         mTimerDetected = true;
     }
 
     // Same comment as for addIngredient
-    public synchronized void addRecipeTimer(RecipeTimer recipeTimer) {
-        if (this.mRecipeTimers != null) {
+    public synchronized void add(RecipeTimer recipeTimer) {
+        if (recipeTimer.getPosition().isLegalInString(mDescription)) {
+            if (this.mRecipeTimers == null) {
+                this.mRecipeTimers = new ArrayList<>();
+            }
             this.mRecipeTimers.add(recipeTimer);
+        } else {
+            throw new IllegalArgumentException("Position of timer is not legal in description");
         }
+
     }
 
     public boolean isIngredientDetected() {
@@ -71,11 +101,14 @@ public class RecipeStep {
         return mDescription;
     }
 
+    public void setDescription(String description) {
+        mDescription = description;
+    }
+
     public synchronized void unsetTimer() {
         mRecipeTimers = null;
         mTimerDetected = false;
     }
-
 
     @Override
     public String toString() {

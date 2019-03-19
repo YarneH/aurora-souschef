@@ -76,6 +76,17 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         recipe.setIngredientsString(ingredients);
         recipe.setStepsString(steps);
         recipe.setDescription(description);
+        // test voor sonarqube verdacth
+
+        int a= 15;
+        String def = "";
+        for(int i =0; i<105; i++){
+            def+=i;
+        }
+        // Not implemented yet Recipe recipe = Communicator.delegate(inputText);
+        // Not implemented yet String result = basicPluginObject.getResult();
+        // Not implemented yet mTextView.setText(result);
+
 
     }
 

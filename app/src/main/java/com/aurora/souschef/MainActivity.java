@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         // TODO: Change back to the correct view
-        setContentView(R.layout.activity_steps);
+        setContentView(R.layout.activity_main);
 
 
         // Create the adapter that will return a fragment for each of the three
@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setOffscreenPageLimit(mSectionsPagerAdapter.getCount());
 
         // Set up the TabLayout to follow the ViewPager.
         TabLayout tabLayout = findViewById(R.id.tabs);

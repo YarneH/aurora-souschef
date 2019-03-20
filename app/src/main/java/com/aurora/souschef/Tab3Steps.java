@@ -43,6 +43,10 @@ public class Tab3Steps extends Fragment {
     private StepsPagerAdapter mStepsPagerAdapter;
     private ViewPager mViewPager;
 
+    public Tab3Steps() {
+        // Default constructor
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -63,7 +67,7 @@ public class Tab3Steps extends Fragment {
 
 
     /**
-     * A placeholder fragment containing a simple view.
+     * A placeholder fragment containing the view of a step of the recipe
      */
     public static class PlaceholderFragment extends Fragment {
         /**

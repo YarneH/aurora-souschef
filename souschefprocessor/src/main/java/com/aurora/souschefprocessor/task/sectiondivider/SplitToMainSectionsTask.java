@@ -5,7 +5,7 @@ import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
 import java.util.List;
-import java.util.Properties;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,13 +24,31 @@ import edu.stanford.nlp.util.CoreMap;
  */
 public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
-    private static String STEP_STARTER_REGEX = ".*((prep(aration)?[s]?)|instruction[s]?|method|description|make it|step[s]?|direction[s])[: ]?$";
-    private static String INGREDIENT_STARTER_REGEX = "([iI]ngredient[s]?)[: ]?$";
-    private static String END_TOKEN = " ENDTOKEN.";
+    private static final String STEP_STARTER_REGEX = ".*((prep(aration)?[s]?)|instruction[s]?|method|description|" +
+            "make it|step[s]?|direction[s])[: ]?$";
+    private static final String INGREDIENT_STARTER_REGEX = "([iI]ngredient[s]?)[: ]?$";
+    private static final String END_TOKEN = " ENDTOKEN.";
+    private static final int MAX_SENTENCES_FOR_PARSER = 100;
 
 
     public SplitToMainSectionsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
+    }
+
+    private static String makeEachNewLineASentence(String text) {
+        text = text.replace("\n", END_TOKEN + "\n");
+        return text;
+    }
+
+    private static String trimNewLines(String text) {
+        StringBuilder bld = new StringBuilder();
+        String[] lines = text.split("\n");
+        for (String line : lines) {
+            bld.append(line + "\n");
+        }
+        // Remove last new line
+        bld.deleteCharAt(bld.length() - 1);
+        return bld.toString();
     }
 
     /**
@@ -57,12 +75,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
     }
 
-    private String makeEachNewLineASentence(String text) {
-        text = text.replace("\n", END_TOKEN + "\n");
-        return text;
-    }
-
-
     /**
      * Modifies the recipe so that the ingredientsString, stepsString, mDescription and amountOfPeople
      * fields are set.
@@ -76,18 +88,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         recipe.setIngredientsString(ingredients);
         recipe.setStepsString(steps);
         recipe.setDescription(description);
-        // test voor sonarqube verdacth
-
-        int a= 15;
-        String def = "";
-        for(int i =0; i<105; i++){
-            def+=i;
-        }
-        // Not implemented yet Recipe recipe = Communicator.delegate(inputText);
-        // Not implemented yet String result = basicPluginObject.getResult();
-        // Not implemented yet mTextView.setText(result);
-
-
     }
 
     /**
@@ -99,14 +99,14 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     public ResultAndAlteredTextPair findIngredients(String text) {
         // dummy
         ResultAndAlteredTextPair ingredientsAndText = findIngredientsRegexBased(text);
-        if (ingredientsAndText == null || ingredientsAndText.getResult().equals("")) {
+        if ("".equals(ingredientsAndText.getResult())) {
             ingredientsAndText = findIngredientsDigit(text);
         }
         return ingredientsAndText;
     }
 
     private ResultAndAlteredTextPair findIngredientsRegexBased(String text) {
-        text = text.toLowerCase();
+        text = text.toLowerCase(Locale.ENGLISH);
         String[] lines = text.split("\n\n");
         boolean found = false;
         boolean sectionAdded = false;
@@ -175,7 +175,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         //first try rule based
         ResultAndAlteredTextPair pair = findStepsRuleBased(text);
-        if (pair == null || ("").equals(pair.getResult())) {
+        if (("").equals(pair.getResult())) {
             pair = findStepsNLP(text);
         }
 
@@ -193,7 +193,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             Matcher match = Pattern.compile(STEP_STARTER_REGEX).matcher(lowerCaseLine);
 
             if (match.find()) {
-                System.out.println("qkfqskldfjqkmdlfsj");
                 int startIndexLine = text.indexOf(line);
                 int startIndexSteps = startIndexLine + line.length();
                 steps = text.substring(startIndexSteps);
@@ -201,7 +200,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
             }
         }
-       return new ResultAndAlteredTextPair(trimNewLines(steps), text);
+        return new ResultAndAlteredTextPair(trimNewLines(steps), text);
     }
 
     private boolean verbDetected(String text, boolean lowercase) {
@@ -214,14 +213,13 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             if (tokens.size() > 1) {
                 CoreLabel startToken = tokens.get(0);
                 CoreLabel secondToken = tokens.get(1);
-                if (startToken.tag().equals("VB") && !secondToken.tag().equals("CD")) {
+                if ("VB".equals(startToken.tag()) && !"CD".equals(secondToken.tag())) {
                     return true;
                 }
             }
         }
         return false;
     }
-
 
     private ResultAndAlteredTextPair findStepsNLP(String text) {
         String[] sections = text.split("\n\n");
@@ -248,35 +246,23 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return trimNewLines(text);
     }
 
-    private String trimNewLines(String text){
-        StringBuilder bld = new StringBuilder();
-        String[] lines = text.split("\n");
-        for(String line: lines){
-            bld.append(line+"\n");
-        }
-        // Remove last new line
-        bld.deleteCharAt(bld.length() - 1);
-        return bld.toString();
-    }
-
     /**
      * Creates annotation pipeline for
      *
      * @return Annotation pipeline
      */
     private Annotation createAnnotatedText(String text, boolean lowercase) {
-        Properties props = new Properties();
         AnnotationPipeline pipeline = new AnnotationPipeline();
         pipeline.addAnnotator(new TokenizerAnnotator(false, "en"));
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
 
-        pipeline.addAnnotator(new ParserAnnotator(false, 100));
+        pipeline.addAnnotator(new ParserAnnotator(false, MAX_SENTENCES_FOR_PARSER));
         pipeline.addAnnotator(new MorphaAnnotator(false));
         // The parser performs better on imperative sentences (instructions) when the first word is decapitalized
         // see: https://stackoverflow.com/questions/35872324/stanford-nlp-vp-vs-np
         Annotation annotation;
         if (lowercase) {
-            annotation = new Annotation(text.toLowerCase());
+            annotation = new Annotation(text.toLowerCase(Locale.ENGLISH));
         } else {
             annotation = new Annotation(text);
         }

@@ -19,7 +19,8 @@ public class Recipe extends PluginObject {
     protected String mDescription;
 
 
-    public Recipe(List<ListIngredient> ingredients, List<RecipeStep> recipeSteps, int numberOfPeople, String description) {
+    public Recipe(List<ListIngredient> ingredients, List<RecipeStep> recipeSteps,
+                  int numberOfPeople, String description) {
         this.mIngredients = ingredients;
         this.mRecipeSteps = recipeSteps;
         this.mNumberOfPeople = numberOfPeople;
@@ -38,7 +39,7 @@ public class Recipe extends PluginObject {
         this.mNumberOfPeople = numberOfPeople;
     }
 
-    public String getDescription() {
+    public synchronized String getDescription() {
         return mDescription;
     }
 

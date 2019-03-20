@@ -170,7 +170,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         // dummy
         // return "Put 500 gram spaghetti in boiling water for 9 minutes.\n"
         // + "Put the sauce in the Microwave for 3 minutes \n"
-        //        + "Put them together.";
+        //        + "Put them together."
+
 
         //first try rule based
         ResultAndAlteredTextPair pair = findStepsRuleBased(text);
@@ -179,7 +180,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         }
 
         return pair;
-
 
     }
 

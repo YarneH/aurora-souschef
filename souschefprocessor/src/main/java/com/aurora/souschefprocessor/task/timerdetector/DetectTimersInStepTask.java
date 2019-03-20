@@ -3,7 +3,6 @@ package com.aurora.souschefprocessor.task.timerdetector;
 import android.util.Log;
 
 import com.aurora.souschefprocessor.recipe.Position;
-import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;

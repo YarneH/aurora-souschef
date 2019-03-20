@@ -35,7 +35,7 @@ public class Position {
      * @param beginIndex The beginIndex
      * @param endIndex   The endIndex
      */
-    private void checkLegality(int beginIndex, int endIndex) {
+    private static void checkLegality(int beginIndex, int endIndex) {
         if (beginIndex < 0 || endIndex < 0) {
             throw new IllegalArgumentException("At least one of the indexes is negative!");
         }
@@ -51,7 +51,7 @@ public class Position {
      * @param endIndex   the endIndex
      * @return A boolean indicating if the beginindex is smaller than the endIndex
      */
-    private boolean beginSmallerThanEnd(int beginIndex, int endIndex) {
+    private static boolean beginSmallerThanEnd(int beginIndex, int endIndex) {
         return beginIndex < endIndex;
     }
 
@@ -107,11 +107,7 @@ public class Position {
             return false;
         }
         // endIndex should be at least as small as the length of the string
-        if (mEndIndex > length) {
-            return false;
-        }
-
-        return true;
+        return mEndIndex <= length;
     }
 
     @Override

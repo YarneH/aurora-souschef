@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.task.timerdetector;
 import android.util.Log;
 
 import com.aurora.souschefprocessor.recipe.Position;
+import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
@@ -147,22 +148,21 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
         List<CoreLabel> allTokens = recipeStepAnnotated.get(CoreAnnotations.TokensAnnotation.class);
 
-        // Map fractions to their start timerPosition in the recipe step
-        Map<Integer, String> fractionPositions = getFractionPositions(allTokens);
-
         // Detect and calculate symbol notations for time durations in the recipeStep
         detectSymbolPattern(list, allTokens);
+
+        // Map fractions to their start timerPosition in the recipe step
+        Map<Integer, String> fractionPositions = getFractionPositions(allTokens);
 
 
         List<CoreMap> timexAnnotations = recipeStepAnnotated.get(TimeAnnotations.TimexAnnotations.class);
         for (CoreMap cm : timexAnnotations) {
-            // the detected seconds
-            int recipeStepSeconds;
 
             List<CoreLabel> labelList = cm.get(CoreAnnotations.TokensAnnotation.class);
 
             // The first detected token
             CoreLabel firstTimexToken = labelList.get(0);
+
             // the last detected token
             CoreLabel lastTimexToken = labelList.get(labelList.size() - 1);
 
@@ -174,56 +174,76 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
             // two cases: DurationRange or Single value
             if (!(temporal.getDuration() instanceof SUTime.DurationRange)) {
-
                 // single value
-                if (cm.toString().equals("overnight")) {
-                    // overnight should not be a timer
-                    // this might be expanded to other tokens that do not require a timer
-                    recipeStepSeconds = 0;
-                } else if (!(temporal.getDuration() == null)) {
-                    recipeStepSeconds = (int) temporal
-                            .getDuration().getJodaTimeDuration().getStandardSeconds();
-
-                } else {
-                    // duration was null, try with formatted string
-                    try {
-                        recipeStepSeconds = getSecondsFromFormattedString(temporal.toString());
-                    } catch (NumberFormatException nfe) {
-                        Log.e("TIMERS", "DetectTimer: ", nfe);
-                        recipeStepSeconds = 0;
-                    }
-
-                }
-
-                recipeStepSeconds = changeToFractions(fractionPositions, timerPosition, recipeStepSeconds);
-
-                try {
-                    list.add(new RecipeTimer(recipeStepSeconds, timerPosition));
-                } catch (IllegalArgumentException iae) {
-                    //TODO do something meaningful
-                    Log.e(TAG, "detectTimer: ", iae);
-                }
+                addNonDurationToList(temporal, list, timerPosition, cm, fractionPositions);
 
             } else {
                 // case: durationRange
-                //formattedstring is the only way to access private min and max fields in DurationRange object
 
-                SUTime.DurationRange durationRange = (SUTime.DurationRange) temporal.getDuration();
-                String formattedString = durationRange.toString();
-                String[] minAndMax = formattedString.split("/");
-                try {
-
-                    int lowerBound = getSecondsFromFormattedString(minAndMax[0]);
-                    int upperBound = getSecondsFromFormattedString(minAndMax[1]);
-                    list.add(new RecipeTimer(lowerBound, upperBound, timerPosition));
-
-                } catch (IllegalArgumentException iae) {
-                    //TODO do something meaningful
-                    Log.e(TAG, "detectTimer: ", iae);
-                }
+                addDurationToList(temporal, list, timerPosition);
             }
         }
         return list;
+    }
+
+    /**
+     * Constructs a RecipeTimer from a temporal that does not represent a duration to the list
+     * @param temporal The temporal of which a timer needs to be constructed
+     * @param list The list to add the timer to
+     * @param timerPosition The position of the temporal
+     * @param cm The Coremap which his the original representation of the temporal
+     * @param fractionPositions The map of fractionpositions in the entire sentence
+     */
+    private void addNonDurationToList(SUTime.Temporal temporal, List<RecipeTimer> list,
+                                             Position timerPosition, CoreMap cm,
+                                             Map<Integer, String> fractionPositions ){
+        // the detected seconds
+        int recipeStepSeconds;
+        if ("overnight".equals(cm.toString())) {
+            // overnight should not be a timer
+            // this might be expanded to other tokens that do not require a timer
+            recipeStepSeconds = 0;
+        } else if ((temporal.getDuration() != null)) {
+            recipeStepSeconds = (int) temporal
+                    .getDuration().getJodaTimeDuration().getStandardSeconds();
+
+        } else {
+            // duration was null, try with formatted string
+            try {
+                recipeStepSeconds = getSecondsFromFormattedString(temporal.toString());
+            } catch (NumberFormatException nfe) {
+                Log.e("TIMERS", "DetectTimer: ", nfe);
+                recipeStepSeconds = 0;
+            }
+
+        }
+
+        recipeStepSeconds = changeToFractions(fractionPositions, timerPosition, recipeStepSeconds);
+
+        try {
+            list.add(new RecipeTimer(recipeStepSeconds, timerPosition));
+        } catch (IllegalArgumentException iae) {
+            //TODO do something meaningful
+            Log.e(TAG, "detectTimer: ", iae);
+        }
+    }
+
+    private static void addDurationToList(SUTime.Temporal temporal, List<RecipeTimer> list, Position timerPosition){
+        SUTime.DurationRange durationRange = (SUTime.DurationRange) temporal.getDuration();
+
+        //formattedstring is the only way to access private min and max fields in DurationRange object
+        String formattedString = durationRange.toString();
+        String[] minAndMax = formattedString.split("/");
+        try {
+
+            int lowerBound = getSecondsFromFormattedString(minAndMax[0]);
+            int upperBound = getSecondsFromFormattedString(minAndMax[1]);
+            list.add(new RecipeTimer(lowerBound, upperBound, timerPosition));
+
+        } catch (IllegalArgumentException iae) {
+            //TODO do something meaningful
+            Log.e(TAG, "detectTimer: ", iae);
+        }
     }
 
     /**
@@ -272,7 +292,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             if (token.originalText().matches("(\\d+)[h|m|s|H|M|S]")) {
                 try {
                     Position timerPosition = new Position(token.beginPosition(), token.endPosition());
-                    recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString("PT" + token.originalText()), timerPosition));
+                    recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString
+                            ("PT" + token.originalText()), timerPosition));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
                     Log.e(TAG, "detectTimer: ", iae);

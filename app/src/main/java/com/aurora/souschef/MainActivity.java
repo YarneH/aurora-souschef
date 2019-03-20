@@ -9,6 +9,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
+
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -21,7 +22,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int TAB_INGREDIENTS = 1;
     private static final int TAB_STEPS = 2;
     private static final int NUMBER_OF_TABS = 3;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +37,9 @@ public class MainActivity extends AppCompatActivity {
         SectionsPagerAdapter mSectionsPagerAdapter;
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        // TODO: Change back to the correct view
+        setContentView(R.layout.activity_steps);
+
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -90,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
+
         public CharSequence getPageTitle(int position) {
             String tabName = null;
             switch (position) {
@@ -109,5 +112,7 @@ public class MainActivity extends AppCompatActivity {
             }
             return tabName;
         }
+
     }
 }
+

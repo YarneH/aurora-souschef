@@ -54,7 +54,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     public String findIngredients(String text) {
         // dummy
-        // return "500 gram sauce \n 500 gram spaghetti";
 
         return "8 thin slices baguette\n" +
                 "100g (3 oz) smoked salmon, sliced\n" +

@@ -74,7 +74,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         // + "Put the sauce in the Microwave for 3 minutes \n"
         //        + "Put them together."
 
-        return "Toast baguette slices lightly on one side. Layer each round with smoked salmon, top with a dollup of sour \n" +
+        return "Toast baguette slices lightly on one side. Layer each round " +
+                "with smoked salmon, top with a dollup of sour \n" +
                 "cream and sprinkle with a few capers and lots of freshly ground black pepper.";
 
     }

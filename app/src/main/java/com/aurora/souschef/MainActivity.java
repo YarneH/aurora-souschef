@@ -75,8 +75,10 @@ public class MainActivity extends AppCompatActivity {
     // Make everything visible after progress is full.
     public void update() {
         ProgressBar pb = findViewById(R.id.pb_loading_screen);
-        pb.incrementProgressBy(20);
-        if (pb.getProgress() >= 100) {
+        int increment = 20;
+        int maximum = 100;
+        pb.incrementProgressBy(increment);
+        if (pb.getProgress() >= maximum) {
             AppBarLayout abl = findViewById(R.id.appbar);
             ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
             ViewPager mViewPager = findViewById(R.id.container);

@@ -49,4 +49,12 @@ dependencies {
     //implementation 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
     implementation project(':auroralib')
     implementation project(':souschefprocessor')
+
+    // Stanford CoreNlP
+    implementation ('edu.stanford.nlp:stanford-corenlp:3.9.2'){
+        exclude group: 'com.sun.xml.bind'
+        exclude group: 'org.apache.lucene'
+    }
+    compileOnly 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
+    testImplementation 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
 }

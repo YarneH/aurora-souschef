@@ -17,7 +17,7 @@ public class Communicator {
 
     public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
         // TODO load in the classifier using this code, or let it be loaded in by an activity
-       //try { SONARCOMPLAINS
+        //try { SONARCOMPLAINS
 
         //    GZIPInputStream is = SONARCOMPLAINS
 
@@ -32,7 +32,7 @@ public class Communicator {
         // } catch (IOException | ClassNotFoundException e) { SONARCOMPLAINS
 
         //}
-       // mDelegator = new Delegator(ingredientsClassifier);
+        mDelegator = new Delegator(ingredientsClassifier);
     }
 
     /**

@@ -7,7 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 //TODO add more testing data to increase acceptance test reliability
-public class DetectNumberOfPeopleTaskTest {
+public class DetectNumberOfPeopleTaskUnitTest {
     private static final int DEFAULT_NUMBER = 4;
     private static final int DEFAULT_NO_NUMBER = -1;
     private static RecipeInProgress recipe;
@@ -38,6 +38,36 @@ public class DetectNumberOfPeopleTaskTest {
                 "Toast baguette slices lightly on one side. Layer each round with smoked salmon, top with a dollup of sour \n" +
                 "cream and sprinkle with a few capers and lots of freshly ground black pepper.\n\n\n"
         );
+    }
+
+    @Test
+    public void DetectNumberOfPeopleTask_doTask_acceptanceTest95PercentAccuracy() {
+        String[] dataSet = initializeDataSet();
+        String[] dataSetTags = initializeDataSetTags();
+        int amount = dataSet.length;
+        int correct = amount;
+
+        for (int i = 1; i <= dataSet.length; i++) {
+            String recipeText = dataSet[i - 1];
+            String recipeTag = dataSetTags[i - 1];
+
+            RecipeInProgress recipe = new RecipeInProgress(recipeText);
+            DetectNumberOfPeopleTask detector = new DetectNumberOfPeopleTask(recipe);
+            detector.doTask();
+
+            if (recipeTag.equals("NO_NUMBER")) {
+                if (recipe.getNumberOfPeople() != -1) {
+                    correct--;
+                }
+            } else if (recipeTag.equals("NUMBER")) {
+                if (recipe.getNumberOfPeople() <= 0) {
+                    correct--;
+                }
+            }
+        }
+
+        System.out.println(correct + " correct out of " + amount + " tested. Accuracy: " + correct * 100.0 / amount);
+        assert (correct * 100.0 / amount > 95);
     }
 
     private static String[] initializeDataSetTags() {
@@ -119,34 +149,5 @@ public class DetectNumberOfPeopleTaskTest {
         assert (recipeNoNumber.getNumberOfPeople() == DEFAULT_NO_NUMBER);
     }
 
-    @Test
-    public void DetectNumberOfPeopleTask_doTask_acceptanceTest95PercentAccuracy() {
-        String[] dataSet = initializeDataSet();
-        String[] dataSetTags = initializeDataSetTags();
-        int amount = dataSet.length;
-        int correct = amount;
-
-        for (int i = 1; i <= dataSet.length; i++) {
-            String recipeText = dataSet[i - 1];
-            String recipeTag = dataSetTags[i - 1];
-
-            RecipeInProgress recipe = new RecipeInProgress(recipeText);
-            DetectNumberOfPeopleTask detector = new DetectNumberOfPeopleTask(recipe);
-            detector.doTask();
-
-            if (recipeTag.equals("NO_NUMBER")) {
-                if (recipe.getNumberOfPeople() != -1) {
-                    correct--;
-                }
-            } else if (recipeTag.equals("NUMBER")) {
-                if (recipe.getNumberOfPeople() <= 0) {
-                    correct--;
-                }
-            }
-        }
-
-        System.out.println(correct + " correct out of " + amount + " tested. Accuracy: " + correct * 100.0 / amount);
-        assert (correct * 100.0 / amount > 95);
-    }
 
 }

@@ -2,7 +2,7 @@ package com.aurora.souschefprocessor.recipe;
 
 import org.junit.Test;
 
-public class PositionTest {
+public class PositionUnitTest {
 
     @Test
     public void Positon_Constructor_BeginSmallerThanEnd() {

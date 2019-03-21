@@ -7,7 +7,7 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class SplitStepsTaskTest {
+public class SplitStepsTaskUnitTest {
     private static RecipeInProgress recipe;
     private static SplitStepsTask splitStepsTask;
     private static String originalText;

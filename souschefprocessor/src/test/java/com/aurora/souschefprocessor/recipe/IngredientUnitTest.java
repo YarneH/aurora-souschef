@@ -6,7 +6,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class IngredientTest {
+public class IngredientUnitTest {
     private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
 
     @BeforeClass

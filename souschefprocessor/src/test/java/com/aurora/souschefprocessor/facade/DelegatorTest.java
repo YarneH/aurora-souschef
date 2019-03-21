@@ -34,7 +34,7 @@ public class DelegatorTest {
     }
 
     private static List<String> initializeRecipes() {
-        String filename = "src\\test\\java\\com\\aurora\\souschefprocessor\\facade\\recipes.txt";
+        String filename = "src/test/java/com/aurora/souschefprocessor/facade/recipes.txt";
         List<String> list = new ArrayList<>();
         try {
             FileReader fReader = new FileReader(filename);

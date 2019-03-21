@@ -9,17 +9,17 @@ import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * A wrapper class for doing the steptasks but not in parallel
+ */
 public class NonParallelizeStepTask extends AbstractProcessingTask {
 
-    private ParallellizeableTaskNames[] mParallellizeableTaskNames;
+    private StepTaskNames[] mStepTaskNames;
 
     public NonParallelizeStepTask(RecipeInProgress recipeInProgress,
-                                  ParallellizeableTaskNames[] parallellizeableTaskNames) {
+                                  StepTaskNames[] stepTaskNames) {
         super(recipeInProgress);
-
-
-        // should this be deep copied?
-        this.mParallellizeableTaskNames = parallellizeableTaskNames;
+        this.mStepTaskNames = stepTaskNames;
     }
 
     /**
@@ -29,22 +29,23 @@ public class NonParallelizeStepTask extends AbstractProcessingTask {
         //TODO fallback if no mRecipeSteps present
         List<RecipeStep> recipeSteps = mRecipeInProgress.getRecipeSteps();
         //for every step and for every parallelizeable task
-        CountDownLatch latch = new CountDownLatch(recipeSteps.size() * mParallellizeableTaskNames.length);
+        CountDownLatch latch = new CountDownLatch(recipeSteps.size() * mStepTaskNames.length);
         // TODO: it is possible to immediately pass the recipeStep to the Detect...InStepTasks.
-        // In order to do this, these Detect...InStepTasks should not inherit AbstractProcessingTask, but
-        // inherit from something like StepProcessingTask (which has a RecipeStep instead of a RecipeInProgress)
-        // that cannot be added directly in the pipeline,
-        // but only through ParallelizeStepTask (or a wrapper task)
         for (int i = 0; i < recipeSteps.size(); i++) {
-            for (ParallellizeableTaskNames taskName : mParallellizeableTaskNames) {
+            for (StepTaskNames taskName : mStepTaskNames) {
                 doTask(i, taskName);
             }
         }
 
     }
 
-    public void doTask(int stepIndex, ParallellizeableTaskNames taskname) {
-        if (taskname.equals(ParallellizeableTaskNames.TIMER)) {
+    /**
+     * Does the task on the step with index of the recipe
+     * @param stepIndex The index of the step on which to do the processing
+     * @param taskname The name of the task to do on the step
+     */
+    private void doTask(int stepIndex, StepTaskNames taskname) {
+        if (taskname.equals(StepTaskNames.TIMER)) {
             new DetectTimersInStepTask(
                     this.mRecipeInProgress, stepIndex).doTask();
         } else {

@@ -4,7 +4,7 @@ import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import com.aurora.souschefprocessor.task.helpertasks.ParallelizeStepsTask;
-import com.aurora.souschefprocessor.task.helpertasks.ParallellizeableTaskNames;
+import com.aurora.souschefprocessor.task.helpertasks.StepTaskNames;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -17,16 +17,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static com.aurora.souschefprocessor.task.helpertasks.ParallellizeableTaskNames.INGR;
-import static com.aurora.souschefprocessor.task.helpertasks.ParallellizeableTaskNames.TIMER;
+import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.INGR;
+import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.TIMER;
 
 public class ParallelizableTaskTest {
 
     private static ThreadPoolExecutor mThreadPoolExecutor;
     private static List<RecipeStep> recipeSteps = new ArrayList<>();
-    private static ParallellizeableTaskNames[] onlyTimerName = {TIMER};
-    private static ParallellizeableTaskNames[] onlyIngrName = {INGR};
-    private static ParallellizeableTaskNames[] both = {TIMER, INGR};
+    private static StepTaskNames[] onlyTimerName = {TIMER};
+    private static StepTaskNames[] onlyIngrName = {INGR};
+    private static StepTaskNames[] both = {TIMER, INGR};
     private static ParallelizeStepsTask onlyTimerstask;
     private static ParallelizeStepsTask onlyIngrtask;
     private static ParallelizeStepsTask bothtasks;

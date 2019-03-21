@@ -35,11 +35,13 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         super(recipeInProgress);
     }
 
-    private static String makeEachNewLineASentence(String text) {
-        text = text.replace("\n", END_TOKEN + "\n");
-        return text;
-    }
 
+    /**
+     * This trims each line of a block of text
+     *
+     * @param text The text to trim
+     * @return The trimmed text
+     */
     private static String trimNewLines(String text) {
         StringBuilder bld = new StringBuilder();
         String[] lines = text.split("\n");
@@ -58,14 +60,12 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * with these fields
      */
     public void doTask() {
-        // TODO all of this could be in seperate threads
         // TODO add check that an original text is contained
         String text = this.mRecipeInProgress.getOriginalText();
 
 
         ResultAndAlteredTextPair ingredientsAndText = findIngredients(text);
         String ingredients = ingredientsAndText.getResult();
-
 
         ResultAndAlteredTextPair stepsAndText = findSteps(ingredientsAndText.getAlteredText());
         String steps = stepsAndText.getResult();
@@ -94,7 +94,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * Finds the ingredientslist in a text
      *
      * @param text the text in which to search for mIngredients
-     * @return The string representing the mIngredients
+     * @return A pair with the detected ingredientlist and the altered text so that the detected
+     * ingredientlist is not in the text anymore
      */
     public ResultAndAlteredTextPair findIngredients(String text) {
         // dummy
@@ -106,6 +107,14 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return ingredientsAndText;
     }
 
+    /**
+     * Finds the ingredients based on a regex. It checks whether some common names that start
+     * the ingredients section are present. This is based on the INGREDIENT_STARTER_REGEX
+     *
+     * @param text the text in which to search for mIngredients
+     * @return A pair with the detected ingredientlist and the altered text so that the detected
+     * ingredientlist is not in the text anymore
+     */
     private ResultAndAlteredTextPair findIngredientsRegexBased(String text) {
         text = text.toLowerCase(Locale.ENGLISH);
         String[] lines = text.split("\n\n");
@@ -135,6 +144,14 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return new ResultAndAlteredTextPair(trimNewLines(bld.toString()), text);
     }
 
+    /**
+     * Finds the ingredients based on the fact that for most recipes at least one of the ingredients
+     * will start with a digit.
+     *
+     * @param text the text in which to search for mIngredients
+     * @return A pair with the detected ingredientlist and the altered text so that the detected
+     * ingredientlist is not in the text anymore
+     */
     private ResultAndAlteredTextPair findIngredientsDigit(String text) {
         String[] sections = text.split("\n\n");
         boolean found = false;
@@ -184,6 +201,14 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
     }
 
+    /**
+     * Finds the steps based on a regex. It checks whether some common names that start
+     * the instruction section are present. This is based on the STEP_STARTER_REGEX
+     *
+     * @param text the text in which to search for mIngredients
+     * @return A pair with the detected ingredientlist and the altered text so that the detected
+     * ingredientlist is not in the text anymore
+     */
     private ResultAndAlteredTextPair findStepsRuleBased(String text) {
 
         String[] lines = text.split("\n");
@@ -204,6 +229,13 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return new ResultAndAlteredTextPair(trimNewLines(steps), text);
     }
 
+    /**
+     * This checks if a text starts with a verb.
+     * @param text The text
+     * @param lowercase indicates wheter the detection should be done on a lowercase text. Since corenlp
+     *                 can be better at detecting sentences starting with a verb when it is lowercase
+     * @return
+     */
     private boolean verbDetected(String text, boolean lowercase) {
         Annotation annotatedTextLowerCase = createAnnotatedText(text, lowercase);
         List<CoreMap> sentences = annotatedTextLowerCase.get(CoreAnnotations.SentencesAnnotation.class);
@@ -222,6 +254,14 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return false;
     }
 
+    /**
+     * Finds the steps in this recipe based on NLP. It uses the domain knowledge that recipes contain
+     * instructions and instructions always use the imperative sense.
+     *
+     * @param text the text in which to search for mIngredients
+     * @return A pair with the detected steplist and the altered text so that the detected
+     * ingredientlist is not in the text anymore
+     */
     private ResultAndAlteredTextPair findStepsNLP(String text) {
         String[] sections = text.split("\n\n");
         for (String section : sections) {

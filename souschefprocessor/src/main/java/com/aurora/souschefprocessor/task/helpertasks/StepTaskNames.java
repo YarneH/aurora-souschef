@@ -1,5 +1,5 @@
 package com.aurora.souschefprocessor.task.helpertasks;
 
-public enum ParallellizeableTaskNames {
+public enum StepTaskNames {
     INGR, TIMER
 }

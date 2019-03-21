@@ -7,7 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 //TODO add more testing data to increase acceptance test reliability
-public class DetectNumberOfPeopleTaskTest {
+public class DetectNumberOfPeopleTaskUnitTest {
     private static final int DEFAULT_NUMBER = 4;
     private static final int DEFAULT_NO_NUMBER = -1;
     private static RecipeInProgress recipe;
@@ -40,6 +40,8 @@ public class DetectNumberOfPeopleTaskTest {
                 ""
         );
     }
+
+
 
     private static String[] initializeDataSetTags() {
         return ("NO_NUMBER\n" +
@@ -150,6 +152,7 @@ public class DetectNumberOfPeopleTaskTest {
         detectNumberOfPeopleTask.doTask();
         assert (recipeNoNumber.getNumberOfPeople() == DEFAULT_NO_NUMBER);
     }
+
 
     @Test
     public void DetectNumberOfPeopleTask_doTask_acceptanceTest95PercentAccuracy() {

@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-public class SplitToMainSectionsTaskTest {
+public class SplitToMainSectionsTaskUnitTest {
     private static RecipeInProgress recipe;
     private static SplitToMainSectionsTask splitToMainSectionsTask;
     private static String originalText;

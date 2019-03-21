@@ -28,6 +28,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
                                 ParallellizeableTaskNames[] parallellizeableTaskNames) {
         super(recipeInProgress);
         this.mThreadPoolExecutor = threadPoolExecutor;
+
         // should this be deep copied?
         this.mParallellizeableTaskNames = parallellizeableTaskNames;
     }
@@ -68,7 +69,6 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
                     this.mRecipeInProgress, stepIndex), latch);
         }
 
-        // TODO Is it necessary to add the thread to threads array? Did not seem to happen in original code
         return stepTaskThread;
     }
 
@@ -81,6 +81,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
         }
     }
 
+
     /**
      * A thread that does the detecting of timer of a recipeStep
      */
@@ -92,6 +93,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
         public StepTaskThread(AbstractProcessingTask task, CountDownLatch latch) {
             this.task = task;
             this.latch = latch;
+
         }
 
         /**

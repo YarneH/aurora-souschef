@@ -1,4 +1,4 @@
-package com.aurora.souschef;
+package com.aurora.souschef.test;
 
 import org.junit.Test;
 

@@ -2,7 +2,7 @@ package com.aurora.souschefprocessor.recipe;
 
 import org.junit.Test;
 
-public class RecipeTimerTest {
+public class RecipeTimerUnitTest {
     private Position irrelevant = new Position(0, 1);
 
     @Test

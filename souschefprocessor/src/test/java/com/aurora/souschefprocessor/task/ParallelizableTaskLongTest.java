@@ -3,7 +3,8 @@ package com.aurora.souschefprocessor.task;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
-import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
+import com.aurora.souschefprocessor.task.helpertasks.ParallelizeStepsTask;
+import com.aurora.souschefprocessor.task.helpertasks.StepTaskNames;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -11,17 +12,29 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-public class DetectTimersInStepTaskTest {
+import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.INGR;
+import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.TIMER;
 
-    private static List<DetectTimersInStepTask> detectors = new ArrayList<>();
-    private static RecipeInProgress recipe;
-    private static ArrayList<RecipeStep> recipeSteps;
-    private static Position irrelevantPosition = new Position(0, 1);
+public class ParallelizableTaskLongTest {
+
+    private static ThreadPoolExecutor mThreadPoolExecutor;
+    private static List<RecipeStep> recipeSteps = new ArrayList<>();
+    private static StepTaskNames[] onlyTimerName = {TIMER};
+    private static StepTaskNames[] onlyIngrName = {INGR};
+    private static StepTaskNames[] both = {TIMER, INGR};
+    private static ParallelizeStepsTask onlyTimerstask;
+    private static ParallelizeStepsTask onlyIngrtask;
+    private static ParallelizeStepsTask bothtasks;
 
     @BeforeClass
     public static void initialize() {
-        recipeSteps = new ArrayList<>();
+        RecipeInProgress rip = new RecipeInProgress("irrelevant");
+
         recipeSteps.add(new RecipeStep("Put 500 gram sauce in the microwave for 3 minutes")); //0 minutes
         recipeSteps.add(new RecipeStep("Heat the oil in a saucepan and gently fry the onion until softened, about 4-5 minutes.")); //1 upperbound and lowerbound with dash //"Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //1 (upperbound and lowerbound different)
         recipeSteps.add(new RecipeStep("Put in the oven for 30 minutes and let rest for 20 minutes.")); //2 (two timers)
@@ -30,255 +43,83 @@ public class DetectTimersInStepTaskTest {
         recipeSteps.add(new RecipeStep("Let cool down for an hour and a half.")); //5 (verbose hour)
         recipeSteps.add(new RecipeStep("Put the lasagna in the oven for 1h"));//6 (symbol hour)
         recipeSteps.add(new RecipeStep("Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //7 (upperbound and lowerbound different)))
+        rip.setRecipeSteps(recipeSteps);
+        setUpThreadPool();
+        onlyTimerstask = new ParallelizeStepsTask(rip, mThreadPoolExecutor, onlyTimerName);
+        onlyIngrtask = new ParallelizeStepsTask(rip, mThreadPoolExecutor, onlyIngrName);
+        bothtasks = new ParallelizeStepsTask(rip, mThreadPoolExecutor, both);
+    }
 
-
-        String originalText = "irrelevant";
-        recipe = new RecipeInProgress(originalText);
-        recipe.setRecipeSteps(recipeSteps);
-        for (int stepIndex = 0; stepIndex < recipeSteps.size(); stepIndex++) {
-            detectors.add(new DetectTimersInStepTask(recipe, stepIndex));
-        }
-
+   private static void setUpThreadPool() {
+        /*
+         * Gets the number of available cores
+         * (not always the same as the maximum number of cores)
+         */
+       int numberOfCores =
+                Runtime.getRuntime().availableProcessors();
+        // A queue of Runnables
+        final BlockingQueue<Runnable> decodeWorkQueue;
+        // Instantiates the queue of Runnables as a LinkedBlockingQueue
+        decodeWorkQueue = new LinkedBlockingQueue<>();
+        // Sets the amount of time an idle thread waits before terminating
+        final int KEEP_ALIVE_TIME = 1;
+        // Sets the Time Unit to seconds
+        final TimeUnit keepAliveTimeUnit = TimeUnit.SECONDS;
+        // Creates a thread pool manager
+        mThreadPoolExecutor = new ThreadPoolExecutor(
+                // Initial pool size
+                numberOfCores,
+                // Max pool size
+                numberOfCores,
+                KEEP_ALIVE_TIME,
+                keepAliveTimeUnit,
+                decodeWorkQueue);
     }
 
     @After
-    public void wipeRecipeSteps() {
-        for (RecipeStep s : recipeSteps) {
-            s.unsetTimer();
-        }
-    }
-
-
-    @Test
-    public void DetectTimersInStep_doTask_timersHaveBeenSetForAllSteps() {
-
-
-
-        for (DetectTimersInStepTask detector : detectors) {
-            detector.doTask();
-        }
-
-        for (RecipeStep s : recipe.getRecipeSteps()) {
-            assert (s.isTimerDetected());
-            assert (s.getRecipeTimers() != null);
+    public void wipeRecipe() {
+        for (RecipeStep step : recipeSteps) {
+            step.setIngredients(null);
+            step.setRecipeTimers(null);
+            step.setIngredientDetected(false);
+            step.setTimerDetected(false);
         }
     }
 
     @Test
-    public void DetectTimersInStep_doTask_detectMinuteTimer() {
-        int stepIndex = 0; //index zero has minutes
-        DetectTimersInStepTask detector = detectors.get(stepIndex); //index zero has minutes
-        detector.doTask();
-        //assert detection
-        assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
-        //assert correct detection
-        RecipeTimer timer = new RecipeTimer(3 * 60, irrelevantPosition);
-        assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
+    public void ParrallelizableStepTask_doTask_TimersDetectedForAllSteps() {
 
+        onlyTimerstask.doTask();
+
+        for (RecipeStep step : recipeSteps) {
+            assert (step.isTimerDetected());
+            // for each of these steps a timer can be detected so assert non null value
+            assert (step.getRecipeTimers() != null);
+        }
     }
 
     @Test
-    public void DetectTimersInStep_doTask_detectHoursTimer() {
-        int stepIndex = 4; //index four has hours
-        DetectTimersInStepTask detector = detectors.get(stepIndex);
-        detector.doTask();
-        RecipeTimer timer = new RecipeTimer(4 * 60 * 60, irrelevantPosition);
-        assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
-    }
-
-    @Test
-    public void DetectTimersInStep_doTask_detectSecondsTimer() {
-        int stepIndex = 3; //index three has seconds
-        DetectTimersInStepTask detector = detectors.get(stepIndex);
-        detector.doTask();
-        //assert detection
-        assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
-        //assert correct detection
-        RecipeTimer timer = new RecipeTimer(30, irrelevantPosition);
-        assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
-    }
-
-    @Test
-    public void DetectTimersInStep_doTask_detectMultipleTimers() {
-        int stepIndex = 2; //index two has multiple timers
-        DetectTimersInStepTask detector = detectors.get(stepIndex);
-        detector.doTask();
-        //assert detection
-        assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
-        //assert correct detection
-        RecipeTimer timer1 = new RecipeTimer(30 * 60, irrelevantPosition);
-        RecipeTimer timer2 = new RecipeTimer(20 * 60, irrelevantPosition);
-        assert (recipeSteps.get(stepIndex).getRecipeTimers().contains(timer1));
-        assert (recipeSteps.get(stepIndex).getRecipeTimers().contains(timer2));
-    }
-
-    @Test
-    public void DetectTimersInStep_doTask_verboseHoursTimers() {
-        int stepIndex = 5; //index five has verbose hours
-        DetectTimersInStepTask detector = detectors.get(stepIndex);
-        detector.doTask();
-        //assert detection
-        assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
-        //assert correct detection
-        RecipeTimer timer = new RecipeTimer((int) (60 * 60 * 1.5), irrelevantPosition);
-        assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
-    }
-
-    @Test
-    public void DetectTimersInStep_doTask_hourSymbolTimers() {
-        int stepIndex = 6; //index six has symbol hours
-        DetectTimersInStepTask detector = detectors.get(stepIndex);
-        detector.doTask();
-        //assert detection
-        assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
-        //assert correct detection
-        RecipeTimer timer = new RecipeTimer(60 * 60, irrelevantPosition);
-        assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
-    }
-
-    @Test
-    public void DetectTimersInStep_doTask_upperBoundAndLowerBoundNotEqualWithDash() {
-        int stepIndex = 1; //index 1 has upper and lower bound
-        DetectTimersInStepTask detector = detectors.get(stepIndex);
-        detector.doTask();
-        //assert detection
-        assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
-        //assert correct detection
-        RecipeTimer timer = new RecipeTimer(5 * 60, 4 * 60, irrelevantPosition);
-        assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
-
-    }
-
-    @Test
-    public void DetectTimersInStep_doTask_upperBoundAndLowerBoundNotEqualWithoutDash() {
-        int stepIndex = 7; //index 1 has upper and lower bound
-        DetectTimersInStepTask detector = detectors.get(stepIndex);
-        detector.doTask();
-        //assert detection
-        assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
-        //assert correct detection
-        RecipeTimer timer = new RecipeTimer(9 * 60, 7 * 60, irrelevantPosition);
-        assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
-
-    }
-
-    @Test
-    public void DetectTimersInStep_doTask_PositionOfTimersCorrectlyDetected() {
-        // TODO: make these seprate tests
-
-        // first case: "Put 500 gram sauce in the microwave for 3 minutes"
-        // timer = "3 minutes"
-        int index = 0;
-        detectors.get(index).doTask();
-        String timeString = "3 minutes";
-        Position pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
-        String description = recipeSteps.get(index).getDescription();
-
-        String substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert (substring.equals(timeString));
-
-        // second case: "Heat the oil in a saucepan and gently fry the onion until softened, about 4-5 minutes."
-        // timer = "about 4 - 5 minutes" (spaces added for seperate tokens)
-        index = 1;
-        detectors.get(index).doTask();
-        timeString = "about 4 - 5 minutes";
-        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
-        description = recipeSteps.get(index).getDescription();
-
-        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert (substring.equals(timeString));
-
-        // third case:  "Put in the oven for 30 minutes and let rest for 20 minutes."
-        // timer 1: 30 minutes
-        // timer 2: 20 minutes
-        index = 2;
-        detectors.get(index).doTask();
-        timeString = "30 minutes";
-        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
-        description = recipeSteps.get(index).getDescription();
-        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert (substring.equals(timeString));
-
-        timeString = "20 minutes";
-        pos = recipeSteps.get(index).getRecipeTimers().get(1).getPosition();
-        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert (substring.equals(timeString));
-
-        // fourth case: "Grate cheese for 30 seconds"
-        // timer: "30 seconds"
-        index = 3;
-        detectors.get(index).doTask();
-        timeString = "30 seconds";
-        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
-        description = recipeSteps.get(index).getDescription();
-        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert (substring.equals(timeString));
-
-        // fifth case:  "Wait for 4 hours"
-        // timer = "4 hours"
-        index = 4;
-        detectors.get(index).doTask();
-        timeString = "4 hours";
-        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
-        description = recipeSteps.get(index).getDescription();
-        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert (substring.equals(timeString));
-
-        // sixth case: "Let cool down for an hour and a half."
-        // timer: "an hour and a half"
-        index = 5;
-        detectors.get(index).doTask();
-        timeString = "an hour and a half";
-        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
-        description = recipeSteps.get(index).getDescription();
-        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert (substring.equals(timeString));
-
-        // seventh case: "Put the lasagna in the oven for 1h"
-        // timer: "1h"
-        index = 6;
-        detectors.get(index).doTask();
-        timeString = "1h";
-        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
-        description = recipeSteps.get(index).getDescription();
-        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert (substring.equals(timeString));
-
-
-        // eight case: "Put 500 gram spaghetti in boiling water 7 to 9 minutes"
-        // timer: "7 to 9 minutes"
-        index = 7;
-        detectors.get(index).doTask();
-        timeString = "7 to 9 minutes";
-        pos = recipeSteps.get(index).getRecipeTimers().get(0).getPosition();
-        description = recipeSteps.get(index).getDescription();
-        substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
-        assert (substring.equals(timeString));
-
-    }
-
-    @Test
-    public void DetectTimersInStep_doTask_AccuracyOnDataSet() {
+    public void ParallelizableStepTask_doTask_AccuracyOnTimerDataSetInParallel() {
         String[] dataSet = initializeDataSet();
         String[] dataSetTags = initializeDataSetTags();
         int amount = dataSet.length;
         int correct = amount;
-        for (int i = 1; i <= dataSet.length; i++) {
+        ArrayList<RecipeStep> list = new ArrayList<>();
+        for (int i = 1; i <= amount; i++) {
 
             String stepString = dataSet[i - 1];
-            String tag = dataSetTags[i - 1];
-
             RecipeStep step = new RecipeStep(stepString);
-            ArrayList<RecipeStep> list = new ArrayList<>();
+
             list.add(step);
-
-            RecipeInProgress rip = new RecipeInProgress("irrelevant");
-            rip.setRecipeSteps(list);
-
-            DetectTimersInStepTask detector = new DetectTimersInStepTask(rip, 0);
-
-            detector.doTask();
-
+        }
+        RecipeInProgress rip = new RecipeInProgress("irrelevant");
+        rip.setRecipeSteps(list);
+        ParallelizeStepsTask detector = new ParallelizeStepsTask(rip, mThreadPoolExecutor, onlyTimerName);
+        detector.doTask();
+        for (int i = 1; i <= amount; i++) {
+            RecipeStep step = rip.getRecipeSteps().get(i - 1);
+            String tag = dataSetTags[i - 1];
+            String stepString = step.getDescription();
             List<RecipeTimer> timers = step.getRecipeTimers();
 
             if (tag.equals("NO_TIMER")) {
@@ -315,6 +156,7 @@ public class DetectTimersInStepTaskTest {
     }
 
     private RecipeTimer getTimer(String label) {
+        Position irrelevantPosition = new Position(0, 1);
         String[] amountAndUnit = label.split(" ");
         int multiplier = 1;
         switch (amountAndUnit[1]) {
@@ -844,5 +686,4 @@ public class DetectTimersInStepTaskTest {
                 "Return skillet to medium-high heat; pour water over the turkey and season with taco seasoning. Cook until the water thickens and coats the turkey, about 5 minutes. Add red peppers, diced tomatoes and green chiles, onion, and cilantro; cook and stir until the peppers are softened, about 5 minutes more.\n" +
                 "Stir sour cream and sour cream seasoning mix together in a bowl.").split("\n");
     }
-
 }

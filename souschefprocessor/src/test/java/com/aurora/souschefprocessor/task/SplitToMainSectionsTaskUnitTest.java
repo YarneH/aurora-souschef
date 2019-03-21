@@ -7,39 +7,25 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SplitToMainSectionsTaskTest {
-    private static List<String> recipeTexts;
-    private static RecipeInProgress recipe1;
-    private static SplitToMainSectionsTask splitToMainSectionsTask1;
-    private static SplitToMainSectionsTask splitToMainSectionsTask2;
-    private static String originalText1;
-    private static String originalText2;
-    private static RecipeInProgress recipe2;
 
-    private static RecipeInProgress recipe3;
-    private static SplitToMainSectionsTask splitToMainSectionsTask3;
-    private static String originalText3;
+public class SplitToMainSectionsTaskUnitTest {
+    private static List<String> recipeTexts;
+
 
 
     @BeforeClass
     public static void initialize() throws IOException, ClassNotFoundException {
         recipeTexts = initializeRecipeText();
-        /*originalText1 = recipeTexts.get(0);
-        recipe1 = new RecipeInProgress(originalText1);
-        originalText2 = recipeTexts.get(1);
-        recipe2 = new RecipeInProgress(originalText2);
-        splitToMainSectionsTask1 = new SplitToMainSectionsTask(recipe1);
-        splitToMainSectionsTask2 = new SplitToMainSectionsTask(recipe2);
-        originalText3 = recipeTexts.get(2);
-        recipe3 = new RecipeInProgress(originalText3);
-        splitToMainSectionsTask3 = new SplitToMainSectionsTask(recipe3);*/
     }
 
     private static List<String> initializeRecipeText() {
@@ -47,8 +33,10 @@ public class SplitToMainSectionsTaskTest {
         String filename = "src/test/java/com/aurora/souschefprocessor/facade/recipes.txt";
         List<String> list = new ArrayList<>();
         try {
-            FileReader fReader = new FileReader(filename);
-            BufferedReader reader = new BufferedReader(fReader);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(filename), "UTF8"));
+
             StringBuilder bld = new StringBuilder();
             String line = reader.readLine();
 
@@ -90,7 +78,7 @@ public class SplitToMainSectionsTaskTest {
         map = new HashMap<>();
         map.put("STEPS", "\n\ncook pasta in a large pot of boiling salted water, stirring occasionally, until al dente. drain pasta, reserving 1 cup pasta cooking liquid; return pasta to pot.\n" +
                 "while pasta cooks, pour tomatoes into a fine-mesh sieve set over a medium bowl. shake to release as much juice as possible, then let tomatoes drain in sieve, collecting juices in bowl, until ready to use.\n" +
-                "heat 1/4 cup oil in a large deep-sided skillet over medium-high. add capers and cook, swirling pan occasionally, until they burst and are crisp, about 3 minutes. using a slotted spoon, transfer capers to a paper towel–lined plate, reserving oil in skillet.\n" +
+                "heat 1/4 cup oil in a large deep-sided skillet over medium-high. add capers and cook, swirling pan occasionally, until they burst and are crisp, about 3 minutes. using a slotted spoon, transfer capers to a paper towel-lined plate, reserving oil in skillet.\n" +
                 "combine anchovies, tomato paste, and drained tomatoes in skillet. cook over medium-high heat, stirring occasionally, until tomatoes begin to caramelize and anchovies start to break down, about 5 minutes. add collected tomato juices, olives, oregano, and red pepper flakes and bring to a simmer. cook, stirring occasionally, until sauce is slightly thickened, about 5 minutes. add pasta, remaining 1/4 cup oil, and 3/4 cup pasta cooking liquid to pan. cook over medium heat, stirring and adding remaining 1/4 cup pasta cooking liquid to loosen if needed, until sauce is thickened and emulsified, about 2 minutes. flake tuna into pasta and toss to combine.\n" +
                 "divide pasta among plates. top with fried capers.");
         map.put("INGR", "1 lb. linguine or other long pasta\n" +
@@ -131,19 +119,30 @@ public class SplitToMainSectionsTaskTest {
     public void SplitToMainSections_doTask_sectionsHaveCorrectValues() {
         List<Map<String, String>> fieldsList = initializeFieldList();
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 1; i < 2; i++) {
             String text = recipeTexts.get(i);
             RecipeInProgress rip = new RecipeInProgress(text);
             SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
             task.doTask();
 
+            for(int j =0; j<rip.getStepsString().length(); j++){
+                if(rip.getStepsString().charAt(j) != fieldsList.get(i).get("STEPS").charAt(j)){
+                    System.out.println(rip.getStepsString().substring(0,587));
+                    System.err.println(fieldsList.get(i).get("STEPS").substring(0,587));
+                }
+            }
+
+
+
+            System.err.println(rip.getStepsString().length() + "  "+ fieldsList.get(i).get("STEPS").length());
+            System.err.println(rip.getStepsString().equals(fieldsList.get(i).get("STEPS")));
             assert (rip.getStepsString().equals(fieldsList.get(i).get("STEPS")));
             assert (rip.getIngredientsString().equals(fieldsList.get(i).get("INGR")));
             assert (rip.getDescription() != null);
         }
     }
 
-    @Test
+   @Test
     public void SplitToMainSectionsTaskTest_doTask_NoExceptionsAreThrown() {
         List<String> array = initializeRecipeText();
         boolean thrown = false;

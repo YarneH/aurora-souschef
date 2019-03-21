@@ -84,6 +84,9 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
 
     }
 
+    /**
+     * Detects the number of people in the original text of the recipe that is being processed
+     */
     public void doTask() {
         String text = this.mRecipeInProgress.getOriginalText();
         int number = findNumberOfPeople(text);

@@ -22,7 +22,7 @@ public class NonParallelizeStepTask extends AbstractProcessingTask {
     }
 
     /**
-     * Launches parallel threads for each type of task submitted and for each step
+     * Does the tasks sequentially for each step
      */
     public void doTask() {
         //TODO fallback if no mRecipeSteps present

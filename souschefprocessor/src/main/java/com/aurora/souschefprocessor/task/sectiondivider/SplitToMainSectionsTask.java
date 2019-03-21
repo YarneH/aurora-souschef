@@ -231,9 +231,10 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
     /**
      * This checks if a text starts with a verb.
-     * @param text The text
+     *
+     * @param text      The text
      * @param lowercase indicates wheter the detection should be done on a lowercase text. Since corenlp
-     *                 can be better at detecting sentences starting with a verb when it is lowercase
+     *                  can be better at detecting sentences starting with a verb when it is lowercase
      * @return
      */
     private boolean verbDetected(String text, boolean lowercase) {

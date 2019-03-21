@@ -215,7 +215,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         String steps = "";
 
         for (String line : lines) {
-            String lowerCaseLine = line.toLowerCase();
+            String lowerCaseLine = line.toLowerCase(Locale.ENGLISH);
             Matcher match = Pattern.compile(STEP_STARTER_REGEX).matcher(lowerCaseLine);
 
             if (match.find()) {

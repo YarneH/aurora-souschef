@@ -7,7 +7,6 @@ import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInS
 import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * A wrapper class for doing the steptasks but not in parallel
@@ -28,9 +27,7 @@ public class NonParallelizeStepTask extends AbstractProcessingTask {
     public void doTask() {
         //TODO fallback if no mRecipeSteps present
         List<RecipeStep> recipeSteps = mRecipeInProgress.getRecipeSteps();
-        //for every step and for every parallelizeable task
-        CountDownLatch latch = new CountDownLatch(recipeSteps.size() * mStepTaskNames.length);
-        // TODO: it is possible to immediately pass the recipeStep to the Detect...InStepTasks.
+
         for (int i = 0; i < recipeSteps.size(); i++) {
             for (StepTaskNames taskName : mStepTaskNames) {
                 doTask(i, taskName);
@@ -41,8 +38,9 @@ public class NonParallelizeStepTask extends AbstractProcessingTask {
 
     /**
      * Does the task on the step with index of the recipe
+     *
      * @param stepIndex The index of the step on which to do the processing
-     * @param taskname The name of the task to do on the step
+     * @param taskname  The name of the task to do on the step
      */
     private void doTask(int stepIndex, StepTaskNames taskname) {
         if (taskname.equals(StepTaskNames.TIMER)) {

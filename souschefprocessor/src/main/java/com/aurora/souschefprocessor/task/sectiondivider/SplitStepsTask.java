@@ -17,7 +17,6 @@ public class SplitStepsTask extends AbstractProcessingTask {
     }
 
 
-
     /**
      * This will split the stepsString in the RecipeInProgress Object into mRecipeSteps and modifies the
      * recipe object so that the mRecipeSteps are set
@@ -36,25 +35,38 @@ public class SplitStepsTask extends AbstractProcessingTask {
         //TODO generate functionality to split attribute stepsText
         List<RecipeStep> list = new ArrayList<>();
 
-        char[] characters = steps.toCharArray();
-        StringBuilder bld = new StringBuilder();
-        // TODO based on numeric and sections
+        // TODO based on numeric and
 
+        //split based on sections (punctuation followed by newline indicates block of text)
         String[] pointAndNewLine = steps.split("\\p{Punct}\n");
-        if(pointAndNewLine.length > 1){
-            for(String line: pointAndNewLine){
-                if(line.charAt(line.length() - 1) != '.'){
+        if (pointAndNewLine.length > 1) {
+            for (String line : pointAndNewLine) {
+                if (line.charAt(line.length() - 1) != '.') {
                     line += '.';
                 }
                 list.add(new RecipeStep(line));
             }
 
+        } else {
+            list = splitStepsBySplittingOnPunctuation(steps);
+
         }
-        else{
+        return list;
+    }
+
+    /**
+     * Splits the text on punctuation
+     *
+     * @param steps the text to be splitted
+     * @return a list with recipesteps
+     */
+    private List<RecipeStep> splitStepsBySplittingOnPunctuation(String steps) {
         // A boolean that indicates if this is the first char of the sentence
         // This is used to make sure that the first character is not a whitspace
         boolean firstChar = true;
-
+        char[] characters = steps.toCharArray();
+        StringBuilder bld = new StringBuilder();
+        List<RecipeStep> list = new ArrayList<>();
         for (char c : characters) {
             // if this is not the first character while also being a whitespace
 
@@ -77,10 +89,9 @@ public class SplitStepsTask extends AbstractProcessingTask {
                 bld = new StringBuilder();
                 firstChar = true;
             }
-        }}
-
-
+        }
         return list;
     }
+
 
 }

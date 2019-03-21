@@ -79,7 +79,7 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
         // remove last added "|"
         bld.deleteCharAt(bld.length() - 1);
         bld.append("))");
-        System.out.println(bld);
+
         return bld.toString();
 
     }

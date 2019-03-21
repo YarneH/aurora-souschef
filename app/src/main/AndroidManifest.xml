@@ -9,16 +9,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name=".StepsActivity"
-            android:label="@string/title_activity_steps"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".MainActivity">
             <intent-filter>
-                <!--<action android:name="android.intent.action.MAIN" />-->
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-                <action android:name="com.aurora.auroralib.AURORA_PLUGIN"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <!--<action android:name="com.aurora.auroralib.AURORA_PLUGIN"/>-->
+                <!--<category android:name="android.intent.category.DEFAULT"/>-->
             </intent-filter>
         </activity>
     </application>

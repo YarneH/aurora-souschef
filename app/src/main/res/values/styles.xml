@@ -3,7 +3,7 @@
     <!-- Base application theme. -->
     <!-- Replaced Theme.AppCompat.Light.DarkActionBar with NoActionBar.
      This hides the top action bar. -->
-    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>

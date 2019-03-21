@@ -20,6 +20,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    packagingOptions {
+        pickFirst  'edu/stanford/nlp/pipeline/demo/*'
+        pickFirst 'com/sun/xml/bind/*'
+    }
 
 }
 
@@ -46,15 +50,19 @@ dependencies {
     testImplementation 'androidx.test:core:1.1.0'
     // Optional -- Mockito framework
     testImplementation 'org.mockito:mockito-core:1.10.19'
-    //implementation 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
+
     implementation project(':auroralib')
     implementation project(':souschefprocessor')
 
     // Stanford CoreNlP
     implementation ('edu.stanford.nlp:stanford-corenlp:3.9.2'){
-        exclude group: 'com.sun.xml.bind'
+        exclude group: 'org.apache.lucene'
+
+    }
+    implementation ('edu.stanford.nlp:stanford-corenlp:3.9.2:models'){
+
+
         exclude group: 'org.apache.lucene'
     }
-    compileOnly 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
-    testImplementation 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
+    //testImplementation 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
 }

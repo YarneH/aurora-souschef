@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.ling.CoreLabel;
 
 /**
  * Class defining the functionality of the overview tab.
@@ -37,7 +38,7 @@ public class Tab1Overview extends Fragment {
                 try {
                     GZIPInputStream is = new GZIPInputStream(getResources().openRawResource(R.raw.detect_ingr_list_model));
 
-                    CRFClassifier crf = CRFClassifier.getClassifier(is);
+                    CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
 
                     mCommunicator = new Communicator(crf);
                     mCommunicator.process("");

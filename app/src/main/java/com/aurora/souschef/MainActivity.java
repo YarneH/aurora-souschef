@@ -27,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int TAB_INGREDIENTS = 1;
     private static final int TAB_STEPS = 2;
     private static final int NUMBER_OF_TABS = 3;
+    private static final int INCREMENT = 20;
+    private static final int MAXIMUM = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,10 +77,8 @@ public class MainActivity extends AppCompatActivity {
     // Make everything visible after progress is full.
     public void update() {
         ProgressBar pb = findViewById(R.id.pb_loading_screen);
-        int increment = 20;
-        int maximum = 100;
-        pb.incrementProgressBy(increment);
-        if (pb.getProgress() >= maximum) {
+        pb.incrementProgressBy(INCREMENT);
+        if (pb.getProgress() >= MAXIMUM) {
             AppBarLayout abl = findViewById(R.id.appbar);
             ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
             ViewPager mViewPager = findViewById(R.id.container);

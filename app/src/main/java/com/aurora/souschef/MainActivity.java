@@ -1,12 +1,17 @@
 package com.aurora.souschef;
 
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -54,6 +59,32 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
+        ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+        TextView tv = findViewById(R.id.tv_loading_text);
+        tv.setText("Loading text");
+        cl.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tv.setText("Text loaded");
+                update();
+            }
+        });
+    }
+
+    // Update progress. Dummy implementation for now.
+    // Make everything visible after progress is full.
+    public void update() {
+        ProgressBar pb = findViewById(R.id.pb_loading_screen);
+        pb.incrementProgressBy(20);
+        if (pb.getProgress() >= 100) {
+            AppBarLayout abl = findViewById(R.id.appbar);
+            ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+            ViewPager mViewPager = findViewById(R.id.container);
+            cl.setVisibility(View.GONE);
+            mViewPager.setVisibility(View.VISIBLE);
+            abl.setVisibility(View.VISIBLE);
+
+        }
     }
 
     /**
@@ -113,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
             }
             return tabName;
         }
-
     }
 }
 

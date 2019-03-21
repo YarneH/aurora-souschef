@@ -73,7 +73,7 @@ public class IngredientUnitTest {
     }
 
     @Test
-    public void Ingredient_NamePositionBiggerThanLengthOfOrriginalTextThrowsException() {
+    public void ListIngredient_NamePositionBiggerThanLengthOfOrriginalTextThrowsException() {
         HashMap<Ingredient.PositionKey, Position> positions = new HashMap<>();
         String originalText = "This is the original Text";
         int beginIndexUnitAndValue = 0;
@@ -113,7 +113,7 @@ public class IngredientUnitTest {
     }
 
     @Test
-    public void Ingredient_UnitPositionBiggerThanLengthOfOrriginalTextThrowsException() {
+    public void ListIngredient_UnitPositionBiggerThanLengthOfOrriginalTextThrowsException() {
         HashMap<Ingredient.PositionKey, Position> positions = new HashMap<>();
         String originalText = "This is the original Text";
         int beginIndexNameAndValue = 0;

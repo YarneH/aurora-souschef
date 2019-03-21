@@ -36,44 +36,19 @@ public class DetectNumberOfPeopleTaskUnitTest {
                 "capers\n" +
                 "lemon cheeks, to serve\n\n" +
                 "Toast baguette slices lightly on one side. Layer each round with smoked salmon, top with a dollup of sour \n" +
-                "cream and sprinkle with a few capers and lots of freshly ground black pepper.\n\n\n"
+                "cream and sprinkle with a few capers and lots of freshly ground black pepper.\n\n\n" +
+                ""
         );
     }
 
-    @Test
-    public void DetectNumberOfPeopleTask_doTask_acceptanceTest95PercentAccuracy() {
-        String[] dataSet = initializeDataSet();
-        String[] dataSetTags = initializeDataSetTags();
-        int amount = dataSet.length;
-        int correct = amount;
 
-        for (int i = 1; i <= dataSet.length; i++) {
-            String recipeText = dataSet[i - 1];
-            String recipeTag = dataSetTags[i - 1];
-
-            RecipeInProgress recipe = new RecipeInProgress(recipeText);
-            DetectNumberOfPeopleTask detector = new DetectNumberOfPeopleTask(recipe);
-            detector.doTask();
-
-            if (recipeTag.equals("NO_NUMBER")) {
-                if (recipe.getNumberOfPeople() != -1) {
-                    correct--;
-                }
-            } else if (recipeTag.equals("NUMBER")) {
-                if (recipe.getNumberOfPeople() <= 0) {
-                    correct--;
-                }
-            }
-        }
-
-        System.out.println(correct + " correct out of " + amount + " tested. Accuracy: " + correct * 100.0 / amount);
-        assert (correct * 100.0 / amount > 95);
-    }
 
     private static String[] initializeDataSetTags() {
         return ("NO_NUMBER\n" +
-                "NUMBER\n" +
-                "NUMBER\n").split("\n");
+                "NUMBER\t2\n" +
+                "NUMBER\t1\n" +
+                "NUMBER\t4\n" +
+                "NUMBER\t4\n").split("\n");
     }
 
     private static String[] initializeDataSet() {
@@ -126,7 +101,36 @@ public class DetectNumberOfPeopleTaskUnitTest {
                 "Add bok choy and chilli and 1T soy sauce and simmer for another \n" +
                 "minute or until noodles are only just cooked (see note above).\n\n" +
                 "Remove from the heat. Taste and add extra soy if needed. Serve \n" +
-                "hot.\n\n\n").split("\n\n\n");
+                "hot.\n\n\n" +
+                "Yield\n" +
+                "    4 servings\n" +
+                "Active Time\n" +
+                "    30 minutes\n" +
+                "Total Time\n" +
+                "    35 minutes\n" +
+                "\n" +
+                "Ingredients\n" +
+                "\n" +
+                "        1 lb. linguine or other long pasta\n" +
+                "        Kosher salt\n" +
+                "        1 (14-oz.) can diced tomatoes\n" +
+                "        1/2 cup extra-virgin olive oil, divided\n" +
+                "        1/4 cup capers, drained\n" +
+                "        6 oil-packed anchovy fillets\n" +
+                "        1 Tbsp. tomato paste\n" +
+                "        1/3 cup pitted Kalamata olives, halved\n" +
+                "        2 tsp. dried oregano\n" +
+                "        1/2 tsp. crushed red pepper flakes\n" +
+                "        6 oz. oil-packed tuna\n" +
+                "\n" +
+                "Preparation\n" +
+                "\n" +
+                "        Cook pasta in a large pot of boiling salted water, stirring occasionally, until al dente. Drain pasta, reserving 1 cup pasta cooking liquid; return pasta to pot.\n" +
+                "        While pasta cooks, pour tomatoes into a fine-mesh sieve set over a medium bowl. Shake to release as much juice as possible, then let tomatoes drain in sieve, collecting juices in bowl, until ready to use.\n" +
+                "        Heat 1/4 cup oil in a large deep-sided skillet over medium-high. Add capers and cook, swirling pan occasionally, until they burst and are crisp, about 3 minutes. Using a slotted spoon, transfer capers to a paper towel–lined plate, reserving oil in skillet.\n" +
+                "        Combine anchovies, tomato paste, and drained tomatoes in skillet. Cook over medium-high heat, stirring occasionally, until tomatoes begin to caramelize and anchovies start to break down, about 5 minutes. Add collected tomato juices, olives, oregano, and red pepper flakes and bring to a simmer. Cook, stirring occasionally, until sauce is slightly thickened, about 5 minutes. Add pasta, remaining 1/4 cup oil, and 3/4 cup pasta cooking liquid to pan. Cook over medium heat, stirring and adding remaining 1/4 cup pasta cooking liquid to loosen if needed, until sauce is thickened and emulsified, about 2 minutes. Flake tuna into pasta and toss to combine.\n" +
+                "        Divide pasta among plates. Top with fried capers. \n\n\n" +
+                "Yields about 4-5 servings\n\n\n").split("\n\n\n");
     }
 
     @After
@@ -137,17 +141,50 @@ public class DetectNumberOfPeopleTaskUnitTest {
     @Test
     public void DetectNumberOfPeopleTask_doTask_valueHasBeenRead() {
         detectNumberOfPeopleTask.doTask();
-        assert (recipe.getNumberOfPeople() == DEFAULT_NUMBER);
+        assert (recipe.getNumberOfPeople() == 1);
     }
 
     @Test
     public void DetectNumberOfPeopleTask_doTask_noNumberOfPeople() {
-        String originalTextNoNumber = originalText.substring(originalText.indexOf('\n') + 1);
+        String originalTextNoNumber = originalText.substring(0, originalText.indexOf('\n') + 1);
         RecipeInProgress recipeNoNumber = new RecipeInProgress(originalTextNoNumber);
         DetectNumberOfPeopleTask detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipeNoNumber);
         detectNumberOfPeopleTask.doTask();
         assert (recipeNoNumber.getNumberOfPeople() == DEFAULT_NO_NUMBER);
     }
 
+
+    @Test
+    public void DetectNumberOfPeopleTask_doTask_acceptanceTest95PercentAccuracy() {
+        String[] dataSet = initializeDataSet();
+        String[] dataSetTags = initializeDataSetTags();
+        int amount = dataSet.length;
+        int correct = amount;
+
+        for (int i = 1; i <= dataSet.length; i++) {
+            String recipeText = dataSet[i - 1];
+            String recipeTag = dataSetTags[i - 1];
+
+            RecipeInProgress recipe = new RecipeInProgress(recipeText);
+            DetectNumberOfPeopleTask detector = new DetectNumberOfPeopleTask(recipe);
+            detector.doTask();
+
+            if (recipeTag.equals("NO_NUMBER")) {
+                if (recipe.getNumberOfPeople() != -1) {
+                    correct--;
+                }
+            } else if (recipeTag.startsWith("NUMBER")) {
+                String[] split = recipeTag.split("\t");
+                String number = split[1];
+                int num = Integer.parseInt(number);
+                if (recipe.getNumberOfPeople() != num) {
+                    correct--;
+                }
+            }
+        }
+
+        System.out.println(correct + " correct out of " + amount + " tested. Accuracy: " + correct * 100.0 / amount);
+        assert (correct * 100.0 / amount > 95);
+    }
 
 }

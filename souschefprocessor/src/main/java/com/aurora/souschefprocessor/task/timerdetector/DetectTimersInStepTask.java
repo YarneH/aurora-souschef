@@ -44,6 +44,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     // Position of number in timex3 format (e.g. PT1H)
     private static final Integer TIMEX_NUM_POSITION = 2;
     private int mStepIndex;
+    private RecipeStep recipeStep;
     private Map<String, Double> mFractionMultipliers = new HashMap<>();
 
 
@@ -56,7 +57,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             throw new IllegalArgumentException("stepIndex passed too large, stepIndex: " + stepIndex
                     + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
         }
-        this.mStepIndex = stepIndex;
+        //this.mStepIndex = stepIndex;
+        this.recipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
         this.mFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
         this.mFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
     }
@@ -123,7 +125,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * timers of this step are set to the detected timers.
      */
     public void doTask() {
-        RecipeStep recipeStep = mRecipeInProgress.getRecipeSteps().get(mStepIndex);
+
         // trim and add spaces to the description
         recipeStep.setDescription(addSpaces(recipeStep.getDescription().trim()));
         List<RecipeTimer> recipeTimers = detectTimer(recipeStep);
@@ -278,7 +280,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
     /**
      * Detects symbol notations for timers in the recipe step
-     * and adds their timer to the list of recipeTimers
+     * and
+     * s their timer to the list of recipeTimers
      *
      * @param recipeTimers list containing the recipeTimers in this recipe step
      * @param allTokens    tokens in a recipe step

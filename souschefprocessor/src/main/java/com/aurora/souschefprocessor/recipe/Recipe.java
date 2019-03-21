@@ -68,9 +68,9 @@ public class Recipe extends PluginObject {
     public String toString() {
         return "Recipe{" +
                 "mIngredients=" + mIngredients +
-                ", mRecipeSteps=" + mRecipeSteps +
-                ", mNumberOfPeople=" + mNumberOfPeople +
-                ", mDescription='" + mDescription + '\'' +
+                "\n mRecipeSteps=" + mRecipeSteps +
+                "\n mNumberOfPeople=" + mNumberOfPeople +
+                "\n mDescription='" + mDescription + '\'' +
                 '}';
     }
 }

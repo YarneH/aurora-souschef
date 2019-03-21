@@ -93,6 +93,10 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * @return the description with the necessary spaces added
      */
     private static String addSpaces(String recipeStepDescription) {
+        // if the description is empyt this is not a step
+        if(recipeStepDescription.length() == 0){
+            return "";
+        }
         StringBuilder bld = new StringBuilder();
         char[] chars = recipeStepDescription.toCharArray();
 

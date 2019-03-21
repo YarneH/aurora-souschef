@@ -33,6 +33,7 @@ public class SplitStepsTaskTest {
         splitStepsTaskAcrossNewline = new SplitStepsTask(recipeAcrossNewline);
     }
 
+
     private static String initializeStepList() {
         return "In a medium bowl, with a potato masher or a fork, mash the beans with the soy sauce, " +
                 "chopped pepper; and ginger, until pureed but not smooth.\n" +
@@ -76,6 +77,7 @@ public class SplitStepsTaskTest {
                         "mash the beans with the soy sauce, chopped pepper; and ginger, until pureed but not smooth."));
         assert (recipe.getRecipeSteps().get(1).getDescription()
                 .equals("Spoon into a small serving dish and top with scallion."));
+
         assert (recipe.getRecipeSteps().get(2).getDescription()
                 .equals("Serve with sesame crackers."));
     }

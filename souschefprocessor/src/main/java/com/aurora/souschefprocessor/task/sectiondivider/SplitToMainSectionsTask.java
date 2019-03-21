@@ -44,7 +44,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         StringBuilder bld = new StringBuilder();
         String[] lines = text.split("\n");
         for (String line : lines) {
-            bld.append(line + "\n");
+            bld.append(line.trim() + "\n");
         }
         // Remove last new line
         bld.deleteCharAt(bld.length() - 1);
@@ -102,6 +102,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         if ("".equals(ingredientsAndText.getResult())) {
             ingredientsAndText = findIngredientsDigit(text);
         }
+
         return ingredientsAndText;
     }
 
@@ -258,8 +259,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         pipeline.addAnnotator(new ParserAnnotator(false, MAX_SENTENCES_FOR_PARSER));
         pipeline.addAnnotator(new MorphaAnnotator(false));
-        // The parser performs better on imperative sentences (instructions) when the first word is decapitalized
-        // see: https://stackoverflow.com/questions/35872324/stanford-nlp-vp-vs-np
+        // The parser could perform better on imperative sentences (instructions) when the
+        // first word is decapitalize see: https://stackoverflow.com/questions/35872324/stanford-nlp-vp-vs-np
         Annotation annotation;
         if (lowercase) {
             annotation = new Annotation(text.toLowerCase(Locale.ENGLISH));

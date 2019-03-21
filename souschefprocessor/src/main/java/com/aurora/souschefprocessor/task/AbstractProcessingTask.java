@@ -11,11 +11,19 @@ public abstract class AbstractProcessingTask {
      */
 
     protected RecipeInProgress mRecipeInProgress;
+    protected static String NAME_TASK;
 
     public AbstractProcessingTask(RecipeInProgress recipeInProgress) {
         this.mRecipeInProgress = recipeInProgress;
     }
 
     public abstract void doTask();
+
+
+
+    @Override
+    public String toString(){
+        return ("Processing task: "+ NAME_TASK);
+    }
 
 }

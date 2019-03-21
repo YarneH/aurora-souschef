@@ -24,7 +24,7 @@ public class DetectIngredientsInListTaskTest {
 
     private static RecipeInProgress recipe;
     private static DetectIngredientsInListTask detector;
-    private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
+
     private static String originalText;
     private static String ingredientList;
 
@@ -45,8 +45,9 @@ public class DetectIngredientsInListTaskTest {
         originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setIngredientsString(ingredientList);
-
-        detector = new DetectIngredientsInListTask(recipe, null);
+        String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
+        crfClassifier = CRFClassifier.getClassifier(modelName);
+        detector = new DetectIngredientsInListTask(recipe, crfClassifier);
 
         Position pos = new Position(0, 1);
         for (Ingredient.PositionKey key : Ingredient.PositionKey.values()) {
@@ -403,7 +404,7 @@ public class DetectIngredientsInListTaskTest {
 
         testRecipe = new RecipeInProgress(originalText);
         testRecipe.setIngredientsString(listForRecipe);
-        testDetector = new DetectIngredientsInListTask(testRecipe, null);
+        testDetector = new DetectIngredientsInListTask(testRecipe, crfClassifier);
         testIngredientsInitialized = true;
 
 

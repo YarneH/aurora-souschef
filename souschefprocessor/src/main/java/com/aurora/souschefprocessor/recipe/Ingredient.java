@@ -74,7 +74,7 @@ public class Ingredient {
 
     @Override
     public String toString() {
-        String res = mAmount + " ";
+        String res = mAmount + " NAME ";
         return res + mName;
     }
 

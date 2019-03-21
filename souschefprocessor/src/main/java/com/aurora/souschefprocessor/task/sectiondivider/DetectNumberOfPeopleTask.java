@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.task.sectiondivider;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,13 +32,12 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
         String[] lines = text.split("\n");
 
         for (String line : lines) {
-            Matcher match = Pattern.compile(regex).matcher(line);
+            Matcher match = Pattern.compile(regex).matcher(line.toLowerCase(Locale.ENGLISH));
             if (match.find()) {
                 Matcher digitMatcher = Pattern.compile("\\d+").matcher((match.group()));
                 if (digitMatcher.find()) {
                     String number = digitMatcher.group();
-                    int num = Integer.parseInt(number);
-                    return num;
+                    return Integer.parseInt(number);
                 }
             }
         }
@@ -79,7 +79,7 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
         // remove last added "|"
         bld.deleteCharAt(bld.length() - 1);
         bld.append("))");
-
+        System.out.println(bld);
         return bld.toString();
 
     }

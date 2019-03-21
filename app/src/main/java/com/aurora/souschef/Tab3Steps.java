@@ -137,7 +137,7 @@ public class Tab3Steps extends Fragment {
             layoutParamsDot.setMargins(INDICATOR_DOT_MARGIN, INDICATOR_DOT_MARGIN,
                     INDICATOR_DOT_MARGIN, INDICATOR_DOT_MARGIN);
 
-            // For every step, add a dot and make sur the right one is selected
+            // For every step, add a dot and make sure the right one is selected
             for (int i = 0; i < mAmountSteps; i++) {
                 tempView = (ImageView) inflater.inflate(R.layout.dot_image_view, null);
                 if (i == index) {

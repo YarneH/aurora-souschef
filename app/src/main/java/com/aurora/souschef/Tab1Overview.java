@@ -31,18 +31,15 @@ public class Tab1Overview extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.tab_1_overview, container, false);
-
         mButton = rootView.findViewById(R.id.btn_dummy);
         mTextView = rootView.findViewById(R.id.recipe_string);
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 // Get communicator
-                GZIPInputStream is = null;
-                try {
-                    is = new GZIPInputStream(getResources().
-                            openRawResource(R.raw.detect_ingr_list_model));
+                try (GZIPInputStream is = new GZIPInputStream(getResources().
+                        openRawResource(R.raw.detect_ingr_list_model))) {
+
                     Log.d("LUCA", "loaded in zip");
                     mTextView.setText("loaded in zip");
                     CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
@@ -97,22 +94,11 @@ public class Tab1Overview extends Fragment {
                     Log.d("LUCA", "processed");
                     Recipe recipe = mCommunicator.getRecipe();
                     mTextView.setText(recipe.toString());
-
-
                 } catch (IOException | ClassNotFoundException e) {
                     Log.e("Model", "demo ", e);
-
-                } finally {
-                    try {
-                        is.close();
-                    } catch (IOException ioe) {
-                        Log.e("CLOSE", "demo ", ioe);
-                    }
                 }
             }
         });
-
-
         return rootView;
     }
 }

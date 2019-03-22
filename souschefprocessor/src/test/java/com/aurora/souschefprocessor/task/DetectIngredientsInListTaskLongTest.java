@@ -1,28 +1,101 @@
 package com.aurora.souschefprocessor.task;
 
+import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
+import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 
+
 public class DetectIngredientsInListTaskLongTest {
 
-    private static String originalText = "irrelevant";
-    private static String testIngredients;
-    private static String[] testIngredientsUnits = new String[100];
-    private static ArrayList<String> testIngredientsList = new ArrayList<>();
-    private static double[] testIngredientsQuantities = new double[100];
-    private static boolean testIngredientsInitialized = false;
     private static RecipeInProgress testRecipe;
     private static DetectIngredientsInListTask testDetector;
+    private static String originalText = "irrelevant";
     private static CRFClassifier<CoreLabel> crfClassifier;
+
+    private static String testIngredients;
+    private static String[] testIngredientsUnits = new String[100];
+    private static double[] testIngredientsQuantities = new double[100];
+    private static boolean testIngredientsInitialized = false;
+    private static ArrayList<String> testIngredientsList = new ArrayList<>();
+
+    private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
+
+    @BeforeClass
+    public static void initialize() throws IOException, ClassNotFoundException {
+        String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
+        crfClassifier = CRFClassifier.getClassifier(modelName);
+    }
+
+    private boolean oneCharOff(String a, String b) {
+        if (Math.abs(a.length() - b.length()) > 1) {
+            return false;
+        }
+        boolean noDifferenceFoundYet = true;
+        boolean deletion = false;
+        boolean wrongChar = false;
+        String smallest = "";
+        String biggest = "";
+        if (a.length() < b.length()) {
+            smallest = a;
+            biggest = b;
+            deletion = true;
+        } else if (a.length() > b.length()) {
+            smallest = b;
+            biggest = a;
+            deletion = true;
+        } else {
+            wrongChar = true;
+        }
+
+        if (wrongChar) {
+            for (int i = 0; i < a.length(); i++) {
+                if (a.charAt(i) != b.charAt(i)) {
+                    if (noDifferenceFoundYet) {
+                        noDifferenceFoundYet = false;
+                    } else {
+                        return false;
+                    }
+
+                }
+
+            }
+            return true;
+        }
+        if (deletion) {
+            for (int i = 0; i < smallest.length(); i++) {
+                if (noDifferenceFoundYet) {
+                    if (smallest.charAt(i) != biggest.charAt(i)) {
+                        noDifferenceFoundYet = false;
+                        if (smallest.charAt(i) != biggest.charAt(i + 1)) {
+                            return false;
+                        }
+                    }
+                } else {
+                    if (smallest.charAt(i) != biggest.charAt(i + 1)) {
+                        return false;
+                    }
+                }
+
+            }
+            return true;
+        }
+        //should not get here
+        return false;
+    }
+
 
     private void initializeTestIngredients() {
         testIngredients = "1 quart fresh dark cherries\t1\tquart \n" +
@@ -139,7 +212,7 @@ public class DetectIngredientsInListTaskLongTest {
 
         testRecipe = new RecipeInProgress(originalText);
         testRecipe.setIngredientsString(listForRecipe);
-        testDetector = new DetectIngredientsInListTask(testRecipe, null);
+        testDetector = new DetectIngredientsInListTask(testRecipe, crfClassifier);
         testIngredientsInitialized = true;
 
 
@@ -197,61 +270,5 @@ public class DetectIngredientsInListTaskLongTest {
         System.out.println(correct + " units were correctly set and " + correctButOneCharOff + " were correct with one char off");
     }
 
-    private boolean oneCharOff(String a, String b) {
-        if (Math.abs(a.length() - b.length()) > 1) {
-            return false;
-        }
-        boolean noDifferenceFoundYet = true;
-        boolean deletion = false;
-        boolean wrongChar = false;
-        String smallest = "";
-        String biggest = "";
-        if (a.length() < b.length()) {
-            smallest = a;
-            biggest = b;
-            deletion = true;
-        } else if (a.length() > b.length()) {
-            smallest = b;
-            biggest = a;
-            deletion = true;
-        } else {
-            wrongChar = true;
-        }
-
-        if (wrongChar) {
-            for (int i = 0; i < a.length(); i++) {
-                if (a.charAt(i) != b.charAt(i)) {
-                    if (noDifferenceFoundYet) {
-                        noDifferenceFoundYet = false;
-                    } else {
-                        return false;
-                    }
-
-                }
-
-            }
-            return true;
-        }
-        if (deletion) {
-            for (int i = 0; i < smallest.length(); i++) {
-                if (noDifferenceFoundYet) {
-                    if (smallest.charAt(i) != biggest.charAt(i)) {
-                        noDifferenceFoundYet = false;
-                        if (smallest.charAt(i) != biggest.charAt(i + 1)) {
-                            return false;
-                        }
-                    }
-                } else {
-                    if (smallest.charAt(i) != biggest.charAt(i + 1)) {
-                        return false;
-                    }
-                }
-
-            }
-            return true;
-        }
-        //should not get here
-        return false;
-    }
 
 }

@@ -57,7 +57,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             throw new IllegalArgumentException("stepIndex passed too large, stepIndex: " + stepIndex
                     + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
         }
-        //this.mStepIndex = stepIndex;
         this.recipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
         this.mFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
         this.mFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
@@ -92,6 +91,10 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * @return the description with the necessary spaces added
      */
     private static String addSpaces(String recipeStepDescription) {
+        // if the description is empyt this is not a step
+        if(recipeStepDescription.length() == 0){
+            return "";
+        }
         StringBuilder bld = new StringBuilder();
         char[] chars = recipeStepDescription.toCharArray();
 

@@ -14,6 +14,9 @@ import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.ling.CoreLabel;
+
 public class DetectIngredientsInListTaskUnitTest {
 
     private static RecipeInProgress recipe;
@@ -21,6 +24,7 @@ public class DetectIngredientsInListTaskUnitTest {
     private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
     private static String originalText;
     private static String ingredientList;
+    private static CRFClassifier<CoreLabel> crfClassifier;
 
 
     private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
@@ -33,7 +37,10 @@ public class DetectIngredientsInListTaskUnitTest {
         recipe = new RecipeInProgress(originalText);
         recipe.setIngredientsString(ingredientList);
 
-        detector = new DetectIngredientsInListTask(recipe, null);
+        String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
+        crfClassifier = CRFClassifier.getClassifier(modelName);
+
+        detector = new DetectIngredientsInListTask(recipe, crfClassifier);
 
         Position pos = new Position(0, 1);
         for (Ingredient.PositionKey key : Ingredient.PositionKey.values()) {

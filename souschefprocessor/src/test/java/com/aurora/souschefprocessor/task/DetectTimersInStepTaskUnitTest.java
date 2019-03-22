@@ -254,7 +254,4 @@ public class DetectTimersInStepTaskUnitTest {
     }
 
 
-
-
-
 }

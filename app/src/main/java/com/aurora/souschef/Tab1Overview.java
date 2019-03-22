@@ -23,9 +23,9 @@ import edu.stanford.nlp.ling.CoreLabel;
  * Class defining the functionality of the overview tab.
  */
 public class Tab1Overview extends Fragment {
-    private Button mButton;
-    private Communicator mCommunicator;
-    private TextView mTextView;
+    private Button mButton = null;
+    private Communicator mCommunicator = null;
+    private TextView mTextView = null;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,

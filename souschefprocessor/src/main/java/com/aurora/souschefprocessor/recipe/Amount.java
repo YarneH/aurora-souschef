@@ -41,6 +41,6 @@ public class Amount {
 
     @Override
     public String toString() {
-        return mValue + " " + mUnit;
+        return "QUANTITY " + mValue + " UNIT " + mUnit;
     }
 }

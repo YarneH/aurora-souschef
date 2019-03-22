@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class DetectIngredientsInRecipeStepTaskTest {
+public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     private static DetectIngredientsInStepTask detector0;
     private static DetectIngredientsInStepTask detector1;

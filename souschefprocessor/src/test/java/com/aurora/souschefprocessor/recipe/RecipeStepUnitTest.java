@@ -2,7 +2,7 @@ package com.aurora.souschefprocessor.recipe;
 
 import org.junit.Test;
 
-public class RecipeStepTest {
+public class RecipeStepUnitTest {
 
     @Test
     public void RecipeTimer_PositionOfTimerBiggerThanLengthOfStepDescriptionThrowsException() {

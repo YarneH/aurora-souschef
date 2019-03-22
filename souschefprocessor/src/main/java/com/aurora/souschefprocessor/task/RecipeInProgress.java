@@ -20,6 +20,16 @@ public class RecipeInProgress extends Recipe {
         this.mOriginalText = originalText;
     }
 
+    @Override
+    public String toString() {
+        return "RECIPE{" +
+                "INGREDIENTS='" + mIngredientsString + "\n" +
+                ", STEPS='" + mStepsString + "\n" +
+                ", DESCRIPTION='" + mDescription + "\n" +
+                '}';
+    }
+
+
     public String getOriginalText() {
         return mOriginalText;
     }

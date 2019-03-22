@@ -5,8 +5,9 @@ import android.util.Log;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschefprocessor.task.helpertasks.NonParallelizeStepTask;
 import com.aurora.souschefprocessor.task.helpertasks.ParallelizeStepsTask;
-import com.aurora.souschefprocessor.task.helpertasks.ParallellizeableTaskNames;
+import com.aurora.souschefprocessor.task.helpertasks.StepTaskNames;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 import com.aurora.souschefprocessor.task.sectiondivider.DetectNumberOfPeopleTask;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitStepsTask;
@@ -31,11 +32,13 @@ public class Delegator {
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
     private ThreadPoolExecutor mThreadPoolExecutor;
     private CRFClassifier<CoreLabel> mIngredientClassifier;
+    private boolean mParallelize;
 
 
-    protected Delegator(CRFClassifier<CoreLabel> ingredientClassifier) {
+    public Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
         mThreadPoolExecutor = null;
         mIngredientClassifier = ingredientClassifier;
+        mParallelize = parallelize;
     }
 
 
@@ -104,8 +107,12 @@ public class Delegator {
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
         pipeline.add(new SplitStepsTask(recipeInProgress));
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));
-        ParallellizeableTaskNames[] taskNames = {ParallellizeableTaskNames.INGR, ParallellizeableTaskNames.TIMER};
-        pipeline.add(new ParallelizeStepsTask(recipeInProgress, this.mThreadPoolExecutor, taskNames));
+        StepTaskNames[] taskNames = {StepTaskNames.INGR, StepTaskNames.TIMER};
+        if (mParallelize) {
+            pipeline.add(new ParallelizeStepsTask(recipeInProgress, this.mThreadPoolExecutor, taskNames));
+        } else {
+            pipeline.add(new NonParallelizeStepTask(recipeInProgress, taskNames));
+        }
         return pipeline;
     }
 

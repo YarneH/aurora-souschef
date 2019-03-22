@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import com.aurora.souschefprocessor.facade.Communicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
-import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;
@@ -40,12 +39,14 @@ public class Tab1Overview extends Fragment {
             public void onClick(View view) {
 
                 // Get communicator
+                GZIPInputStream is = null;
                 try {
-                    GZIPInputStream is = new GZIPInputStream(getResources().openRawResource(R.raw.detect_ingr_list_model));
-                    Log.d("LUCA"   , "loaded in zip");
+                    is = new GZIPInputStream(getResources().
+                            openRawResource(R.raw.detect_ingr_list_model));
+                    Log.d("LUCA", "loaded in zip");
                     mTextView.setText("loaded in zip");
                     CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
-                    Log.d("LUCA"   , "got classifier");
+                    Log.d("LUCA", "got classifier");
                     mTextView.setText("got classifier");
                     mCommunicator = new Communicator(crf);
                     Log.d("LUCA", "made communicator");
@@ -73,10 +74,25 @@ public class Tab1Overview extends Fragment {
                             "\n" +
                             "Preparation\n" +
                             "\n" +
-                            "        Cook pasta in a large pot of boiling salted water, stirring occasionally, until al dente. Drain pasta, reserving 1 cup pasta cooking liquid; return pasta to pot.\n" +
-                            "        While pasta cooks, pour tomatoes into a fine-mesh sieve set over a medium bowl. Shake to release as much juice as possible, then let tomatoes drain in sieve, collecting juices in bowl, until ready to use.\n" +
-                            "        Heat 1/4 cup oil in a large deep-sided skillet over medium-high. Add capers and cook, swirling pan occasionally, until they burst and are crisp, about 3 minutes. Using a slotted spoon, transfer capers to a paper towel-lined plate, reserving oil in skillet.\n" +
-                            "        Combine anchovies, tomato paste, and drained tomatoes in skillet. Cook over medium-high heat, stirring occasionally, until tomatoes begin to caramelize and anchovies start to break down, about 5 minutes. Add collected tomato juices, olives, oregano, and red pepper flakes and bring to a simmer. Cook, stirring occasionally, until sauce is slightly thickened, about 5 minutes. Add pasta, remaining 1/4 cup oil, and 3/4 cup pasta cooking liquid to pan. Cook over medium heat, stirring and adding remaining 1/4 cup pasta cooking liquid to loosen if needed, until sauce is thickened and emulsified, about 2 minutes. Flake tuna into pasta and toss to combine.\n" +
+                            "        Cook pasta in a large pot of boiling salted water, stirring " +
+                            "occasionally, until al dente. Drain pasta, reserving 1 cup pasta cooking " +
+                            "liquid; return pasta to pot.\n" +
+                            "        While pasta cooks, pour tomatoes into a fine-mesh sieve set over " +
+                            "a medium bowl. Shake to release as much juice as possible, then let tomatoes " +
+                            "drain in sieve, collecting juices in bowl, until ready to use.\n" +
+                            "        Heat 1/4 cup oil in a large deep-sided skillet over medium-high. " +
+                            "Add capers and cook, swirling pan occasionally, until they burst and are " +
+                            "crisp, about 3 minutes. Using a slotted spoon, transfer capers to a paper " +
+                            "towel-lined plate, reserving oil in skillet.\n" +
+                            "        Combine anchovies, tomato paste, and drained tomatoes in skillet. " +
+                            "Cook over medium-high heat, stirring occasionally, until tomatoes begin " +
+                            "to caramelize and anchovies start to break down, about 5 minutes. Add " +
+                            "collected tomato juices, olives, oregano, and red pepper flakes and bring " +
+                            "to a simmer. Cook, stirring occasionally, until sauce is slightly thickened, " +
+                            "about 5 minutes. Add pasta, remaining 1/4 cup oil, and 3/4 cup pasta " +
+                            "cooking liquid to pan. Cook over medium heat, stirring and adding remaining " +
+                            "1/4 cup pasta cooking liquid to loosen if needed, until sauce is thickened " +
+                            "and emulsified, about 2 minutes. Flake tuna into pasta and toss to combine.\n" +
                             "        Divide pasta among plates. Top with fried capers.\n");
                     Log.d("LUCA", "processed");
                     Recipe recipe = mCommunicator.getRecipe();
@@ -86,6 +102,12 @@ public class Tab1Overview extends Fragment {
                 } catch (IOException | ClassNotFoundException e) {
 
 
+                } finally {
+                    try {
+                        is.close();
+                    } catch (IOException ioe) {
+                        Log.e("CLOSE", "demo ", ioe);
+                    }
                 }
             }
         });

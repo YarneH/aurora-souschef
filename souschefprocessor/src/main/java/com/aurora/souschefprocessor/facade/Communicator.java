@@ -10,29 +10,14 @@ import edu.stanford.nlp.ling.CoreLabel;
  */
 public class Communicator {
 
+    private Recipe mRecipe;
     private Delegator mDelegator;
     // TODO add attribute kernelCommunicator to communicate with Aurora
 
     // Caution! this class heavily depends on the Aurora API
 
     public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
-        // TODO load in the classifier using this code, or let it be loaded in by an activity
-        //try { SONARCOMPLAINS
-
-        //    GZIPInputStream is = SONARCOMPLAINS
-
-        //           new GZIPInputStream(getResources().openRawResource(R.raw.detect_ingr_list_model))
-
-        //   CRFClassifier crf = CRFClassifier.getClassifier(is) SONARCOMPLAINS
-
-        //    DetectIngredientsInListTask detector = new DetectIngredientsInListTask(rip, crf)
-
-        //    detector.doTask() SONARCOMPLAINS
-
-        // } catch (IOException | ClassNotFoundException e) { SONARCOMPLAINS
-
-        //}
-        mDelegator = new Delegator(ingredientsClassifier);
+        mDelegator = new Delegator(ingredientsClassifier, false);
     }
 
     /**
@@ -43,9 +28,13 @@ public class Communicator {
     public void process(String text) {
         // for now String, should be TextObject but not yet defined by Aurora
         // for now this is independent of the tasks sent
-        Recipe recipe = mDelegator.processText(text);
-        sendObjectToAuroraKernel(recipe);
+        mRecipe = mDelegator.processText(text);
+        sendObjectToAuroraKernel(mRecipe);
 
+    }
+
+    public Recipe getRecipe(){
+        return mRecipe;
     }
 
     public void sendObjectToAuroraKernel(Object o) {

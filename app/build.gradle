@@ -22,7 +22,7 @@ android {
     }
     packagingOptions {
         pickFirst  'edu/stanford/nlp/pipeline/demo/*'
-        pickFirst 'com/sun/xml/bind/*'
+
     }
 
 }
@@ -57,12 +57,14 @@ dependencies {
     // Stanford CoreNlP
     implementation ('edu.stanford.nlp:stanford-corenlp:3.9.2'){
         exclude group: 'org.apache.lucene'
+        exclude group: 'com.sun.xml.bind'
 
     }
     implementation ('edu.stanford.nlp:stanford-corenlp:3.9.2:models'){
 
 
         exclude group: 'org.apache.lucene'
+        exclude group: 'com.sun.xml.bind'
     }
     //testImplementation 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
 }

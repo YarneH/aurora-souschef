@@ -253,6 +253,12 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      */
     private AnnotationPipeline createTimerAnnotationPipeline() {
         Properties props = new Properties();
+
+        // Do not use binders, these are necessary for Hollidays but those are not needed for
+        // recipesteps
+        // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
+        props.setProperty("sutime.binders", "0");
+
         AnnotationPipeline pipeline = new AnnotationPipeline();
         pipeline.addAnnotator(new TokenizerAnnotator(false));
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));

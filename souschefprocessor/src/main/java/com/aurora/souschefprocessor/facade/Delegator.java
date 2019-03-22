@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.facade;
 
+import android.util.Log;
+
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
@@ -83,6 +85,7 @@ public class Delegator {
         if (pipeline != null) {
             for (AbstractProcessingTask task : pipeline) {
                 task.doTask();
+                Log.d("LUCA", task.getClass().toString());
             }
         }
 

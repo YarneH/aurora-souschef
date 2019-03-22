@@ -3,6 +3,7 @@ package com.aurora.souschef;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,11 +38,13 @@ public class Tab1Overview extends Fragment {
                 // Get communicator
                 try {
                     GZIPInputStream is = new GZIPInputStream(getResources().openRawResource(R.raw.detect_ingr_list_model));
-
+                    Log.d("LUCA"   , "loaded in zip");
                     CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
-
+                    Log.d("LUCA"   , "got classifier");
                     mCommunicator = new Communicator(crf);
+                    Log.d("LUCA", "made communicator");
                     mCommunicator.process("");
+                    Log.d("LUCA", "processed");
 
                 } catch (IOException | ClassNotFoundException e) {
 

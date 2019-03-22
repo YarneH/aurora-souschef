@@ -100,7 +100,7 @@ public class Tab1Overview extends Fragment {
 
 
                 } catch (IOException | ClassNotFoundException e) {
-
+                    Log.e("Model", "demo ", e);
 
                 } finally {
                     try {

@@ -110,6 +110,26 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
+    public void SplitStepsTask_doTask_ExceptionThrownWhenStepStringIsEmpty(){
+        /**
+         * If the step string is empty then this is probably not a recipe, throw an error
+         */
+        // Arrange
+        RecipeInProgress emptyStep = new RecipeInProgress("irrelevant");
+        emptyStep.setStepsString("");
+        SplitStepsTask task = new SplitStepsTask(emptyStep);
+        boolean thrown = false;
+        // Act
+        try{
+            task.doTask();
+        }catch(Exception e){
+            thrown = true;
+        }
+        assert(thrown);
+
+    }
+
+    @Test
     public void SplitStepsTask_doTask_setHasCorrectValuesAcrossNewline() {
         /**
          * If the steps have a new line in the middle of a sentence, the correct steps are detected

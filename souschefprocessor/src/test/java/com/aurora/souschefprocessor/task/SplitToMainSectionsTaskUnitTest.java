@@ -188,7 +188,7 @@ public class SplitToMainSectionsTaskUnitTest {
         // Arrange
         List<Map<String, String>> fieldsList = initializeFieldList();
 
-        for (int i = 4; i < 5; i++) {
+        for (int i = 0; i < 5; i++) {
             // Arrange
             String text = recipeTexts.get(i);
             RecipeInProgress rip = new RecipeInProgress(text);

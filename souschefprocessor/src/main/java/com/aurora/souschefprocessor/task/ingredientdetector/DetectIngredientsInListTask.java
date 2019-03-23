@@ -165,7 +165,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      */
     public void doTask() {
         List<ListIngredient> list = detectIngredients(this.mRecipeInProgress.getIngredientsString());
-        if(list == null|| list.size() == 0){
+        if(list == null|| list.isEmpty()){
             throw new RecipeDetectionException("No ingredients where detected, this is probably not a recipe");
         }
         this.mRecipeInProgress.setIngredients(list);

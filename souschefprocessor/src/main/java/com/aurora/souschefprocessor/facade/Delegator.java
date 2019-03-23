@@ -32,6 +32,8 @@ public class Delegator {
     private CRFClassifier<CoreLabel> mIngredientClassifier;
     private boolean mParallelize;
 
+    private static final double HALF = 0.5 ;
+
 
     public Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
         mThreadPoolExecutor = null;
@@ -50,8 +52,8 @@ public class Delegator {
          * the processing is faster if this only half of the available cores to limit context
          * switching
          */
-        int numberOfCores =
-                Runtime.getRuntime().availableProcessors() / 2;
+        int numberOfCores =(int)
+                (Runtime.getRuntime().availableProcessors() * HALF);
         // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue

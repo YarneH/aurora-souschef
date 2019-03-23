@@ -1,6 +1,8 @@
 package com.aurora.souschef;
 
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -10,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.aurora.souschefprocessor.facade.Communicator;
@@ -35,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int TAB_INGREDIENTS = 1;
     private static final int TAB_STEPS = 2;
     private static final int NUMBER_OF_TABS = 3;
+    private static final int INCREMENT = 20;
+    private static final int MAXIMUM = 100;
 
     private Button mButton = null;
     private Communicator mCommunicator = null;
@@ -106,6 +111,32 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+        TextView tv = findViewById(R.id.tv_loading_text);
+        tv.setText("Loading text");
+        cl.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tv.setText("Text loaded");
+                update();
+            }
+        });
+    }
+
+    // Update progress. Dummy implementation for now.
+    // Make everything visible after progress is full.
+    public void update() {
+        ProgressBar pb = findViewById(R.id.pb_loading_screen);
+        pb.incrementProgressBy(INCREMENT);
+        if (pb.getProgress() >= MAXIMUM) {
+            AppBarLayout abl = findViewById(R.id.appbar);
+            ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+            ViewPager mViewPager = findViewById(R.id.container);
+            cl.setVisibility(View.GONE);
+            mViewPager.setVisibility(View.VISIBLE);
+            abl.setVisibility(View.VISIBLE);
+
+        }
     }
 
     /**

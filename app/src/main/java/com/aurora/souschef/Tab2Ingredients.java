@@ -29,10 +29,6 @@ public class Tab2Ingredients extends Fragment {
         // Inflate fragment layout.
         View rootView = inflater.inflate(R.layout.tab_2_ingredients, container, false);
 
-        // Setup people picker
-        TextView numberOfPeople = rootView.findViewById(R.id.tv_number_of_people);
-        numberOfPeople.setText(String.format(Locale.getDefault(), "%d", actualNumberOfPeople));
-
         // Setup recycler view.
         RecyclerView mIngredientList = rootView.findViewById(R.id.rv_ingredient_list);
         mIngredientList.setLayoutManager(new LinearLayoutManager(this.getContext()));

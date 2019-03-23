@@ -7,9 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -20,7 +18,6 @@ import java.util.Map;
 
 public class SplitToMainSectionsTaskUnitTest {
     private static List<String> recipeTexts;
-
 
 
     @BeforeClass
@@ -94,6 +91,69 @@ public class SplitToMainSectionsTaskUnitTest {
                 "6 oz. oil-packed tuna");
         fieldsList.add(map);
 
+        // recipe 3
+        map = new HashMap<>();
+        map.put("STEPS", "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.");
+        map.put("INGR", "1 lb. lean ground beef\n" +
+                "1⁄2 c. chopped onion\n" +
+                "1⁄4 c. chopped bell pepper\n" +
+                "1⁄4 tsp. salt\n" +
+                "1⁄4 tsp. garlic salt\n" +
+                "1⁄2 tsp. ground black pepper\n" +
+                "1 c. rice\n" +
+                "1 tsp. salt\n" +
+                "1 Tbsp. of dry onion soup mix\n" +
+                "2 c. water\n" +
+                "1 10 oz. can cream of mushroom soup\n" +
+                "1⁄2 c. low-fat milk\n" +
+                "1 c. crushed potato chips");
+        fieldsList.add(map);
+
+        // recipe 4
+        map = new HashMap<>();
+        map.put("STEPS", "\n\nPlace a large pot of water over high heat. When the water is at a rolling boil, add a big pinch of salt, drop in the fettucine, and stir. Cook the pasta, stirring from time to time, according to package directions for al dente, usually about 12 minutes. Meanwhile, heat the olive oil in a large skillet over medium heat. When the oil is warm, add the garlic and sauté until golden, about 1 minute. Add the lemon zest and cook for 30 seconds longer. Increase the heat to medium-high, add the zucchini, and cook, stirring, until tender, 2 to 3 minutes. Season with salt and pepper.\n" +
+                "Remove and reserve about 1/2 cup of the cooking water, then drain the pasta and quickly toss with the zucchini, parsley, and mint. Spoon on the ricotta and toss lightly again, add small amounts of the cooking water to lighten the cheese to the consistency you like, and serve.\n" +
+                "\n" +
+                "Cooks' Note\n" +
+                "Zucchini is easy to shred on the large holes of a box grater, with the shredding attachment of a food processor, or with a mandoline."
+        );
+        map.put("INGR", "\n" +
+                "Salt\n" +
+                "1 pound fettuccine\n" +
+                "4 tablespoons extra-virgin olive oil\n" +
+                "3 or 4 garlic cloves, finely chopped or grated\n" +
+                "Zest of 1 to 2 lemons\n" +
+                "2 medium- large or 4 small zucchini, cleaned but not peeled, and shredded\n" +
+                "Freshly ground pepper\n" +
+                "1/4 cup chopped fresh flat-leaf parsley\n" +
+                "1/4 cup chopped fresh mint\n" +
+                "1 cup fresh whole-milk ricotta cheese, at room temperature");
+        fieldsList.add(map);
+
+
+        // recipe 5
+        map = new HashMap<>();
+        map.put("STEPS", "\n1) Add the dry ingredients to a large mixing bowl and mix the ingredients thoroughly.\n" +
+                "\n" +
+                "2) Add the cup of warm water to the bowl and mix the dry ingredients into the water with your hand until its an even mixture.\n" +
+                "\n" +
+                "3) Separate the dough into 8 pieces and roll each piece into a ball. Place all but one of the dough balls back into the bowl and cover with plastic wrap until you're ready to work with them.\n" +
+                "\n" +
+                "4) Sprinkle a clean, flat surface with a bit of buckwheat flour and then roll your dough ball into a roughly circular shape and get as thin as possible.\n" +
+                "\n" +
+                "5) Throw the tortilla onto a hot griddle (I use a cast iron griddle on medium heat with just a smidge of olive oil) and let it cook approximately 1-2 minutes or until it has started puffing up and the bottom side is developing those lovely brown spots. Flip the tortilla and cook the other side until is toasty as well.\n" +
+                "\n" +
+                "6) Slide the cooked tortilla onto a covered plate to stay warm and repeat from step 4 until you've cooked all 8 tortillas. I generally roll one tortilla out while another is cooking, so that there is always a tortilla on the griddle.\n" +
+                "\n" +
+                "7) Serve these warm with your favorite filling!");
+        map.put("INGR", "2 c. Gluten-free all purpose flour (or 2 c. White rice flour)\n" +
+                "2 tsp. Xanthan gum or Guar gum\n" +
+                "1 tsp. Gluten-free baking powder\n" +
+                "2 tsp. Brown sugar\n" +
+                "1 tsp. Salt\n" +
+                "1 c. Warm water\n" +
+                "Top-Rated Gluten-Free Flour at AmazonTop-Rated Gluten-Free Flour");
+        fieldsList.add(map);
         return fieldsList;
 
     }
@@ -104,11 +164,16 @@ public class SplitToMainSectionsTaskUnitTest {
 
     @Test
     public void SplitToMainSections_doTask_sectionsAreSet() {
+        /**
+         * After the task the sections are not null
+         */
         for (String text : recipeTexts) {
+            // Arrange
             RecipeInProgress rip = new RecipeInProgress(text);
             SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+            // Act
             task.doTask();
-
+            // Assert
             assert (rip.getStepsString() != null);
             assert (rip.getIngredientsString() != null);
             assert (rip.getDescription() != null);
@@ -117,32 +182,29 @@ public class SplitToMainSectionsTaskUnitTest {
 
     @Test
     public void SplitToMainSections_doTask_sectionsHaveCorrectValues() {
+        /**
+         * The correct sections are detected
+         */
+        // Arrange
         List<Map<String, String>> fieldsList = initializeFieldList();
 
-        for (int i = 1; i < 2; i++) {
+        for (int i = 4; i < 5; i++) {
+            // Arrange
             String text = recipeTexts.get(i);
             RecipeInProgress rip = new RecipeInProgress(text);
             SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+            // Act
             task.doTask();
 
-            for(int j =0; j<rip.getStepsString().length(); j++){
-                if(rip.getStepsString().charAt(j) != fieldsList.get(i).get("STEPS").charAt(j)){
-                    System.out.println(rip.getStepsString().substring(0,587));
-                    System.err.println(fieldsList.get(i).get("STEPS").substring(0,587));
-                }
-            }
+            // Assert
 
-
-
-            System.err.println(rip.getStepsString().length() + "  "+ fieldsList.get(i).get("STEPS").length());
-            System.err.println(rip.getStepsString().equals(fieldsList.get(i).get("STEPS")));
-            assert (rip.getStepsString().equals(fieldsList.get(i).get("STEPS")));
-            assert (rip.getIngredientsString().equals(fieldsList.get(i).get("INGR")));
+            assert (rip.getIngredientsString().equalsIgnoreCase(fieldsList.get(i).get("INGR")));
+            assert (rip.getStepsString().equalsIgnoreCase(fieldsList.get(i).get("STEPS")));
             assert (rip.getDescription() != null);
         }
     }
 
-   @Test
+    @Test
     public void SplitToMainSectionsTaskTest_doTask_NoExceptionsAreThrown() {
         List<String> array = initializeRecipeText();
         boolean thrown = false;

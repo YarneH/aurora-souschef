@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.task.ingredientdetector;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
+import com.aurora.souschefprocessor.recipe.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
@@ -163,8 +164,10 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * in the recipe to this set of ListIngredients.
      */
     public void doTask() {
-        //TODO fallback if no mIngredients can be detected
         List<ListIngredient> list = detectIngredients(this.mRecipeInProgress.getIngredientsString());
+        if(list == null|| list.size() == 0){
+            throw new RecipeDetectionException("No ingredients where detected, this is probably not a recipe");
+        }
         this.mRecipeInProgress.setIngredients(list);
     }
 

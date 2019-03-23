@@ -2,6 +2,8 @@ package com.aurora.souschef;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,11 +47,12 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
         return ingredients.size();
     }
 
-    public class CardIngredientViewHolder extends RecyclerView.ViewHolder {
+    public class CardIngredientViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private int index;
         private TextView mIngredientName;
         private TextView mIngredientAmount;
         private TextView mIngredientUnit;
+        private CardView mIngredientCard;
 
         /**
          * Initialises views inside the layout.
@@ -62,6 +65,8 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
             mIngredientName = itemView.findViewById(R.id.tv_ingredient_name);
             mIngredientAmount = itemView.findViewById(R.id.tv_ingredient_amount);
             mIngredientUnit = itemView.findViewById(R.id.tv_ingredient_unit);
+            mIngredientCard = itemView.findViewById(R.id.cv_ingredient_item);
+            mIngredientCard.setOnClickListener(this);
 
         }
 
@@ -75,8 +80,13 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
 
             ListIngredient ingredient = ingredients.get(this.index);
             mIngredientName.setText(ingredient.getName());
-            mIngredientAmount.setText("" + ingredient.getAmount().getValue());
+            mIngredientAmount.setText(String.format("%s", ingredient.getAmount().getValue()));
             mIngredientUnit.setText(ingredient.getAmount().getUnit());
+        }
+
+        @Override
+        public void onClick(View v) {
+            Snackbar.make(this.itemView, ingredients.get(index).getOriginalLine(), Snackbar.LENGTH_LONG).show();
         }
     }
 }

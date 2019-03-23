@@ -1,5 +1,6 @@
 package com.aurora.souschef;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.AppBarLayout;
@@ -11,7 +12,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int INCREMENT = 20;
     private static final int MAXIMUM = 100;
 
-    private Button mButton = null;
     private Communicator mCommunicator = null;
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
 
@@ -77,64 +76,74 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.setVisibility(View.GONE);
 
-        // Button for demo
-        mButton = findViewById(R.id.btn_dummy);
-        mButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mButton.setVisibility(View.GONE);
-                mViewPager.setVisibility(View.VISIBLE);
-                tabLayout.setVisibility(View.VISIBLE);
-                // Get communicator
-                try (GZIPInputStream is = new GZIPInputStream(getResources().
-                        openRawResource(R.raw.detect_ingr_list_model))) {
-
-                    //Log.d("LUCA", "loaded in zip");
-                    //mTextView.setText("loaded in zip");
-                    CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
-                    //Log.d("LUCA", "got classifier");
-                    //mTextView.setText("got classifier");
-                    mCommunicator = new Communicator(crf);
-                    //Log.d("LUCA", "made communicator");
-                    //mTextView.setText("made communicator");
-                    String text = getText();
-                    mCommunicator.process(text);
-                    //Log.d("LUCA", "processed");
-                    Recipe recipe = mCommunicator.getRecipe();
-                    mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), recipe);
-                    mViewPager.setAdapter(mSectionsPagerAdapter);
-                    //mTextView.setText(recipe.toString());
-                } catch (IOException | ClassNotFoundException e) {
-                    Log.e("Model", "demo ", e);
-                }
-            }
-        });
-
-
-        ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
-        TextView tv = findViewById(R.id.tv_loading_text);
-        tv.setText("Loading text");
-        cl.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                tv.setText("Text loaded");
-                update();
-            }
-        });
+        (new SouschefInit()).execute();
     }
 
-    // Update progress. Dummy implementation for now.
-    // Make everything visible after progress is full.
-    public void update() {
-        ProgressBar pb = findViewById(R.id.pb_loading_screen);
-        pb.incrementProgressBy(INCREMENT);
-        if (pb.getProgress() >= MAXIMUM) {
-            AppBarLayout abl = findViewById(R.id.appbar);
-            ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+    class SouschefInit extends AsyncTask<Void, Integer, Recipe> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            TextView tv = findViewById(R.id.tv_loading_text);
+            tv.setText("Initializing...");
+
+        }
+
+        @Override
+        protected Recipe doInBackground(Void... voids) {
+            try (GZIPInputStream is = new GZIPInputStream(getResources().
+                    openRawResource(R.raw.detect_ingr_list_model))) {
+
+                //Log.d("LUCA", "loaded in zip");
+                //mTextView.setText("loaded in zip");
+                CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
+                //Log.d("LUCA", "got classifier");
+                //mTextView.setText("got classifier");
+                mCommunicator = new Communicator(crf);
+                //Log.d("LUCA", "made communicator");
+                //mTextView.setText("made communicator");
+                String text = getText();
+                mCommunicator.process(text);
+                //Log.d("LUCA", "processed");
+                Log.d("LOADING", "AsyncTask is done.");
+                return mCommunicator.getRecipe();
+                //mTextView.setText(recipe.toString());
+            } catch (IOException | ClassNotFoundException e) {
+                Log.e("Model", "demo ", e);
+            }
+            return null;
+        }
+
+        /**
+         * Currently not set. Updates the progressbar.
+         * @param values
+         */
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            ProgressBar pb = findViewById(R.id.pb_loading_screen);
+            pb.setProgress(values[0]);
+
+        }
+
+        @Override
+        protected void onPostExecute(Recipe recipe) {
+            super.onPostExecute(recipe);
+
+            // get fields to update visibility
+            AppBarLayout appBarLayout = findViewById(R.id.appbar);
             ViewPager mViewPager = findViewById(R.id.container);
+            TabLayout tabLayout = findViewById(R.id.tabs);
+            ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+
+            // Load recipe in the user interface
+            mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), recipe);
+            mViewPager.setAdapter(mSectionsPagerAdapter);
+
+            // update visibilities
             cl.setVisibility(View.GONE);
+            appBarLayout.setVisibility(View.VISIBLE);
             mViewPager.setVisibility(View.VISIBLE);
-            abl.setVisibility(View.VISIBLE);
+            tabLayout.setVisibility(View.VISIBLE);
 
         }
     }
@@ -209,9 +218,10 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Dummy for this demo
+     *
      * @return a recipe text
      */
-    private String getText(){
+    private String getText() {
         return "Yield\n" +
                 "    4 servings\n" +
                 "Active Time\n" +

@@ -74,17 +74,4 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <!-- Dummy button for recipe testing -->
-    <Button
-        android:id="@+id/btn_dummy"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:padding="10dp"
-        android:text="Scan recipe"
-        android:layout_gravity="center"/>
-
 </android.support.design.widget.CoordinatorLayout>

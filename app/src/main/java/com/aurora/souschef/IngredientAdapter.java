@@ -50,6 +50,8 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
     }
 
     public class CardIngredientViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        private static final double ROUND_EPSILON = 0.05;
+
         private int index;
         private TextView mIngredientName;
         private TextView mIngredientAmount;
@@ -102,23 +104,41 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
                 result = original;
             }
 
-            Log.d("Ingredient cutting", "cutting \""
-                    + original
-                    + "\". Cut unit \""
-                    + unit + "\" from position " + unitPosition.getBeginIndex() + " to " + unitPosition.getEndIndex()
-                    + "\". Cut quantity \""
-                    + quantity + "\" from position " + quantityPosition.getBeginIndex() + " to " + quantityPosition.getEndIndex());
-            Log.d("Ingredient cutting", "Result: " + result);
-
 
             mIngredientName.setText(result);
-            mIngredientAmount.setText(String.format("%s", ingredient.getAmount().getValue()));
+            mIngredientAmount.setText(toDisplayQuantity(ingredient.getAmount().getValue()));
             mIngredientUnit.setText(ingredient.getAmount().getUnit());
         }
 
         @Override
         public void onClick(View v) {
             Snackbar.make(this.itemView, ingredients.get(index).getOriginalLine(), Snackbar.LENGTH_LONG).show();
+        }
+
+        /**
+         * Generates fraction from double
+         * @param quantity double to display
+         * @return String containing the resulting quantity.
+         */
+        private String toDisplayQuantity(double quantity) {
+            if(isAlmostInteger(quantity)) {
+                return "" + ((int) Math.round(quantity));
+            }
+            for (int i = 2; i < 11; i++) {
+                if(isAlmostInteger(quantity*i)) {
+                    return "" + ((int) Math.round(quantity*i) + "/" + i);
+                }
+            }
+            return "" + quantity;
+        }
+
+        /**
+         * returns true if the distance from the nearest int is smaller than {@value ROUND_EPSILON}
+         * @param quantity double to check
+         * @return true when close enough.
+         */
+        private boolean isAlmostInteger(double quantity) {
+            return Math.abs(Math.round(quantity)-quantity) < ROUND_EPSILON*quantity;
         }
     }
 }

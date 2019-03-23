@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.aurora.souschefprocessor.facade.Communicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 
@@ -93,10 +94,10 @@ public class MainActivity extends AppCompatActivity {
             try (GZIPInputStream is = new GZIPInputStream(getResources().
                     openRawResource(R.raw.detect_ingr_list_model))) {
 
-                //Log.d("LUCA", "loaded in zip");
+                Log.d("LUCA", "loaded in zip");
                 //mTextView.setText("loaded in zip");
                 CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
-                //Log.d("LUCA", "got classifier");
+                Log.d("LUCA", "got classifier");
                 //mTextView.setText("got classifier");
                 mCommunicator = new Communicator(crf);
                 //Log.d("LUCA", "made communicator");

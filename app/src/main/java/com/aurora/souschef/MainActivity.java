@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
 
     private Button mButton = null;
     private Communicator mCommunicator = null;
-    private TextView mTextView = null;
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
 
     @Override
@@ -75,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Button for demo
         mButton = findViewById(R.id.btn_dummy);
-        mTextView = findViewById(R.id.recipe_string);
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

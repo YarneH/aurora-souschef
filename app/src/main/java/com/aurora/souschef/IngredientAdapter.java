@@ -5,12 +5,14 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.aurora.souschefprocessor.recipe.ListIngredient;
+import com.aurora.souschefprocessor.recipe.Position;
 
 import java.util.List;
 
@@ -77,9 +79,39 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
          */
         private void bind(int i) {
             this.index = i;
-
             ListIngredient ingredient = ingredients.get(this.index);
-            mIngredientName.setText(ingredient.getName());
+            String original = ingredient.getOriginalLine();
+            Position unitPosition = ingredient.getUnitPosition();
+            Position quantityPosition = ingredient.getQuantityPosition();
+
+            // If you ever see this code, you might have your doubts...
+            // You might see that this could replace unwanted substrings
+            // but I guessed that this would never happen.
+            // The more you think about solving that problem, the more you see how hacky
+            // the code will become. Have a crack at it if you have some time and are willing
+            // to think more than I did.
+            String unit = original.substring(unitPosition.getBeginIndex(), unitPosition.getEndIndex());
+            String quantity = original.substring(quantityPosition.getBeginIndex(), quantityPosition.getEndIndex());
+            // Replace unit and quantity by nothing. Remove all irrelevant characters, trim whitespaces.
+            String result = original.replace(unit, "").replace(quantity, "").replaceAll("[^a-zA-Z ]", "").trim();
+            // if it is possible to capitalize the first letter, capitalize.
+            if (result.length() > 1) {
+                result = result.substring(0, 1).toUpperCase() + result.substring(1);
+            } else {
+                // when the resulting string cannot possibly represent an ingredient, show original by default.
+                result = original;
+            }
+
+            Log.d("Ingredient cutting", "cutting \""
+                    + original
+                    + "\". Cut unit \""
+                    + unit + "\" from position " + unitPosition.getBeginIndex() + " to " + unitPosition.getEndIndex()
+                    + "\". Cut quantity \""
+                    + quantity + "\" from position " + quantityPosition.getBeginIndex() + " to " + quantityPosition.getEndIndex());
+            Log.d("Ingredient cutting", "Result: " + result);
+
+
+            mIngredientName.setText(result);
             mIngredientAmount.setText(String.format("%s", ingredient.getAmount().getValue()));
             mIngredientUnit.setText(ingredient.getAmount().getUnit());
         }

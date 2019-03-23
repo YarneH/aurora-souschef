@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            Fragment tabFragment = null;
+            Fragment tabFragment;
             switch (position) {
                 case TAB_OVERVIEW:
                     tabFragment = new Tab1Overview();
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
 
         public CharSequence getPageTitle(int position) {
-            String tabName = null;
+            String tabName;
             switch (position) {
                 case TAB_OVERVIEW:
                     tabName = getString(R.string.overview);

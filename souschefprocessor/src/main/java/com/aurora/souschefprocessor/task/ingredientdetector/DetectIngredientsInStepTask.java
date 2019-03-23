@@ -123,6 +123,7 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         List<CoreMap> stepSentences = recipeStepAnnotated.get(CoreAnnotations.SentencesAnnotation.class);
 
         for (CoreMap sentence : stepSentences) {
+
             // Set default values for ingredient fields in case they can't be found in the step
             Ingredient stepIngredient = defaultStepIngredient(recipeStep.getDescription());
 
@@ -150,6 +151,7 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
                             set.add(stepIngredient);
 
                             // Continue searching for other ingredients in the step
+                            stepIngredient = defaultStepIngredient(recipeStep.getDescription());
                             continue;
                         }
 
@@ -174,6 +176,8 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
                             }
 
                             stepIngredient.setmAmount(stepAmount);
+                            set.add(stepIngredient);
+                            stepIngredient = defaultStepIngredient(recipeStep.getDescription());
                         }
 
                         // Check if the mentioned ingredient is being described by multiple words in the step

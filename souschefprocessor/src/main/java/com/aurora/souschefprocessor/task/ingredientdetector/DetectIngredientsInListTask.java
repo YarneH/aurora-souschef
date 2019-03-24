@@ -270,18 +270,26 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             // for now first element labeled as quantity and the succeeding elements
             // (endposition + 1 = beginposition) or endposition = beginposition
             List<CoreLabel> succeedingQuantities = getSucceedingElements(map.get(QUANTITY), QUANTITY);
-            quantity = calculateQuantity(succeedingQuantities);
+            quantity = calculateQuantityAndAddPosition(succeedingQuantities, positions);
 
-            // Calculate the position and add it to the map
-            // beginPosition of the first element and endPosition of the last element
-            int beginPosition = succeedingQuantities.get(0).beginPosition();
-            int endPosition = succeedingQuantities.get(succeedingQuantities.size() - 1).endPosition();
-            positions.put(Ingredient.PositionKey.QUANTITY, new Position(beginPosition, endPosition));
+            // if quantity is -1 then no quantity could be caluclated
+            if (quantity != -1.0) {
+                // Calculate the position and add it to the map
+                // beginPosition of the first element and endPosition of the last element
+                int beginPosition = succeedingQuantities.get(0).beginPosition();
+                int endPosition = succeedingQuantities.get(succeedingQuantities.size() - 1).endPosition();
+                positions.put(Ingredient.PositionKey.QUANTITY, new Position(beginPosition, endPosition));
+            }
 
 
-        } else {
+        }
+        if (positions.get(Ingredient.PositionKey.QUANTITY) == null) {
             // if no quantity detected make the position the whole string
+            // if no quantity detected then the position is still null so make the position the
+            // whole string to signal that no quantity is detected
+            // also set the quantity to 1 = "one"
             positions.put(Ingredient.PositionKey.QUANTITY, new Position(0, line.length()));
+            quantity = 1.0;
         }
 
         return new ListIngredient(name, unit, quantity, line, positions);
@@ -328,10 +336,11 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * Calculates the quantity based on list with tokens labeled quantity
      *
      * @param list The list on which to calculate the quantity
-     * @return a double representing the calculated value, if no value could be detected 1.0 is
+     * @return a double representing the calculated value, if no value could be calculated -1.0 is
      * returned
      */
-    private double calculateQuantity(List<CoreLabel> list) {
+    private double calculateQuantityAndAddPosition(List<CoreLabel> list,
+                                                   Map<Ingredient.PositionKey, Position> positions) {
         double result = 0.0;
 
         StringBuilder bld = new StringBuilder();
@@ -365,8 +374,9 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         }
 
         if (result == 0.0) {
-            // if no quantity value was detected return 1.0 "one"
-            return 1.0;
+            // if no quantity value was detected return -1.0 to signal that detected quantity is
+            // not a quantity
+            return -1;
         }
         return result;
     }

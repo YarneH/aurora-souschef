@@ -64,15 +64,17 @@ public class DelegatorTest {
     @Test
     public void Delegator_processText_NoExceptionsInDelegator() {
         boolean thrown = false;
-        try{
-        for (String text : recipes) {
-            Recipe recipe = delegator.processText(text);
-            System.out.println(recipe);
+        try {
+            for (String text : recipes) {
+                Recipe recipe = delegator.processText(text);
+                System.out.println(recipe);
 
-        }}catch(Exception e){
+            }
+        } catch (Exception e) {
             thrown = true;
+            System.out.println(e);
         }
-        assert(!thrown);
+        assert (!thrown);
     }
 
     @Test
@@ -110,7 +112,7 @@ public class DelegatorTest {
         average_non = average_non / recipes.size();
 
         System.out.println(average_non + "   " + average_para);
-        assert(average_non < 15000);
+        assert (average_non < 15000);
 
     }
 }

@@ -151,6 +151,7 @@ public class IngredientUnitTest {
         assert (case2Thrown);
     }
 
+
     @Test
     public void Ingredient_Equals_BehavesExpectedely() {
         Ingredient iua1 = new Ingredient("spaghetti", "gram", 500, irrelevantPositions);

@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -44,7 +45,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private static final String PIPELINE = "PIPELINE";
     // Position of number in timex3 format (e.g. PT1H)
     private static final Integer TIMEX_NUM_POSITION = 2;
-    public static volatile int progress = 0;
+    public volatile AtomicInteger progress = new AtomicInteger(0);
     private static AnnotationPipeline sAnnotationPipeline;
     private static Map<String, Double> sFractionMultipliers = new HashMap<>();
     private static Object sLock = new Object();

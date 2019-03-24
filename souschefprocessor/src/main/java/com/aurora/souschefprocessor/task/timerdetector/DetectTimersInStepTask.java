@@ -47,6 +47,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private RecipeStep recipeStep;
     private Map<String, Double> mFractionMultipliers = new HashMap<>();
     private static AnnotationPipeline annotationPipeline;
+    public volatile static int progress = 0;
 
     public static void initializeAnnotationPipeline() {
         Runnable r = new Runnable() {
@@ -273,18 +274,23 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         // recipesteps
         // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
         props.setProperty("sutime.binders", "0");
-
         Log.d("PIPELINE", "0");
+        progress = 1;
         AnnotationPipeline pipeline = new AnnotationPipeline();
         Log.d("PIPELINE", "1");
+        progress = 2;
         pipeline.addAnnotator(new TokenizerAnnotator(false));
         Log.d("PIPELINE", "2");
+        progress = 3;
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
         Log.d("PIPELINE", "3");
+        progress = 4;
         pipeline.addAnnotator(new POSTaggerAnnotator(false));
         Log.d("PIPELINE", "4");
+        progress = 5;
         pipeline.addAnnotator(new TimeAnnotator("sutime", props));
         Log.d("PIPELINE", "5");
+        progress = 6;
         return pipeline;
     }
 

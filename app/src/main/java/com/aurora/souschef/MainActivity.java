@@ -39,9 +39,11 @@ public class MainActivity extends AppCompatActivity {
     private static final int TAB_INGREDIENTS = 1;
     private static final int TAB_STEPS = 2;
     private static final int NUMBER_OF_TABS = 3;
-    private static final int PROGRESS_PER_STEP = 33;
+    private static final int PROGRESS_PER_STEP = 14;
+    private static final int MILLIS_BETWEEN_UPDATES = 500;
+    private static final int MAX_WAIT_TIME = 15000;
+    private static final int DETECTION_STEPS = 6;
 
-    private Communicator mCommunicator = null;
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
 
     @Override
@@ -83,13 +85,82 @@ public class MainActivity extends AppCompatActivity {
         (new SouschefInit()).execute();
     }
 
+    class ProgressUpdate extends AsyncTask<Void, Integer, Void> {
+        ProgressBar pb;
+        TextView tv;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pb = findViewById(R.id.pb_loading_screen);
+            tv = findViewById(R.id.tv_loading_text);
+
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            int upTime = 0;
+            boolean isLoading = true;
+            while (isLoading) {
+                try {
+                    Thread.sleep(MILLIS_BETWEEN_UPDATES);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                upTime += MILLIS_BETWEEN_UPDATES;
+                publishProgress(DetectTimersInStepTask.progress);
+                if (DetectTimersInStepTask.progress >= DETECTION_STEPS) {
+                    return null;
+                }
+                if(upTime > MAX_WAIT_TIME){
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            switch (values[0]) {
+                case 1:
+                    // update 2:
+                    tv.setText("Creating new pipeline...");
+                    break;
+                case 2:
+                    // update 3:
+                    tv.setText("Doing smart stuff to understand words...");
+                    break;
+                case 3:
+                    // update 4:
+                    tv.setText("Understanding sentences...");
+                    break;
+                case 4:
+                    // update 5:
+                    tv.setText("Revising some stuff");
+                    break;
+                case 5:
+                    // update 6:
+                    tv.setText("Searching for timers...");
+                    break;
+                case 6:
+                    // update 7:
+                    tv.setText("Finishing up...");
+                    break;
+                default:
+                    break;
+            }
+            pb.setProgress(PROGRESS_PER_STEP * (values[0] + 1));
+        }
+    }
+
     class SouschefInit extends AsyncTask<Void, String, Recipe> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             TextView tv = findViewById(R.id.tv_loading_text);
             tv.setText("Initializing...");
-
+            (new ProgressUpdate()).execute();
         }
 
         @Override
@@ -97,11 +168,11 @@ public class MainActivity extends AppCompatActivity {
             // Progressupdates are in demostate
             try (GZIPInputStream is = new GZIPInputStream(getResources().
                     openRawResource(R.raw.detect_ingr_list_model))) {
-                publishProgress("Extracting model...");
+                // update 1:
+                publishProgress("Loading the magic important stuff...");
                 CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
-                mCommunicator = new Communicator(crf);
+                Communicator mCommunicator = new Communicator(crf);
                 String text = getText();
-                publishProgress("Processing document (for you!)...");
                 mCommunicator.process(text);
                 publishProgress("Done!");
                 return mCommunicator.getRecipe();
@@ -111,14 +182,9 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
-        /**
-         * Updates status field
-         * @param values
-         */
         @Override
         protected void onProgressUpdate(String... values) {
-            ProgressBar pb = findViewById(R.id.pb_loading_screen);
-            pb.incrementProgressBy(PROGRESS_PER_STEP);
+            super.onProgressUpdate(values);
             TextView tv = findViewById(R.id.tv_loading_text);
             tv.setText(values[0]);
         }

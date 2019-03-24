@@ -1,14 +1,11 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
-import android.util.Log;
-
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,8 +15,6 @@ import java.util.Map;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Detects the ListIngredients in the list of ingredients of a RecipeInProgress
@@ -182,16 +177,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      */
     private List<ListIngredient> detectIngredients(String ingredientList) {
 
-        if (mCRFClassifier == null) {
-            try {
-                // if classifier not loaded yet load the classifier
-                String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
-                mCRFClassifier = CRFClassifier.getClassifier(modelName);
-            } catch (IOException | ClassNotFoundException exception) {
-                Log.e(TAG, "detect ingredients in list: classifier not loaded ", exception);
-
-            }
-        }
         // if no ingredientList is provided return an empty list
         if (ingredientList == null || ("").equals(ingredientList)) {
             return new ArrayList<>();
@@ -202,7 +187,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         String[] list = ingredientList.split("\n");
 
         for (String ingredient : list) {
-            if (ingredient != null) {
+            if (ingredient != null && ingredient.length() > 0) {
                 ListIngredient ing = (detectIngredient(addSpaces(ingredient)));
 
                 returnList.add(ing);

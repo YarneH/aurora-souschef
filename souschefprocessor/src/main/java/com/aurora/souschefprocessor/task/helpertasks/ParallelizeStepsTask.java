@@ -20,16 +20,17 @@ import static android.content.ContentValues.TAG;
 public class ParallelizeStepsTask extends AbstractProcessingTask {
     private ThreadPoolExecutor mThreadPoolExecutor;
     // Maybe update this to classes, so that taskClasses are given and can be detected through reflection
-    private ParallellizeableTaskNames[] mParallellizeableTaskNames;
+    private StepTaskNames[] mStepTaskNames;
 
 
     public ParallelizeStepsTask(RecipeInProgress recipeInProgress,
                                 ThreadPoolExecutor threadPoolExecutor,
-                                ParallellizeableTaskNames[] parallellizeableTaskNames) {
+                                StepTaskNames[] stepTaskNames) {
         super(recipeInProgress);
         this.mThreadPoolExecutor = threadPoolExecutor;
+
         // should this be deep copied?
-        this.mParallellizeableTaskNames = parallellizeableTaskNames;
+        this.mStepTaskNames = stepTaskNames;
     }
 
     /**
@@ -39,14 +40,14 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
         //TODO fallback if no mRecipeSteps present
         List<RecipeStep> recipeSteps = mRecipeInProgress.getRecipeSteps();
         //for every step and for every parallelizeable task
-        CountDownLatch latch = new CountDownLatch(recipeSteps.size() * mParallellizeableTaskNames.length);
+        CountDownLatch latch = new CountDownLatch(recipeSteps.size() * mStepTaskNames.length);
         // TODO: it is possible to immediately pass the recipeStep to the Detect...InStepTasks.
         // In order to do this, these Detect...InStepTasks should not inherit AbstractProcessingTask, but
         // inherit from something like StepProcessingTask (which has a RecipeStep instead of a RecipeInProgress)
         // that cannot be added directly in the pipeline,
         // but only through ParallelizeStepTask (or a wrapper task)
         for (int i = 0; i < recipeSteps.size(); i++) {
-            for (ParallellizeableTaskNames taskName : mParallellizeableTaskNames) {
+            for (StepTaskNames taskName : mStepTaskNames) {
                 StepTaskThread thread = createStepTaskThread(latch, i, taskName);
                 mThreadPoolExecutor.execute(thread);
             }
@@ -55,10 +56,10 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
     }
 
     private StepTaskThread createStepTaskThread(CountDownLatch latch, int stepIndex,
-                                                ParallellizeableTaskNames taskName) {
+                                                StepTaskNames taskName) {
         StepTaskThread stepTaskThread;
 
-        if (taskName.equals(ParallellizeableTaskNames.INGR)) {
+        if (taskName.equals(StepTaskNames.INGR)) {
             // Ingredient
             stepTaskThread = new StepTaskThread(new DetectIngredientsInStepTask(
                     this.mRecipeInProgress, stepIndex), latch);
@@ -68,7 +69,6 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
                     this.mRecipeInProgress, stepIndex), latch);
         }
 
-        // TODO Is it necessary to add the thread to threads array? Did not seem to happen in original code
         return stepTaskThread;
     }
 
@@ -81,6 +81,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
         }
     }
 
+
     /**
      * A thread that does the detecting of timer of a recipeStep
      */
@@ -92,6 +93,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
         public StepTaskThread(AbstractProcessingTask task, CountDownLatch latch) {
             this.task = task;
             this.latch = latch;
+
         }
 
         /**

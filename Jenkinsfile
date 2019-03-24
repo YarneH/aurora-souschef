@@ -24,14 +24,17 @@ pipeline {
             }
         } // Compile stage
 
+        // Short unit tests
         stage('Unit test') {
             steps {
                 script {
                     // Compile and run the unit tests for the app and its dependencies
                     if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'dev') {
-                        sh './gradlew testReleaseUnitTest'
+                        sh "./gradlew testReleaseUnitTest --tests '*UnitTest'"
+                        sh "./gradlew souschefprocessor:testReleaseUnitTest --tests '*UnitTest'"
                     } else {
-                        sh './gradlew testDebugUnitTest'
+                        sh "./gradlew testDebugUnitTest --tests '*UnitTest'"
+                        sh "./gradlew souschefprocessor:testDebugUnitTest --tests '*UnitTest'"
                     }
 
 
@@ -47,7 +50,7 @@ pipeline {
 
             post {
                 failure {
-                    slack_error_test()
+                    slack_error_long_test()
                 }
             }
         } // Unit test stage
@@ -71,8 +74,35 @@ pipeline {
                 failure {
                     slack_error_sonar()
                 }
+                success {
+                    slack_success_part1()
+                }
             }
         } // SonarQube stage
+
+        stage('Long Unit Tests') {
+            steps {
+                script {
+                    // Compile and run the unit tests for the app and its dependencies
+                    if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'dev') {
+                        sh "./gradlew testReleaseUnitTest --tests '*LongTest'"
+                        sh "./gradlew souschefprocessor:testReleaseUnitTest --tests '*LongTest'"
+                    } else {
+                        sh "./gradlew testDebugUnitTest --tests '*LongTest'"
+                        sh "./gradlew souschefprocessor:testDebugUnitTest --tests '*LongTest'"
+                    }
+
+
+                    // Analyse the test results and update the build result as appropriate
+                    junit allowEmptyResults: true, testResults: '**/TEST-*.xml'
+
+                    // Analyze coverage info
+                    jacoco sourcePattern: '**/src/main/java/com/aurora', 
+                        classPattern: '**/classes/com/aurora', 
+                        exclusionPattern: '**/*Test*.class,  **/souschef/*.class, **/R.class, **/R$*.class, **/BuildConfig'
+                }
+            }
+        }
     } // Stages
 
     post {
@@ -99,6 +129,13 @@ def slack_error_test() {
 }
 
 /**
+ * Gets called when the long running unit tests fail
+ */
+def slack_error_long_test() {
+    slack_report(false, ':x: Long unit tests failed', null, 'Long Unit Tests')
+}
+
+/**
  * Gets called when sonar fails
  */
 def slack_error_sonar() {
@@ -110,6 +147,13 @@ def slack_error_sonar() {
  */
 def slack_success() {
     slack_report(true, ':heavy_check_mark: Build succeeded', null, '')
+}
+
+/**
+ * Gets called when all steps up till static analysis succeed
+ */
+def slack_success_part1() {
+    slack_report(true, ':white_check_mark: Part 1 of Build succeeded', null, '')
 }
 
 

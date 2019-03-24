@@ -6,7 +6,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class IngredientTest {
+public class IngredientUnitTest {
     private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
 
     @BeforeClass
@@ -73,7 +73,7 @@ public class IngredientTest {
     }
 
     @Test
-    public void Ingredient_NamePositionBiggerThanLengthOfOrriginalTextThrowsException() {
+    public void ListIngredient_NamePositionBiggerThanLengthOfOrriginalTextThrowsException() {
         HashMap<Ingredient.PositionKey, Position> positions = new HashMap<>();
         String originalText = "This is the original Text";
         int beginIndexUnitAndValue = 0;
@@ -113,7 +113,7 @@ public class IngredientTest {
     }
 
     @Test
-    public void Ingredient_UnitPositionBiggerThanLengthOfOrriginalTextThrowsException() {
+    public void ListIngredient_UnitPositionBiggerThanLengthOfOrriginalTextThrowsException() {
         HashMap<Ingredient.PositionKey, Position> positions = new HashMap<>();
         String originalText = "This is the original Text";
         int beginIndexNameAndValue = 0;

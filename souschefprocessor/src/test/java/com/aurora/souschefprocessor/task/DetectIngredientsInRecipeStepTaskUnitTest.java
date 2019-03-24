@@ -20,10 +20,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static android.content.ContentValues.TAG;
-
-//TODO Implement the required acceptance tests
-public class DetectIngredientsInRecipeStepTaskTest {
+public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     private static DetectIngredientsInStepTask detector0;
     private static DetectIngredientsInStepTask detector1;

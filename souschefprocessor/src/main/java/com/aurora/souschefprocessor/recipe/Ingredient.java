@@ -101,7 +101,7 @@ public class Ingredient {
 
     @Override
     public String toString() {
-        String res = mAmount + " ";
+        String res = mAmount + " NAME ";
         return res + mName;
     }
 
@@ -121,6 +121,8 @@ public class Ingredient {
         }
         return true;
     }
+
+
 
     public enum PositionKey {
         NAME, QUANTITY, UNIT

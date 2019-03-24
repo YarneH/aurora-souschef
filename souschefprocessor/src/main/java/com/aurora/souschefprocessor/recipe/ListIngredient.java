@@ -13,7 +13,8 @@ public class ListIngredient extends Ingredient {
 
     private String mOriginalLine;
 
-    public ListIngredient(String name, String unit, double value, String originalText, Map<PositionKey, Position> positions) {
+    public ListIngredient(String name, String unit, double value, String originalText,
+                          Map<PositionKey, Position> positions) {
         super(name, unit, value, positions);
         mOriginalLine = originalText;
 
@@ -29,6 +30,7 @@ public class ListIngredient extends Ingredient {
     public String getOriginalLine() {
         return mOriginalLine;
     }
+
 
 
 }

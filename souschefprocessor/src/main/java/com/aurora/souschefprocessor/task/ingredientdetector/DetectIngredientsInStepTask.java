@@ -129,11 +129,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
                         // Check if the mentioned ingredient is being described by multiple words in the step
                         // Skip these words for further analysis of the recipe step
-                        if((tokens.size()-1) > tokenIndex){
-                            int maxNameIndex = Math.max(tokens.size()-1, entry.getValue().size()-1);
-                            List<CoreLabel> succeedingTokens = tokens.subList(tokenIndex+1, maxNameIndex);
-                            tokenIndex += succeedingNameLength(succeedingTokens, entry.getValue());
-                        }
+                        tokenIndex += succeedingNameLength(tokenIndex, tokens, entry.getValue());
+
                     }
                 }
                 tokenIndex++;
@@ -141,6 +138,29 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
 
         return set;
+    }
+
+    /**
+     * Checks if there are multiple words used to represent the ingredient
+     * in the recipeStep and returns the amount of used words
+     *
+     * @param tokens Tokens in front of detected name of an ingredient
+     * @param nameParts Separated words of the list ingredient it's name
+     * @return the amount of additional separated words used in the recipe step
+     */
+    private int succeedingNameLength(int tokenIndex, List<CoreLabel> tokens, List<String> nameParts){
+        int succeedingLength = 0;
+
+        if((tokens.size()-1) > tokenIndex) {
+            int maxNameIndex = Math.max(tokens.size() - 1, nameParts.size() - 1);
+            List<CoreLabel> succeedingTokens = tokens.subList(tokenIndex + 1, maxNameIndex);
+            for (CoreLabel token : succeedingTokens) {
+                if (nameParts.contains(token.originalText())) {
+                    succeedingLength += 1;
+                }
+            }
+        }
+        return succeedingLength;
     }
 
     /**
@@ -229,22 +249,15 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         int i = precedingTokens.size()-1;
         while(i > 0 && !ingredientSeparators.contains(precedingTokens.get(i).originalText())
                 && !"CC".equals(precedingTokens.get(i).tag())){
-            // Detect cardinal numbers: fractions, numbers and verbose numbers
-            boolean tokenIsQuantity = false;
-            if("CD".equals(precedingTokens.get(i).tag())){
-                stepQuantity *= calculateQuantity(Arrays.asList(precedingTokens.get(i)));
-                tokenIsQuantity = true;
-            }
             // Detect verbose fractions
-            if(mFractionMultipliers.keySet().contains(precedingTokens.get(i).originalText())){
-                stepQuantity *= mFractionMultipliers.get(precedingTokens.get(i).originalText());
-                if("DT".equals(precedingTokens.get(precedingTokens.size()-1).tag())) {
-                    stepQuantity *= listQuantity;
-            }
-                tokenIsQuantity = true;
+            Pair<Boolean, Double> quantityVerbose = detectVerboseFractions(i, precedingTokens, listQuantity);
+            stepQuantity *= quantityVerbose.second;
 
-            }
-            if(tokenIsQuantity){
+            // Detect cardinal numbers: fractions, numbers and verbose numbers
+            Pair<Boolean, Double> quantityCardinal = detectCardinalFractions(i, precedingTokens);
+            stepQuantity *= quantityCardinal.second;
+
+            if(quantityVerbose.first || quantityCardinal.first){
                 if(precedingTokens.get(i).beginPosition() < beginPos){
                     beginPos = precedingTokens.get(i).beginPosition();
                 }
@@ -260,6 +273,48 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             return new Pair<>(new Position(beginPos, endPos), stepQuantity);
         }
         return null;
+    }
+
+    /**
+     * checks whether the passed token is verbose notation of a fraction quantity
+     * e.g. 'half' an apple is 0.5 of an apple
+     * but 'half' the apples means it should be half of the initial apples in the ingredient list
+     *
+     * @param tokenIndex current token to check if it is a quantity fraction
+     * @param precedingTokens tokens preceding the detectec name of the ingredient
+     * @return Pair with a boolean indicating whether a verbose quantity was detected and the quantity itself
+     */
+    private Pair<Boolean, Double> detectCardinalFractions(int tokenIndex, List<CoreLabel> precedingTokens){
+        Double quantityMultiplier = 1.0;
+        Boolean tokenIsQuantity = false;
+        if("CD".equals(precedingTokens.get(tokenIndex).tag())){
+            quantityMultiplier *= calculateQuantity(Arrays.asList(precedingTokens.get(tokenIndex)));
+            tokenIsQuantity = true;
+        }
+        return new Pair<>(tokenIsQuantity, quantityMultiplier);
+    }
+
+    /**
+     * checks whether the passed token is a cardinal quantity
+     * this includes a numerical, fraction and verbose description of the quantity
+     * e.g. '1/5' cup of salt OR '15' cups of salt or 'five' cups of salt
+     *
+     * @param tokenIndex current token to check if it is a quantity fraction
+     * @param precedingTokens tokens preceding the detectec name of the ingredient
+     * @param listQuantity the initial quantity detected in the ingredient list
+     * @return Pair with a boolean indicating whether a cardinal quantity was detected and the quantity itself
+     */
+    private Pair<Boolean, Double> detectVerboseFractions(int tokenIndex, List<CoreLabel> precedingTokens, Double listQuantity){
+        Double quantityMultiplier = 1.0;
+        Boolean tokenIsQuantity = false;
+        if(mFractionMultipliers.keySet().contains(precedingTokens.get(tokenIndex).originalText())){
+            quantityMultiplier *= mFractionMultipliers.get(precedingTokens.get(tokenIndex).originalText());
+            if("DT".equals(precedingTokens.get(precedingTokens.size()-1).tag())) {
+                quantityMultiplier *= listQuantity;
+            }
+            tokenIsQuantity = true;
+        }
+        return new Pair<>(tokenIsQuantity, quantityMultiplier);
     }
 
     /**
@@ -316,24 +371,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
         // In case the ingredient name is the first word in the step
         return true;
-    }
-
-    /**
-     * Sees if there are multiple words used to represent the ingredient
-     * in the recipeStep
-     *
-     * @param succeedingTokens Tokens in front of detected name of an ingredient
-     * @param ingredientNameParts Separated words of the list ingredient it's name
-     * @return the amount of additional separated words used in the recipe step
-     */
-    private int succeedingNameLength(List<CoreLabel> succeedingTokens, List<String> ingredientNameParts){
-        int succeedingLength = 0;
-        for(CoreLabel token : succeedingTokens){
-            if(ingredientNameParts.contains(token.originalText())){
-                succeedingLength += 1;
-            }
-        }
-        return succeedingLength;
     }
 
     /**

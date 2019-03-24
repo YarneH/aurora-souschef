@@ -178,6 +178,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         positions.put(Ingredient.PositionKey.QUANTITY, new Position(8, 11));
         Ingredient stepIngredient = new Ingredient("sauce", "ounces", 250.0, positions);
 
+        // Retrieve the sauce ingredient detected in the recipe step
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
         Ingredient detectedIngredient = null;
         for(Ingredient ingr : stepIngredients){
@@ -185,6 +186,8 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
                 detectedIngredient = ingr;
             }
         }
+
+        // Assert that the sauce ingredient it's positions are correct
         assert(detectedIngredient.getNamePosition().equals(stepIngredient.getNamePosition()));
         assert(detectedIngredient.getUnitPosition().equals(stepIngredient.getUnitPosition()));
         assert(detectedIngredient.getQuantityPosition().equals(stepIngredient.getQuantityPosition()));

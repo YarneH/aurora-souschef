@@ -45,14 +45,18 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private static final String PIPELINE = "PIPELINE";
     // Position of number in timex3 format (e.g. PT1H)
     private static final Integer TIMEX_NUM_POSITION = 2;
-    public static volatile AtomicInteger progress = new AtomicInteger(0);
+    private static AtomicInteger progress = new AtomicInteger(0);
     private static AnnotationPipeline sAnnotationPipeline;
     private static Map<String, Double> sFractionMultipliers = new HashMap<>();
     private static Object sLock = new Object();
     private RecipeStep recipeStep;
 
+    public static AtomicInteger getProgress() {
+        return progress;
+    }
+
     // populate the map
-    static{
+    static {
         sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
         sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
     }
@@ -70,7 +74,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     }
 
     public static void initializeAnnotationPipeline() {
-        Thread initialize = new Thread(()->{
+        Thread initialize = new Thread(() -> {
             sAnnotationPipeline = createTimerAnnotationPipeline();
             synchronized (sLock) {
                 sLock.notifyAll();

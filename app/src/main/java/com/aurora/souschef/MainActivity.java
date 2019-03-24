@@ -110,21 +110,21 @@ public class MainActivity extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             int upTime = 0;
             boolean isLoading = true;
-            while (isLoading) {
-                try {
+            try {
+                while (isLoading) {
                     Thread.sleep(MILLIS_BETWEEN_UPDATES);
-                } catch (InterruptedException e) {
-                    Log.e("THREAD", "Caught interruptedException in MainActivity");
-                    isLoading = false;
+                    upTime += MILLIS_BETWEEN_UPDATES;
+                    publishProgress(DetectTimersInStepTask.getProgress().get());
+                    if (DetectTimersInStepTask.getProgress().get() >= DETECTION_STEPS) {
+                        isLoading = false;
+                    }
+                    if (upTime > MAX_WAIT_TIME) {
+                        isLoading = false;
+                    }
                 }
-                upTime += MILLIS_BETWEEN_UPDATES;
-                publishProgress(DetectTimersInStepTask.progress.get());
-                if (DetectTimersInStepTask.progress.get() >= DETECTION_STEPS) {
-                    isLoading = false;
-                }
-                if (upTime > MAX_WAIT_TIME) {
-                    isLoading = false;
-                }
+            } catch (InterruptedException e) {
+                Log.e("THREAD", "Caught interruptedException in MainActivity");
+
             }
             return null;
         }

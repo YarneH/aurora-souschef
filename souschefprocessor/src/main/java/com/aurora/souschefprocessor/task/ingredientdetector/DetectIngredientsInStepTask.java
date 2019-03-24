@@ -186,7 +186,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         int unitLength = listIngredient.getUnit().split(" ").length;
         int precedingLength = unitLength + PREPOSITION_LENGTH + FRACTIONS_LENGTH + MAX_QUANTITY_LENGTH;
         List<CoreLabel> precedingTokens = tokens.subList(Math.max(0, nameIndex - (precedingLength)), nameIndex);
-        if(precedingTokens.size() > 0){
+        if(!precedingTokens.isEmpty()){
             Position unitPos = findUnitPosition(precedingTokens, listIngredient.getUnit());
             if(unitPos != null){
                 stepIngredient.setUnitPosition(unitPos);
@@ -347,7 +347,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             i--;
         }
 
-        if(unitTokens.size() > 0){
+        if(!unitTokens.isEmpty()){
             int unitStart = unitTokens.get(0).beginPosition();
             int unitEnd = unitTokens.get(unitTokens.size()-1).endPosition();
             return new Position(unitStart, unitEnd);

@@ -3,10 +3,8 @@ package com.aurora.souschefprocessor.task.ingredientdetector;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import edu.stanford.nlp.ling.CoreLabel;
 
@@ -34,7 +32,7 @@ public abstract class DetectIngredientsTask extends AbstractProcessingTask {
     public DetectIngredientsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
     }
-    
+
     /**
      * Calculates the quantity based on list with tokens labeled quantity
      *

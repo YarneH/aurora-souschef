@@ -35,7 +35,6 @@ import static android.content.ContentValues.TAG;
 
 // TODO add javadoc documentation
 // TODO add Super class for DetectIngredientsTask to remove the duplicated code present atm.
-// TODO fix bug with first word not being recognized properly
 /**
  * Detects the mIngredients in the list of mIngredients
  */
@@ -182,7 +181,7 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
 
                         // Check if the mentioned ingredient is being described by multiple words in the step
                         // Skip these words for further analysis of the recipe step
-                        if(tokens.size() > i){
+                        if(tokens.size() > i+1){
                             int maxNameIndex = Math.max(tokens.size()-1, entry.getValue().size()-1);
                             i += succeedingNameLength(tokens.subList(i+1, maxNameIndex), entry.getValue());
                         }
@@ -194,6 +193,33 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         return set;
     }
 
+    /**
+     * Creates a default ingredient with values initialized to their absent value
+     *
+     * @param recipeStepDescription Complete recipe step string
+     * @return Default ingredient
+     */
+    private Ingredient defaultStepIngredient(String recipeStepDescription){
+        HashMap<Ingredient.PositionKey, Position> map = new HashMap<>();
+        Position defaultPos = new Position(0, recipeStepDescription.length());
+        String name = "";
+        map.put(Ingredient.PositionKey.NAME, defaultPos);
+        String unit = "";
+        map.put(Ingredient.PositionKey.UNIT, defaultPos);
+        Double quantity = 0.0;
+        map.put(Ingredient.PositionKey.QUANTITY, defaultPos);
+        return new Ingredient(name, unit, quantity, map);
+    }
+
+    /**
+     *
+     *
+     * @param precedingTokens Tokens in front of detected name of an ingredient
+     * @param listQuantity The quantity of the list ingredient tied to this detected ingredient name
+     *
+     * @return A pair with both the start and end position of the quantity of this detected ingredient
+     * and the quantity detected in the ingredient step
+     */
     private Pair<Position, Double> findQuantityPositionAndValue(List<CoreLabel> precedingTokens, Double listQuantity){
         Double stepQuantity = 1.0;
         boolean foundQuantities = false;
@@ -312,18 +338,13 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         return 0.0;
     }
 
-    private Ingredient defaultStepIngredient(String recipeStepDescription){
-        HashMap<Ingredient.PositionKey, Position> map = new HashMap<>();
-        Position defaultPos = new Position(0, recipeStepDescription.length());
-        String name = "";
-        map.put(Ingredient.PositionKey.NAME, defaultPos);
-        String unit = "";
-        map.put(Ingredient.PositionKey.UNIT, defaultPos);
-        Double quantity = 0.0;
-        map.put(Ingredient.PositionKey.QUANTITY, defaultPos);
-        return new Ingredient(name, unit, quantity, map);
-    }
-
+    /**
+     * Finds the position of unit tokens in the recipe step
+     *
+     * @param precedingTokens Tokens in front of detected name of an ingredient
+     * @param unit The unit name of the list ingredient tied to this detected ingredient name
+     * @return The start and end position of the unit of this detected ingredient
+     */
     private Position findUnitPosition(List<CoreLabel> precedingTokens, String unit){
         List<CoreLabel> unitTokens = new ArrayList<>();
         if(precedingTokens.get(precedingTokens.size()-1).originalText().equals(OF_PREPOSITION)){
@@ -358,7 +379,13 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         return null;
     }
 
-    // For e.g. verbs before name such as: 'put' Celery or 'add' celery there will be no unit
+    /**
+     * Checks whether there can be quantities or unit's found in front of the ingredient it's name
+     * For verbs before a name e.g. 'put' celery or 'add' celery there will be no unit
+     *
+     * @param precedingTokens Tokens in front of detected name of an ingredient
+     * @return True if quantity tokens or unit tokens might be present
+     */
     private boolean isIsolatedName(List<CoreLabel> precedingTokens){
         int precedingSize = precedingTokens.size();
         if(precedingSize > 0) {
@@ -371,6 +398,14 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         return true;
     }
 
+    /**
+     * Sees if there are multiple words used to represent the ingredient
+     * in the recipeStep
+     *
+     * @param succeedingTokens Tokens in front of detected name of an ingredient
+     * @param ingredientNameParts Separated words of the list ingredient it's name
+     * @return the amount of additional separated words used in the recipe step
+     */
     private int succeedingNameLength(List<CoreLabel> succeedingTokens, List<String> ingredientNameParts){
         int succeedingLength = 0;
         for(CoreLabel token : succeedingTokens){
@@ -387,7 +422,6 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
      * @return Annotation pipeline
      */
     private AnnotationPipeline createIngredientAnnotationPipeline() {
-        //TODO try to further customise the pipeline for performance gain
         Properties props = new Properties();
         AnnotationPipeline pipeline = new AnnotationPipeline();
         pipeline.addAnnotator(new TokenizerAnnotator(false));

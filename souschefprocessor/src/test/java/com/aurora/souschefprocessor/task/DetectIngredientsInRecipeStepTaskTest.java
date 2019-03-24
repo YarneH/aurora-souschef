@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import static android.content.ContentValues.TAG;
 
-//TODO Implement the required tests for positions and ingredients
+//TODO Implement the required acceptance tests
 public class DetectIngredientsInRecipeStepTaskTest {
 
     private static DetectIngredientsInStepTask detector0;
@@ -53,17 +53,19 @@ public class DetectIngredientsInRecipeStepTaskTest {
         ListIngredient meatIngredient = new ListIngredient("minced meat", "pounds", 1.5, "irrelevant", irrelevantPositions);
         ListIngredient garlicIngredient = new ListIngredient("garlic", "clove", 1.0, "irrelevant", irrelevantPositions);
         ListIngredient basilIngredient = new ListIngredient("basil leaves", "", 20.0, "irrelevant", irrelevantPositions);
+        ListIngredient saltIngredient = new ListIngredient("salt", "cup", 0.0, "irrelevant", irrelevantPositions);
         set.add(spaghettiIngredient);
         set.add(sauceIngredient);
         set.add(meatIngredient);
         set.add(garlicIngredient);
         set.add(basilIngredient);
+        set.add(saltIngredient);
         recipe.setIngredients(set);
 
         recipeSteps = new ArrayList<>();
-        RecipeStep s0 = new RecipeStep("Cook spaghetti according to package directions, omitting salt and fat.");
+        RecipeStep s0 = new RecipeStep("Cook spaghetti according to package directions.");
         RecipeStep s1 = new RecipeStep("Combine meat and a clove of garlic in a large saucepan, and cook over medium-high heat until browned.");
-        RecipeStep s2 = new RecipeStep("Stir in 250 ounces of the sauce and five basil leaves. Add a cup of salt");
+        RecipeStep s2 = new RecipeStep("Stir in 250 ounces of the sauce and five basil leaves. Add a cup of salt.");
         RecipeStep s3 = new RecipeStep("No ingredients are in this recipe step.");
 
         recipeSteps.add(s0);
@@ -119,7 +121,6 @@ public class DetectIngredientsInRecipeStepTaskTest {
         detector1.doTask();
 
         for (RecipeStep s : recipe.getRecipeSteps()) {
-            System.out.println(s.getIngredients());
             assert (s.isIngredientDetected());
             assert (s.getIngredients() != null);
         }
@@ -140,7 +141,6 @@ public class DetectIngredientsInRecipeStepTaskTest {
         Ingredient stepIngredient = new Ingredient("spaghetti", "", 0.0, irrelevantPositions);
 
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(0).getIngredients();
-        System.out.println(stepIngredients);
         assert(stepIngredients.contains(stepIngredient));
     }
 

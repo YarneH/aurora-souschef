@@ -118,8 +118,8 @@ public class MainActivity extends AppCompatActivity {
                     isLoading = false;
                 }
                 upTime += MILLIS_BETWEEN_UPDATES;
-                publishProgress(DetectTimersInStepTask.progress);
-                if (DetectTimersInStepTask.progress >= DETECTION_STEPS) {
+                publishProgress(DetectTimersInStepTask.progress.get());
+                if (DetectTimersInStepTask.progress.get() >= DETECTION_STEPS) {
                     isLoading = false;
                 }
                 if (upTime > MAX_WAIT_TIME) {

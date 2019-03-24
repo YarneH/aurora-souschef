@@ -17,7 +17,10 @@ public class Communicator {
     // Caution! this class heavily depends on the Aurora API
 
     public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
+
         mDelegator = new Delegator(ingredientsClassifier, false);
+
+
     }
 
     /**

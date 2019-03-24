@@ -59,19 +59,34 @@ public class SplitStepsTaskUnitTest {
 
     @Test
     public void SplitStepsTask_doTask_setHasBeenSet() {
+        /**
+         * After doing the tasks the recipeSteps list cannot be null
+         */
+        // Act
         splitStepsTask.doTask();
+        // Assert
         assert (recipe.getRecipeSteps() != null);
     }
 
     @Test
     public void SplitStepsTask_doTask_setHasCorrectSize() {
+        /**
+         * The correct amount of steps is detected
+         */
+        // Act
         splitStepsTask.doTask();
+        // Assert
         assert (recipe.getRecipeSteps().size() == 3);
     }
 
     @Test
     public void SplitStepsTask_doTask_setHasCorrectValues() {
+        /**
+         * The correct steps are detected
+         */
+        // Act
         splitStepsTask.doTask();
+        // Assert
         assert (recipe.getRecipeSteps().get(0).getDescription()
                 .equals("In a medium bowl, with a potato masher or a fork, " +
                         "mash the beans with the soy sauce, chopped pepper; and ginger, until pureed but not smooth."));
@@ -84,13 +99,45 @@ public class SplitStepsTaskUnitTest {
 
     @Test
     public void SplitStepsTask_doTask_setHasCorrectSizeAcrossNewline() {
+        /**
+         * If the steps have a new line in the middle of a sentence, the correct amount of steps
+         * is detected
+         */
+        // Act
         splitStepsTaskAcrossNewline.doTask();
+        // Assert
         assert (recipeAcrossNewline.getRecipeSteps().size() == 5);
     }
 
     @Test
+    public void SplitStepsTask_doTask_ExceptionThrownWhenStepStringIsEmpty(){
+        /**
+         * If the step string is empty then this is probably not a recipe, throw an error
+         */
+        // Arrange
+        RecipeInProgress emptyStep = new RecipeInProgress("irrelevant");
+        emptyStep.setStepsString("");
+        SplitStepsTask task = new SplitStepsTask(emptyStep);
+        boolean thrown = false;
+        // Act
+        try{
+            task.doTask();
+        }catch(Exception e){
+            thrown = true;
+        }
+        assert(thrown);
+
+    }
+
+    @Test
     public void SplitStepsTask_doTask_setHasCorrectValuesAcrossNewline() {
+        /**
+         * If the steps have a new line in the middle of a sentence, the correct steps are detected
+         */
+
+        // Act
         splitStepsTaskAcrossNewline.doTask();
+        // Assert
         assert (recipeAcrossNewline.getRecipeSteps().get(0).getDescription()
                 .equals("Heat the oil in a medium skillet over medium heat."));
         assert (recipeAcrossNewline.getRecipeSteps().get(1).getDescription()

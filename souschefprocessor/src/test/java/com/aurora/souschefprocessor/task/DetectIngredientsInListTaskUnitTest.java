@@ -11,8 +11,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -21,7 +19,6 @@ public class DetectIngredientsInListTaskUnitTest {
 
     private static RecipeInProgress recipe;
     private static DetectIngredientsInListTask detector;
-    private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
     private static String originalText;
     private static String ingredientList;
     private static CRFClassifier<CoreLabel> crfClassifier;
@@ -57,26 +54,42 @@ public class DetectIngredientsInListTaskUnitTest {
 
     @Test
     public void DetectIngredientsInList_doTask_setHasBeenSet() {
+        /**
+         * After doing the detectingredientinlisttask the ingredients of the recipe cannot be null
+         */
+        // Act
         detector.doTask();
+        // Assert
         assert (recipe.getIngredients() != null);
     }
 
     @Test
     public void DetectIngredientsInList_doTask_setHasCorrectSize() {
+        /**
+         * After doing the detectingredientinlisttask the number of detected ingredients is correct
+         */
+        // Act
         detector.doTask();
         System.out.println(recipe.getIngredients());
+        // Assert
         assert (recipe.getIngredients().size() == 5);
     }
 
     @Test
     public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityNoPosition() {
-        detector.doTask();
-
+        /**
+         * These sample ingredients should be detected correctly
+         */
+        // Arrange
         Ingredient spaghettiIngredient = new ListIngredient("spaghetti", "g", 500, "irrelevant", irrelevantPositions);
         Ingredient sauceIngredient = new ListIngredient("sauce", "ounces", 500, "irrelevant", irrelevantPositions);
         Ingredient meatIngredient = new ListIngredient("minced meat", "pounds", 1.5, "irrelevant", irrelevantPositions);
         Ingredient garlicIngredient = new ListIngredient("garlic", "clove", 1.0, "irrelevant", irrelevantPositions);
         Ingredient basilIngredient = new ListIngredient("basil leaves", "", 20.0, "irrelevant", irrelevantPositions);
+        // Act
+        detector.doTask();
+
+        // Assert
         boolean spaghetti = recipe.getIngredients().contains(spaghettiIngredient);
         boolean sauce = recipe.getIngredients().contains(sauceIngredient);
         boolean meat = recipe.getIngredients().contains(meatIngredient);
@@ -90,10 +103,19 @@ public class DetectIngredientsInListTaskUnitTest {
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_ifNoIngredientsSetEmptyList() {
+    public void DetectIngredientsInList_doTask_ifNoIngredientsRaiseException() {
+        // Arrange
         recipe.setIngredientsString("");
-        detector.doTask();
-        assert (recipe.getIngredients() != null && recipe.getIngredients().size() == 0);
+        boolean thrown = false;
+        // Act
+        try {
+            detector.doTask();
+        } catch (Exception e) {
+            thrown = true;
+        }
+        // Assert
+        assert (thrown);
+
 
     }
 

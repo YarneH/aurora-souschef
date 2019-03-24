@@ -546,6 +546,9 @@ public class DetectTimersInStepTaskLongTest {
 
     @Test
     public void DetectTimersInStep_doTask_AccuracyOnDataSet() {
+        /**
+         * Timers should be detected correctly at least 98% of the time
+         */
         String[] dataSet = initializeDataSet();
         String[] dataSetTags = initializeDataSetTags();
         int amount = dataSet.length;

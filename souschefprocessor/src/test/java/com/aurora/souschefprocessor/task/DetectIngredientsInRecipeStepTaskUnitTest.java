@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class DetectIngredientsInRecipeStepTaskUnitTest {
 
@@ -114,9 +112,13 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     @Test
     public void IngredientDetectorStep_doTask_setHasBeenSetForAllSteps() {
+        /**
+         * After doing the task the ingredients field cannot be null
+         */
+        // Act
         detector0.doTask();
         detector1.doTask();
-
+        // Assert
         for (RecipeStep s : recipe.getRecipeSteps()) {
             assert (s.isIngredientDetected());
             assert (s.getIngredients() != null);

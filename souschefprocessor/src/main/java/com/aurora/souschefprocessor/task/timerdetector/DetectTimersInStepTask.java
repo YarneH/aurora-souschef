@@ -45,7 +45,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private static final String PIPELINE = "PIPELINE";
     // Position of number in timex3 format (e.g. PT1H)
     private static final Integer TIMEX_NUM_POSITION = 2;
-    public volatile AtomicInteger progress = new AtomicInteger(0);
+    public static volatile AtomicInteger progress = new AtomicInteger(0);
     private static AnnotationPipeline sAnnotationPipeline;
     private static Map<String, Double> sFractionMultipliers = new HashMap<>();
     private static Object sLock = new Object();
@@ -170,22 +170,22 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
         props.setProperty("sutime.binders", "0");
         Log.d(PIPELINE, "0");
-        progress = 1;
+        progress.incrementAndGet();
         AnnotationPipeline pipeline = new AnnotationPipeline();
         Log.d(PIPELINE, "1");
-        progress++;
+        progress.incrementAndGet();
         pipeline.addAnnotator(new TokenizerAnnotator(false));
         Log.d(PIPELINE, "2");
-        progress++;
+        progress.incrementAndGet();
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
         Log.d(PIPELINE, "3");
-        progress++;
+        progress.incrementAndGet();
         pipeline.addAnnotator(new POSTaggerAnnotator(false));
         Log.d(PIPELINE, "4");
-        progress++;
+        progress.incrementAndGet();
         pipeline.addAnnotator(new TimeAnnotator("sutime", props));
         Log.d(PIPELINE, "5");
-        progress++;
+        progress.incrementAndGet();
         return pipeline;
     }
 

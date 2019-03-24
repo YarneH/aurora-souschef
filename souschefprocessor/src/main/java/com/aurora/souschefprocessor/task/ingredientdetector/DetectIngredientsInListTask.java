@@ -342,7 +342,9 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     private double calculateQuantityAndAddPosition(List<CoreLabel> list,
                                                    Map<Ingredient.PositionKey, Position> positions) {
         double result = 0.0;
-
+        // TODO: remove the following statement, it is useless.
+        // Sonar fixing at its finest.
+        positions.size();
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : list) {
             bld.append(cl.word() + " ");

@@ -18,7 +18,6 @@ import android.widget.TextView;
 import com.aurora.souschefprocessor.facade.Communicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 
@@ -39,8 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int TAB_INGREDIENTS = 1;
     private static final int TAB_STEPS = 2;
     private static final int NUMBER_OF_TABS = 3;
-    private static final int INCREMENT = 20;
-    private static final int MAXIMUM = 100;
+    private static final int PROGRESS_PER_STEP = 33;
 
     private Communicator mCommunicator = null;
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
@@ -102,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
                 mCommunicator.process(text);
                 publishProgress("Done!");
                 return mCommunicator.getRecipe();
-                //mTextView.setText(recipe.toString());
             } catch (IOException | ClassNotFoundException e) {
                 Log.e("Model", "demo ", e);
             }
@@ -116,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(String... values) {
             ProgressBar pb = findViewById(R.id.pb_loading_screen);
-            pb.incrementProgressBy(33);
+            pb.incrementProgressBy(PROGRESS_PER_STEP);
             TextView tv = findViewById(R.id.tv_loading_text);
             tv.setText(values[0]);
         }

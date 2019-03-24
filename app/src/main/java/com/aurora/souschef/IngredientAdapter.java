@@ -13,12 +13,16 @@ import android.widget.TextView;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Adapter for populating the ingredient list.
  */
 public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.CardIngredientViewHolder> {
     private final List<ListIngredient> ingredients;
+    private static final int MIN_DENOMINATOR_OF_FRACITONS = 2;
+    private static final int MAX_DENOMINATOR_OF_FRACITONS = 10;
+
 
     /**
      * Constructs the adapter with a list
@@ -84,7 +88,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
             String nameWithoutQuantityAndUnit = ingredient.getOriginalLineWithoutUnitAndQuantity();
             // if it is possible to capitalize the first letter, capitalize.
             if (nameWithoutQuantityAndUnit.length() > 1) {
-                nameWithoutQuantityAndUnit = nameWithoutQuantityAndUnit.substring(0, 1).toUpperCase()
+                nameWithoutQuantityAndUnit = nameWithoutQuantityAndUnit.substring(0, 1).toUpperCase(Locale.getDefault())
                         + nameWithoutQuantityAndUnit.substring(1);
             }
 
@@ -109,7 +113,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
             if (isAlmostInteger(quantity)) {
                 return "" + ((int) Math.round(quantity));
             }
-            for (int i = 2; i < 11; i++) {
+            for (int i = MIN_DENOMINATOR_OF_FRACITONS; i <= MAX_DENOMINATOR_OF_FRACITONS; i++) {
                 if (isAlmostInteger(quantity * i)) {
                     return "" + ((int) Math.round(quantity * i) + "/" + i);
                 }

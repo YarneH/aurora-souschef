@@ -8,11 +8,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.aurora.souschefprocessor.recipe.Recipe;
-
-import java.util.Locale;
 
 /**
  * Class defining the functionality of the ingredients tab.
@@ -20,7 +17,7 @@ import java.util.Locale;
 public class Tab2Ingredients extends Fragment {
     private Recipe mRecipe = null;
     // The number of people the user picked.
-    private int actualNumberOfPeople;
+    private int actualNumberOfPeople = 0;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,

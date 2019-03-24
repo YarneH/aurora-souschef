@@ -74,6 +74,10 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         return progress;
     }
 
+    /**
+     * Initializes the AnnotationPipeline should be called before using the first detector
+     * (this might change in later versions)
+     */
     public static void initializeAnnotationPipeline() {
         Thread initialize = new Thread(() -> {
             sAnnotationPipeline = createTimerAnnotationPipeline();

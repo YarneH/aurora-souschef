@@ -17,7 +17,7 @@ import com.aurora.souschefprocessor.recipe.Recipe;
 public class Tab2Ingredients extends Fragment {
     private Recipe mRecipe = null;
     // The number of people the user picked.
-    private int actualNumberOfPeople = 0;
+    private int mActualNumberOfPeople = 0;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -37,7 +37,7 @@ public class Tab2Ingredients extends Fragment {
 
     protected void setRecipe(Recipe recipe) {
         mRecipe = recipe;
-        actualNumberOfPeople = recipe.getNumberOfPeople();
+        mActualNumberOfPeople = recipe.getNumberOfPeople();
 
     }
 }

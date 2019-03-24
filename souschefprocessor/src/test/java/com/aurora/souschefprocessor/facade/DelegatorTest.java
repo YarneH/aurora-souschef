@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.facade;
 
 import com.aurora.souschefprocessor.recipe.Recipe;
+import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -24,6 +25,7 @@ public class DelegatorTest {
 
     @BeforeClass
     public static void initialize() {
+        DetectTimersInStepTask.initializeAnnotationPipeline();
         // load in the recipes
         List<String> recipes = initializeRecipes();
         // split into valid and invalid

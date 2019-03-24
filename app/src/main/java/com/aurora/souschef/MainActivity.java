@@ -113,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // The first thing we do is Souschef specific:
         // generate pipeline for creating annotations in separate thread.
-        Log.d("STIJN", "Start");
         DetectTimersInStepTask.initializeAnnotationPipeline();
 
         /*
@@ -251,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
             appBarLayout.setVisibility(View.VISIBLE);
             mViewPager.setVisibility(View.VISIBLE);
             tabLayout.setVisibility(View.VISIBLE);
-            Log.d("STIJN", "Stop");
+
 
         }
     }

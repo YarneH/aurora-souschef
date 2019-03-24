@@ -40,7 +40,7 @@ public class ListIngredient extends Ingredient {
      * This function returns the original line where the unit and quantity are omitted, this can
      * be used to display the string when quantity and unit are changed.
      *
-     * @return
+     * @return The original string but without the text describing the unit and quantity
      */
     public String getOriginalLineWithoutUnitAndQuantity() {
         StringBuilder bld = new StringBuilder();

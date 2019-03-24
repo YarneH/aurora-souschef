@@ -92,7 +92,6 @@ public class Delegator {
         if (pipeline != null) {
             for (AbstractProcessingTask task : pipeline) {
                 task.doTask();
-                Log.d("LUCA", task.getClass().toString());
             }
         }
 

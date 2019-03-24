@@ -7,7 +7,6 @@ import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
-import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
 import java.util.ArrayList;
@@ -16,9 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
@@ -33,8 +30,7 @@ import edu.stanford.nlp.util.CoreMap;
 
 import static android.content.ContentValues.TAG;
 
-// TODO add javadoc documentation
-// TODO add Super class for DetectIngredientsTask to remove the duplicated code present atm.
+// TODO add exceptions for illegal arguments and add tests for these exceptions
 /**
  * Detects the mIngredients in the list of mIngredients
  */
@@ -304,7 +300,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @param listQuantity the initial quantity detected in the ingredient list
      * @return Pair with a boolean indicating whether a cardinal quantity was detected and the quantity itself
      */
-    private Pair<Boolean, Double> detectVerboseFractions(int tokenIndex, List<CoreLabel> precedingTokens, Double listQuantity){
+    private Pair<Boolean, Double> detectVerboseFractions(int tokenIndex,
+                                                         List<CoreLabel> precedingTokens, Double listQuantity){
         Double quantityMultiplier = 1.0;
         Boolean tokenIsQuantity = false;
         if(mFractionMultipliers.keySet().contains(precedingTokens.get(tokenIndex).originalText())){

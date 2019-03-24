@@ -34,9 +34,7 @@ public abstract class DetectIngredientsTask extends AbstractProcessingTask {
     public DetectIngredientsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
     }
-
-
-
+    
     /**
      * Calculates the quantity based on list with tokens labeled quantity
      *

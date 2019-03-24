@@ -43,6 +43,14 @@ public class MainActivity extends AppCompatActivity {
     private static final int MILLIS_BETWEEN_UPDATES = 500;
     private static final int MAX_WAIT_TIME = 15000;
     private static final int DETECTION_STEPS = 6;
+    private static final String[] STEPS = {
+            "Initializing...",
+            "Creating new pipeline...",
+            "Doing smart stuff to understand words...",
+            "Understanding sentences...",
+            "Revising some stuff",
+            "Searching for timers...",
+            "Finishing up..."};
 
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
 
@@ -87,8 +95,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class ProgressUpdate extends AsyncTask<Void, Integer, Void> {
-        ProgressBar pb;
-        TextView tv;
+        private ProgressBar pb;
+        private TextView tv;
 
         @Override
         protected void onPreExecute() {
@@ -106,15 +114,16 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     Thread.sleep(MILLIS_BETWEEN_UPDATES);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.e("THREAD", "Caught interruptedException in MainActivity");
+                    isLoading = false;
                 }
                 upTime += MILLIS_BETWEEN_UPDATES;
                 publishProgress(DetectTimersInStepTask.progress);
                 if (DetectTimersInStepTask.progress >= DETECTION_STEPS) {
-                    return null;
+                    isLoading = false;
                 }
-                if(upTime > MAX_WAIT_TIME){
-                    return null;
+                if (upTime > MAX_WAIT_TIME) {
+                    isLoading = false;
                 }
             }
             return null;
@@ -123,34 +132,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
-            switch (values[0]) {
-                case 1:
-                    // update 2:
-                    tv.setText("Creating new pipeline...");
-                    break;
-                case 2:
-                    // update 3:
-                    tv.setText("Doing smart stuff to understand words...");
-                    break;
-                case 3:
-                    // update 4:
-                    tv.setText("Understanding sentences...");
-                    break;
-                case 4:
-                    // update 5:
-                    tv.setText("Revising some stuff");
-                    break;
-                case 5:
-                    // update 6:
-                    tv.setText("Searching for timers...");
-                    break;
-                case 6:
-                    // update 7:
-                    tv.setText("Finishing up...");
-                    break;
-                default:
-                    break;
+            if (values[0] >= STEPS.length) {
+                return;
             }
+            tv.setText(STEPS[values[0]]);
             pb.setProgress(PROGRESS_PER_STEP * (values[0] + 1));
         }
     }

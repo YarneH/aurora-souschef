@@ -38,9 +38,9 @@ import static android.content.ContentValues.TAG;
 /**
  * Detects the mIngredients in the list of mIngredients
  */
-public class DetectIngredientsInStepTask extends AbstractProcessingTask {
+public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
-    // Strings for matching
+    // Strings for matching in recipe step
     private static final String FRACTION_HALF = "half";
     private static final Double FRACTION_HALF_MUL = 0.5;
     private static final String FRACTION_QUARTER = "quarter";
@@ -51,20 +51,6 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
     private static final int MAX_QUANTITY_LENGTH = 2;
 
     private Map<String, Double> mFractionMultipliers = new HashMap<>();
-
-    // The number 10
-    private static final double TEN = 10;
-
-    // The size if a string representing a fraction is split on the regex "/"
-    private static final int FRACTION_LENGTH = 2;
-    // The size if a string representing a number (non-fraction) is split on the regex "/"
-    private static final int NON_FRACTION_LENGTH = 1;
-    // generally numbers greater than twelve are not spelled out
-    private static final String[] NUMBERS_TO_TWELVE = {"zero", "one", "two", "three", "four", "five",
-            "six", "seven", "eight", "nine", "ten", "eleven", "twelve"};
-    // multiples of ten are also spelled out
-    private static final String[] MULTIPLES_OF_TEN = {"zero", "ten", "twenty", "thirty", "forty",
-            "fifty", "sixty", "seventy", "eighty", "ninety", "hundred"};
 
     private int mStepIndex;
 
@@ -122,13 +108,10 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         List<CoreMap> stepSentences = recipeStepAnnotated.get(CoreAnnotations.SentencesAnnotation.class);
 
         for (CoreMap sentence : stepSentences) {
-
-            // Set default values for ingredient fields in case they can't be found in the step
-            Ingredient stepIngredient = defaultStepIngredient(recipeStep.getDescription());
-
             List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
-            for (int i = 0; i < tokens.size(); i++) {
 
+            int tokenIndex = 0;
+            while(tokenIndex < tokens.size()){
                 // This boolean eliminates unnecessary searching of the token in other ingredients of the list
                 boolean foundName = false;
                 Iterator it = ingredientListMap.entrySet().iterator();
@@ -138,55 +121,22 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
                     Ingredient listIngredient = entry.getKey();
 
                     // Found name of an ingredient from the list of ingredients
-                    if (nameParts.contains(tokens.get(i).originalText()) && !foundIngredients.contains(listIngredient)) {
+                    if (nameParts.contains(tokens.get(tokenIndex).originalText())
+                            && !foundIngredients.contains(listIngredient)) {
                         foundIngredients.add(listIngredient);
-                        stepIngredient.setName(listIngredient.getName());
-                        Position namePos = new Position(tokens.get(i).beginPosition(), tokens.get(i).endPosition());
-                        stepIngredient.setNamePosition(namePos);
+                        set.add(getStepIngredient(tokenIndex, listIngredient, tokens));
                         foundName = true;
-
-                        // Check if a quantity or unit is possible for this ingredient
-                        if(isIsolatedName(tokens.subList(0, i-1))){
-                            set.add(stepIngredient);
-
-                            // Continue searching for other ingredients in the step
-                            stepIngredient = defaultStepIngredient(recipeStep.getDescription());
-                            continue;
-                        }
-
-                        // Default amount
-                        Amount stepAmount = new Amount(0.0, "");
-
-                        // Check if a quantity or unit can be found for this ingredient in the step
-                        int unitLength = listIngredient.getUnit().split(" ").length;
-                        int precedingLength = unitLength + PREPOSITION_LENGTH + FRACTIONS_LENGTH + MAX_QUANTITY_LENGTH;
-                        List<CoreLabel> precedingTokens = tokens.subList(Math.max(0, i - (precedingLength)), i);
-                        if(precedingTokens.size() > 0){
-                            Position unitPos = findUnitPosition(precedingTokens, listIngredient.getUnit());
-                            if(unitPos != null){
-                                stepIngredient.setUnitPosition(unitPos);
-                                stepAmount.setUnit(listIngredient.getUnit());
-                            }
-                            Double listQuantity = listIngredient.getAmount().getValue();
-                            Pair<Position, Double> quantityPair = findQuantityPositionAndValue(precedingTokens, listQuantity);
-                            if(quantityPair != null){
-                                stepIngredient.setQuantityPosition(quantityPair.first);
-                                stepAmount.setValue(quantityPair.second);
-                            }
-
-                            stepIngredient.setmAmount(stepAmount);
-                            set.add(stepIngredient);
-                            stepIngredient = defaultStepIngredient(recipeStep.getDescription());
-                        }
 
                         // Check if the mentioned ingredient is being described by multiple words in the step
                         // Skip these words for further analysis of the recipe step
-                        if(tokens.size() > i+1){
+                        if((tokens.size()-1) > tokenIndex){
                             int maxNameIndex = Math.max(tokens.size()-1, entry.getValue().size()-1);
-                            i += succeedingNameLength(tokens.subList(i+1, maxNameIndex), entry.getValue());
+                            List<CoreLabel> succeedingTokens = tokens.subList(tokenIndex+1, maxNameIndex);
+                            tokenIndex += succeedingNameLength(succeedingTokens, entry.getValue());
                         }
                     }
                 }
+                tokenIndex++;
             }
         }
 
@@ -194,14 +144,58 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
     }
 
     /**
+     * Finds the attributes (name, unit and quantity) of the step ingredient in the recipe step sentence
+     * If some attributes can't be found they are set to their default absent value
+     *
+     * @param nameIndex Index of the found ingredient name in the list of tokens
+     * @param listIngredient ListIngredient corresponding to this found ingredient name
+     * @param tokens List of tokens representing this sentence
+     * @return Step Ingredient
+     */
+    private Ingredient getStepIngredient(int nameIndex, Ingredient listIngredient, List<CoreLabel> tokens){
+        Ingredient stepIngredient = defaultStepIngredient(tokens.get(tokens.size()-1).endPosition());
+        stepIngredient.setName(listIngredient.getName());
+        Position namePos = new Position(tokens.get(nameIndex).beginPosition(), tokens.get(nameIndex).endPosition());
+        stepIngredient.setNamePosition(namePos);
+
+        // Check if a quantity or unit is possible for this ingredient
+        if(isIsolatedName(tokens.subList(0, nameIndex-1))){
+            return stepIngredient;
+        }
+
+        // Default amount
+        Amount stepAmount = new Amount(0.0, "");
+
+        // Check if a quantity or unit can be found for this ingredient in the step
+        int unitLength = listIngredient.getUnit().split(" ").length;
+        int precedingLength = unitLength + PREPOSITION_LENGTH + FRACTIONS_LENGTH + MAX_QUANTITY_LENGTH;
+        List<CoreLabel> precedingTokens = tokens.subList(Math.max(0, nameIndex - (precedingLength)), nameIndex);
+        if(precedingTokens.size() > 0){
+            Position unitPos = findUnitPosition(precedingTokens, listIngredient.getUnit());
+            if(unitPos != null){
+                stepIngredient.setUnitPosition(unitPos);
+                stepAmount.setUnit(listIngredient.getUnit());
+            }
+            Double listQuantity = listIngredient.getAmount().getValue();
+            Pair<Position, Double> quantityPair = findQuantityPositionAndValue(precedingTokens, listQuantity);
+            if(quantityPair != null){
+                stepIngredient.setQuantityPosition(quantityPair.first);
+                stepAmount.setValue(quantityPair.second);
+            }
+            stepIngredient.setmAmount(stepAmount);
+        }
+        return stepIngredient;
+    }
+
+    /**
      * Creates a default ingredient with values initialized to their absent value
      *
-     * @param recipeStepDescription Complete recipe step string
+     * @param stepSentenceLength The length of the step sentence
      * @return Default ingredient
      */
-    private Ingredient defaultStepIngredient(String recipeStepDescription){
+    private Ingredient defaultStepIngredient(int stepSentenceLength){
         HashMap<Ingredient.PositionKey, Position> map = new HashMap<>();
-        Position defaultPos = new Position(0, recipeStepDescription.length());
+        Position defaultPos = new Position(0, stepSentenceLength);
         String name = "";
         map.put(Ingredient.PositionKey.NAME, defaultPos);
         String unit = "";
@@ -227,8 +221,6 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         int beginPos = precedingTokens.get(precedingTokens.size()-1).endPosition();
         int endPos = 0;
 
-        // TODO add more ingredient separators, maybe "." but this might give errors
-        // TODO as NLP might wrongfully split "." from abbreviated units
         List<String> ingredientSeparators = new ArrayList<>();
         ingredientSeparators.add(",");
 
@@ -236,17 +228,17 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
         // CC means Coordinating conjunction, such as "and"
         int i = precedingTokens.size()-1;
         while(i > 0 && !ingredientSeparators.contains(precedingTokens.get(i).originalText())
-                && !precedingTokens.get(i).tag().equals("CC")){
+                && !"CC".equals(precedingTokens.get(i).tag())){
             // Detect cardinal numbers: fractions, numbers and verbose numbers
             boolean tokenIsQuantity = false;
-            if(precedingTokens.get(i).tag().equals("CD")){
+            if("CD".equals(precedingTokens.get(i).tag())){
                 stepQuantity *= calculateQuantity(Arrays.asList(precedingTokens.get(i)));
                 tokenIsQuantity = true;
             }
             // Detect verbose fractions
             if(mFractionMultipliers.keySet().contains(precedingTokens.get(i).originalText())){
                 stepQuantity *= mFractionMultipliers.get(precedingTokens.get(i).originalText());
-                if(precedingTokens.get(precedingTokens.size()-1).tag().equals("DT")) {
+                if("DT".equals(precedingTokens.get(precedingTokens.size()-1).tag())) {
                     stepQuantity *= listQuantity;
             }
                 tokenIsQuantity = true;
@@ -268,74 +260,6 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
             return new Pair<>(new Position(beginPos, endPos), stepQuantity);
         }
         return null;
-    }
-
-    /**
-     * Calculates the quantity based on list with tokens labeled quantity
-     *
-     * @param list The list on which to calculate the quantity
-     * @return a double representing the calculated value, if no value could be detected 1.0 is
-     * returned
-     */
-    private double calculateQuantity(List<CoreLabel> list) {
-        double result = 0.0;
-
-        StringBuilder bld = new StringBuilder();
-        for (CoreLabel cl : list) {
-            bld.append(cl.word() + " ");
-        }
-
-        String representation = bld.toString();
-
-        // split on all whitespace characters
-        String[] array = representation.split("[\\s\\xA0]+");
-        for (String s : array) {
-
-            String[] fraction = s.split("/");
-            try {
-                // if the string was splitted in to two parts it was a fraction
-                if (fraction.length == FRACTION_LENGTH) {
-
-                    double numerator = Double.parseDouble(fraction[0]);
-                    double denominator = Double.parseDouble(fraction[1]);
-                    result += numerator / denominator;
-                }
-
-                if (fraction.length == NON_FRACTION_LENGTH) {
-                    result += Double.parseDouble(s);
-                }
-            } catch (NumberFormatException iae) {
-                // String identified as quantity is not parsable...
-                result += calculateNonParsableQuantity(s);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Checks if the string is a spelled out version of the numbers 0 to 12 or a multiple of 10 (up to 100)
-     *
-     * @param s The string to be checked
-     * @return The numeric representation of the string
-     */
-    private static double calculateNonParsableQuantity(String s) {
-        String lower = s.toLowerCase(Locale.ENGLISH);
-        // check if  number is 0-12
-        for (int i = 0; i < NUMBERS_TO_TWELVE.length; i++) {
-            if (lower.equals(NUMBERS_TO_TWELVE[i])) {
-                return i;
-            }
-        }
-
-        // check is string is a multiple of ten
-        for (int i = 0; i < MULTIPLES_OF_TEN.length; i++) {
-            if (lower.equals(MULTIPLES_OF_TEN[i])) {
-                return i * TEN;
-            }
-        }
-
-        // if not one of the previous cases consider wrongly labeled
-        return 0.0;
     }
 
     /**
@@ -387,12 +311,8 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
      * @return True if quantity tokens or unit tokens might be present
      */
     private boolean isIsolatedName(List<CoreLabel> precedingTokens){
-        int precedingSize = precedingTokens.size();
-        if(precedingSize > 0) {
-            if (precedingTokens.get(precedingSize - 1).tag().equals("VB")) {
-                return true;
-            }
-            return false;
+        if(!precedingTokens.isEmpty()) {
+            return ("VB".equals(precedingTokens.get(precedingTokens.size()-1).tag()));
         }
         // In case the ingredient name is the first word in the step
         return true;
@@ -422,7 +342,6 @@ public class DetectIngredientsInStepTask extends AbstractProcessingTask {
      * @return Annotation pipeline
      */
     private AnnotationPipeline createIngredientAnnotationPipeline() {
-        Properties props = new Properties();
         AnnotationPipeline pipeline = new AnnotationPipeline();
         pipeline.addAnnotator(new TokenizerAnnotator(false));
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));

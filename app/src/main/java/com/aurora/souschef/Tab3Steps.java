@@ -83,7 +83,7 @@ public class Tab3Steps extends Fragment {
     /**
      * Classic setter for the Recipe, used to communicate the recipe from the Main Activity
      */
-    protected void setRecipe(Recipe recipe) {
+    protected static void setRecipe(Recipe recipe) {
         mRecipe = recipe;
     }
 

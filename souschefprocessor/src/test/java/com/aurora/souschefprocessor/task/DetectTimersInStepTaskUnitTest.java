@@ -51,6 +51,10 @@ public class DetectTimersInStepTaskUnitTest {
 
     @Test
     public void DetectTimersInStep_doTask_timersHaveBeenSetForAllSteps() {
+        /**
+         * After doing the task the timer objects are not null
+         */
+
         for (DetectTimersInStepTask detector : detectors) {
             detector.doTask();
         }
@@ -62,9 +66,17 @@ public class DetectTimersInStepTaskUnitTest {
 
     @Test
     public void DetectTimersInStep_doTask_detectMinuteTimer() {
+        /**
+         * The detection of a timer containing a minute is correct
+         */
+        // Arrange
         int stepIndex = 0; //index zero has minutes
         DetectTimersInStepTask detector = detectors.get(stepIndex); //index zero has minutes
+
+        // Act
         detector.doTask();
+
+        // Assert
         //assert detection
         assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
         //assert correct detection

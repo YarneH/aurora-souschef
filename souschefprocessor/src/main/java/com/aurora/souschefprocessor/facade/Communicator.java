@@ -17,22 +17,8 @@ public class Communicator {
 
     public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
         // TODO load in the classifier using this code, or let it be loaded in by an activity
-       //try { SONARCOMPLAINS
 
-        //    GZIPInputStream is = SONARCOMPLAINS
-
-        //           new GZIPInputStream(getResources().openRawResource(R.raw.detect_ingr_list_model))
-
-        //   CRFClassifier crf = CRFClassifier.getClassifier(is) SONARCOMPLAINS
-
-        //    DetectIngredientsInListTask detector = new DetectIngredientsInListTask(rip, crf)
-
-        //    detector.doTask() SONARCOMPLAINS
-
-        // } catch (IOException | ClassNotFoundException e) { SONARCOMPLAINS
-
-        //}
-       // mDelegator = new Delegator(ingredientsClassifier);
+       mDelegator = new Delegator(ingredientsClassifier, false);
     }
 
     /**

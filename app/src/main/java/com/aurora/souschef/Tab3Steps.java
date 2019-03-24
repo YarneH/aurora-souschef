@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.aurora.souschefprocessor.recipe.Recipe;
+
 /**
  * Class defining the functionality of the recipe steps tab.
  */
@@ -30,6 +32,10 @@ public class Tab3Steps extends Fragment {
             60,
             180,
             30,
+            3600,
+            60,
+            180,
+            30,
             3600
     };
 
@@ -37,11 +43,17 @@ public class Tab3Steps extends Fragment {
             120,
             200,
             45,
-            4000
+            4000,
+            60,
+            180,
+            30,
+            3600,
     };
 
     private StepsPagerAdapter mStepsPagerAdapter;
     private ViewPager mViewPager;
+    private static Recipe mRecipe = null;
+    private static String[] mDescriptionSteps = null;
 
     public Tab3Steps() {
         // Default constructor
@@ -50,6 +62,8 @@ public class Tab3Steps extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        prepareRecipeParts();
+
         View rootView = inflater.inflate(R.layout.tab_3_steps, container, false);
 
         // Create the adapter that will return a fragment for each of the three
@@ -59,12 +73,32 @@ public class Tab3Steps extends Fragment {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) rootView.findViewById(R.id.vp_steps);
         mViewPager.setAdapter(mStepsPagerAdapter);
+
         // Prevent ViewPager from resetting timers
         mViewPager.setOffscreenPageLimit(mStepsPagerAdapter.getCount());
 
         return rootView;
     }
 
+    /**
+     * Classic setter for the Recipe, used to communicate the recipe from the Main Activity
+     */
+    protected static void setRecipe(Recipe recipe) {
+        mRecipe = recipe;
+    }
+
+    /**
+     * Takes the recipe and transforms it into String-representations used for the TextViews
+     * TODO Upgrade this function (timers, step ingredient,...)
+     */
+    private static void prepareRecipeParts() {
+        int stepsCount = mRecipe.getRecipeSteps().size();
+        mDescriptionSteps = new String[stepsCount];
+
+        for (int i = 0; i < stepsCount; i++) {
+            mDescriptionSteps[i] = mRecipe.getRecipeSteps().get(i).getDescription();
+        }
+    }
 
     /**
      * A placeholder fragment containing the view of a step of the recipe
@@ -103,7 +137,7 @@ public class Tab3Steps extends Fragment {
             TextView titleTextView = (TextView) rootView.findViewById(R.id.section_label);
             TextView stepTextView = (TextView) rootView.findViewById(R.id.tv_detail);
             titleTextView.setText(getString(R.string.section_format, index + 1));
-            stepTextView.setText(DUMMY_STEPS[index]);
+            stepTextView.setText(mDescriptionSteps[index]);
 
             // Inflate and save the Timers
             // TODO: Add loop for more timers
@@ -148,7 +182,7 @@ public class Tab3Steps extends Fragment {
         @Override
         public int getCount() {
             // Return total pages.
-            return DUMMY_STEPS.length;
+            return mDescriptionSteps.length;
         }
     }
 }

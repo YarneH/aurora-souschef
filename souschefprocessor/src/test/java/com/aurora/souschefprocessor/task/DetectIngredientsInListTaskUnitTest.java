@@ -29,7 +29,7 @@ public class DetectIngredientsInListTaskUnitTest {
     @BeforeClass
     public static void initialize() throws IOException, ClassNotFoundException {
 
-        ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 pounds minced meat\n 1 clove garlic\n twenty basil leaves";
+        ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 pounds minced meat\n 1 clove garlic\n twenty basil leaves\n salt";
         originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setIngredientsString(ingredientList);
@@ -194,6 +194,4 @@ public class DetectIngredientsInListTaskUnitTest {
 
 
     }
-
-
 }

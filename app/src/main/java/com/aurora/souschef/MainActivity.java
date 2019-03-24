@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.aurora.souschefprocessor.facade.Communicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
+import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;
@@ -45,6 +46,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // The first thing we do is Souschef specific:
+        // generate pipeline for creating annotations in separate thread.
+        DetectTimersInStepTask.initializeAnnotationPipeline();
+
         /*
          * The {@link ViewPager} that will host the section contents.
          * This variable is located here to minimize scope.

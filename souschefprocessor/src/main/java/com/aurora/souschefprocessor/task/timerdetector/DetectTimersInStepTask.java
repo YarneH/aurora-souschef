@@ -46,6 +46,18 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private int mStepIndex;
     private RecipeStep recipeStep;
     private Map<String, Double> mFractionMultipliers = new HashMap<>();
+    private static AnnotationPipeline annotationPipeline;
+
+    public static void initializeAnnotationPipeline() {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                annotationPipeline = createTimerAnnotationPipeline();
+            }
+        };
+        Thread initialize = new Thread(r);
+        initialize.start();
+    }
 
 
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
@@ -143,10 +155,11 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      */
     private List<RecipeTimer> detectTimer(RecipeStep recipeStep) {
         List<RecipeTimer> list = new ArrayList<>();
+        while (annotationPipeline == null) {
 
-        AnnotationPipeline pipeline = createTimerAnnotationPipeline();
+        }
         Annotation recipeStepAnnotated = new Annotation((recipeStep.getDescription()));
-        pipeline.annotate(recipeStepAnnotated);
+        annotationPipeline.annotate(recipeStepAnnotated);
 
         List<CoreLabel> allTokens = recipeStepAnnotated.get(CoreAnnotations.TokensAnnotation.class);
 
@@ -253,7 +266,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      *
      * @return Annotation pipeline
      */
-    private AnnotationPipeline createTimerAnnotationPipeline() {
+    private static AnnotationPipeline createTimerAnnotationPipeline() {
         Properties props = new Properties();
 
         // Do not use binders, these are necessary for Hollidays but those are not needed for
@@ -261,11 +274,17 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
         props.setProperty("sutime.binders", "0");
 
+        Log.d("PIPELINE", "0");
         AnnotationPipeline pipeline = new AnnotationPipeline();
+        Log.d("PIPELINE", "1");
         pipeline.addAnnotator(new TokenizerAnnotator(false));
+        Log.d("PIPELINE", "2");
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
+        Log.d("PIPELINE", "3");
         pipeline.addAnnotator(new POSTaggerAnnotator(false));
+        Log.d("PIPELINE", "4");
         pipeline.addAnnotator(new TimeAnnotator("sutime", props));
+        Log.d("PIPELINE", "5");
         return pipeline;
     }
 

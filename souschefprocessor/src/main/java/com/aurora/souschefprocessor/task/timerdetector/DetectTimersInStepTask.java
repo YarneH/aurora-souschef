@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -41,25 +42,20 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private static final Integer MAX_FRACTION_DISTANCE = 15;
     private static final Integer MIN_TO_SECONDS = 60;
     private static final Integer HOUR_TO_SECONDS = 60 * 60;
+    private static final String PIPELINE = "PIPELINE";
     // Position of number in timex3 format (e.g. PT1H)
     private static final Integer TIMEX_NUM_POSITION = 2;
-    private int mStepIndex;
+    public volatile AtomicInteger progress = new AtomicInteger(0);
+    private static AnnotationPipeline sAnnotationPipeline;
+    private static Map<String, Double> sFractionMultipliers = new HashMap<>();
+    private static Object sLock = new Object();
     private RecipeStep recipeStep;
-    private Map<String, Double> mFractionMultipliers = new HashMap<>();
-    private static AnnotationPipeline annotationPipeline;
-    public volatile static int progress = 0;
 
-    public static void initializeAnnotationPipeline() {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                annotationPipeline = createTimerAnnotationPipeline();
-            }
-        };
-        Thread initialize = new Thread(r);
-        initialize.start();
+    // populate the map
+    static{
+        sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
+        sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
     }
-
 
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
@@ -71,8 +67,16 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
         }
         this.recipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
-        this.mFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
-        this.mFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
+    }
+
+    public static void initializeAnnotationPipeline() {
+        Thread initialize = new Thread(()->{
+            sAnnotationPipeline = createTimerAnnotationPipeline();
+            synchronized (sLock) {
+                sLock.notifyAll();
+            }
+        });
+        initialize.start();
     }
 
     /**
@@ -105,7 +109,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      */
     private static String addSpaces(String recipeStepDescription) {
         // if the description is empyt this is not a step
-        if(recipeStepDescription.length() == 0){
+        if (recipeStepDescription.length() == 0) {
             return "";
         }
         StringBuilder bld = new StringBuilder();
@@ -135,17 +139,54 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
     }
 
-    /**
-     * Detects the RecipeTimer in all the mRecipeSteps. It first adds spaces to the description so
-     * that tokens can be recognized (e.g. "4-5 minutes" should be "4 - 5 minutes"). Afterwards the
-     * timers of this step are set to the detected timers.
-     */
-    public void doTask() {
+    private static void addDurationToList(SUTime.Temporal temporal, List<RecipeTimer> list, Position timerPosition) {
+        SUTime.DurationRange durationRange = (SUTime.DurationRange) temporal.getDuration();
 
-        // trim and add spaces to the description
-        recipeStep.setDescription(addSpaces(recipeStep.getDescription().trim()));
-        List<RecipeTimer> recipeTimers = detectTimer(recipeStep);
-        recipeStep.setRecipeTimers(recipeTimers);
+        //formattedstring is the only way to access private min and max fields in DurationRange object
+        String formattedString = durationRange.toString();
+        String[] minAndMax = formattedString.split("/");
+        try {
+
+            int lowerBound = getSecondsFromFormattedString(minAndMax[0]);
+            int upperBound = getSecondsFromFormattedString(minAndMax[1]);
+            list.add(new RecipeTimer(lowerBound, upperBound, timerPosition));
+
+        } catch (IllegalArgumentException iae) {
+            //TODO do something meaningful
+            Log.e(TAG, "detectTimer: ", iae);
+        }
+    }
+
+    /**
+     * Creates custom annotation pipeline for timers
+     *
+     * @return Annotation pipeline
+     */
+    private static AnnotationPipeline createTimerAnnotationPipeline() {
+        Properties props = new Properties();
+
+        // Do not use binders, these are necessary for Hollidays but those are not needed for
+        // recipesteps
+        // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
+        props.setProperty("sutime.binders", "0");
+        Log.d(PIPELINE, "0");
+        progress = 1;
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+        Log.d(PIPELINE, "1");
+        progress++;
+        pipeline.addAnnotator(new TokenizerAnnotator(false));
+        Log.d(PIPELINE, "2");
+        progress++;
+        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
+        Log.d(PIPELINE, "3");
+        progress++;
+        pipeline.addAnnotator(new POSTaggerAnnotator(false));
+        Log.d(PIPELINE, "4");
+        progress++;
+        pipeline.addAnnotator(new TimeAnnotator("sutime", props));
+        Log.d(PIPELINE, "5");
+        progress++;
+        return pipeline;
     }
 
     /**
@@ -154,13 +195,21 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * @param recipeStep The recipeStep in which to detect a timer
      * @return A timer detected in the recipeStep
      */
-    private List<RecipeTimer> detectTimer(RecipeStep recipeStep) {
+    private static List<RecipeTimer> detectTimer(RecipeStep recipeStep) {
         List<RecipeTimer> list = new ArrayList<>();
-        while (annotationPipeline == null) {
+        while (sAnnotationPipeline == null) {
+            try {
 
+                synchronized (sLock) {
+                    sLock.wait();
+                }
+            } catch (InterruptedException e) {
+                Log.d("Interrupted", "detecttimer", e);
+                Thread.currentThread().interrupt();
+            }
         }
         Annotation recipeStepAnnotated = new Annotation((recipeStep.getDescription()));
-        annotationPipeline.annotate(recipeStepAnnotated);
+        sAnnotationPipeline.annotate(recipeStepAnnotated);
 
         List<CoreLabel> allTokens = recipeStepAnnotated.get(CoreAnnotations.TokensAnnotation.class);
 
@@ -204,15 +253,16 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
     /**
      * Constructs a RecipeTimer from a temporal that does not represent a duration to the list
-     * @param temporal The temporal of which a timer needs to be constructed
-     * @param list The list to add the timer to
-     * @param timerPosition The position of the temporal
-     * @param cm The Coremap which his the original representation of the temporal
+     *
+     * @param temporal          The temporal of which a timer needs to be constructed
+     * @param list              The list to add the timer to
+     * @param timerPosition     The position of the temporal
+     * @param cm                The Coremap which his the original representation of the temporal
      * @param fractionPositions The map of fractionpositions in the entire sentence
      */
-    private void addNonDurationToList(SUTime.Temporal temporal, List<RecipeTimer> list,
+    private static void addNonDurationToList(SUTime.Temporal temporal, List<RecipeTimer> list,
                                              Position timerPosition, CoreMap cm,
-                                             Map<Integer, String> fractionPositions ){
+                                             Map<Integer, String> fractionPositions) {
         // the detected seconds
         int recipeStepSeconds;
         if ("overnight".equals(cm.toString())) {
@@ -244,63 +294,13 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         }
     }
 
-    private static void addDurationToList(SUTime.Temporal temporal, List<RecipeTimer> list, Position timerPosition){
-        SUTime.DurationRange durationRange = (SUTime.DurationRange) temporal.getDuration();
-
-        //formattedstring is the only way to access private min and max fields in DurationRange object
-        String formattedString = durationRange.toString();
-        String[] minAndMax = formattedString.split("/");
-        try {
-
-            int lowerBound = getSecondsFromFormattedString(minAndMax[0]);
-            int upperBound = getSecondsFromFormattedString(minAndMax[1]);
-            list.add(new RecipeTimer(lowerBound, upperBound, timerPosition));
-
-        } catch (IllegalArgumentException iae) {
-            //TODO do something meaningful
-            Log.e(TAG, "detectTimer: ", iae);
-        }
-    }
-
-    /**
-     * Creates custom annotation pipeline for timers
-     *
-     * @return Annotation pipeline
-     */
-    private static AnnotationPipeline createTimerAnnotationPipeline() {
-        Properties props = new Properties();
-
-        // Do not use binders, these are necessary for Hollidays but those are not needed for
-        // recipesteps
-        // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
-        props.setProperty("sutime.binders", "0");
-        Log.d("PIPELINE", "0");
-        progress = 1;
-        AnnotationPipeline pipeline = new AnnotationPipeline();
-        Log.d("PIPELINE", "1");
-        progress = 2;
-        pipeline.addAnnotator(new TokenizerAnnotator(false));
-        Log.d("PIPELINE", "2");
-        progress = 3;
-        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-        Log.d("PIPELINE", "3");
-        progress = 4;
-        pipeline.addAnnotator(new POSTaggerAnnotator(false));
-        Log.d("PIPELINE", "4");
-        progress = 5;
-        pipeline.addAnnotator(new TimeAnnotator("sutime", props));
-        Log.d("PIPELINE", "5");
-        progress = 6;
-        return pipeline;
-    }
-
     /**
      * Retrieves positions of fractions in the recipe step
      *
      * @param allTokens tokens in a recipe step
      * @return Mapping of fractions to their timerPosition in the recipe step
      */
-    private Map<Integer, String> getFractionPositions(List<CoreLabel> allTokens) {
+    private static Map<Integer, String> getFractionPositions(List<CoreLabel> allTokens) {
         Map<Integer, String> fractionPositions = new HashMap<>();
         for (CoreLabel token : allTokens) {
             if (token.originalText().equals(FRACTION_HALF)) {
@@ -320,7 +320,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * @param recipeTimers list containing the recipeTimers in this recipe step
      * @param allTokens    tokens in a recipe step
      */
-    private void detectSymbolPattern(List<RecipeTimer> recipeTimers, List<CoreLabel> allTokens) {
+    private static void detectSymbolPattern(List<RecipeTimer> recipeTimers, List<CoreLabel> allTokens) {
         for (CoreLabel token : allTokens) {
             if (token.originalText().matches("(\\d+)[h|m|s|H|M|S]")) {
                 try {
@@ -344,24 +344,37 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * @param recipeStepSeconds the seconds detected in this timex token
      * @return The updated value of recipeStepSeconds
      */
-    private int changeToFractions(Map<Integer, String> fractionPositions,
-                                  Position originalPosition, int recipeStepSeconds) {
+    private static int changeToFractions(Map<Integer, String> fractionPositions,
+                                         Position originalPosition, int recipeStepSeconds) {
         if (!fractionPositions.isEmpty()) {
             for (Map.Entry<Integer, String> fractionPosition : fractionPositions.entrySet()) {
                 int relPosition = fractionPosition.getKey() - originalPosition.getBeginIndex();
                 // Fraction in front of timex tag is assumed to be a decreasing multiplier (e.g. half an hour)
                 // Fraction behind timex tag is assumed to be an increasing multiplier (e.g. for an hour and a half)
                 if (-MAX_FRACTION_DISTANCE < relPosition && relPosition < 0) {
-                    recipeStepSeconds *= mFractionMultipliers.get(fractionPosition.getValue());
+                    recipeStepSeconds *= sFractionMultipliers.get(fractionPosition.getValue());
                     // change the position so that the multiplier is included in the position
                     originalPosition.setBeginIndex(fractionPosition.getKey());
                 } else if (0 < relPosition && relPosition < MAX_FRACTION_DISTANCE) {
-                    recipeStepSeconds *= (1 + mFractionMultipliers.get(fractionPosition.getValue()));
+                    recipeStepSeconds *= (1 + sFractionMultipliers.get(fractionPosition.getValue()));
                     // change the position so that the multiplier is included in the position
                     originalPosition.setEndIndex(fractionPosition.getKey() + fractionPosition.getValue().length());
                 }
             }
         }
         return recipeStepSeconds;
+    }
+
+    /**
+     * Detects the RecipeTimer in all the mRecipeSteps. It first adds spaces to the description so
+     * that tokens can be recognized (e.g. "4-5 minutes" should be "4 - 5 minutes"). Afterwards the
+     * timers of this step are set to the detected timers.
+     */
+    public void doTask() {
+
+        // trim and add spaces to the description
+        recipeStep.setDescription(addSpaces(recipeStep.getDescription().trim()));
+        List<RecipeTimer> recipeTimers = detectTimer(recipeStep);
+        recipeStep.setRecipeTimers(recipeTimers);
     }
 }

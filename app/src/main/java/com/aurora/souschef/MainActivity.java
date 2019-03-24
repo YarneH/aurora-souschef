@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         (new SouschefInit()).execute();
     }
 
-    class SouschefInit extends AsyncTask<Void, Integer, Recipe> {
+    class SouschefInit extends AsyncTask<Void, String, Recipe> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -91,21 +91,16 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Recipe doInBackground(Void... voids) {
+            // Progressupdates are in demostate
             try (GZIPInputStream is = new GZIPInputStream(getResources().
                     openRawResource(R.raw.detect_ingr_list_model))) {
-
-                Log.d("LUCA", "loaded in zip");
-                //mTextView.setText("loaded in zip");
+                publishProgress("Extracting model...");
                 CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
-                Log.d("LUCA", "got classifier");
-                //mTextView.setText("got classifier");
                 mCommunicator = new Communicator(crf);
-                //Log.d("LUCA", "made communicator");
-                //mTextView.setText("made communicator");
                 String text = getText();
+                publishProgress("Processing document (for you!)...");
                 mCommunicator.process(text);
-                //Log.d("LUCA", "processed");
-                Log.d("LOADING", "AsyncTask is done.");
+                publishProgress("Done!");
                 return mCommunicator.getRecipe();
                 //mTextView.setText(recipe.toString());
             } catch (IOException | ClassNotFoundException e) {
@@ -115,15 +110,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         /**
-         * Currently not set. Updates the progressbar.
+         * Updates status field
          * @param values
          */
         @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
+        protected void onProgressUpdate(String... values) {
             ProgressBar pb = findViewById(R.id.pb_loading_screen);
-            pb.setProgress(values[0]);
-
+            pb.incrementProgressBy(33);
+            TextView tv = findViewById(R.id.tv_loading_text);
+            tv.setText(values[0]);
         }
 
         @Override

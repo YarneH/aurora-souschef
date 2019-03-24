@@ -41,13 +41,20 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private static final Integer MAX_FRACTION_DISTANCE = 15;
     private static final Integer MIN_TO_SECONDS = 60;
     private static final Integer HOUR_TO_SECONDS = 60 * 60;
+    private static final String PIPELINE = "PIPELINE";
     // Position of number in timex3 format (e.g. PT1H)
     private static final Integer TIMEX_NUM_POSITION = 2;
-    public volatile static int progress = 0;
+    public static volatile int progress = 0;
     private static AnnotationPipeline sAnnotationPipeline;
-    private static Map<String, Double> mFractionMultipliers = new HashMap<>();
+    private static Map<String, Double> sFractionMultipliers = new HashMap<>();
     private static Object sLock = new Object();
     private RecipeStep recipeStep;
+
+    // populate the map
+    static{
+        sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
+        sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
+    }
 
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
@@ -59,22 +66,15 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
         }
         this.recipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
-        this.mFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
-        this.mFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
     }
 
     public static void initializeAnnotationPipeline() {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                sAnnotationPipeline = createTimerAnnotationPipeline();
-
-                synchronized (sLock) {
-                    sLock.notifyAll();
-                }
+        Thread initialize = new Thread(()->{
+            sAnnotationPipeline = createTimerAnnotationPipeline();
+            synchronized (sLock) {
+                sLock.notifyAll();
             }
-        };
-        Thread initialize = new Thread(r);
+        });
         initialize.start();
     }
 
@@ -168,23 +168,23 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         // recipesteps
         // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
         props.setProperty("sutime.binders", "0");
-        Log.d("PIPELINE", "0");
+        Log.d(PIPELINE, "0");
         progress = 1;
         AnnotationPipeline pipeline = new AnnotationPipeline();
-        Log.d("PIPELINE", "1");
-        progress = 2;
+        Log.d(PIPELINE, "1");
+        progress++;
         pipeline.addAnnotator(new TokenizerAnnotator(false));
-        Log.d("PIPELINE", "2");
-        progress = 3;
+        Log.d(PIPELINE, "2");
+        progress++;
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-        Log.d("PIPELINE", "3");
-        progress = 4;
+        Log.d(PIPELINE, "3");
+        progress++;
         pipeline.addAnnotator(new POSTaggerAnnotator(false));
-        Log.d("PIPELINE", "4");
-        progress = 5;
+        Log.d(PIPELINE, "4");
+        progress++;
         pipeline.addAnnotator(new TimeAnnotator("sutime", props));
-        Log.d("PIPELINE", "5");
-        progress = 6;
+        Log.d(PIPELINE, "5");
+        progress++;
         return pipeline;
     }
 
@@ -204,6 +204,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                 }
             } catch (InterruptedException e) {
                 Log.d("Interrupted", "detecttimer", e);
+                Thread.currentThread().interrupt();
             }
         }
         Annotation recipeStepAnnotated = new Annotation((recipeStep.getDescription()));
@@ -350,11 +351,11 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                 // Fraction in front of timex tag is assumed to be a decreasing multiplier (e.g. half an hour)
                 // Fraction behind timex tag is assumed to be an increasing multiplier (e.g. for an hour and a half)
                 if (-MAX_FRACTION_DISTANCE < relPosition && relPosition < 0) {
-                    recipeStepSeconds *= mFractionMultipliers.get(fractionPosition.getValue());
+                    recipeStepSeconds *= sFractionMultipliers.get(fractionPosition.getValue());
                     // change the position so that the multiplier is included in the position
                     originalPosition.setBeginIndex(fractionPosition.getKey());
                 } else if (0 < relPosition && relPosition < MAX_FRACTION_DISTANCE) {
-                    recipeStepSeconds *= (1 + mFractionMultipliers.get(fractionPosition.getValue()));
+                    recipeStepSeconds *= (1 + sFractionMultipliers.get(fractionPosition.getValue()));
                     // change the position so that the multiplier is included in the position
                     originalPosition.setEndIndex(fractionPosition.getKey() + fractionPosition.getValue().length());
                 }

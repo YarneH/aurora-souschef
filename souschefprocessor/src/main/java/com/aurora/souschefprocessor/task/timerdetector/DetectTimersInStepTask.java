@@ -54,6 +54,9 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     static {
         sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
         sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
+        if(sAnnotationPipeline == null){
+            createTimerAnnotationPipeline();
+        }
     }
 
     private RecipeStep recipeStep;
@@ -76,7 +79,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
     /**
      * Initializes the AnnotationPipeline should be called before using the first detector
-     * (this might change in later versions)
+     * this is done by calling it in the static{} block of this class
      */
     public static void initializeAnnotationPipeline() {
         Thread initialize = new Thread(() -> {

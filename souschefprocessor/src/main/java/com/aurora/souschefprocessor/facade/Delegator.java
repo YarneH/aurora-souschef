@@ -1,7 +1,5 @@
 package com.aurora.souschefprocessor.facade;
 
-import android.util.Log;
-
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
@@ -29,12 +27,11 @@ import edu.stanford.nlp.ling.CoreLabel;
  */
 public class Delegator {
 
+    private static final double HALF = 0.5;
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
     private ThreadPoolExecutor mThreadPoolExecutor;
     private CRFClassifier<CoreLabel> mIngredientClassifier;
     private boolean mParallelize;
-
-    private static final double HALF = 0.5 ;
 
 
     public Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
@@ -54,7 +51,7 @@ public class Delegator {
          * the processing is faster if this only half of the available cores to limit context
          * switching
          */
-        int numberOfCores =(int)
+        int numberOfCores = (int)
                 (Runtime.getRuntime().availableProcessors() * HALF);
         // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;

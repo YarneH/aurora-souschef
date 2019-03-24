@@ -165,7 +165,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      */
     public void doTask() {
         List<ListIngredient> list = detectIngredients(this.mRecipeInProgress.getIngredientsString());
-        if(list == null|| list.isEmpty()){
+        if (list == null || list.isEmpty()) {
             throw new RecipeDetectionException("No ingredients where detected, this is probably not a recipe");
         }
         this.mRecipeInProgress.setIngredients(list);
@@ -273,7 +273,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             // for now first element labeled as quantity and the succeeding elements
             // (endposition + 1 = beginposition) or endposition = beginposition
             List<CoreLabel> succeedingQuantities = getSucceedingElements(map.get(QUANTITY), QUANTITY);
-            quantity = calculateQuantityAndAddPosition(succeedingQuantities, positions);
+            quantity = calculateQuantity(succeedingQuantities);
 
             // if quantity is -1 then no quantity could be caluclated
             if (quantity != -1.0) {
@@ -342,8 +342,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * @return a double representing the calculated value, if no value could be calculated -1.0 is
      * returned
      */
-    private double calculateQuantityAndAddPosition(List<CoreLabel> list,
-                                                   Map<Ingredient.PositionKey, Position> positions) {
+    private double calculateQuantity(List<CoreLabel> list) {
         double result = 0.0;
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : list) {

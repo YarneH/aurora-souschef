@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } catch (InterruptedException e) {
                 Log.e("THREAD", "Caught interruptedException in MainActivity");
+                Thread.currentThread().interrupt();
 
             }
             return null;

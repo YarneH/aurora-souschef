@@ -49,17 +49,14 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private static AnnotationPipeline sAnnotationPipeline;
     private static Map<String, Double> sFractionMultipliers = new HashMap<>();
     private static Object sLock = new Object();
-    private RecipeStep recipeStep;
-
-    public static AtomicInteger getProgress() {
-        return progress;
-    }
 
     // populate the map
     static {
         sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
         sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
     }
+
+    private RecipeStep recipeStep;
 
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
@@ -71,6 +68,10 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
         }
         this.recipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
+    }
+
+    public static AtomicInteger getProgress() {
+        return progress;
     }
 
     public static void initializeAnnotationPipeline() {

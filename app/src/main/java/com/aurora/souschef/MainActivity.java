@@ -54,47 +54,8 @@ public class MainActivity extends AppCompatActivity {
 
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
 
-    public MainActivity(){
+    public MainActivity() {
         // Default constructor
-    }
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        // The first thing we do is Souschef specific:
-        // generate pipeline for creating annotations in separate thread.
-        Log.d("STIJN", "Start");
-        DetectTimersInStepTask.initializeAnnotationPipeline();
-
-        /*
-         * The {@link ViewPager} that will host the section contents.
-         * This variable is located here to minimize scope.
-         * In case it is needed outside onCreate,
-         * it is no problem to move it outside (private)
-         *
-         * Same for mSectionsPagerAdapter
-         */
-        ViewPager mViewPager;
-
-        super.onCreate(savedInstanceState);
-        // TODO: Change back to the correct view
-        setContentView(R.layout.activity_main);
-
-
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-        mViewPager.setOffscreenPageLimit(mSectionsPagerAdapter.getCount());
-        mViewPager.setVisibility(View.GONE);
-
-        // Set up the TabLayout to follow the ViewPager.
-        TabLayout tabLayout = findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-        tabLayout.setVisibility(View.GONE);
-
-        (new SouschefInit()).execute();
     }
 
     /**
@@ -148,9 +109,49 @@ public class MainActivity extends AppCompatActivity {
                 "        Divide pasta among plates. Top with fried capers.\n";
     }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        // The first thing we do is Souschef specific:
+        // generate pipeline for creating annotations in separate thread.
+        Log.d("STIJN", "Start");
+        DetectTimersInStepTask.initializeAnnotationPipeline();
+
+        /*
+         * The {@link ViewPager} that will host the section contents.
+         * This variable is located here to minimize scope.
+         * In case it is needed outside onCreate,
+         * it is no problem to move it outside (private)
+         *
+         * Same for mSectionsPagerAdapter
+         */
+        ViewPager mViewPager;
+
+        super.onCreate(savedInstanceState);
+        // TODO: Change back to the correct view
+        setContentView(R.layout.activity_main);
+
+
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = findViewById(R.id.container);
+        mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setOffscreenPageLimit(mSectionsPagerAdapter.getCount());
+        mViewPager.setVisibility(View.GONE);
+
+        // Set up the TabLayout to follow the ViewPager.
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(mViewPager);
+        tabLayout.setVisibility(View.GONE);
+
+        (new SouschefInit()).execute();
+    }
+
     class ProgressUpdate extends AsyncTask<Void, Integer, Void> {
-        private ProgressBar pb;
-        private TextView tv;
+        private ProgressBar pb = null;
+        private TextView tv = null;
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -174,14 +175,15 @@ public class MainActivity extends AppCompatActivity {
 
             }
             return null;
-        }        @Override
+        }
+
+        @Override
         protected void onPreExecute() {
             super.onPreExecute();
             pb = findViewById(R.id.pb_loading_screen);
             tv = findViewById(R.id.tv_loading_text);
 
         }
-
 
 
         @Override

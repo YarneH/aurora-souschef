@@ -1,8 +1,6 @@
 package com.aurora.souschefprocessor.task;
 
-import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
-import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 
 import org.junit.BeforeClass;
@@ -11,7 +9,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
@@ -31,7 +28,6 @@ public class DetectIngredientsInListTaskLongTest {
     private static boolean testIngredientsInitialized = false;
     private static ArrayList<String> testIngredientsList = new ArrayList<>();
 
-    private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
 
     @BeforeClass
     public static void initialize() throws IOException, ClassNotFoundException {
@@ -39,6 +35,13 @@ public class DetectIngredientsInListTaskLongTest {
         crfClassifier = CRFClassifier.getClassifier(modelName);
     }
 
+    /**
+     * A function to check if the strings only differ in one character
+     *
+     * @param a
+     * @param b
+     * @return
+     */
     private boolean oneCharOff(String a, String b) {
         if (Math.abs(a.length() - b.length()) > 1) {
             return false;
@@ -97,6 +100,9 @@ public class DetectIngredientsInListTaskLongTest {
     }
 
 
+    /**
+     * Set the testingredients to this database
+     */
     private void initializeTestIngredients() {
         testIngredients = "1 quart fresh dark cherries\t1\tquart \n" +
                 "2 Tender Pie Crust dough disks\t2\t \n" +
@@ -220,6 +226,10 @@ public class DetectIngredientsInListTaskLongTest {
 
     @Test
     public void DetectIngredientsInListTask_doTask_AccuracyForQuantityThreshold() {
+        /**
+         * The accuracy of the quantities detected of ingredients is at least 95%
+         */
+        // Arrange
         if (!testIngredientsInitialized) {
             initializeTestIngredients();
 
@@ -228,6 +238,8 @@ public class DetectIngredientsInListTaskLongTest {
 
         int correct = 0;
         List<ListIngredient> list = testRecipe.getIngredients();
+
+        // Act
         for (int i = 0; i < 100; i++) {
             // check if they are equal up to 3 decimal places
             if ((int) (1000 * list.get(i).getValue()) == (int) (1000 * testIngredientsQuantities[i])) {
@@ -237,12 +249,17 @@ public class DetectIngredientsInListTaskLongTest {
                 System.out.println(testIngredientsList.get(i));
             }
         }
-
+        // Assert
         assert (correct >= 95);
     }
 
     @Test
     public void DetectIngredientsInListTask_doTask_AccuracyForUnitThreshold() {
+        /**
+         * The accuracy for the unit should be higher than 80% and at most 5% can differ in one
+         * character
+         */
+        // Arrange
         if (!testIngredientsInitialized) {
             initializeTestIngredients();
 
@@ -252,6 +269,7 @@ public class DetectIngredientsInListTaskLongTest {
         int correct = 0;
         int correctButOneCharOff = 0;
         List<ListIngredient> list = testRecipe.getIngredients();
+        // Act
         for (int i = 0; i < 100; i++) {
             // check if they are equal up to 3 decimal places
             if ((testIngredientsUnits[i]).equals(list.get(i).getUnit())) {
@@ -265,6 +283,7 @@ public class DetectIngredientsInListTaskLongTest {
             }
         }
 
+        // Assert
         assert (correct + correctButOneCharOff >= 80);
         assert (correctButOneCharOff < 5);
         System.out.println(correct + " units were correctly set and " + correctButOneCharOff + " were correct with one char off");

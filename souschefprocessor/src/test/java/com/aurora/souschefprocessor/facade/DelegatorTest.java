@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.facade;
 
 import com.aurora.souschefprocessor.recipe.Recipe;
+import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -24,6 +25,7 @@ public class DelegatorTest {
 
     @BeforeClass
     public static void initialize() {
+        DetectTimersInStepTask.initializeAnnotationPipeline();
         // load in the recipes
         List<String> recipes = initializeRecipes();
         // split into valid and invalid
@@ -87,6 +89,7 @@ public class DelegatorTest {
         // initialize on false
         boolean thrown = false;
 
+
         // Act
         try {
 
@@ -96,8 +99,11 @@ public class DelegatorTest {
             }
         } catch (Exception e) {
             // set thrown to true, this should not happen
+
             thrown = true;
+            System.out.println(e);
         }
+
         // Assert
         // assert that no error where thrown
         assert (!thrown);
@@ -173,9 +179,11 @@ public class DelegatorTest {
         }
         average_para = average_para / validRecipes.size();
 
+
         // Assert
         System.out.println(average_para + "  PARALLEL TIME");
         assert (average_para < 6000);
+
 
     }
 

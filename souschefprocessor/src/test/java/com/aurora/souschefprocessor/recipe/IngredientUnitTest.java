@@ -197,6 +197,7 @@ public class IngredientUnitTest {
         assert (case2Thrown);
     }
 
+
     @Test
     public void Ingredient_Equals_BehavesExpectedely() {
         /**

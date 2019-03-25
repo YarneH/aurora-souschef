@@ -122,7 +122,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
      */
     public void doTask() {
         List<ListIngredient> list = detectIngredients(this.mRecipeInProgress.getIngredientsString());
-        if(list == null|| list.isEmpty()){
+        if (list == null || list.isEmpty()) {
             throw new RecipeDetectionException("No ingredients where detected, this is probably not a recipe");
         }
         this.mRecipeInProgress.setIngredients(list);
@@ -232,16 +232,24 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             List<CoreLabel> succeedingQuantities = getSucceedingElements(map.get(QUANTITY), QUANTITY);
             quantity = calculateQuantity(succeedingQuantities);
 
-            // Calculate the position and add it to the map
-            // beginPosition of the first element and endPosition of the last element
-            int beginPosition = succeedingQuantities.get(0).beginPosition();
-            int endPosition = succeedingQuantities.get(succeedingQuantities.size() - 1).endPosition();
-            positions.put(Ingredient.PositionKey.QUANTITY, new Position(beginPosition, endPosition));
+            // if quantity is -1 then no quantity could be caluclated
+            if (quantity != -1.0) {
+                // Calculate the position and add it to the map
+                // beginPosition of the first element and endPosition of the last element
+                int beginPosition = succeedingQuantities.get(0).beginPosition();
+                int endPosition = succeedingQuantities.get(succeedingQuantities.size() - 1).endPosition();
+                positions.put(Ingredient.PositionKey.QUANTITY, new Position(beginPosition, endPosition));
+            }
 
 
-        } else {
+        }
+        if (positions.get(Ingredient.PositionKey.QUANTITY) == null) {
             // if no quantity detected make the position the whole string
+            // if no quantity detected then the position is still null so make the position the
+            // whole string to signal that no quantity is detected
+            // also set the quantity to 1 = "one"
             positions.put(Ingredient.PositionKey.QUANTITY, new Position(0, line.length()));
+            quantity = 1.0;
         }
 
         return new ListIngredient(name, unit, quantity, line, positions);

@@ -21,6 +21,7 @@ public class DetectTimersInStepTaskUnitTest {
 
     @BeforeClass
     public static void initialize() {
+        DetectTimersInStepTask.initializeAnnotationPipeline();
         recipeSteps = new ArrayList<>();
         recipeSteps.add(new RecipeStep("Put 500 gram sauce in the microwave for 3 minutes")); //0 minutes
         recipeSteps.add(new RecipeStep("Heat the oil in a saucepan and gently fry the onion until softened, about 4-5 minutes.")); //1 upperbound and lowerbound with dash //"Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //1 (upperbound and lowerbound different)

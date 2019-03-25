@@ -28,6 +28,9 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     private static ArrayList<RecipeStep> recipeSteps;
     private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
 
+    private static final String DEFAULT_UNIT = "";
+    private static final Double DEFAULT_QUANTITY = 1.0;
+
     @BeforeClass
     public static void initialize() {
         // Initialize recipe in progress
@@ -46,9 +49,9 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         ListIngredient spaghettiIngredient = new ListIngredient("spaghetti", "g", 500, "irrelevant", irrelevantPositions);
         ListIngredient sauceIngredient = new ListIngredient("sauce", "ounces", 500, "irrelevant", irrelevantPositions);
         ListIngredient meatIngredient = new ListIngredient("minced meat", "pounds", 1.5, "irrelevant", irrelevantPositions);
-        ListIngredient garlicIngredient = new ListIngredient("garlic", "clove", 1.0, "irrelevant", irrelevantPositions);
-        ListIngredient basilIngredient = new ListIngredient("basil leaves", "", 20.0, "irrelevant", irrelevantPositions);
-        ListIngredient saltIngredient = new ListIngredient("salt", "cup", 1.0, "irrelevant", irrelevantPositions);
+        ListIngredient garlicIngredient = new ListIngredient("garlic", "clove", DEFAULT_QUANTITY, "irrelevant", irrelevantPositions);
+        ListIngredient basilIngredient = new ListIngredient("basil leaves", DEFAULT_UNIT, 20.0, "irrelevant", irrelevantPositions);
+        ListIngredient saltIngredient = new ListIngredient("salt", "cup", DEFAULT_QUANTITY, "irrelevant", irrelevantPositions);
         set.add(spaghettiIngredient);
         set.add(sauceIngredient);
         set.add(meatIngredient);
@@ -90,8 +93,8 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @Test
     public void DetectIngredientsInStep_doTask_ingredientDetectedWithAbsentFields() {
         detector2.doTask();
-        Ingredient stepIngredientNoQuantity = new Ingredient("salt", "cup", 1.0, irrelevantPositions);
-        Ingredient stepIngredientNoUnit = new Ingredient("basil leaves", "", 5.0, irrelevantPositions);
+        Ingredient stepIngredientNoQuantity = new Ingredient("salt", "cup", DEFAULT_QUANTITY, irrelevantPositions);
+        Ingredient stepIngredientNoUnit = new Ingredient("basil leaves", DEFAULT_UNIT, 5.0, irrelevantPositions);
 
         Ingredient ingredientNoQuantity = null;
         Ingredient ingredientNoUnit = null;
@@ -137,8 +140,9 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithoutUnit(){
         detector0.doTask();
-        Ingredient stepIngredient = new Ingredient("spaghetti", "", 1.0, irrelevantPositions);
+        Ingredient stepIngredient = new Ingredient("spaghetti", DEFAULT_UNIT, DEFAULT_QUANTITY, irrelevantPositions);
 
+        System.out.println(recipe.getRecipeSteps().get(0).getIngredients());
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(0).getIngredients();
         assert(stepIngredients.contains(stepIngredient));
     }
@@ -146,7 +150,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnit(){
         detector1.doTask();
-        Ingredient stepIngredient = new Ingredient("garlic", "clove", 1.0, irrelevantPositions);
+        Ingredient stepIngredient = new Ingredient("garlic", "clove", DEFAULT_QUANTITY, irrelevantPositions);
 
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(1).getIngredients();
         assert(stepIngredients.contains(stepIngredient));
@@ -155,7 +159,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndVerboseQuantity(){
         detector2.doTask();
-        Ingredient stepIngredient = new Ingredient("basil leaves", "", 5.0, irrelevantPositions);
+        Ingredient stepIngredient = new Ingredient("basil leaves", DEFAULT_UNIT, 5.0, irrelevantPositions);
 
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
         assert(stepIngredients.contains(stepIngredient));

@@ -46,6 +46,9 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private static final int FRACTIONS_LENGTH = 1;
     private static final int MAX_QUANTITY_LENGTH = 2;
 
+    private static final String DEFAULT_UNIT = "";
+    private static final Double DEFAULT_QUANTITY = 1.0;
+
     private Map<String, Double> mFractionMultipliers = new HashMap<>();
 
     private int mStepIndex;
@@ -180,7 +183,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
 
         // Default amount
-        Amount stepAmount = new Amount(1.0, "");
+        Amount stepAmount = new Amount(DEFAULT_QUANTITY, DEFAULT_UNIT);
 
         // Check if a quantity or unit can be found for this ingredient in the step
         int unitLength = listIngredient.getUnit().split(" ").length;
@@ -214,9 +217,9 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         Position defaultPos = new Position(0, stepSentenceLength);
         String name = "";
         map.put(Ingredient.PositionKey.NAME, defaultPos);
-        String unit = "";
+        String unit = DEFAULT_UNIT;
         map.put(Ingredient.PositionKey.UNIT, defaultPos);
-        Double quantity = 0.0;
+        Double quantity = DEFAULT_QUANTITY;
         map.put(Ingredient.PositionKey.QUANTITY, defaultPos);
         return new Ingredient(name, unit, quantity, map);
     }

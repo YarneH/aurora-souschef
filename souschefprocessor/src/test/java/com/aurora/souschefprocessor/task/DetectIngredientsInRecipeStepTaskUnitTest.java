@@ -48,7 +48,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         ListIngredient meatIngredient = new ListIngredient("minced meat", "pounds", 1.5, "irrelevant", irrelevantPositions);
         ListIngredient garlicIngredient = new ListIngredient("garlic", "clove", 1.0, "irrelevant", irrelevantPositions);
         ListIngredient basilIngredient = new ListIngredient("basil leaves", "", 20.0, "irrelevant", irrelevantPositions);
-        ListIngredient saltIngredient = new ListIngredient("salt", "cup", 0.0, "irrelevant", irrelevantPositions);
+        ListIngredient saltIngredient = new ListIngredient("salt", "cup", 1.0, "irrelevant", irrelevantPositions);
         set.add(spaghettiIngredient);
         set.add(sauceIngredient);
         set.add(meatIngredient);
@@ -90,7 +90,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @Test
     public void DetectIngredientsInStep_doTask_ingredientDetectedWithAbsentFields() {
         detector2.doTask();
-        Ingredient stepIngredientNoQuantity = new Ingredient("salt", "cup", 0.0, irrelevantPositions);
+        Ingredient stepIngredientNoQuantity = new Ingredient("salt", "cup", 1.0, irrelevantPositions);
         Ingredient stepIngredientNoUnit = new Ingredient("basil leaves", "", 5.0, irrelevantPositions);
 
         Ingredient ingredientNoQuantity = null;
@@ -137,7 +137,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithoutUnit(){
         detector0.doTask();
-        Ingredient stepIngredient = new Ingredient("spaghetti", "", 0.0, irrelevantPositions);
+        Ingredient stepIngredient = new Ingredient("spaghetti", "", 1.0, irrelevantPositions);
 
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(0).getIngredients();
         assert(stepIngredients.contains(stepIngredient));
@@ -146,7 +146,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnit(){
         detector1.doTask();
-        Ingredient stepIngredient = new Ingredient("garlic", "clove", 0.0, irrelevantPositions);
+        Ingredient stepIngredient = new Ingredient("garlic", "clove", 1.0, irrelevantPositions);
 
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(1).getIngredients();
         assert(stepIngredients.contains(stepIngredient));

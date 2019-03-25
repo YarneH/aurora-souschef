@@ -42,7 +42,6 @@ public abstract class DetectIngredientsTask extends AbstractProcessingTask {
      */
     protected double calculateQuantity(List<CoreLabel> list) {
         double result = 0.0;
-
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : list) {
             bld.append(cl.word() + " ");
@@ -71,6 +70,12 @@ public abstract class DetectIngredientsTask extends AbstractProcessingTask {
                 // String identified as quantity is not parsable...
                 result += calculateNonParsableQuantity(s);
             }
+        }
+
+        if (result == 0.0) {
+            // if no quantity value was detected return -1.0 to signal that detected quantity is
+            // not a quantity
+            return -1;
         }
         return result;
     }

@@ -180,7 +180,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
 
         // Default amount
-        Amount stepAmount = new Amount(0.0, "");
+        Amount stepAmount = new Amount(1.0, "");
 
         // Check if a quantity or unit can be found for this ingredient in the step
         int unitLength = listIngredient.getUnit().split(" ").length;

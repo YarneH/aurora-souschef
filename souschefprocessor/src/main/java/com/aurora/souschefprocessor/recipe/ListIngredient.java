@@ -36,5 +36,58 @@ public class ListIngredient extends Ingredient {
     }
 
 
+    /**
+     * This function returns the original line where the unit and quantity are omitted, this can
+     * be used to display the string when quantity and unit are changed.
+     *
+     * @return The original string but without the text describing the unit and quantity
+     */
+    public String getOriginalLineWithoutUnitAndQuantity() {
+        StringBuilder bld = new StringBuilder();
+        Position q = getQuantityPosition();
+        Position u = getUnitPosition();
+        boolean unit = unitDetected();
+        boolean quantity = quantityDetected();
+        if (unit && quantity) {
+            // Both unit and quantity were detected, omit them both from the string
+            if (q.getEndIndex() <= u.getBeginIndex()) {
+                // the quantity is placed in the string before the unit
+                bld.append(mOriginalLine.substring(0, q.getBeginIndex()));
+                bld.append(mOriginalLine.substring(q.getEndIndex(), u.getBeginIndex()));
+                bld.append(mOriginalLine.substring(u.getEndIndex()));
+            } else {
+                // the unit is placed in the string before the quantity
+                bld.append(mOriginalLine.substring(0, u.getBeginIndex()));
+                bld.append(mOriginalLine.substring(u.getEndIndex(), q.getBeginIndex()));
+                bld.append(mOriginalLine.substring(q.getEndIndex()));
+            }
+        } else if (quantity) {
+            // only quantity was detected
+            bld.append(mOriginalLine.substring(0, q.getBeginIndex()));
+            bld.append(mOriginalLine.substring(q.getEndIndex()));
+        } else if (unit) {
+            // only unit was detected
+            bld.append(mOriginalLine.substring(0, u.getBeginIndex()));
+            bld.append(mOriginalLine.substring(u.getEndIndex()));
+        } else {
+            // No unit and quantity detected just return original string
+            return mOriginalLine;
+        }
+        // replace " . " by "" and trim the string
+        return bld.toString().replace(" . ", "").trim();
+
+    }
+
+    private boolean unitDetected() {
+        boolean stringSet = !("").equals(mAmount.getUnit());
+        boolean positionSpansEntireLine = getUnitPosition().getBeginIndex() == 0 &&
+                getUnitPosition().getEndIndex() == mOriginalLine.length();
+        return stringSet && !positionSpansEntireLine;
+    }
+
+    private boolean quantityDetected() {
+        return !(getQuantityPosition().getBeginIndex() == 0 &&
+                getQuantityPosition().getEndIndex() == mOriginalLine.length());
+    }
 
 }

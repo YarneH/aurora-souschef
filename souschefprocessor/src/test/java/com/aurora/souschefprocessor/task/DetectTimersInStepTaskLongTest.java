@@ -5,6 +5,8 @@ import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -12,6 +14,11 @@ import java.util.List;
 
 public class DetectTimersInStepTaskLongTest {
     private static Position irrelevantPosition = new Position(0, 1);
+
+    @BeforeClass
+    public static void initialize(){
+        DetectTimersInStepTask.initializeAnnotationPipeline();
+    }
 
  private RecipeTimer getTimer(String label) {
         String[] amountAndUnit = label.split(" ");
@@ -546,6 +553,9 @@ public class DetectTimersInStepTaskLongTest {
 
     @Test
     public void DetectTimersInStep_doTask_AccuracyOnDataSet() {
+        /**
+         * Timers should be detected correctly at least 98% of the time
+         */
         String[] dataSet = initializeDataSet();
         String[] dataSetTags = initializeDataSetTags();
         int amount = dataSet.length;

@@ -26,7 +26,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
         String text = mRecipeInProgress.getStepsString();
 
         List<RecipeStep> recipeStepList = divideIntoSteps(text);
-        if(recipeStepList == null || recipeStepList.isEmpty()){
+        if (recipeStepList == null || recipeStepList.isEmpty()) {
             throw new RecipeDetectionException("No steps were detected, this is probably not a recipe");
         }
         this.mRecipeInProgress.setRecipeSteps(recipeStepList);

@@ -96,10 +96,8 @@ public class Ingredient {
     }
 
 
-
     public enum PositionKey {
         NAME, QUANTITY, UNIT
     }
-
 
 }

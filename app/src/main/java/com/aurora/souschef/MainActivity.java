@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // The first thing we do is Souschef specific:
         // generate pipeline for creating annotations in separate thread.
+
         DetectTimersInStepTask.initializeAnnotationPipeline();
 
         /*

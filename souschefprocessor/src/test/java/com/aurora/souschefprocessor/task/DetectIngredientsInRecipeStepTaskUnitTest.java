@@ -13,15 +13,12 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     private static DetectIngredientsInStepTask detector0;
     private static DetectIngredientsInStepTask detector1;
     private static RecipeInProgress recipe;
-    private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
     private static ArrayList<RecipeStep> recipeSteps;
     private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
 
@@ -59,9 +56,13 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     @Test
     public void IngredientDetectorStep_doTask_setHasBeenSetForAllSteps() {
+        /**
+         * After doing the task the ingredients field cannot be null
+         */
+        // Act
         detector0.doTask();
         detector1.doTask();
-
+        // Assert
         for (RecipeStep s : recipe.getRecipeSteps()) {
             assert (s.isIngredientDetected());
             assert (s.getIngredients() != null);
@@ -70,11 +71,16 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     @Test
     public void DetectIngredientsInStep_doTask_stepsHaveCorrectElements() {
-
+        /**
+         * After doing the task, the correct ingredients are detected
+         */
+        // Arrange
+        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "gram", 500, irrelevantPositions);
+        Ingredient sauceIngredient = new Ingredient("sauce", "gram", 500, irrelevantPositions);
+        // Act
         detector0.doTask();
         detector1.doTask();
-        Ingredient spaghettiIngredient = new Ingredient("spaghetti", "gram", 500,  irrelevantPositions);
-        Ingredient sauceIngredient = new Ingredient("sauce", "gram", 500,  irrelevantPositions);
+        // Assert
         boolean spaghetti = recipe.getRecipeSteps().get(0).getIngredients().contains(sauceIngredient);
         boolean sauce = recipe.getRecipeSteps().get(1).getIngredients().contains(spaghettiIngredient);
         assert (spaghetti);

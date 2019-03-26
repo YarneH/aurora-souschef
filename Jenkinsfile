@@ -114,7 +114,6 @@ pipeline {
                 anyOf {
                     branch 'master';
                     branch 'dev';
-                    branch 'javadoc-pipeline';
                 }
             }
             steps {

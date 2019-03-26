@@ -82,12 +82,12 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
     /**
      * Adds spaces in a line, for example 250g/3oz is turned into 250 g / 3 oz so the
-     * classifier sees these as different tokens
+     * classifier sees these as different tokens, and deletes the "." character, as in "1 lb. of pasta"
      *
      * @param line The line on which to add spaces
-     * @return The line with the spaces added
+     * @return The line with the spaces added and the points deleted
      */
-    private static String addSpaces(String line) {
+    private static String addSpacesAndDeletePoint(String line) {
         line = line.trim();
         StringBuilder bld = new StringBuilder();
         char[] chars = line.toCharArray();
@@ -100,15 +100,18 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             char current = chars[i];
             char next = chars[i + 1];
 
-            if (spaceNeededBetweenPreviousAndCurrent(previous, current)) {
+            if (current != '.') {
 
-                bld.append(" " + current);
-            } else if (spaceNeededBetweenCurrentAndNext(previous, current, next)) {
-                // if a slash or dash is followed by a number and is not preceded by a number
-                // add a space between current and next
-                bld.append(current + " ");
-            } else {
-                bld.append(current);
+                if (spaceNeededBetweenPreviousAndCurrent(previous, current)) {
+
+                    bld.append(" " + current);
+                } else if (spaceNeededBetweenCurrentAndNext(previous, current, next)) {
+                    // if a slash or dash is followed by a number and is not preceded by a number
+                    // add a space between current and next
+                    bld.append(current + " ");
+                } else {
+                    bld.append(current);
+                }
             }
         }
 
@@ -191,7 +194,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         for (String ingredient : list) {
             if (ingredient != null && ingredient.length() > 0) {
-                ListIngredient ing = (detectIngredient(addSpaces(ingredient)));
+                ListIngredient ing = (detectIngredient(addSpacesAndDeletePoint(ingredient)));
 
                 returnList.add(ing);
 

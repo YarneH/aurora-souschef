@@ -75,6 +75,7 @@ public class DetectIngredientsInListTaskLongTest {
                 }
 
             }
+            System.out.println("ONE CHAR OFF: "+ a + " "+ b);
             return true;
         }
         if (deletion) {
@@ -93,6 +94,7 @@ public class DetectIngredientsInListTaskLongTest {
                 }
 
             }
+            System.out.println("ONE CHAR OFF: "+ a + " "+ b);
             return true;
         }
         //should not get here

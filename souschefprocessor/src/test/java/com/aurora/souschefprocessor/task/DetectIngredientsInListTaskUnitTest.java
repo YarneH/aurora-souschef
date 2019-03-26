@@ -6,6 +6,7 @@ import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -29,7 +30,8 @@ public class DetectIngredientsInListTaskUnitTest {
     @BeforeClass
     public static void initialize() throws IOException, ClassNotFoundException {
 
-        ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 pounds minced meat\n 1 clove garlic\n twenty basil leaves\n salt";
+        ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 kg minced meat\n 1 clove garlic\n twenty basil leaves\n" +
+                "salt\n 1 tsp. sugar";
         originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setIngredientsString(ingredientList);
@@ -47,6 +49,8 @@ public class DetectIngredientsInListTaskUnitTest {
 
     @After
     public void wipeRecipe() {
+        ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 kg minced meat\n 1 clove garlic\n twenty basil leaves\n" +
+                "salt\n 1 tsp. sugar";
         recipe.setIngredients(null);
         recipe.setIngredientsString(ingredientList);
     }
@@ -70,9 +74,9 @@ public class DetectIngredientsInListTaskUnitTest {
          */
         // Act
         detector.doTask();
-        System.out.println(recipe.getIngredients());
         // Assert
-        assert (recipe.getIngredients().size() == 5);
+        System.out.println(recipe.getIngredients());
+        assert (recipe.getIngredients().size() == 7);
     }
 
     @Test
@@ -83,9 +87,12 @@ public class DetectIngredientsInListTaskUnitTest {
         // Arrange
         Ingredient spaghettiIngredient = new ListIngredient("spaghetti", "g", 500, "irrelevant", irrelevantPositions);
         Ingredient sauceIngredient = new ListIngredient("sauce", "ounces", 500, "irrelevant", irrelevantPositions);
-        Ingredient meatIngredient = new ListIngredient("minced meat", "pounds", 1.5, "irrelevant", irrelevantPositions);
+        Ingredient meatIngredient = new ListIngredient("minced meat", "kg", 1.5, "irrelevant", irrelevantPositions);
         Ingredient garlicIngredient = new ListIngredient("garlic", "clove", 1.0, "irrelevant", irrelevantPositions);
         Ingredient basilIngredient = new ListIngredient("basil leaves", "", 20.0, "irrelevant", irrelevantPositions);
+        Ingredient sugarIngredient = new ListIngredient("sugar", "tsp", 1.0, "irrelevant", irrelevantPositions);
+        Ingredient saltIngredient = new ListIngredient("salt", "", 1.0, "irrelevant", irrelevantPositions);
+
         // Act
         detector.doTask();
 
@@ -95,11 +102,15 @@ public class DetectIngredientsInListTaskUnitTest {
         boolean meat = recipe.getIngredients().contains(meatIngredient);
         boolean garlic = recipe.getIngredients().contains(garlicIngredient);
         boolean basil = recipe.getIngredients().contains(basilIngredient);
+        boolean sugar = recipe.getIngredients().contains(sugarIngredient);
+        boolean salt = recipe.getIngredients().contains(saltIngredient);
         assert (spaghetti);
         assert (sauce);
         assert (meat);
         assert (garlic);
         assert (basil);
+        assert (sugar);
+        assert(salt);
     }
 
     @Test
@@ -159,10 +170,10 @@ public class DetectIngredientsInListTaskUnitTest {
         assert (ingredient.getQuantityPosition().equals(quantityPos));
         assert (ingredient.getUnitPosition().equals(unitPos));
 
-        // third ingredient 1 1/2 pounds minced meat
+        // third ingredient 1 1/2 kg minced meat
         quantityPos = new Position(0, 5);
-        unitPos = new Position(6, 12);
-        namePos = new Position(13, 24);
+        unitPos = new Position(6, 8);
+        namePos = new Position(9, 20);
 
         ingredient = recipe.getIngredients().get(2);
 

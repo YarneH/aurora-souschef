@@ -6,8 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.text.method.ScrollingMovementMethod;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -136,15 +134,12 @@ public class Tab3Steps extends Fragment {
 
             // Inflate the CardView and get the View
             View rootView = inflater.inflate(R.layout.fragment_steps, container, false);
-            LinearLayout linearLayout = rootView.findViewById(R.id.ll_step);
             TextView titleTextView = (TextView) rootView.findViewById(R.id.tv_title);
 
             // Set the title TextViews
             titleTextView.setText(getString(R.string.section_format, index + 1));
 
             // Add Text and Timer
-            // TODO: Add loop for more timers
-            //View timerView = inflater.inflate(R.layout.timer_card, null);
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutParams.setMargins(0, TIMER_MARGIN, 0, TIMER_MARGIN);
@@ -186,11 +181,6 @@ public class Tab3Steps extends Fragment {
 
                 insertPoint.addView(textView, insertPoint.getChildCount(), layoutParams);
             }
-
-            // Create the UITimer, which handles all the clicks by himself
-            //UITimer uiTimer = new UITimer(DUMMY_TIMER_LOWER[index],
-            //        DUMMY_TIMER_UPPER[index], timerView.findViewById(R.id.tv_timer));
-            //uiTimer.setOnClickListeners();
 
             // Add all timers to the view
             // Set the right layoutparams for the timerView

@@ -73,8 +73,11 @@ public class ListIngredient extends Ingredient {
             // No unit and quantity detected just return original string
             return mOriginalLine;
         }
+        // capitalize the first character
+        bld.setCharAt(0, Character.toUpperCase(bld.charAt(0)));
         // replace " . " by "" and trim the string
         return bld.toString().replace(" . ", "").trim();
+
 
     }
 

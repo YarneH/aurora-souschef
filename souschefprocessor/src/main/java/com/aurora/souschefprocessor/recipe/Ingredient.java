@@ -65,7 +65,7 @@ public class Ingredient {
     public boolean equals(Object o) {
         if (o instanceof Ingredient) {
             Ingredient ingredient = (Ingredient) o;
-            if (ingredient.getAmount().equals(mAmount) && ingredient.getName().equals(mName)) {
+            if (ingredient.getAmount().equals(mAmount) && ingredient.getName().equalsIgnoreCase(mName)) {
                 return true;
             }
         }

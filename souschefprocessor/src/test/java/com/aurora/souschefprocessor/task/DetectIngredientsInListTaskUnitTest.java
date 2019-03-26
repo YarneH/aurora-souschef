@@ -47,7 +47,7 @@ public class DetectIngredientsInListTaskUnitTest {
         }
     }
 
-    @After
+    @Before
     public void wipeRecipe() {
         ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 kg minced meat\n 1 clove garlic\n twenty basil leaves\n" +
                 "salt\n 1 tsp. sugar";
@@ -75,7 +75,6 @@ public class DetectIngredientsInListTaskUnitTest {
         // Act
         detector.doTask();
         // Assert
-        System.out.println(recipe.getIngredients());
         assert (recipe.getIngredients().size() == 7);
     }
 

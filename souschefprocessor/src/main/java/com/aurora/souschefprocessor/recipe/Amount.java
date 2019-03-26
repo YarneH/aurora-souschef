@@ -2,6 +2,13 @@ package com.aurora.souschefprocessor.recipe;
 
 import java.util.Objects;
 
+/**
+ * A dataclass that represents an amount (e.g. 500 ounces)
+ *
+ * Two fields:
+ * value: a double that is the value
+ * unit: a string that is the unit
+ */
 public class Amount {
 
     private double mValue;
@@ -32,7 +39,7 @@ public class Amount {
     public boolean equals(Object o) {
         if (o instanceof Amount) {
             Amount a = (Amount) o;
-            if (a.getUnit().equals(mUnit) && a.getValue() == mValue) {
+            if (a.getUnit().equalsIgnoreCase(mUnit) && a.getValue() == mValue) {
                 return true;
             }
         }

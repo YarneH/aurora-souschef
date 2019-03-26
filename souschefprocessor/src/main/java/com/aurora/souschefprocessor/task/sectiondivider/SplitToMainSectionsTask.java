@@ -54,6 +54,57 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     }
 
     /**
+     * Capitalizes sentences again
+     *
+     * @param text The text to capitalize
+     * @return The text with the sentences capitalized again
+     */
+    private static String capitalize(String text) {
+        // get the first letter
+        //counter
+        int i = 0;
+        char current = text.charAt(i);
+        int length = text.length();
+
+        while (!Character.isLetter(current) && i < length - 1) {
+            i++;
+            current = text.charAt(i);
+        }
+
+        if(i == length - 1){
+            //No letters to capitalize, just return text
+            return text;
+        }
+
+        // capitalize first letter
+        text = text.substring(0, i)+ Character.toUpperCase(current) + text.substring(i + 1);
+
+        boolean previousWasPunctuation = false;
+
+        for(int j = i; j< length; j++){
+            current = text.charAt(j);
+            if(!previousWasPunctuation){
+                if(current == '.' || current == '?' || current == '!'){
+                    previousWasPunctuation = true;
+                }
+            }
+            else{
+                if(Character.isLetter(current)){
+                    // first letter after punctuation -> captitalize
+                    text = text.substring(0,j)+ Character.toUpperCase(current) + text.substring(j + 1);
+                    previousWasPunctuation = false;
+                }
+                if(Character.isDigit(current)){
+                    // first character after punctuation is a digit -> do not capitalize
+                    previousWasPunctuation = false;
+                }
+            }
+
+        }
+        return text;
+    }
+
+    /**
      * Divides the original text into a string representing list of mIngredients, string representing
      * a list of mRecipeSteps, string representing the mDescription of the recipe (if present) and an integer
      * representing the amount of people the original recipe is for. It will then modify the recipe
@@ -68,7 +119,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         String ingredients = ingredientsAndText.getResult();
 
         ResultAndAlteredTextPair stepsAndText = findSteps(ingredientsAndText.getAlteredText());
-        String steps = stepsAndText.getResult();
+        String steps = capitalize(stepsAndText.getResult());
         String description = findDescription(stepsAndText.getAlteredText());
 
         modifyRecipe(this.mRecipeInProgress, ingredients, steps, description);

@@ -93,7 +93,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         char[] chars = line.toCharArray();
 
         // add the first character
-        bld.append(chars[0]);
+        bld.append(Character.toUpperCase(chars[0]));
 
         for (int i = 1; i < chars.length - 1; i++) {
             char previous = chars[i - 1];

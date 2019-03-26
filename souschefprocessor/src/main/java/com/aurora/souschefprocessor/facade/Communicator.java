@@ -36,7 +36,7 @@ public class Communicator {
 
     }
 
-    public Recipe getRecipe(){
+    public Recipe getRecipe() {
         return mRecipe;
     }
 

@@ -1,4 +1,4 @@
-package com.aurora.souschefprocessor.recipe;
+package com.aurora.souschefprocessor.facade;
 
 public class RecipeDetectionException extends IllegalArgumentException {
 

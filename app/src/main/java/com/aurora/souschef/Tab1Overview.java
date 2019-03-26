@@ -15,6 +15,7 @@ import com.aurora.souschefprocessor.recipe.Recipe;
  */
 public class Tab1Overview extends Fragment {
     private Recipe mRecipe = null;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -25,7 +26,7 @@ public class Tab1Overview extends Fragment {
         return rootView;
     }
 
-    protected void setRecipe(Recipe recipe){
+    protected void setRecipe(Recipe recipe) {
         mRecipe = recipe;
     }
 }

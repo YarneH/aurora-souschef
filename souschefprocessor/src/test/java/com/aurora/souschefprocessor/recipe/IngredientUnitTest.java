@@ -207,8 +207,10 @@ public class IngredientUnitTest {
         Ingredient ing1 = new Ingredient("spaghetti", "gram", 500, irrelevantPositions);
         Ingredient ing2 = new Ingredient("spaghetti", "gram", 500, irrelevantPositions);
         Ingredient ing3 = new Ingredient("sauce", "gram", 500, irrelevantPositions);
-        HashMap<Ingredient.PositionKey, Position> newPositions = (HashMap<Ingredient.PositionKey, Position>)
-                irrelevantPositions.clone();
+
+        HashMap<Ingredient.PositionKey, Position> newPositions =
+                new HashMap<>(irrelevantPositions);
+
         // Make sure a different position does not make the equal false
         Ingredient ing4 = new Ingredient("spaghetti", "gram", 500, newPositions);
         newPositions.put(Ingredient.PositionKey.QUANTITY, new Position(0, 5));

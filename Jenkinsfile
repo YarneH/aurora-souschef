@@ -57,10 +57,25 @@ pipeline {
 
         stage('SonarQube') {
             steps {
-                withSonarQubeEnv("Aurora SonarQube") {
-                    sh "${scannerHome}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.branch=${env.BRANCH_NAME}"
-                }
                 script {
+                    if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'dev') {
+                        withSonarQubeEnv("Aurora SonarQube") {
+                        sh """
+                        ${scannerHome}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.branch=${env.BRANCH_NAME} \
+                        -Dapp.sonar.java.binaries=build/intermediates/javac/release/compileReleaseJavaWithJavac \
+                        -Dsouschefprocessor.sonar.java.binaries=build/intermediates/javac/release/compileReleaseJavaWithJavac
+                        """
+                        }
+                    } else {
+                        withSonarQubeEnv("Aurora SonarQube") {
+                        sh """
+                        ${scannerHome}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.branch=${env.BRANCH_NAME} \
+                        -Dapp.sonar.java.binaries=build/intermediates/javac/debug/compileDebugJavaWithJavac \
+                        -Dsouschefprocessor.sonar.java.binaries=build/intermediates/javac/debug/compileDebugJavaWithJavac
+                        """
+                        }
+                    }
+
                     timeout(time: 1, unit: 'HOURS') {
                         def qg = waitForQualityGate()
                         if (qg.status != 'OK') {

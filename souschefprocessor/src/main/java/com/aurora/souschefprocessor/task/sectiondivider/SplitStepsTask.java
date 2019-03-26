@@ -1,6 +1,6 @@
 package com.aurora.souschefprocessor.task.sectiondivider;
 
-import com.aurora.souschefprocessor.recipe.RecipeDetectionException;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
@@ -26,7 +26,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
         String text = mRecipeInProgress.getStepsString();
 
         List<RecipeStep> recipeStepList = divideIntoSteps(text);
-        if(recipeStepList == null || recipeStepList.isEmpty()){
+        if (recipeStepList == null || recipeStepList.isEmpty()) {
             throw new RecipeDetectionException("No steps were detected, this is probably not a recipe");
         }
         this.mRecipeInProgress.setRecipeSteps(recipeStepList);

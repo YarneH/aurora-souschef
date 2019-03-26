@@ -19,9 +19,9 @@ import java.util.Locale;
  * Adapter for populating the ingredient list.
  */
 public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.CardIngredientViewHolder> {
-    private final List<ListIngredient> ingredients;
     private static final int MIN_DENOMINATOR_OF_FRACITONS = 2;
     private static final int MAX_DENOMINATOR_OF_FRACITONS = 10;
+    private final List<ListIngredient> ingredients;
 
 
     /**

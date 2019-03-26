@@ -57,10 +57,25 @@ pipeline {
 
         stage('SonarQube') {
             steps {
-                withSonarQubeEnv("Aurora SonarQube") {
-                    sh "${scannerHome}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.branch=${env.BRANCH_NAME}"
-                }
                 script {
+                    if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'dev') {
+                        withSonarQubeEnv("Aurora SonarQube") {
+                        sh """
+                        ${scannerHome}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.branch=${env.BRANCH_NAME} \
+                        -Dapp.sonar.java.binaries=build/intermediates/javac/release/compileReleaseJavaWithJavac \
+                        -Dsouschefprocessor.sonar.java.binaries=build/intermediates/javac/release/compileReleaseJavaWithJavac
+                        """
+                        }
+                    } else {
+                        withSonarQubeEnv("Aurora SonarQube") {
+                        sh """
+                        ${scannerHome}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.branch=${env.BRANCH_NAME} \
+                        -Dapp.sonar.java.binaries=build/intermediates/javac/debug/compileDebugJavaWithJavac \
+                        -Dsouschefprocessor.sonar.java.binaries=build/intermediates/javac/debug/compileDebugJavaWithJavac
+                        """
+                        }
+                    }
+
                     timeout(time: 1, unit: 'HOURS') {
                         def qg = waitForQualityGate()
                         if (qg.status != 'OK') {
@@ -102,7 +117,38 @@ pipeline {
                         exclusionPattern: '**/*Test*.class,  **/souschef/*.class, **/R.class, **/R$*.class, **/BuildConfig'
                 }
             }
+            post {
+                failure {
+                    slack_error_long_test()
+                }
+            }
         }
+
+        stage('Javadoc') {
+            when {
+                anyOf {
+                    branch 'master';
+                    branch 'dev';
+                }
+            }
+            steps {
+                // Generate javadoc
+                sh """
+                javadoc -d /var/www/javadoc/souschef/app/${env.BRANCH_NAME} -sourcepath ${WORKSPACE}/app/src/main/java -subpackages com -private \
+                -classpath ${WORKSPACE}/app/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes
+                """
+
+                sh """
+                javadoc -d /var/www/javadoc/souschef/souschefprocessor/${env.BRANCH_NAME} -sourcepath ${WORKSPACE}/souschefprocessor/src/main/java -subpackages com -private \
+                -classpath ${WORKSPACE}/app/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes
+                """
+            }
+            post {
+                failure {
+                    slack_error_doc()
+                }
+            }
+        } // Javadoc stage
     } // Stages
 
     post {
@@ -154,6 +200,13 @@ def slack_success() {
  */
 def slack_success_part1() {
     slack_report(true, ':white_check_mark: Part 1 of Build succeeded', null, '')
+}
+
+/**
+ * Gets called when generating javadoc failed
+ */
+def slack_error_doc() {
+    slack_report(true, ':x: Javadoc generation failed', null, '')
 }
 
 

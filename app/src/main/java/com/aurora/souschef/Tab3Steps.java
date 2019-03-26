@@ -54,14 +54,33 @@ public class Tab3Steps extends Fragment {
             30,
             3600,
     };
-
-    private StepsPagerAdapter mStepsPagerAdapter;
-    private ViewPager mViewPager;
     private static Recipe mRecipe = null;
     private static String[] mDescriptionSteps = null;
+    private StepsPagerAdapter mStepsPagerAdapter;
+    private ViewPager mViewPager;
 
     public Tab3Steps() {
         // Default constructor
+    }
+
+    /**
+     * Classic setter for the Recipe, used to communicate the recipe from the Main Activity
+     */
+    protected static void setRecipe(Recipe recipe) {
+        mRecipe = recipe;
+    }
+
+    /**
+     * Takes the recipe and transforms it into String-representations used for the TextViews
+     * TODO Upgrade this function (timers, step ingredient,...)
+     */
+    private static void prepareRecipeParts() {
+        int stepsCount = mRecipe.getRecipeSteps().size();
+        mDescriptionSteps = new String[stepsCount];
+
+        for (int i = 0; i < stepsCount; i++) {
+            mDescriptionSteps[i] = mRecipe.getRecipeSteps().get(i).getDescription();
+        }
     }
 
     @Override
@@ -83,26 +102,6 @@ public class Tab3Steps extends Fragment {
         mViewPager.setOffscreenPageLimit(mStepsPagerAdapter.getCount());
 
         return rootView;
-    }
-
-    /**
-     * Classic setter for the Recipe, used to communicate the recipe from the Main Activity
-     */
-    protected static void setRecipe(Recipe recipe) {
-        mRecipe = recipe;
-    }
-
-    /**
-     * Takes the recipe and transforms it into String-representations used for the TextViews
-     * TODO Upgrade this function (timers, step ingredient,...)
-     */
-    private static void prepareRecipeParts() {
-        int stepsCount = mRecipe.getRecipeSteps().size();
-        mDescriptionSteps = new String[stepsCount];
-
-        for (int i = 0; i < stepsCount; i++) {
-            mDescriptionSteps[i] = mRecipe.getRecipeSteps().get(i).getDescription();
-        }
     }
 
     /**

@@ -54,7 +54,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     static {
         sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
         sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
-        if(sAnnotationPipeline == null){
+        if (sAnnotationPipeline == null) {
             createTimerAnnotationPipeline();
         }
     }

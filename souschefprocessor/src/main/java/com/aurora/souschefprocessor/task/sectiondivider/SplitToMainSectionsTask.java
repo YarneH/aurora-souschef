@@ -71,33 +71,26 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             current = text.charAt(i);
         }
 
-        if (i == length - 1) {
-            //No letters to capitalize, just return text
-            return text;
-        }
-
         // capitalize first letter
         text = text.substring(0, i) + Character.toUpperCase(current) + text.substring(i + 1);
 
-        boolean previousWasPunctuation = false;
+        boolean previousWasPunctuationOrNewLine = false;
 
         for (int j = i; j < length; j++) {
             current = text.charAt(j);
-            if (!previousWasPunctuation) {
-                boolean punctuation = current == '.' || current == '?' || current == '!';
-                if (punctuation) {
-                    previousWasPunctuation = true;
+            if (!previousWasPunctuationOrNewLine) {
+                boolean punctuationOrNewLine = current == '.' || current == '?' || current == '!'
+                        || current == '\n';
+                if (punctuationOrNewLine) {
+                    previousWasPunctuationOrNewLine = true;
                 }
             } else {
-                if (Character.isLetter(current)) {
+                if (!Character.isWhitespace(current)) {
                     // first letter after punctuation -> captitalize
                     text = text.substring(0, j) + Character.toUpperCase(current) + text.substring(j + 1);
-                    previousWasPunctuation = false;
+                    previousWasPunctuationOrNewLine = false;
                 }
-                if (Character.isDigit(current)) {
-                    // first character after punctuation is a digit -> do not capitalize
-                    previousWasPunctuation = false;
-                }
+
             }
 
         }

@@ -167,6 +167,9 @@ public class Tab3Steps extends Fragment {
                 // Add the timer to the LinearLayout
                 insertPoint.addView(textView, insertPoint.getChildCount(), layoutParams);
                 insertPoint.addView(timerView, insertPoint.getChildCount(), layoutParams);
+
+                // Set the current position to the temporary position
+                currentPosition = tempPosition;
             }
 
             // Check if there is still some text coming after the last timer

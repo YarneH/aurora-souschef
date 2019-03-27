@@ -4,7 +4,7 @@ import java.util.Objects;
 
 /**
  * A dataclass that represents an amount (e.g. 500 ounces)
- *
+ * <p>
  * Two fields:
  * value: a double that is the value
  * unit: a string that is the unit
@@ -14,7 +14,7 @@ public class Amount {
     private double mValue;
     private String mUnit;
 
-    public Amount(double mValue, String unit) {
+    Amount(double mValue, String unit) {
         if (mValue < 0.0) {
             throw new IllegalArgumentException("Value is negative");
         }
@@ -39,9 +39,8 @@ public class Amount {
     public boolean equals(Object o) {
         if (o instanceof Amount) {
             Amount a = (Amount) o;
-            if (a.getUnit().equalsIgnoreCase(mUnit) && a.getValue() == mValue) {
-                return true;
-            }
+            return (a.getUnit().equalsIgnoreCase(mUnit) && a.getValue() == mValue);
+
         }
         return false;
     }

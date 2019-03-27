@@ -60,7 +60,7 @@ public class DetectTimersInStepTaskUnitTest {
             detector.doTask();
         }
         for (RecipeStep s : recipe.getRecipeSteps()) {
-            assert (s.isTimerDetected());
+            assert (s.isTimerDetectionDone());
             assert (s.getRecipeTimers() != null);
         }
     }

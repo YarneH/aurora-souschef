@@ -64,7 +64,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         detector1.doTask();
         // Assert
         for (RecipeStep s : recipe.getRecipeSteps()) {
-            assert (s.isIngredientDetected());
+            assert (s.isIngredientDetectionDone());
             assert (s.getIngredients() != null);
         }
     }

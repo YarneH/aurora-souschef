@@ -36,8 +36,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
     // The size if a string representing a fraction is split on the regex "/"
     private static final int FRACTION_LENGTH = 2;
-    // The size if a string representing a number (non-fraction) is split on the regex "/"
-    private static final int NON_FRACTION_LENGTH = 1;
 
     // The number 10
     private static final double TEN = 10;
@@ -88,16 +86,16 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     }
 
     /**
-     * Adds spaces in a line, for example 250g/3oz is turned into 250 g / 3 oz so the
-     * classifier sees these as different tokens, and deletes the "." character, as in "1 lb. of pasta"
-     * <p>
-     * 500ml/3fl oz -> 500 ml
-     * / followed by letters or / followed by "fl oz""
+     * This calls the removeClutter method, this makes sure that the following sort of conversion
+     * happens: 500ml/3fl oz -> 500 ml
+     * Also, adds spaces in a line, for example 250g is turned in to 250 g. This is needed because the
+     * classifier needs to see 250 and "g" as seperate tokens.
+     * It also deletes the "." character when it is not between two digits, as in "1 lb. of pasta"
      *
-     * @param line The line on which to add spaces
+     * @param line The line on which to add spaces, remove clutter and delete "."
      * @return The line with the spaces added and the points deleted
      */
-    private static String addSpacesDeletePointAndRemoveClutter(String line) {
+    private static String removeClutterAddSpacesAndRemovePoint(String line) {
         line = line.trim();
         line = removeClutter(line);
         StringBuilder bld = new StringBuilder();
@@ -115,12 +113,8 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             if (current != '.') {
 
                 if (spaceNeededBetweenPreviousAndCurrent(previous, current)) {
-
-                    bld.append(" " + current);
-                } else if (spaceNeededBetweenCurrentAndNext(previous, current, next)) {
-                    // if a slash or dash is followed by a number and is not preceded by a number
-                    // add a space between current and next
-                    bld.append(current + " ");
+                    bld.append(" ");
+                    bld.append(current);
                 } else {
                     bld.append(current);
                 }
@@ -138,10 +132,31 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
     }
 
+    /**
+     * Checks if the "." is still needed between these characters, which is the case if both characters
+     * are digits
+     *
+     * @param previous The character before the "."
+     * @param next     The character after the "."
+     * @return A boolean indicating whether the "." character is needed
+     */
     private static boolean pointNeededBetweenPreviousAndNext(char previous, char next) {
         return Character.isDigit(previous) && Character.isDigit(next);
     }
 
+    /**
+     * Removes clutter from an ingredient line, some examples of cluttered lines and their conversion
+     * 2.5kg/5lb 8oz turkey crown (fully thawed if frozen) => 2.5kg turkey crown (fully thawed if frozen)
+     * 750–900ml/1⅓–1⅔ pint readymade chicken gravy => 750ml readymade chicken gravy
+     * 500ml/18fl oz milk => 500ml milk
+     * 200ml/7fl oz crème frâiche => 200ml crème frâiche
+     * 350ml/12¼fl oz warm water => 350ml warm water
+     * 200ml/7fl oz fromage frais => 200ml fromage frais
+     * 100g/5½oz raisins => 100g raisins
+     *
+     * @param line The line from where to remove the clutter
+     * @return The line with the clutter removed (a string)
+     */
     private static String removeClutter(String line) {
         List<Pattern> patterns = new ArrayList<>();
         patterns.add(Pattern.compile(CLUTTER_REGEX));
@@ -150,6 +165,14 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         return line;
     }
 
+    /**
+     * Removes the part of the line that matches the pattern for each pattern in the list, in order,
+     * so the second pattern is mathced against the result of the operation with the first pattern.
+     *
+     * @param line     The line to match against the patterns
+     * @param patterns the patterns to match
+     * @return the line with the matching patterns removed
+     */
     private static String removeMatchingRegexesInOrder(String line, List<Pattern> patterns) {
         Matcher match;
         for (Pattern pattern : patterns) {
@@ -182,25 +205,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         }
     }
 
-    /**
-     * Checks if a space is needed between the second and third character this is the case if
-     * the first character is not a number, the second character is a slash or a dash and the third
-     * character is a number (e.g. 500ml/250oz will need a space between the l and / so that the
-     * classifier sees this as two different words)
-     *
-     * @param first  The first character of the sequence
-     * @param second The second character of the sequence
-     * @param third  The third character of the sequence
-     * @return a boolean indicating if a space is needed
-     */
-    private static boolean spaceNeededBetweenCurrentAndNext(char first, char second,
-                                                            char third) {
-        boolean secondIsSlashOrDash = (second == '/' || second == '-');
-        boolean thirdIsNumber = (Character.isDigit(third) || Character.getType(third) == Character.OTHER_NUMBER);
-        boolean firstIsNumber = (Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER);
-
-        return (secondIsSlashOrDash && thirdIsNumber && !firstIsNumber);
-    }
 
     private static double calculateQuantity(String[] array) {
         boolean multiply = false;
@@ -286,7 +290,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         for (String ingredient : list) {
             if (ingredient != null && ingredient.length() > 0) {
-                ListIngredient ing = (detectIngredient(addSpacesDeletePointAndRemoveClutter(ingredient)));
+                ListIngredient ing = (detectIngredient(removeClutterAddSpacesAndRemovePoint(ingredient)));
 
                 returnList.add(ing);
 
@@ -302,8 +306,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * @return a ListIngredient object constructed with the information from the line
      */
     private ListIngredient detectIngredient(String line) {
-        // TODO optimize model further
-        // TODO quantity detection fails on  1 1/2-ounce can (should be 1 gets 1.5)
 
         // classify the line
         List<List<CoreLabel>> classifiedList = mCRFClassifier.classify(line);
@@ -313,7 +315,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         for (List<CoreLabel> l : classifiedList) {
             for (CoreLabel cl : l) {
                 String classifiedClass = (cl.get(CoreAnnotations.AnswerAnnotation.class)).trim();
-                if (!map.containsKey(classifiedClass)) {
+                if (map.get(classifiedClass) == null) {
                     // if this key is not yet in the map construct a list and add the label to the list
                     List<CoreLabel> list = new ArrayList<>();
                     list.add(cl);
@@ -362,7 +364,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             // if no name detected make the position the whole string
             positions.put(Ingredient.PositionKey.NAME, new Position(0, line.length()));
         }
-        if (map.containsKey(QUANTITY)) {
+        if (map.get(QUANTITY) != null) {
             // calculate the quantity using the list of tokens in labeled QUANTITY
             // for now first element labeled as quantity and the succeeding elements
             // (endposition + 1 = beginposition) or endposition = beginposition
@@ -403,7 +405,8 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : nameList) {
             if (NAME.equals(cl.get(CoreAnnotations.AnswerAnnotation.class))) {
-                bld.append(cl.word() + " ");
+                bld.append(cl.word());
+                bld.append(" ");
             }
         }
         // delete last added space
@@ -421,7 +424,8 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : succeedingUnitList) {
-            bld.append(cl.word() + " ");
+            bld.append(cl.word());
+            bld.append(" ");
         }
         // delete last added space
         bld.deleteCharAt(bld.length() - 1);
@@ -439,7 +443,8 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : list) {
-            bld.append(cl.word() + " ");
+            bld.append(cl.word());
+            bld.append(" ");
         }
 
         String representation = bld.toString();
@@ -463,7 +468,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      *
      * @param list       The list of labeled elements
      * @param classLabel The class for which th first sequence if found
-     * @return
+     * @return The list of succeeding elements with this classLabel
      */
     private List<CoreLabel> getSucceedingElements(List<CoreLabel> list, String classLabel) {
         // for now first element labeled as classLabel and the succeeding elements
@@ -473,7 +478,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         boolean firstFound = false;
         boolean listComplete = false;
         int endIndex = -1;
-        CoreLabel element = null;
+        CoreLabel element;
         List<CoreLabel> tokenQuantities = new ArrayList<>();
 
         for (int i = 0; i < list.size() && !listComplete; i++) {

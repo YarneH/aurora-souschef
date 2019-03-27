@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -25,8 +23,8 @@ public class DetectIngredientsInListTaskLongTest {
     private static CRFClassifier<CoreLabel> crfClassifier;
 
     private static String testIngredients;
-    private static String[] testIngredientsUnits = new String[100];
-    private static double[] testIngredientsQuantities = new double[100];
+    private static String[] testIngredientsUnits;
+    private static double[] testIngredientsQuantities;
     private static boolean testIngredientsInitialized = false;
     private static ArrayList<String> testIngredientsList = new ArrayList<>();
 
@@ -115,7 +113,7 @@ public class DetectIngredientsInListTaskLongTest {
                 "18 ounces bittersweet chocolate (62 to 72% cacao content), finely chopped, divided\t18\tounces \n" +
                 "3 green onions, thinly sliced\t3\t  \n" +
                 "4 pounds large boiling potatoes (preferably white-fleshed)\t4\tpounds \n" +
-                "2 (14.5 ounce) cans CONTADINA® Diced Tomatoes, undrained\t2\tcans \n" +
+                "2 (14.5 ounce) cans CONTADINA® Diced Tomatoes, undrained\t2\t-LRB- 14.5 ounce -RRB- cans \n" +
                 "1 pound tri-colored spiral pasta\t1\tpound \n" +
                 "1/4 teaspoon mace\t0.25\tteaspoon \n" +
                 "Orange wedge\t1\t  \n" +
@@ -137,7 +135,7 @@ public class DetectIngredientsInListTaskLongTest {
                 "1 handful fresh baby arugula\t1\t handful \n" +
                 "Pinch of ground cardamom\t1\tpinch  \n" +
                 "250ml/9fl oz cider or white wine\t250\tml  \n" +
-                "A good handful of fresh basil leaves, torn into small pieces\t1\thandful \n" +
+                "A good handful of fresh basil leaves, torn into small pieces\t1\tgood handful \n" +
                 "handful chives, finely chopped\t1\thandful \n" +
                 "1 pound boneless beef sirloin steak (about 1 inch thick)\t1\tpound \n" +
                 "3 chipotle chilies, canned in adobo\t3\t  \n" +
@@ -155,7 +153,7 @@ public class DetectIngredientsInListTaskLongTest {
                 "1 large carrots, cut into thirds\t1\t \n" +
                 "4 pounds beef short ribs, cut into 2-inch lengths\t4\tpounds \n" +
                 "2 heads cabbage, finely shredded\t2\t  \n" +
-                "1 (12 fluid ounce) can frozen berry juice concentrate, thawed\t1\t can \n" +
+                "1 (12 fluid ounce) can frozen berry juice concentrate, thawed\t1\t-LRB- 12 fluid ounce -RRB- can \n" +
                 "1/8 teaspoon seafood seasoning (such as Old Bay®), or to taste\t0.125\t teaspoon \n" +
                 "1 carrot chopped fine\t1\t  \n" +
                 "5 Roma tomatoes\t5\t  \n" +
@@ -198,7 +196,7 @@ public class DetectIngredientsInListTaskLongTest {
                 "1 1/2 teaspoons seeded, minced jalapeño\t1.5\tteaspoons \n" +
                 "1/2 cup Bertolli® Extra Virgin Olive Oil\t0.5\tcup \n" +
                 "2 large roasting potatoes, cut into cubes\t2\t  \n" +
-                "1 1/2 teaspoons flaky sea salt\t1.5\tteaspoons  \n" +
+                "1 1/2 teaspoons flaky sea salt\t1.5\tteaspoons\n" +
                 "150g/5½oz canned ackee, drained\t150\tg \n" +
                 "1 cup chopped Napa cabbage\t1\tcup \n" +
                 "1 1/2 cups light soy sauce\t1.5\tcups \n" +
@@ -207,9 +205,60 @@ public class DetectIngredientsInListTaskLongTest {
                 "Pink rose petals\t1\t  \n" +
                 "4 ounces pecorino cheese\t4\tounces \n" +
                 "1 (18 ounce) bottle barbeque sauce (such as Montgomery Inn)\t1\tbottle \n" +
-                "2 free-range eggs, separated\t2\t ";
+                "2 free-range eggs, separated\t2\t \n" +
+                "8–12 chipolata sausages, wrapped in bacon\t8\t \n" +
+                "2.5kg/5lb 8oz turkey crown (fully thawed if frozen)\t2.5\tkg\n" +
+                "2 x 80g/3oz packs Parma ham, snipped into small pieces\t160\tg\n" +
+                "salt and pepper, to taste\t1\t \n" +
+                "food colouring, if using\t1\t \n" +
+                "7 cups whole wheat flour\t7\tcups\n" +
+                "1/4 cup cracked wheat\t0.25\tcup\n" +
+                "1 x 120g pack mixed nuts and dried fruit (I use one containing brazil nuts, pecans, almonds, sultanas and dried cranberries)\t120\tg\n" +
+                "750–900ml/1⅓–1⅔ pint readymade chicken gravy\t750\tml\n" +
+                "500ml/18fl oz milk\t500\tml\n" +
+                "freshly grated nutmeg, to serve (optional)\t1\t \n" +
+                "200ml/7fl oz crème frâiche\t200\tml\n" +
+                "1 x 7g sachet easy-blend dried yeast\t7\tg\n" +
+                "350ml/12¼fl oz warm water\t350\tml\n" +
+                "1 purple or yellow swede, peeled and sliced into 1cm/½in cubes\t1\t \n" +
+                "sea salt and freshly ground white pepper\t1\t \n" +
+                "3 large eggs at room temperature\t3\t \n" +
+                "a little sifted icing sugar, for dusting\t1\t \n" +
+                "200ml/7fl oz fromage frais\t200\tml\n" +
+                "1 jar (340g/12oz) lemon curd\t1\tjar\n" +
+                "1 small handful shelled unsalted pistachio nuts\t1\tsmall handful\n" +
+                "One 10-inch-long beef tenderloin roast cut from the heart of the tenderloin (2½ to 3 pounds), butterflied (see Note)\t1\t10-inch-long\n" +
+                "Salt\t1\t \n" +
+                "One 28-ounce can diced tomatoes in juice (preferably fire-roasted)\t1\t28-ounce can\n" +
+                "1 to 2 canned chipotle chiles en adobo, stemmed and seeded\t1\t \n" +
+                "1 cup warm (105° to 115°F) whole milk (3.5%)\t1\tcup\n" +
+                "1 pound conch meat (from 3 large or 4 medium conch)\t1\tpound\n" +
+                "Juice of 1 small juicy orange\t1\t \n" +
+                "Juice of 1 juicy lime\t1\t \n" +
+                "Juice of ½ juicy lemon\t1\t \n" +
+                "1 small onion (4 ounces), cut into 1/4 –inch dice\t1\t \n" +
+                "1 small tomato, cut into small dice\t1\t \n" +
+                "1 (2-inch) piece ginger, peeled\t1\t-LRB 2-inch -RRB- piece\n" +
+                "8 skinless, boneless chicken thighs (about 3 pounds), halved, quartered if large\t8\t \n" +
+                "1 1/2 cups granulated sugar\t1.5\tcups \n" +
+                "1/2 cup brown sugar\t0.5\tcup\n" +
+                "1/2 cup slivered or sliced almonds (optional)\t0.50\tcup \n" +
+                "Orange slices for garnish\t1\t \n" +
+                "Assorted eggcups and salt wells, for serving\t1\t \n" +
+                "Waxed or parchment paper\t1\t \n" +
+                "Cake plate or 4-inch round cardboard base (optional)\t1\t \n" +
+                "Small plate\t1\t \n" +
+                "10-inch cake plate, for serving\t1\t \n" +
+                "Small, sharp knife\t1\t \n" +
+                "1/4 teaspoon cream of tartar or 2 teaspoons light-colored corn syrup\t0.2500\tteaspoon  \n" +
+                "One purchased 9-inch angel food cake\t1\t ";
+        ;
         String listForRecipe = "";
         List<String> list = Arrays.asList(testIngredients.split("\n"));
+        System.out.println(list.size());
+        int total = list.size();
+        testIngredientsQuantities = new double[total];
+        testIngredientsUnits = new String[total];
         int index = 0;
         for (String s : list) {
             String[] split = s.split("\t");
@@ -244,7 +293,7 @@ public class DetectIngredientsInListTaskLongTest {
         List<ListIngredient> list = testRecipe.getIngredients();
 
         // Act
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < testIngredientsUnits.length; i++) {
             // check if they are equal up to 3 decimal places
             if ((int) (1000 * list.get(i).getValue()) == (int) (1000 * testIngredientsQuantities[i])) {
                 correct++;
@@ -254,7 +303,8 @@ public class DetectIngredientsInListTaskLongTest {
             }
         }
         // Assert
-        assert (correct >= 95);
+        System.out.println("Correct: "+ correct*100.0/testIngredientsQuantities.length + "%");
+        assert (correct * 100.0 / testIngredientsUnits.length >= 95);
     }
 
     @Test
@@ -274,7 +324,7 @@ public class DetectIngredientsInListTaskLongTest {
         int correctButOneCharOff = 0;
         List<ListIngredient> list = testRecipe.getIngredients();
         // Act
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < testIngredientsUnits.length; i++) {
             // check if they are equal up to 3 decimal places
             if ((testIngredientsUnits[i]).equals(list.get(i).getUnit())) {
                 correct++;
@@ -288,85 +338,10 @@ public class DetectIngredientsInListTaskLongTest {
         }
 
         // Assert
-        assert (correct + correctButOneCharOff >= 80);
-        assert (correctButOneCharOff < 5);
-        System.out.println(correct + " units were correctly set and " + correctButOneCharOff + " were correct with one char off");
-    }
-
-    @Test
-    public void newexamples() {
-        String ex = "8–12 chipolata sausages, wrapped in bacon\n" +
-                "2.5kg/5lb 8oz turkey crown (fully thawed if frozen)\n" +
-                "2 x 80g/3oz packs Parma ham, snipped into small pieces\n" +
-                "salt and pepper, to taste\n" +
-                "food colouring, if using\n" +
-                "7 cups whole wheat flour\n" +
-                "1/4 cup cracked wheat\n" +
-                "1 x 120g pack mixed nuts and dried fruit (I use one containing brazil nuts, pecans, almonds, sultanas and dried cranberries)\n" +
-                "750–900ml/1⅓–1⅔ pint readymade chicken gravy\n" +
-                "500ml/18fl oz milk\n" +
-                "freshly grated nutmeg, to serve (optional)n" +
-                "200ml/7fl oz crème frâiche\n" +
-                "1 x 7g sachet easy-blend dried yeast\n" +
-                "350ml/12¼fl oz warm water\n" +
-                "1 purple or yellow swede, peeled and sliced into 1cm/½in cubes\n" +
-                "sea salt and freshly ground white pepper\n" +
-                "3 large eggs at room temperature\n" +
-                "a little sifted icing sugar, for dusting\n" +
-                "200ml/7fl oz fromage frais\n" +
-                "1 jar (340g/12oz) lemon curd\n" +
-                "1 small handful shelled unsalted pistachio nuts\n" +
-                "One 10-inch-long beef tenderloin roast cut from the heart of the tenderloin (2½ to 3 pounds), butterflied (see Note)\n" +
-                "Salt\n" +
-                "One 28-ounce can diced tomatoes in juice (preferably fire-roasted)\n" +
-                "1 to 2 canned chipotle chiles en adobo, stemmed and seeded\n" +
-                "1 cup warm (105° to 115°F) whole milk (3.5%)\n" +
-                "1 pound conch meat (from 3 large or 4 medium conch)\n" +
-                "Juice of 1 small juicy orange\n" +
-                "Juice of 1 juicy lime\n" +
-                "Juice of ½ juicy lemon\n" +
-                "1 small onion (4 ounces), cut into 1/4 –inch dice\n" +
-                "1 small tomato, cut into small dice\n" +
-                "1 (2-inch) piece ginger, peeled\n" +
-                "8 skinless, boneless chicken thighs (about 3 pounds), halved, quartered if large\n" +
-                "1 1/2 cups granulated sugar\n" +
-                "1/2 cup brown sugar\n" +
-                "1/2 cup slivered or sliced almonds (optional)\n" +
-                "Orange slices for garnish\n" +
-                "Assorted eggcups and salt wells, for serving\n" +
-                "Waxed or parchment paper\n" +
-                "Cake plate or 4-inch round cardboard base (optional)\n" +
-                "Small plate\n" +
-                "10-inch cake plate, for serving\n" +
-                "Small, sharp knife\n" +
-                "1/4 teaspoon cream of tartar or 2 teaspoons light-colored corn syrup \n" +
-                "One purchased 9-inch angel food cake";
-
-        RecipeInProgress rip = new RecipeInProgress("");
-        rip.setIngredientsString(ex);
-        DetectIngredientsInListTask task = new DetectIngredientsInListTask(rip, crfClassifier);
-        task.doTask();
-        for (ListIngredient l : rip.getIngredients()) {
-            System.out.println(l.getOriginalLine());
-            System.out.println(l.getValue() + "///" + l.getUnit() + "///" + l.getOriginalLineWithoutUnitAndQuantity());
-
-        }
-
-    }
-
-    @Test
-    public void reg() {
-        String sentence = "/1⅓-1⅔ pint readymade chicken gravy";
-        String CLUTTER_REGEX = "[/][0-9\\p{No}]+(([–-][0-9\\p{No}]+)+( pint)?|fl oz|[a-z]+([ ][0-9\\p{No}](oz))?)";
-        Matcher match = Pattern.compile(CLUTTER_REGEX).matcher(sentence);
-        System.out.println(match.find())
-        ;
-        RecipeInProgress rip = new RecipeInProgress("");
-        rip.setIngredientsString(sentence);
-        DetectIngredientsInListTask task = new DetectIngredientsInListTask(rip, crfClassifier);
-        task.doTask();
-
-
+        double multiplier = 100.0 / testIngredientsUnits.length;
+        assert ((correct + correctButOneCharOff) * multiplier >= 85);
+        assert (correctButOneCharOff * multiplier < 5);
+        System.out.println(correct + " units were correctly set and " + correctButOneCharOff + " were correct with one char off out of "+ testIngredientsQuantities.length+" examples");
     }
 
 

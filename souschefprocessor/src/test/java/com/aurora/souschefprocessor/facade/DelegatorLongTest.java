@@ -16,7 +16,7 @@ import java.util.List;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 
-public class DelegatorTest {
+public class DelegatorLongTest {
     private static List<String> validRecipes;
     private static List<String> invalidRecipes;
     private static Delegator delegator;

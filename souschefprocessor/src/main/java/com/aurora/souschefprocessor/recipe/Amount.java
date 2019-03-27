@@ -15,6 +15,10 @@ public class Amount {
         this.mUnit = unit;
     }
 
+    public void setValue(double value) {
+        this.mValue = value;
+    }
+
     public double getValue() {
         return mValue;
     }
@@ -42,5 +46,9 @@ public class Amount {
     @Override
     public String toString() {
         return "QUANTITY " + mValue + " UNIT " + mUnit;
+    }
+
+    public void setUnit(String unit) {
+        this.mUnit = unit;
     }
 }

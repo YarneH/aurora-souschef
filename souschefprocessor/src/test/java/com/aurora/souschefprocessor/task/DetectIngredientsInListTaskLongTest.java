@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -75,7 +77,7 @@ public class DetectIngredientsInListTaskLongTest {
                 }
 
             }
-            System.out.println("ONE CHAR OFF: "+ a + " "+ b);
+            System.out.println("ONE CHAR OFF: " + a + " " + b);
             return true;
         }
         if (deletion) {
@@ -94,7 +96,7 @@ public class DetectIngredientsInListTaskLongTest {
                 }
 
             }
-            System.out.println("ONE CHAR OFF: "+ a + " "+ b);
+            System.out.println("ONE CHAR OFF: " + a + " " + b);
             return true;
         }
         //should not get here
@@ -289,6 +291,82 @@ public class DetectIngredientsInListTaskLongTest {
         assert (correct + correctButOneCharOff >= 80);
         assert (correctButOneCharOff < 5);
         System.out.println(correct + " units were correctly set and " + correctButOneCharOff + " were correct with one char off");
+    }
+
+    @Test
+    public void newexamples() {
+        String ex = "8–12 chipolata sausages, wrapped in bacon\n" +
+                "2.5kg/5lb 8oz turkey crown (fully thawed if frozen)\n" +
+                "2 x 80g/3oz packs Parma ham, snipped into small pieces\n" +
+                "salt and pepper, to taste\n" +
+                "food colouring, if using\n" +
+                "7 cups whole wheat flour\n" +
+                "1/4 cup cracked wheat\n" +
+                "1 x 120g pack mixed nuts and dried fruit (I use one containing brazil nuts, pecans, almonds, sultanas and dried cranberries)\n" +
+                "750–900ml/1⅓–1⅔ pint readymade chicken gravy\n" +
+                "500ml/18fl oz milkn" +
+                "freshly grated nutmeg, to serve (optional)n" +
+                "200ml/7fl oz crème frâiche\n" +
+                "1 x 7g sachet easy-blend dried yeast\n" +
+                "350ml/12¼fl oz warm water\n" +
+                "1 purple or yellow swede, peeled and sliced into 1cm/½in cubes\n" +
+                "sea salt and freshly ground white pepper\n" +
+                "3 large eggs at room temperature\n" +
+                "a little sifted icing sugar, for dusting\n" +
+                "200ml/7fl oz fromage frais\n" +
+                "1 jar (340g/12oz) lemon curd\n" +
+                "1 small handful shelled unsalted pistachio nuts\n" +
+                "One 10-inch-long beef tenderloin roast cut from the heart of the tenderloin (2½ to 3 pounds), butterflied (see Note)\n" +
+                "Salt\n" +
+                "One 28-ounce can diced tomatoes in juice (preferably fire-roasted)\n" +
+                "1 to 2 canned chipotle chiles en adobo, stemmed and seeded\n" +
+                "1 cup warm (105° to 115°F) whole milk (3.5%)\n" +
+                "1 pound conch meat (from 3 large or 4 medium conch)\n" +
+                "Juice of 1 small juicy orange\n" +
+                "Juice of 1 juicy lime\n" +
+                "Juice of ½ juicy lemon\n" +
+                "1 small onion (4 ounces), cut into 1/4 –inch dice\n" +
+                "1 small tomato, cut into small dice\n" +
+                "1 (2-inch) piece ginger, peeled\n" +
+                "8 skinless, boneless chicken thighs (about 3 pounds), halved, quartered if large\n" +
+                "1 1/2 cups granulated sugar\n" +
+                "1/2 cup brown sugar\n" +
+                "1/2 cup slivered or sliced almonds (optional)\n" +
+                "Orange slices for garnish\n" +
+                "Assorted eggcups and salt wells, for serving\n" +
+                "Waxed or parchment paper\n" +
+                "Cake plate or 4-inch round cardboard base (optional)\n" +
+                "Small plate\n" +
+                "10-inch cake plate, for serving\n" +
+                "Small, sharp knife\n" +
+                "1/4 teaspoon cream of tartar or 2 teaspoons light-colored corn syrup \n" +
+                "One purchased 9-inch angel food cake";
+
+        RecipeInProgress rip = new RecipeInProgress("");
+        rip.setIngredientsString(ex);
+        DetectIngredientsInListTask task = new DetectIngredientsInListTask(rip, crfClassifier);
+        task.doTask();
+        for (ListIngredient l : rip.getIngredients()) {
+            System.out.println(l.getOriginalLine());
+            System.out.println(l.getValue() + "///" + l.getUnit() + "///" + l.getOriginalLineWithoutUnitAndQuantity());
+
+        }
+
+    }
+
+    @Test
+    public void reg() {
+        String sentence = "/1⅓-1⅔ pint readymade chicken gravy";
+        String CLUTTER_REGEX = "[/][0-9\\p{No}]+(([–-][0-9\\p{No}]+)+( pint)?|fl oz|[a-z]+([ ][0-9\\p{No}](oz))?)";
+        Matcher match = Pattern.compile(CLUTTER_REGEX).matcher(sentence);
+        System.out.println(match.find())
+        ;
+        RecipeInProgress rip = new RecipeInProgress("");
+        rip.setIngredientsString(sentence);
+        DetectIngredientsInListTask task = new DetectIngredientsInListTask(rip, crfClassifier);
+        task.doTask();
+
+
     }
 
 

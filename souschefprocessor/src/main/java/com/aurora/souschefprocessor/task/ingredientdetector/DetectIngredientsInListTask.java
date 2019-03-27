@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations;
@@ -44,6 +46,11 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     private static final String QUANTITY = "QUANTITY";
     private static final String UNIT = "UNIT";
     private static final String NAME = "NAME";
+
+    // These regexes will remove clutter to pass the clutter test in DetectIngredientsInListTaskUnitTest
+    private static final String CLUTTER_REGEX = "[/][0-9\\p{No}]+(([–-][0-9\\p{No}]+)+( pint)?|" +
+            "fl oz|[a-z]+([ ][0-9\\p{No}](oz))?)";
+    private static final String CLUTTER_DASH_REGEX = "[–-][0-9\\p{No}]+";
 
 
     //The classifier to detect ingredients
@@ -83,12 +90,16 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     /**
      * Adds spaces in a line, for example 250g/3oz is turned into 250 g / 3 oz so the
      * classifier sees these as different tokens, and deletes the "." character, as in "1 lb. of pasta"
+     * <p>
+     * 500ml/3fl oz -> 500 ml
+     * / followed by letters or / followed by "fl oz""
      *
      * @param line The line on which to add spaces
      * @return The line with the spaces added and the points deleted
      */
-    private static String addSpacesAndDeletePoint(String line) {
+    private static String addSpacesDeletePointAndRemoveClutter(String line) {
         line = line.trim();
+        line = removeClutter(line);
         StringBuilder bld = new StringBuilder();
         char[] chars = line.toCharArray();
 
@@ -100,6 +111,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             char current = chars[i];
             char next = chars[i + 1];
 
+            // do not append automatically if it is a point
             if (current != '.') {
 
                 if (spaceNeededBetweenPreviousAndCurrent(previous, current)) {
@@ -112,6 +124,10 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
                 } else {
                     bld.append(current);
                 }
+            } else {
+                if (pointNeededBetweenPreviousAndNext(previous, next)) {
+                    bld.append(current);
+                }
             }
         }
 
@@ -120,6 +136,30 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         // return the builder
         return bld.toString();
 
+    }
+
+    private static boolean pointNeededBetweenPreviousAndNext(char previous, char next) {
+        return Character.isDigit(previous) && Character.isDigit(next);
+    }
+
+    private static String removeClutter(String line) {
+        List<Pattern> patterns = new ArrayList<>();
+        patterns.add(Pattern.compile(CLUTTER_REGEX));
+        patterns.add(Pattern.compile(CLUTTER_DASH_REGEX));
+        line = removeMatchingRegexesInOrder(line, patterns);
+        return line;
+    }
+
+    private static String removeMatchingRegexesInOrder(String line, List<Pattern> patterns) {
+        Matcher match;
+        for (Pattern pattern : patterns) {
+            match = pattern.matcher(line);
+            if (match.find()) {
+                String remove = match.group();
+                line = line.replace(remove, "");
+            }
+        }
+        return line;
     }
 
     /**
@@ -194,7 +234,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         for (String ingredient : list) {
             if (ingredient != null && ingredient.length() > 0) {
-                ListIngredient ing = (detectIngredient(addSpacesAndDeletePoint(ingredient)));
+                ListIngredient ing = (detectIngredient(addSpacesDeletePointAndRemoveClutter(ingredient)));
 
                 returnList.add(ing);
 
@@ -213,7 +253,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         // TODO optimize model further
         // TODO quantity detection fails on  1 1/2-ounce can (should be 1 gets 1.5)
 
-
         // classify the line
         List<List<CoreLabel>> classifiedList = mCRFClassifier.classify(line);
         // map to put classes and labeled tokens
@@ -221,8 +260,8 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         for (List<CoreLabel> l : classifiedList) {
             for (CoreLabel cl : l) {
-                String classifiedClass = (cl.get(CoreAnnotations.AnswerAnnotation.class));
-                if (map.get(classifiedClass) == null) {
+                String classifiedClass = (cl.get(CoreAnnotations.AnswerAnnotation.class)).trim();
+                if (!map.containsKey(classifiedClass)) {
                     // if this key is not yet in the map construct a list and add the label to the list
                     List<CoreLabel> list = new ArrayList<>();
                     list.add(cl);
@@ -271,7 +310,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             // if no name detected make the position the whole string
             positions.put(Ingredient.PositionKey.NAME, new Position(0, line.length()));
         }
-        if (map.get(QUANTITY) != null) {
+        if (map.containsKey(QUANTITY)) {
             // calculate the quantity using the list of tokens in labeled QUANTITY
             // for now first element labeled as quantity and the succeeding elements
             // (endposition + 1 = beginposition) or endposition = beginposition
@@ -356,8 +395,20 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         // split on all whitespace characters
         String[] array = representation.split("[\\s\\xA0]+");
-        for (String s : array) {
+        result = calculateQuantity(array);
 
+        if (result == 0.0) {
+            // if no quantity value was detected return -1.0 to signal that detected quantity is
+            // not a quantity
+            return -1;
+        }
+        return result;
+    }
+
+    private double calculateQuantity(String[] array) {
+        boolean multiply = false;
+        double result = 0.0;
+        for (String s : array) {
             String[] fraction = s.split("/");
             try {
                 // if the string was splitted in to two parts it was a fraction
@@ -365,22 +416,31 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
                     double numerator = Double.parseDouble(fraction[0]);
                     double denominator = Double.parseDouble(fraction[1]);
-                    result += numerator / denominator;
+                    if (!multiply) {
+                        result += numerator / denominator;
+                    } else {
+                        result *= numerator / denominator;
+                        multiply = false;
+                    }
                 }
 
                 if (fraction.length == NON_FRACTION_LENGTH) {
-                    result += Double.parseDouble(s);
+
+                    if (!multiply) {
+                        if (s.equalsIgnoreCase("x")) {
+                            multiply = true;
+                        } else {
+                            result += Double.parseDouble(s);
+                        }
+                    } else {
+                        result *= Double.parseDouble(s);
+                        multiply = false;
+                    }
                 }
             } catch (NumberFormatException iae) {
                 // String identified as quantity is not parsable...
                 result += calculateNonParsableQuantity(s);
             }
-        }
-
-        if (result == 0.0) {
-            // if no quantity value was detected return -1.0 to signal that detected quantity is
-            // not a quantity
-            return -1;
         }
         return result;
     }
@@ -409,7 +469,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         for (int i = 0; i < list.size() && !listComplete; i++) {
             element = list.get(i);
             // check if the element belongs to the needed class
-            if (classLabel.equals(element.get(CoreAnnotations.AnswerAnnotation.class))) {
+            if (classLabel.equals((element.get(CoreAnnotations.AnswerAnnotation.class)).trim())) {
                 if (!firstFound) {
                     //if the first element is not found yet add this element to the list and toggle
                     // firstFound

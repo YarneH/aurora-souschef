@@ -1,5 +1,6 @@
 package com.aurora.souschef;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
@@ -15,6 +16,8 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.aurora.auroralib.Constants;
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.facade.Communicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
@@ -146,7 +149,45 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.setVisibility(View.GONE);
 
-        (new SouschefInit()).execute();
+        //TODO: Update the following
+        //Should only start in response to PLUGIN_ACTION in production
+        //This means the else case should be omitted
+
+
+
+        String inputText = "";
+        /*
+         * Handle Aurora starting the Plugin.
+         */
+        Intent intentThatStartedThisActivity = getIntent();
+        if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+
+            //BasicPluginObject basicPluginObject = null;
+
+            // TODO remove this if statement probably. Is currently used to handle cases where a plain String is sent instead of an ExtractedText
+            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
+                inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
+            }
+
+            // TODO Souschef should probably take an ExtracttedText as input instead of just a String
+            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
+                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
+                ExtractedText extractedText = ExtractedText.fromJson(inputTextJSON);
+                inputText = extractedText.toString();
+            }
+
+
+            // TODO handle a PluginObject that was cached
+            else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)){
+
+            }
+
+        } else{
+            inputText = getText();
+        }
+
+
+        (new SouschefInit(inputText)).execute();
     }
 
     class ProgressUpdate extends AsyncTask<Void, Integer, Void> {
@@ -198,6 +239,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class SouschefInit extends AsyncTask<Void, String, Recipe> {
+        private String mText;
+
+        protected SouschefInit(String text){
+            mText = text;
+        }
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -215,8 +262,8 @@ public class MainActivity extends AppCompatActivity {
                 publishProgress("Loading the magic important stuff...");
                 CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
                 Communicator mCommunicator = new Communicator(crf);
-                String text = getText();
-                mCommunicator.process(text);
+                //String text = getText();
+                mCommunicator.process(mText);
                 publishProgress("Done!");
                 return mCommunicator.getRecipe();
             } catch (IOException | ClassNotFoundException e) {

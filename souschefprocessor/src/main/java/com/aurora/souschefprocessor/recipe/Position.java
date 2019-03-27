@@ -10,7 +10,13 @@ import java.util.Objects;
  */
 public class Position {
 
+    /** The beginIndex of this position. This is the index of the first character of the detected
+     * element.
+     */
     private int mBeginIndex;
+    /**
+     * The endindex. This is (as usual in Java) the offset of the char after this detected element.
+     */
     private int mEndIndex;
 
     public Position(int beginIndex, int endIndex) {

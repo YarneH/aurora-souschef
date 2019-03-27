@@ -16,9 +16,19 @@ import java.util.Objects;
  */
 public class Ingredient {
 
+    /**
+     * The name of this ingredient
+     */
     protected String mName;
+    /**
+     * The {@link Amount} that has as value quantity and as unit the unit of this ingredient
+     */
     protected Amount mAmount;
 
+    /**
+     * A map with the {@link Position}s of te name, unit and value of this ingredient in the string
+     * they were classified. Each of these Positions cannot be null.
+     */
     protected Map<PositionKey, Position> mPositions;
 
     public Ingredient(String name, String unit, double value, Map<PositionKey, Position> positions) {
@@ -39,7 +49,7 @@ public class Ingredient {
         return mPositions.get(PositionKey.NAME);
     }
 
-    public void setNamePosition(Position namePosition){
+    public void setNamePosition(Position namePosition) {
         mPositions.put(PositionKey.NAME, namePosition);
     }
 
@@ -47,7 +57,7 @@ public class Ingredient {
         return mPositions.get(PositionKey.QUANTITY);
     }
 
-    public void setQuantityPosition(Position quantityPosition){
+    public void setQuantityPosition(Position quantityPosition) {
         mPositions.put(PositionKey.QUANTITY, quantityPosition);
     }
 
@@ -55,12 +65,16 @@ public class Ingredient {
         return mPositions.get(PositionKey.UNIT);
     }
 
-    public void setUnitPosition(Position unitPosition){
+    public void setUnitPosition(Position unitPosition) {
         mPositions.put(PositionKey.UNIT, unitPosition);
     }
 
     public String getName() {
         return mName;
+    }
+
+    public void setName(String name) {
+        this.mName = name;
     }
 
     public String getUnit() {
@@ -73,10 +87,6 @@ public class Ingredient {
 
     public Amount getAmount() {
         return mAmount;
-    }
-
-    public void setName(String name) {
-        this.mName = name;
     }
 
     public void setmAmount(Amount amount) {

@@ -27,13 +27,23 @@ import edu.stanford.nlp.ling.CoreLabel;
  */
 public class Delegator {
 
+    /** A constant describing 1/2*/
     private static final double HALF = 0.5;
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
+
+    /** A threadPoolExecutor to execute steps in parallel*/
     private ThreadPoolExecutor mThreadPoolExecutor;
+    /** The classifier to classify ingredients*/
     private CRFClassifier<CoreLabel> mIngredientClassifier;
+    /** A boolean that indicates wheter the processin should be parallelized*/
     private boolean mParallelize;
 
 
+    /**
+     * Creating the delegator
+     * @param ingredientClassifier the classifier to classify the ingredients
+     * @param parallelize boolean to indicate wheter to parallelize or not
+     */
     public Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
         mThreadPoolExecutor = null;
         mIngredientClassifier = ingredientClassifier;
@@ -117,12 +127,6 @@ public class Delegator {
     }
 
 
-    public ThreadPoolExecutor getThreadPoolExecutor() {
-        if (mParallelize && mThreadPoolExecutor == null) {
-            setUpThreadPool();
-        }
-        return mThreadPoolExecutor;
-    }
 
 
 }

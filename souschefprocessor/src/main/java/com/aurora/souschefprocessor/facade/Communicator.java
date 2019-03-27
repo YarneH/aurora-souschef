@@ -10,16 +10,26 @@ import edu.stanford.nlp.ling.CoreLabel;
  */
 public class Communicator {
 
+    /**
+     * The recipe result of the processing
+     */
     private Recipe mRecipe;
+    /**
+     * The delgator that executes the processing
+     */
     private Delegator mDelegator;
     // TODO add attribute kernelCommunicator to communicate with Aurora
 
     // Caution! this class heavily depends on the Aurora API
 
+    /**
+     * Create a communicator using a CRFClassifier that was loaded in and is used to classify the
+     * ingredients
+     *
+     * @param ingredientsClassifier
+     */
     public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
-
         mDelegator = new Delegator(ingredientsClassifier, false);
-
 
     }
 

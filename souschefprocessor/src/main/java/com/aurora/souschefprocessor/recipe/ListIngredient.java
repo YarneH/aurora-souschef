@@ -11,6 +11,9 @@ import java.util.Map;
  */
 public class ListIngredient extends Ingredient {
 
+    /**
+     * The originalLine this ListIngredient was detected in
+     */
     private String mOriginalLine;
 
     public ListIngredient(String name, String unit, double value, String originalText,

@@ -15,7 +15,7 @@ import java.util.Set;
  * mTimerDetected: a boolean that indicates if the DetectTimersInStepTask task has been done on this step
  */
 public class RecipeStep {
-    // this could become a hashmap, with key the Ingredient and value the location in the mDescription
+    
     private Set<Ingredient> mIngredients;
     private List<RecipeTimer> mRecipeTimers;
     private String mDescription;

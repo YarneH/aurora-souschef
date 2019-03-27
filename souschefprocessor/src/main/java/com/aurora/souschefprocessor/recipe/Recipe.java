@@ -73,4 +73,8 @@ public class Recipe extends PluginObject {
                 "\n mDescription='" + mDescription + '\'' +
                 '}';
     }
+
+    public static PluginObject fromJson(String json){
+        return mGson.fromJson(json, Recipe.class);
+    }
 }

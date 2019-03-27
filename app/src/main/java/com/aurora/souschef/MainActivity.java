@@ -1,5 +1,6 @@
 package com.aurora.souschef;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
@@ -17,13 +18,6 @@ import android.widget.TextView;
 
 import com.aurora.souschefprocessor.facade.Communicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
-import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
-
-import java.io.IOException;
-import java.util.zip.GZIPInputStream;
-
-import edu.stanford.nlp.ie.crf.CRFClassifier;
-import edu.stanford.nlp.ling.CoreLabel;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
             "Finishing up..."};
 
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
+    private Context mContext = this;
 
     public MainActivity() {
         // Default constructor
@@ -114,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         // The first thing we do is Souschef specific:
         // generate pipeline for creating annotations in separate thread.
 
-        DetectTimersInStepTask.initializeAnnotationPipeline();
+        Communicator.createAnnotationPipelines();
 
         /*
          * The {@link ViewPager} that will host the section contents.
@@ -161,8 +156,8 @@ public class MainActivity extends AppCompatActivity {
                 while (isLoading) {
                     Thread.sleep(MILLIS_BETWEEN_UPDATES);
                     upTime += MILLIS_BETWEEN_UPDATES;
-                    publishProgress(DetectTimersInStepTask.getProgress().get());
-                    if (DetectTimersInStepTask.getProgress().get() >= DETECTION_STEPS) {
+                    publishProgress(Communicator.getProgressAnnotationPipelines());
+                    if (Communicator.getProgressAnnotationPipelines() >= DETECTION_STEPS) {
                         isLoading = false;
                     }
                     if (upTime > MAX_WAIT_TIME) {
@@ -209,20 +204,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Recipe doInBackground(Void... voids) {
             // Progressupdates are in demostate
-            try (GZIPInputStream is = new GZIPInputStream(getResources().
-                    openRawResource(R.raw.detect_ingr_list_model))) {
-                // update 1:
-                publishProgress("Loading the magic important stuff...");
-                CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
-                Communicator mCommunicator = new Communicator(crf);
-                String text = getText();
-                mCommunicator.process(text);
-                publishProgress("Done!");
-                return mCommunicator.getRecipe();
-            } catch (IOException | ClassNotFoundException e) {
-                Log.e("Model", "demo ", e);
-            }
-            return null;
+            Communicator comm = Communicator.createCommunicator(mContext);
+
+            // update 1:
+            publishProgress("Loading the magic important stuff...");
+            String text = getText();
+            comm.process(text);
+            publishProgress("Done!");
+            return comm.getRecipe();
+
+
         }
 
         @Override

@@ -164,14 +164,16 @@ public class MainActivity extends AppCompatActivity {
 
             //BasicPluginObject basicPluginObject = null;
 
-            // TODO remove this if statement probably. Is currently used to handle cases where a plain String is sent instead of an ExtractedText
+            // TODO remove this if statement probably. Is currently used to handle cases where a
+            // plain String is sent instead of an ExtractedText
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
                 inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
             }
 
             // TODO Souschef should probably take an ExtracttedText as input instead of just a String
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
-                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
+                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
+                        Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
                 ExtractedText extractedText = ExtractedText.fromJson(inputTextJSON);
                 inputText = extractedText.toString();
             }
@@ -179,7 +181,9 @@ public class MainActivity extends AppCompatActivity {
 
             // TODO handle a PluginObject that was cached
             else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)){
-
+                Log.d("NOT_IMPLEMENTED", "PLUGIN_INPUT_OBJECT needs to be implemented." +
+                        "Instead using getText.");
+                inputText = getText();
             }
 
         } else{

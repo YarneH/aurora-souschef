@@ -2,6 +2,8 @@ package com.aurora.souschefprocessor.task.timerdetector;
 
 import android.util.Log;
 
+import com.aurora.souschefprocessor.facade.Communicator;
+import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
@@ -45,7 +47,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private static final String PIPELINE = "PIPELINE";
     // Position of number in timex3 format (e.g. PT1H)
     private static final Integer TIMEX_NUM_POSITION = 2;
-    private static AtomicInteger progress = new AtomicInteger(0);
+
     private static AnnotationPipeline sAnnotationPipeline;
     private static Map<String, Double> sFractionMultipliers = new HashMap<>();
     private static Object sLock = new Object();
@@ -73,9 +75,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         this.recipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
     }
 
-    public static AtomicInteger getProgress() {
-        return progress;
-    }
 
     /**
      * Initializes the AnnotationPipeline should be called before using the first detector
@@ -182,22 +181,22 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
         props.setProperty("sutime.binders", "0");
         Log.d(PIPELINE, "0");
-        progress.incrementAndGet();
+        Delegator.incrementProgressAnnotationPipelines();
         AnnotationPipeline pipeline = new AnnotationPipeline();
         Log.d(PIPELINE, "1");
-        progress.incrementAndGet();
+        Delegator.incrementProgressAnnotationPipelines();
         pipeline.addAnnotator(new TokenizerAnnotator(false));
         Log.d(PIPELINE, "2");
-        progress.incrementAndGet();
+        Delegator.incrementProgressAnnotationPipelines();
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
         Log.d(PIPELINE, "3");
-        progress.incrementAndGet();
+        Delegator.incrementProgressAnnotationPipelines();
         pipeline.addAnnotator(new POSTaggerAnnotator(false));
         Log.d(PIPELINE, "4");
-        progress.incrementAndGet();
+        Delegator.incrementProgressAnnotationPipelines();
         pipeline.addAnnotator(new TimeAnnotator("sutime", props));
         Log.d(PIPELINE, "5");
-        progress.incrementAndGet();
+        Delegator.incrementProgressAnnotationPipelines();
         return pipeline;
     }
 

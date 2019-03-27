@@ -202,6 +202,58 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         return (secondIsSlashOrDash && thirdIsNumber && !firstIsNumber);
     }
 
+    private static double calculateQuantity(String[] array) {
+        boolean multiply = false;
+        double result = 0.0;
+        for (String s : array) {
+            String[] fraction = s.split("/");
+            try {
+                // if the string was splitted in to two parts it was a fraction
+                if (fraction.length == FRACTION_LENGTH) {
+                    result = calculateFraction(fraction, result, multiply);
+                    // set multiply to false after fraction because it is always multiplied when
+                    // it was true
+                    multiply = false;
+                }
+                // not a fraction
+                else if (multiply) {
+                    // if previous was multiplication, multiply
+                    result *= Double.parseDouble(s);
+                    multiply = false;
+                } else if ("x".equalsIgnoreCase(s)) {
+                    // if this is a multiplication sign set multiply to two
+                    multiply = true;
+                } else {
+                    // just add the result
+                    result += Double.parseDouble(s);
+
+                }
+            } catch (NumberFormatException iae) {
+                // String identified as quantity is not parsable...
+                double nonParsableQuantity = calculateNonParsableQuantity(s);
+                if (multiply) {
+                    result *= nonParsableQuantity;
+                    multiply = false;
+                } else {
+                    result += nonParsableQuantity;
+                }
+            }
+        }
+        return result;
+    }
+
+    private static double calculateFraction(String[] fraction, double intermediateResult, boolean multiply) {
+        double numerator = Double.parseDouble(fraction[0]);
+        double denominator = Double.parseDouble(fraction[1]);
+        if (!multiply) {
+            intermediateResult += numerator / denominator;
+        } else {
+            intermediateResult *= numerator / denominator;
+        }
+        return intermediateResult;
+
+    }
+
     /**
      * Detects the ListIngredients presented in the ingredientsString and sets the mIngredients field
      * in the recipe to this set of ListIngredients.
@@ -359,7 +411,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         return bld.toString();
     }
 
-
     /**
      * Builds the name of the ingredient using a list of succeeding tokens that were classified as UNIT
      *
@@ -404,54 +455,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         }
         return result;
     }
-
-    private static double calculateQuantity(String[] array) {
-        boolean multiply = false;
-        double result = 0.0;
-        for (String s : array) {
-            String[] fraction = s.split("/");
-            try {
-                // if the string was splitted in to two parts it was a fraction
-                if (fraction.length == FRACTION_LENGTH) {
-                    result = calculateFraction(fraction, result, multiply);
-                    // set multiply to false after fraction because it is always multiplied when
-                    // it was true
-                    multiply = false;
-                }
-
-                if (fraction.length == NON_FRACTION_LENGTH) {
-
-                    if (!multiply) {
-                        if ("x".equalsIgnoreCase(s)) {
-                            multiply = true;
-                        } else {
-                            result += Double.parseDouble(s);
-                        }
-                    } else {
-                        result *= Double.parseDouble(s);
-                        multiply = false;
-                    }
-                }
-            } catch (NumberFormatException iae) {
-                // String identified as quantity is not parsable...
-                result += calculateNonParsableQuantity(s);
-            }
-        }
-        return result;
-    }
-
-    private static double calculateFraction(String[] fraction, double intermediateResult, boolean multiply){
-        double numerator = Double.parseDouble(fraction[0]);
-        double denominator = Double.parseDouble(fraction[1]);
-        if (!multiply) {
-            intermediateResult += numerator / denominator;
-        } else {
-            intermediateResult *= numerator / denominator;
-        }
-        return  intermediateResult;
-
-    }
-
 
     /**
      * Gets the first sequence of succeeding elements of a class in a list of labels.

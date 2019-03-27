@@ -385,7 +385,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * returned
      */
     private double calculateQuantity(List<CoreLabel> list) {
-        double result = 0.0;
+
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : list) {
             bld.append(cl.word() + " ");
@@ -395,7 +395,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
         // split on all whitespace characters
         String[] array = representation.split("[\\s\\xA0]+");
-        result = calculateQuantity(array);
+        double result = calculateQuantity(array);
 
         if (result == 0.0) {
             // if no quantity value was detected return -1.0 to signal that detected quantity is
@@ -405,7 +405,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         return result;
     }
 
-    private double calculateQuantity(String[] array) {
+    private static double calculateQuantity(String[] array) {
         boolean multiply = false;
         double result = 0.0;
         for (String s : array) {
@@ -413,21 +413,16 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             try {
                 // if the string was splitted in to two parts it was a fraction
                 if (fraction.length == FRACTION_LENGTH) {
-
-                    double numerator = Double.parseDouble(fraction[0]);
-                    double denominator = Double.parseDouble(fraction[1]);
-                    if (!multiply) {
-                        result += numerator / denominator;
-                    } else {
-                        result *= numerator / denominator;
-                        multiply = false;
-                    }
+                    result = calculateFraction(fraction, result, multiply);
+                    // set multiply to false after fraction because it is always multiplied when
+                    // it was true
+                    multiply = false;
                 }
 
                 if (fraction.length == NON_FRACTION_LENGTH) {
 
                     if (!multiply) {
-                        if (s.equalsIgnoreCase("x")) {
+                        if ("x".equalsIgnoreCase(s)) {
                             multiply = true;
                         } else {
                             result += Double.parseDouble(s);
@@ -443,6 +438,18 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             }
         }
         return result;
+    }
+
+    private static double calculateFraction(String[] fraction, double intermediateResult, boolean multiply){
+        double numerator = Double.parseDouble(fraction[0]);
+        double denominator = Double.parseDouble(fraction[1]);
+        if (!multiply) {
+            intermediateResult += numerator / denominator;
+        } else {
+            intermediateResult *= numerator / denominator;
+        }
+        return  intermediateResult;
+
     }
 
 

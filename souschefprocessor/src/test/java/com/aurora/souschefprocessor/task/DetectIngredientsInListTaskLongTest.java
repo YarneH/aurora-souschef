@@ -304,7 +304,7 @@ public class DetectIngredientsInListTaskLongTest {
                 "1/4 cup cracked wheat\n" +
                 "1 x 120g pack mixed nuts and dried fruit (I use one containing brazil nuts, pecans, almonds, sultanas and dried cranberries)\n" +
                 "750–900ml/1⅓–1⅔ pint readymade chicken gravy\n" +
-                "500ml/18fl oz milkn" +
+                "500ml/18fl oz milk\n" +
                 "freshly grated nutmeg, to serve (optional)n" +
                 "200ml/7fl oz crème frâiche\n" +
                 "1 x 7g sachet easy-blend dried yeast\n" +

@@ -92,25 +92,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         return pipeline;
     }
 
-    /**
-     * Creates custom annotation pipeline for timers using a pre-existing pipeline
-     *
-     * @return Annotation pipeline
-     */
-    private static AnnotationPipeline createIngredientAnnotationPipeline(
-            List<Annotator> annotatorsTillWordsToSentences) {
-
-
-        AnnotationPipeline pipeline = new AnnotationPipeline();
-        Log.d("ingr", "3");
-        for (Annotator a : annotatorsTillWordsToSentences) {
-            pipeline.addAnnotator(a);
-        }
-        Delegator.incrementProgressAnnotationPipelines();
-        pipeline.addAnnotator(new POSTaggerAnnotator(false));
-        return pipeline;
-    }
-
 
     /**
      * Initializes the AnnotationPipeline should be called before using the first detector
@@ -125,19 +106,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         initialize.start();
     }
 
-    /**
-     * Initializes the AnnotationPipeline (using a pre-existing pipeline with some steps,
-     * should be called before using the first detector
-     */
-    public static void initializeAnnotationPipeline(List<Annotator> annotatorsTillWordsToSentences) {
-        Thread initialize = new Thread(() -> {
-            sAnnotationPipeline = createIngredientAnnotationPipeline(annotatorsTillWordsToSentences);
-            synchronized (LOCK) {
-                LOCK.notifyAll();
-            }
-        });
-        initialize.start();
-    }
 
     /**
      * Detects the mIngredients for each recipeStep

@@ -67,17 +67,9 @@ public class Delegator {
         if (sThreadPoolExecutor == null) {
             setUpThreadPool();
         }
-        List<Annotator> annotators = new ArrayList<>();
-        annotators.add(new TokenizerAnnotator(false));
-        Delegator.incrementProgressAnnotationPipelines();
-        Log.d("COMMON:", "0");
-        annotators.add(new WordsToSentencesAnnotator(false));
-        Delegator.incrementProgressAnnotationPipelines();
-        Log.d("COMMON", "2");
 
-        DetectTimersInStepTask.initializeAnnotationPipeline(annotators);
-
-        DetectIngredientsInStepTask.initializeAnnotationPipeline(annotators);
+        DetectTimersInStepTask.initializeAnnotationPipeline();
+        DetectIngredientsInStepTask.initializeAnnotationPipeline();
 
 
     }
@@ -97,7 +89,7 @@ public class Delegator {
          * switching
          */
         int numberOfCores = (int)
-                (Runtime.getRuntime().availableProcessors() * HALF);
+                (Runtime.getRuntime().availableProcessors() );
         // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue

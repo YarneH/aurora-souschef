@@ -1,7 +1,9 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
 import android.support.v4.util.Pair;
+import android.util.Log;
 
+import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.recipe.Amount;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
@@ -47,9 +49,9 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
     private static final String DEFAULT_UNIT = "";
     private static final Double DEFAULT_QUANTITY = 1.0;
-
+    private static final Object LOCK = new Object();
+    private static AnnotationPipeline sAnnotationPipeline;
     private Map<String, Double> mFractionMultipliers = new HashMap<>();
-
     private int mStepIndex;
 
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
@@ -65,6 +67,41 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
         this.mFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
         this.mFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
+    }
+
+    /**
+     * Creates custom annotation pipeline for detecting ingredients in a recipe step
+     *
+     * @return Annotation pipeline
+     */
+    private static AnnotationPipeline createIngredientAnnotationPipeline() {
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+        Log.d("INGREDIENTS:", "0");
+        Delegator.incrementProgressAnnotationPipelines();
+        pipeline.addAnnotator(new TokenizerAnnotator(false));
+        Delegator.incrementProgressAnnotationPipelines();
+        Log.d("INGREDIENTS:", "1");
+        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
+        Delegator.incrementProgressAnnotationPipelines();
+        Log.d("INGREDIENTS:", "2");
+        pipeline.addAnnotator(new POSTaggerAnnotator(false));
+        Delegator.incrementProgressAnnotationPipelines();
+        Log.d("INGREDIENTS:", "3");
+        return pipeline;
+    }
+
+    /**
+     * Initializes the AnnotationPipeline should be called before using the first detector
+     */
+    public static void initializeAnnotationPipeline() {
+        Thread initialize = new Thread(() -> {
+            System.out.println("Thread for ingredients started");
+            sAnnotationPipeline = createIngredientAnnotationPipeline();
+            synchronized (LOCK) {
+                LOCK.notifyAll();
+            }
+        });
+        initialize.start();
     }
 
     /**
@@ -88,6 +125,18 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private Set<Ingredient> detectIngredients(RecipeStep recipeStep, List<ListIngredient> ingredientListRecipe) {
         Set<Ingredient> set = new HashSet<>();
 
+        while (sAnnotationPipeline == null) {
+            try {
+
+                synchronized (LOCK) {
+                    LOCK.wait();
+                }
+            } catch (InterruptedException e) {
+                Log.d("Interrupted", "detecttimer", e);
+                Thread.currentThread().interrupt();
+            }
+        }
+
         // Maps list ingredients to a an array of words in their name for matching the name in the step
         // Necessary in case only a certain word of the list ingredient is used to describe it in the step
         HashMap<ListIngredient, List<String>> ingredientListMap = new HashMap<>();
@@ -98,10 +147,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         // Keeps track of already found ListIngredients in case the ingredient
         // is mentioned multiple times in the recipe step
         List<Ingredient> foundIngredients = new ArrayList<>();
-
-        AnnotationPipeline pipeline = createIngredientAnnotationPipeline();
         Annotation recipeStepAnnotated = new Annotation(recipeStep.getDescription());
-        pipeline.annotate(recipeStepAnnotated);
+        sAnnotationPipeline.annotate(recipeStepAnnotated);
 
         List<CoreMap> stepSentences = recipeStepAnnotated.get(CoreAnnotations.SentencesAnnotation.class);
 
@@ -365,19 +412,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
         // In case the ingredient name is the first word in the step
         return true;
-    }
-
-    /**
-     * Creates custom annotation pipeline for detecting ingredients in a recipe step
-     *
-     * @return Annotation pipeline
-     */
-    private AnnotationPipeline createIngredientAnnotationPipeline() {
-        AnnotationPipeline pipeline = new AnnotationPipeline();
-        pipeline.addAnnotator(new TokenizerAnnotator(false));
-        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-        pipeline.addAnnotator(new POSTaggerAnnotator(false));
-        return pipeline;
     }
 
 }

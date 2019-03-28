@@ -7,6 +7,7 @@ import com.aurora.souschefprocessor.task.helpertasks.NonParallelizeStepTask;
 import com.aurora.souschefprocessor.task.helpertasks.ParallelizeStepsTask;
 import com.aurora.souschefprocessor.task.helpertasks.StepTaskNames;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
+import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 import com.aurora.souschefprocessor.task.sectiondivider.DetectNumberOfPeopleTask;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitStepsTask;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask;
@@ -30,28 +31,54 @@ public class Delegator {
 
     private static final double HALF = 0.5;
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
-    private ThreadPoolExecutor mThreadPoolExecutor;
+    private static ThreadPoolExecutor mThreadPoolExecutor;
     private CRFClassifier<CoreLabel> mIngredientClassifier;
     private boolean mParallelize;
 
-    static void createAnnotationPipelines(){
-        DetectTimersInStepTask.initializeAnnotationPipeline();
-    }
+    private static boolean startedCreatingPipelines = false;
+    private static final Object LOCK = new Object();
 
-    public static void incrementProgressAnnotationPipelines(){
-        Communicator.incrementProgressAnnotationPipelines();
-    }
-     Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
+    Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
         mThreadPoolExecutor = null;
         mIngredientClassifier = ingredientClassifier;
         mParallelize = parallelize;
+
     }
 
+    static{
+        createAnnotationPipelines();
+    }
+
+    static void createAnnotationPipelines() {
+        synchronized (LOCK){
+
+            if(startedCreatingPipelines){
+                // creating already started or finished -> do not start again
+                return;
+            }
+            // ensure no other thread starts creating pipelines
+            startedCreatingPipelines = true;
+            LOCK.notifyAll();
+        }
+        if(mThreadPoolExecutor == null){
+            setUpThreadPool();
+        }
+        System.out.println("Start timer pipeline");
+        DetectTimersInStepTask.initializeAnnotationPipeline();
+        System.out.println("start ingredient pipeline");
+        DetectIngredientsInStepTask.initializeAnnotationPipeline();
+        System.out.println("pipelines finished");
+
+    }
+
+    public static void incrementProgressAnnotationPipelines() {
+        Communicator.incrementProgressAnnotationPipelines();
+    }
 
     /**
      * Creates the ThreadPoolExecutor for the processing of the text, this is device-dependent
      */
-    private void setUpThreadPool() {
+    private static void setUpThreadPool() {
         /*
          * Gets the number of available cores
          * (not always the same as the maximum number of cores)
@@ -124,8 +151,8 @@ public class Delegator {
     }
 
 
-    public ThreadPoolExecutor getThreadPoolExecutor() {
-        if (mParallelize && mThreadPoolExecutor == null) {
+    public static ThreadPoolExecutor getThreadPoolExecutor() {
+        if ( mThreadPoolExecutor == null) {
             setUpThreadPool();
         }
         return mThreadPoolExecutor;

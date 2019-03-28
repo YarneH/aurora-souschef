@@ -1,13 +1,10 @@
 package com.aurora.souschefprocessor.task;
 
-import android.util.Log;
-
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
-import com.aurora.souschefprocessor.task.ingredientdetector.*;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -20,6 +17,8 @@ import java.util.Set;
 
 public class DetectIngredientsInRecipeStepTaskUnitTest {
 
+    private static final String DEFAULT_UNIT = "";
+    private static final Double DEFAULT_QUANTITY = 1.0;
     private static DetectIngredientsInStepTask detector0;
     private static DetectIngredientsInStepTask detector1;
     private static DetectIngredientsInStepTask detector2;
@@ -28,14 +27,12 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     private static ArrayList<RecipeStep> recipeSteps;
     private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
 
-    private static final String DEFAULT_UNIT = "";
-    private static final Double DEFAULT_QUANTITY = 1.0;
-
     @BeforeClass
     public static void initialize() {
         // Initialize recipe in progress
         String originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
+        DetectIngredientsInStepTask.initializeAnnotationPipeline();
 
         // Initialize positions with dummy values
         irrelevantPositions = new HashMap<>();
@@ -99,18 +96,18 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         Ingredient ingredientNoQuantity = null;
         Ingredient ingredientNoUnit = null;
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
-        for(Ingredient ingr : stepIngredients){
-            if(ingr.getName().equals(stepIngredientNoQuantity.getName())){
+        for (Ingredient ingr : stepIngredients) {
+            if (ingr.getName().equals(stepIngredientNoQuantity.getName())) {
                 ingredientNoQuantity = ingr;
             }
-            if(ingr.getName().equals(stepIngredientNoUnit.getName())){
+            if (ingr.getName().equals(stepIngredientNoUnit.getName())) {
                 ingredientNoUnit = ingr;
             }
         }
 
         // Asserts the correct absence of both the quantity and the unit equality
-        assert(stepIngredientNoQuantity.equals(ingredientNoQuantity));
-        assert(stepIngredientNoUnit.equals(ingredientNoUnit));
+        assert (stepIngredientNoQuantity.equals(ingredientNoQuantity));
+        assert (stepIngredientNoUnit.equals(ingredientNoUnit));
     }
 
     @Test
@@ -131,51 +128,51 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @Test
     public void DetectIngredientsInStep_doTask_setHasCorrectSize() {
         detector0.doTask();
-        assert(recipe.getRecipeSteps().get(0).getIngredients().size() == 1);
+        assert (recipe.getRecipeSteps().get(0).getIngredients().size() == 1);
 
         detector1.doTask();
-        assert(recipe.getRecipeSteps().get(1).getIngredients().size() == 2);
+        assert (recipe.getRecipeSteps().get(1).getIngredients().size() == 2);
     }
 
     @Test
-    public void IngredientDetectorStep_doTask_ingredientDetectedWithoutUnit(){
+    public void IngredientDetectorStep_doTask_ingredientDetectedWithoutUnit() {
         detector0.doTask();
         Ingredient stepIngredient = new Ingredient("spaghetti", DEFAULT_UNIT, DEFAULT_QUANTITY, irrelevantPositions);
 
         System.out.println(recipe.getRecipeSteps().get(0).getIngredients());
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(0).getIngredients();
-        assert(stepIngredients.contains(stepIngredient));
+        assert (stepIngredients.contains(stepIngredient));
     }
 
     @Test
-    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnit(){
+    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnit() {
         detector1.doTask();
         Ingredient stepIngredient = new Ingredient("garlic", "clove", DEFAULT_QUANTITY, irrelevantPositions);
 
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(1).getIngredients();
-        assert(stepIngredients.contains(stepIngredient));
+        assert (stepIngredients.contains(stepIngredient));
     }
 
     @Test
-    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndVerboseQuantity(){
+    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndVerboseQuantity() {
         detector2.doTask();
         Ingredient stepIngredient = new Ingredient("basil leaves", DEFAULT_UNIT, 5.0, irrelevantPositions);
 
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
-        assert(stepIngredients.contains(stepIngredient));
+        assert (stepIngredients.contains(stepIngredient));
     }
 
     @Test
-    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndNumericalQuantity(){
+    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndNumericalQuantity() {
         detector2.doTask();
         Ingredient stepIngredient = new Ingredient("sauce", "ounces", 250.0, irrelevantPositions);
 
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
-        assert(stepIngredients.contains(stepIngredient));
+        assert (stepIngredients.contains(stepIngredient));
     }
 
     @Test
-    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndQuantityAndPosition(){
+    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndQuantityAndPosition() {
         detector2.doTask();
 
         HashMap<Ingredient.PositionKey, Position> positions = new HashMap<>();
@@ -187,16 +184,16 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         // Retrieve the sauce ingredient detected in the recipe step
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
         Ingredient detectedIngredient = null;
-        for(Ingredient ingr : stepIngredients){
-            if(ingr.equals(stepIngredient)){
+        for (Ingredient ingr : stepIngredients) {
+            if (ingr.equals(stepIngredient)) {
                 detectedIngredient = ingr;
             }
         }
 
         // Assert that the sauce ingredient it's positions are correct
-        assert(detectedIngredient.getNamePosition().equals(stepIngredient.getNamePosition()));
-        assert(detectedIngredient.getUnitPosition().equals(stepIngredient.getUnitPosition()));
-        assert(detectedIngredient.getQuantityPosition().equals(stepIngredient.getQuantityPosition()));
+        assert (detectedIngredient.getNamePosition().equals(stepIngredient.getNamePosition()));
+        assert (detectedIngredient.getUnitPosition().equals(stepIngredient.getUnitPosition()));
+        assert (detectedIngredient.getQuantityPosition().equals(stepIngredient.getQuantityPosition()));
     }
 
 }

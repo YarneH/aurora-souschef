@@ -25,7 +25,7 @@ public class DelegatorLongTest {
 
     @BeforeClass
     public static void initialize() {
-        DetectTimersInStepTask.initializeAnnotationPipeline();
+        //DetectTimersInStepTask.initializeAnnotationPipeline();
         // load in the recipes
         List<String> recipes = initializeRecipes();
         // split into valid and invalid

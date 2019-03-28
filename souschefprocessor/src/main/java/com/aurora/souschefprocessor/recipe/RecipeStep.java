@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.recipe;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -47,13 +49,20 @@ public class RecipeStep {
     // We could also initialize an empty HashSet in the constructor (but maybe still need to check if not null
     // to deal with setIngredients possibly setting mIngredients to null
     public synchronized void add(Ingredient ingredient) {
+        try{
         if (ingredient != null && ingredient.arePositionsLegalInString(mDescription)) {
             if (this.mIngredients == null) {
                 this.mIngredients = new HashSet<>();
             }
             this.mIngredients.add(ingredient);
         } else {
-            throw new IllegalArgumentException("Positions of ingredient are not legal!");
+            throw new IllegalArgumentException("Positions of ingredient are not legal!\n" +
+                    "Ingredient: "+ingredient+"\n" +
+                    "Positions: " +ingredient.getQuantityPosition()+", "+
+                    ingredient.getUnitPosition()+", "+ ingredient.getNamePosition()+
+                    "\nDescription: "+ mDescription +" ( "+mDescription.length()+" length)");
+        }}catch(IllegalArgumentException iae){
+            Log.e("RECIPESTEP", "Add ingredient failed: ", iae);
         }
     }
 

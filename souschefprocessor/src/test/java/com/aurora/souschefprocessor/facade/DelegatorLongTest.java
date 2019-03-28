@@ -182,7 +182,7 @@ public class DelegatorLongTest {
 
         // Assert
         System.out.println(average_para + "  PARALLEL TIME");
-        assert (average_para < 6000);
+        assert (average_para < 15000);
 
 
     }

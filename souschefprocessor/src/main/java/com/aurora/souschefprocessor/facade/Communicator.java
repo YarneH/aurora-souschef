@@ -19,6 +19,9 @@ import edu.stanford.nlp.ling.CoreLabel;
  */
 public class Communicator {
 
+    /**
+     * An atomicInteger to showcase the update of the creating of the pipelines
+     */
     private static AtomicInteger mProgressAnnotationPipelines = new AtomicInteger(0);
 
     /**
@@ -39,15 +42,22 @@ public class Communicator {
      *
      * @param ingredientsClassifier
      */
-    public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
+    private Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
         mDelegator = new Delegator(ingredientsClassifier, false);
 
     }
 
+    /**
+     * Creates a Communicator object by loading in the model for the detection of ingredients i
+     * the list. It also calls the {@link #createAnnotationPipelines()} to create the pipeline if
+     * this has not been done yet
+     * @param context The context to access the resources to load in the model
+     * @return A communicator object that has the model loaded in
+     */
     public static Communicator createCommunicator(Context context) {
+        createAnnotationPipelines();
         try (GZIPInputStream is = new GZIPInputStream(context.getResources().
                 openRawResource(R.raw.detect_ingr_list_model))) {
-            // update 1:
             CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
             return new Communicator(crf);
         } catch (IOException | ClassNotFoundException e) {
@@ -56,14 +66,25 @@ public class Communicator {
         return null;
     }
 
+    /**
+     * Function that creates the annotation pipeline, if you make this call the first function of
+     * your program
+     */
     public static void createAnnotationPipelines() {
         Delegator.createAnnotationPipelines();
     }
 
+    /**
+     * Get the progress of the creation of the pipelines
+     * @return
+     */
     public static int getProgressAnnotationPipelines() {
         return mProgressAnnotationPipelines.get();
     }
 
+    /**
+     * Increment the progress of the creation of the pipelines
+     */
     static void incrementProgressAnnotationPipelines() {
         mProgressAnnotationPipelines.incrementAndGet();
     }
@@ -85,6 +106,10 @@ public class Communicator {
         return mRecipe;
     }
 
+    /**
+     * TODO
+     * @param o
+     */
     public void sendObjectToAuroraKernel(PluginObject o) {
         // TODO either this method is inherited from a class that does not exist yet or implement here,
         // should I think be a function of PluginCommunicator a class defined by Aurora

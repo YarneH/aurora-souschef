@@ -80,6 +80,11 @@ public class ListIngredient extends Ingredient {
 
     }
 
+    /**
+     * A function that indicates whether this listingredient contains a unit detected in the string
+     *
+     * @return a boolean that indicates if a unit was detected
+     */
     private boolean unitDetected() {
         boolean stringSet = !("").equals(mAmount.getUnit());
         boolean positionSpansEntireLine = getUnitPosition().getBeginIndex() == 0 &&
@@ -87,6 +92,11 @@ public class ListIngredient extends Ingredient {
         return stringSet && !positionSpansEntireLine;
     }
 
+    /**
+     * A function that indicates whether this listingredient contains a quantity detected in the string
+     *
+     * @return a boolean that indicates if a quantity was detected
+     */
     private boolean quantityDetected() {
         return !(getQuantityPosition().getBeginIndex() == 0 &&
                 getQuantityPosition().getEndIndex() == mOriginalLine.length());

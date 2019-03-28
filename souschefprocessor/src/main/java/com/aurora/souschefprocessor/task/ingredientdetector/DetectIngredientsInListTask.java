@@ -28,31 +28,51 @@ import edu.stanford.nlp.ling.CoreLabel;
 public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
 
-    // generally numbers greater than twelve are not spelled out
+    /**
+     * An array of spelled out numbers, generally numbers greater than twelve are not spelled out so
+     * these are numbers zero to twelve
+     */
     private static final String[] NUMBERS_TO_TWELVE = {"zero", "one", "two", "three", "four", "five",
             "six", "seven", "eight", "nine", "ten", "eleven", "twelve"};
-    // multiples of ten are also spelled out
+    /**
+     * An array of spelled out numbers since multiples of ten are also spelled out
+     */
     private static final String[] MULTIPLES_OF_TEN = {"zero", "ten", "twenty", "thirty", "forty",
             "fifty", "sixty", "seventy", "eighty", "ninety", "hundred"};
 
-    // The size if a string representing a fraction is split on the regex "/"
+    /**
+     * The size if a string representing a fraction is split on the regex "/"
+     */
     private static final int FRACTION_LENGTH = 2;
 
-    // The number 10
+    /**
+     * The number 10
+     */
     private static final double TEN = 10;
 
-    // Strings representing the classes of the classifier
+    /**
+     * String representing the QUANTITY class of the classifier
+     */
     private static final String QUANTITY = "QUANTITY";
+    /**
+     * String representing the UNIT class of the classifier
+     */
     private static final String UNIT = "UNIT";
+    /**
+     * String representing the NAME class of the classifier
+     */
     private static final String NAME = "NAME";
 
-    // These regexes will remove clutter to pass the clutter test in DetectIngredientsInListTaskUnitTest
+    /**These regexes will remove clutter to pass the clutter test in DetectIngredientsInListTaskUnitTest
+     * see {@link #removeClutter(String)}*/
     private static final String CLUTTER_REGEX = "[/][0-9\\p{No}]+(([–-][0-9\\p{No}]+)+( pint)?|" +
             "fl oz|[a-z]+([ ][0-9\\p{No}](oz))?)";
+    /**These regexes will remove clutter to pass the clutter test in DetectIngredientsInListTaskUnitTest
+     * see {@link #removeClutter(String)}*/
     private static final String CLUTTER_DASH_REGEX = "[–-][0-9\\p{No}]+";
 
 
-    //The classifier to detect ingredients
+    /** The classifier to detect ingredients */
     private CRFClassifier<CoreLabel> mCRFClassifier;
 
     public DetectIngredientsInListTask(RecipeInProgress recipeInProgress, CRFClassifier<CoreLabel> crfClassifier) {
@@ -209,6 +229,11 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     }
 
 
+    /**
+     * Calculates the quantity based on an array of Strings that were tagged as quantity
+     * @param array the array of strings
+     * @return the calculated value
+     */
     private static double calculateQuantity(String[] array) {
         boolean multiply = false;
         double result = 0.0;
@@ -221,8 +246,8 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
                     // set multiply to false after fraction because it is always multiplied when
                     // it was true
                     multiply = false;
-                // after this not a fraction
-                }else if (multiply) {
+                    // after this not a fraction
+                } else if (multiply) {
 
 
                     // if previous was multiplication, multiply
@@ -250,6 +275,14 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         return result;
     }
 
+    /**
+     * Calculates and adds or multiplies a fraction from a string to an intermediateresult
+     * @param fraction a string with length 2 representing a fraction where the first element is the
+     *                 numerator and the second element is the denominator
+     * @param intermediateResult the intermediate result to add or multiply the new value with
+     * @param multiply a boolean to indicate wheter it should be multiplied or added
+     * @return the new result
+     */
     private static double calculateFraction(String[] fraction, double intermediateResult, boolean multiply) {
         double numerator = Double.parseDouble(fraction[0]);
         double denominator = Double.parseDouble(fraction[1]);

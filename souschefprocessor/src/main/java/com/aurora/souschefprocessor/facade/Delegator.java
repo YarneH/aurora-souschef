@@ -33,7 +33,15 @@ public class Delegator {
      * A constant describing 1/2
      */
     private static final double HALF = 0.5;
+    /**
+     * An object that serves as a lock to ensure that the pipelines are only created once
+     */
     private static final Object LOCK = new Object();
+    /**
+     * A boolean that indicates if the pipelines have been created (or the creation has started)
+     */
+    private static boolean startedCreatingPipelines = false;
+
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
 
 
@@ -41,8 +49,11 @@ public class Delegator {
      * A threadPoolExecutor to execute steps in parallel
      */
     private static ThreadPoolExecutor sThreadPoolExecutor;
-    private static boolean startedCreatingPipelines = false;
 
+    /**
+     * Makes sure that the {@link #createAnnotationPipelines()} method is always called if a delegator is
+     * used, to ensure that the pipelines have been created
+     */
     static {
         createAnnotationPipelines();
     }
@@ -53,7 +64,7 @@ public class Delegator {
      */
     private CRFClassifier<CoreLabel> mIngredientClassifier;
     /**
-     * A boolean that indicates wheter the processin should be parallelized
+     * A boolean that indicates whether the processing should be parallelized
      */
     private boolean mParallelize;
 
@@ -71,6 +82,10 @@ public class Delegator {
 
     }
 
+    /**
+     * Creates the annotation pipelines for the {@link DetectIngredientsInStepTask} and
+     * {@link DetectTimersInStepTask} if the creation has not started yet
+     */
     static void createAnnotationPipelines() {
         synchronized (LOCK) {
 
@@ -82,9 +97,6 @@ public class Delegator {
             startedCreatingPipelines = true;
             LOCK.notifyAll();
         }
-        if (sThreadPoolExecutor == null) {
-            setUpThreadPool();
-        }
 
         DetectTimersInStepTask.initializeAnnotationPipeline();
         DetectIngredientsInStepTask.initializeAnnotationPipeline();
@@ -92,6 +104,9 @@ public class Delegator {
 
     }
 
+    /**
+     * Increments the {@link Communicator#mProgressAnnotationPipelines} value of the communicator
+     */
     public static void incrementProgressAnnotationPipelines() {
         Communicator.incrementProgressAnnotationPipelines();
     }
@@ -107,7 +122,7 @@ public class Delegator {
          * switching
          */
         int numberOfCores = (int)
-                (Runtime.getRuntime().availableProcessors());
+                (Runtime.getRuntime().availableProcessors() * HALF);
         // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue

@@ -56,5 +56,5 @@ dependencies {
     }
     compileOnly 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
     testImplementation 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
-    implementation 'org.jetbrains:annotations-java5:15.0'
+
 }

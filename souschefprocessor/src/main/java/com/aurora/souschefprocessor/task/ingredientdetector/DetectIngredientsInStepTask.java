@@ -30,7 +30,6 @@ import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.process.Morphology;
-import edu.stanford.nlp.time.TimeAnnotator;
 import edu.stanford.nlp.util.CoreMap;
 
 // TODO add exceptions for illegal arguments and add tests for these exceptions
@@ -98,13 +97,13 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      *
      * @return Annotation pipeline
      */
-    private static AnnotationPipeline createIngredientAnnotationPipeline(List<Annotator> annotatorsTillWordsToSentences) {
-        Properties props = new Properties();
+    private static AnnotationPipeline createIngredientAnnotationPipeline(
+            List<Annotator> annotatorsTillWordsToSentences) {
 
 
         AnnotationPipeline pipeline = new AnnotationPipeline();
         Log.d("ingr", "3");
-        for(Annotator a: annotatorsTillWordsToSentences){
+        for (Annotator a : annotatorsTillWordsToSentences) {
             pipeline.addAnnotator(a);
         }
         Delegator.incrementProgressAnnotationPipelines();
@@ -150,7 +149,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         recipeStep.setIngredients(iuaSet);
     }
 
-    private void waitForPipeline(){
+    private void waitForPipeline() {
         while (sAnnotationPipeline == null) {
             try {
 
@@ -163,6 +162,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             }
         }
     }
+
     /**
      * Detects the set of mIngredients in a recipeStep. It also checks if this corresponds with the mIngredients of the
      * recipe.

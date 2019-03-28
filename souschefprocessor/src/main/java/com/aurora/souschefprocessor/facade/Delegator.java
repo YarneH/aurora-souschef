@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.AnnotationPipeline;
 import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
@@ -36,13 +35,17 @@ import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 public class Delegator {
 
     private static final double HALF = 0.5;
+    private static final Object LOCK = new Object();
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
     private static ThreadPoolExecutor sThreadPoolExecutor;
+    private static boolean startedCreatingPipelines = false;
+
+    static {
+        createAnnotationPipelines();
+    }
+
     private CRFClassifier<CoreLabel> mIngredientClassifier;
     private boolean mParallelize;
-
-    private static boolean startedCreatingPipelines = false;
-    private static final Object LOCK = new Object();
 
     Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
         mIngredientClassifier = ingredientClassifier;
@@ -50,14 +53,10 @@ public class Delegator {
 
     }
 
-    static{
-        createAnnotationPipelines();
-    }
-
     static void createAnnotationPipelines() {
-        synchronized (LOCK){
+        synchronized (LOCK) {
 
-            if(startedCreatingPipelines){
+            if (startedCreatingPipelines) {
                 // creating already started or finished -> do not start again
                 return;
             }
@@ -65,7 +64,7 @@ public class Delegator {
             startedCreatingPipelines = true;
             LOCK.notifyAll();
         }
-        if(sThreadPoolExecutor == null){
+        if (sThreadPoolExecutor == null) {
             setUpThreadPool();
         }
         List<Annotator> annotators = new ArrayList<>();
@@ -118,6 +117,13 @@ public class Delegator {
                 decodeWorkQueue);
     }
 
+    public static ThreadPoolExecutor getThreadPoolExecutor() {
+        if (sThreadPoolExecutor == null) {
+            setUpThreadPool();
+        }
+        return sThreadPoolExecutor;
+    }
+
     /**
      * This is the core function of the delegator, where the text is processed by applying the filters
      * This function should be able to at run time decide to do certain filters or not (graceful degradation)
@@ -142,7 +148,6 @@ public class Delegator {
         return recipeInProgress.convertToRecipe();
     }
 
-
     /**
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
@@ -160,14 +165,6 @@ public class Delegator {
             pipeline.add(new NonParallelizeStepTask(recipeInProgress, taskNames));
         }
         return pipeline;
-    }
-
-
-    public static ThreadPoolExecutor getThreadPoolExecutor() {
-        if ( sThreadPoolExecutor == null) {
-            setUpThreadPool();
-        }
-        return sThreadPoolExecutor;
     }
 
 

@@ -221,9 +221,10 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
                     // set multiply to false after fraction because it is always multiplied when
                     // it was true
                     multiply = false;
-                }
-                // not a fraction
-                else if (multiply) {
+                // after this not a fraction
+                }else if (multiply) {
+
+
                     // if previous was multiplication, multiply
                     result *= Double.parseDouble(s);
                     multiply = false;

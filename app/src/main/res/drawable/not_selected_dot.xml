@@ -4,7 +4,7 @@
     android:shape="oval">
 
     <solid
-        android:color="#AAAAAA"/>
+        android:color="@color/dots_grey"/>
 
     <size
         android:width="@dimen/dot_indicator"

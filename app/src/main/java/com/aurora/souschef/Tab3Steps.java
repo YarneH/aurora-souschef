@@ -145,9 +145,10 @@ public class Tab3Steps extends Fragment {
             titleTextView.setText(getString(R.string.section_format, index + 1));
 
             // Add Text and Timer
+            int dots_margin = Math.round(getResources().getDimension(R.dimen.dots_margin));
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            layoutParams.setMargins(0, TIMER_MARGIN, 0, TIMER_MARGIN);
+            layoutParams.setMargins(0, dots_margin, 0, dots_margin);
             ViewGroup insertPoint = (ViewGroup) rootView.findViewById(R.id.ll_step);
             int currentPosition = 0;
 

@@ -2,6 +2,7 @@ package com.aurora.souschefprocessor.recipe;
 
 import com.aurora.auroralib.PluginObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,12 +14,14 @@ import java.util.List;
  * mDescription: a description of the recipe (could be that it is not present)
  */
 public class Recipe extends PluginObject {
-    /** The list of detected {@link ListIngredient} in this recipe*/
-    protected List<ListIngredient> mIngredients;
+    /**
+     * The list of detected {@link ListIngredient} in this recipe
+     */
+    protected List<ListIngredient> mIngredients = new ArrayList<>();
     /**
      * The list of detected {@link RecipeStep} in this recipe
      */
-    protected List<RecipeStep> mRecipeSteps;
+    protected List<RecipeStep> mRecipeSteps = new ArrayList<>();
     /**
      * The detected number of people this recipe is for
      */
@@ -39,6 +42,10 @@ public class Recipe extends PluginObject {
 
     public Recipe() {
 
+    }
+
+    public static PluginObject fromJson(String json) {
+        return mGson.fromJson(json, Recipe.class);
     }
 
     public synchronized int getNumberOfPeople() {
@@ -62,7 +69,11 @@ public class Recipe extends PluginObject {
     }
 
     public synchronized void setRecipeSteps(List<RecipeStep> recipeSteps) {
-        this.mRecipeSteps = recipeSteps;
+        if (recipeSteps == null) {
+            mRecipeSteps.clear();
+        } else {
+            this.mRecipeSteps = recipeSteps;
+        }
     }
 
     public synchronized List<ListIngredient> getIngredients() {
@@ -70,9 +81,12 @@ public class Recipe extends PluginObject {
     }
 
     public synchronized void setIngredients(List<ListIngredient> ingredients) {
-        this.mIngredients = ingredients;
+        if (ingredients == null) {
+            mIngredients.clear();
+        } else {
+            this.mIngredients = ingredients;
+        }
     }
-
 
     @Override
     public String toString() {
@@ -82,9 +96,5 @@ public class Recipe extends PluginObject {
                 "\n mNumberOfPeople=" + mNumberOfPeople +
                 "\n mDescription='" + mDescription + '\'' +
                 '}';
-    }
-
-    public static PluginObject fromJson(String json){
-        return mGson.fromJson(json, Recipe.class);
     }
 }

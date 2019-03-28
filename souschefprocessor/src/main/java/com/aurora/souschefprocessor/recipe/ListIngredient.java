@@ -17,12 +17,12 @@ public class ListIngredient extends Ingredient {
     private String mOriginalLine;
 
     public ListIngredient(String name, String unit, double value, String originalText,
-                          Map<PositionKey, Position> positions) {
+                          Map<PositionKeysForIngredients, Position> positions) {
         super(name, unit, value, positions);
         mOriginalLine = originalText;
 
         // check if the positions are legal
-        for (PositionKey key : PositionKey.values()) {
+        for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
             Position position = positions.get(key);
             if (!position.isLegalInString(originalText)) {
                 throw new IllegalArgumentException("Position of " + key + " is too big");

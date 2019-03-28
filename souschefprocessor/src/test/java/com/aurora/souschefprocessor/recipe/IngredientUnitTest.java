@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class IngredientUnitTest {
-    private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
+    private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
 
     @BeforeClass
     public static void initialize() {
         Position pos = new Position(0, 1);
-        for (Ingredient.PositionKey key : Ingredient.PositionKey.values()) {
+        for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantPositions.put(key, pos);
         }
     }
@@ -46,13 +46,13 @@ public class IngredientUnitTest {
          */
 
         // Arrange
-        HashMap<Ingredient.PositionKey, Position> positions = new HashMap<>();
+        HashMap<Ingredient.PositionKeysForIngredients, Position> positions = new HashMap<>();
         String originalText = "This is the original Text";
         int beginIndexNameAndUnit = 0;
         int endIndexNameAndUnit = originalText.length();
         Position nameAndUnitPosition = new Position(beginIndexNameAndUnit, endIndexNameAndUnit);
-        positions.put(Ingredient.PositionKey.UNIT, nameAndUnitPosition);
-        positions.put(Ingredient.PositionKey.NAME, nameAndUnitPosition);
+        positions.put(Ingredient.PositionKeysForIngredients.UNIT, nameAndUnitPosition);
+        positions.put(Ingredient.PositionKeysForIngredients.NAME, nameAndUnitPosition);
 
         // 2 cases
         // case 1 beginindex small enough, endindex too big
@@ -61,7 +61,7 @@ public class IngredientUnitTest {
         int endIndexQuantity = originalText.length() + 1;
         boolean case1Thrown = false;
         Position pos = new Position(beginIndexQuantity, endIndexQuantity);
-        positions.put(Ingredient.PositionKey.QUANTITY, pos);
+        positions.put(Ingredient.PositionKeysForIngredients.QUANTITY, pos);
 
         // Act
         try {
@@ -79,7 +79,7 @@ public class IngredientUnitTest {
         endIndexQuantity++;
         boolean case2Thrown = false;
         pos = new Position(beginIndexQuantity, endIndexQuantity);
-        positions.put(Ingredient.PositionKey.UNIT, pos);
+        positions.put(Ingredient.PositionKeysForIngredients.UNIT, pos);
         //Act
         try {
 
@@ -101,13 +101,13 @@ public class IngredientUnitTest {
          * trying to construct this should throw an exception
          */
         // Arrange
-        HashMap<Ingredient.PositionKey, Position> positions = new HashMap<>();
+        HashMap<Ingredient.PositionKeysForIngredients, Position> positions = new HashMap<>();
         String originalText = "This is the original Text";
         int beginIndexUnitAndValue = 0;
         int endIndexNameAndValue = originalText.length();
         Position unitAndValuePosition = new Position(beginIndexUnitAndValue, endIndexNameAndValue);
-        positions.put(Ingredient.PositionKey.QUANTITY, unitAndValuePosition);
-        positions.put(Ingredient.PositionKey.UNIT, unitAndValuePosition);
+        positions.put(Ingredient.PositionKeysForIngredients.QUANTITY, unitAndValuePosition);
+        positions.put(Ingredient.PositionKeysForIngredients.UNIT, unitAndValuePosition);
 
         // 2 cases
         // case 1 beginindex small enough, endindex too big
@@ -116,7 +116,7 @@ public class IngredientUnitTest {
         int endIndexName = originalText.length() + 1;
         boolean case1Thrown = false;
         Position pos = new Position(beginIndexName, endIndexName);
-        positions.put(Ingredient.PositionKey.NAME, pos);
+        positions.put(Ingredient.PositionKeysForIngredients.NAME, pos);
         // Act
         try {
 
@@ -133,7 +133,7 @@ public class IngredientUnitTest {
         beginIndexName = originalText.length();
         boolean case2Thrown = false;
         pos = new Position(beginIndexName, endIndexName);
-        positions.put(Ingredient.PositionKey.UNIT, pos);
+        positions.put(Ingredient.PositionKeysForIngredients.UNIT, pos);
         // Act
         try {
 
@@ -154,13 +154,13 @@ public class IngredientUnitTest {
          * trying to construct this should throw an exception
          */
         // Arrange
-        HashMap<Ingredient.PositionKey, Position> positions = new HashMap<>();
+        HashMap<Ingredient.PositionKeysForIngredients, Position> positions = new HashMap<>();
         String originalText = "This is the original Text";
         int beginIndexNameAndValue = 0;
         int endIndexNameAndValue = originalText.length();
         Position nameAndValuePosition = new Position(beginIndexNameAndValue, endIndexNameAndValue);
-        positions.put(Ingredient.PositionKey.QUANTITY, nameAndValuePosition);
-        positions.put(Ingredient.PositionKey.NAME, nameAndValuePosition);
+        positions.put(Ingredient.PositionKeysForIngredients.QUANTITY, nameAndValuePosition);
+        positions.put(Ingredient.PositionKeysForIngredients.NAME, nameAndValuePosition);
         // 2 cases
         // case 1 beginindex small enough, endindex too big
         // Arrange
@@ -168,7 +168,7 @@ public class IngredientUnitTest {
         int endIndexUnit = originalText.length() + 1;
         boolean case1Thrown = false;
         Position pos = new Position(beginIndexUnit, endIndexUnit);
-        positions.put(Ingredient.PositionKey.UNIT, pos);
+        positions.put(Ingredient.PositionKeysForIngredients.UNIT, pos);
         // Act
         try {
 
@@ -185,7 +185,7 @@ public class IngredientUnitTest {
         beginIndexUnit = originalText.length();
         boolean case2Thrown = false;
         pos = new Position(beginIndexUnit, endIndexUnit);
-        positions.put(Ingredient.PositionKey.UNIT, pos);
+        positions.put(Ingredient.PositionKeysForIngredients.UNIT, pos);
         // Act
         try {
             Ingredient ing = new ListIngredient("irrelevant", "irrelevant", 0.0, originalText, positions);
@@ -208,12 +208,12 @@ public class IngredientUnitTest {
         Ingredient ing2 = new Ingredient("spaghetti", "gram", 500, irrelevantPositions);
         Ingredient ing3 = new Ingredient("sauce", "gram", 500, irrelevantPositions);
 
-        HashMap<Ingredient.PositionKey, Position> newPositions =
+        HashMap<Ingredient.PositionKeysForIngredients, Position> newPositions =
                 new HashMap<>(irrelevantPositions);
 
         // Make sure a different position does not make the equal false
         Ingredient ing4 = new Ingredient("spaghetti", "gram", 500, newPositions);
-        newPositions.put(Ingredient.PositionKey.QUANTITY, new Position(0, 5));
+        newPositions.put(Ingredient.PositionKeysForIngredients.QUANTITY, new Position(0, 5));
         // Act and Assert
         assert (ing1.equals(ing2));
         assert (ing2.equals(ing1));

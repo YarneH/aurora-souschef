@@ -14,6 +14,9 @@ public abstract class AbstractProcessingTask {
 
 
     public AbstractProcessingTask(RecipeInProgress recipeInProgress) {
+        if(recipeInProgress == null){
+            throw new IllegalArgumentException("The recipeInProgress cannot be null");
+        }
         this.mRecipeInProgress = recipeInProgress;
     }
 

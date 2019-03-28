@@ -29,14 +29,14 @@ public class Ingredient {
      * A map with the {@link Position}s of te name, unit and value of this ingredient in the string
      * they were classified. Each of these Positions cannot be null.
      */
-    protected Map<PositionKey, Position> mPositions;
+    protected Map<PositionKeysForIngredients, Position> mPositions;
 
-    public Ingredient(String name, String unit, double value, Map<PositionKey, Position> positions) {
+    public Ingredient(String name, String unit, double value, Map<PositionKeysForIngredients, Position> positions) {
         this.mName = name;
         this.mAmount = new Amount(value, unit);
 
         //Check if the positions are not null
-        for (PositionKey key : PositionKey.values()) {
+        for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
             Position position = positions.get(key);
             if (position == null) {
                 throw new IllegalArgumentException("Position of " + key + " cannot be null");
@@ -46,27 +46,27 @@ public class Ingredient {
     }
 
     public Position getNamePosition() {
-        return mPositions.get(PositionKey.NAME);
+        return mPositions.get(PositionKeysForIngredients.NAME);
     }
 
     public void setNamePosition(Position namePosition) {
-        mPositions.put(PositionKey.NAME, namePosition);
+        mPositions.put(PositionKeysForIngredients.NAME, namePosition);
     }
 
     public Position getQuantityPosition() {
-        return mPositions.get(PositionKey.QUANTITY);
+        return mPositions.get(PositionKeysForIngredients.QUANTITY);
     }
 
     public void setQuantityPosition(Position quantityPosition) {
-        mPositions.put(PositionKey.QUANTITY, quantityPosition);
+        mPositions.put(PositionKeysForIngredients.QUANTITY, quantityPosition);
     }
 
     public Position getUnitPosition() {
-        return mPositions.get(PositionKey.UNIT);
+        return mPositions.get(PositionKeysForIngredients.UNIT);
     }
 
     public void setUnitPosition(Position unitPosition) {
-        mPositions.put(PositionKey.UNIT, unitPosition);
+        mPositions.put(PositionKeysForIngredients.UNIT, unitPosition);
     }
 
     public String getName() {
@@ -124,7 +124,7 @@ public class Ingredient {
      * @return a boolean indicating if the positions are legal
      */
     public boolean arePositionsLegalInString(String string) {
-        for (PositionKey key : PositionKey.values()) {
+        for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
             if (!mPositions.get(key).isLegalInString(string)) {
                 return false;
             }
@@ -133,7 +133,10 @@ public class Ingredient {
     }
 
 
-    public enum PositionKey {
+    /**
+     * Keys for a map storing positions for ingredients
+     */
+    public enum PositionKeysForIngredients {
         NAME, QUANTITY, UNIT
     }
 

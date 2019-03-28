@@ -4,7 +4,6 @@ import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
-import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
 import java.util.ArrayList;
@@ -188,7 +187,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             }
         }
         // the map for the positions of the detected ingredients
-        Map<Ingredient.PositionKey, Position> positions = new HashMap<>();
+        Map<Ingredient.PositionKeysForIngredients, Position> positions = new HashMap<>();
         // if no value present, default to 1.0 'one'
         double quantity = 1.0;
         // if no value present, default to empty string
@@ -205,10 +204,10 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             // beginPosition of the first element and endPosition of the last element
             int beginPosition = succeedingUnits.get(0).beginPosition();
             int endPosition = succeedingUnits.get(succeedingUnits.size() - 1).endPosition();
-            positions.put(Ingredient.PositionKey.UNIT, new Position(beginPosition, endPosition));
+            positions.put(Ingredient.PositionKeysForIngredients.UNIT, new Position(beginPosition, endPosition));
         } else {
             // if no unit detected make the position the whole string
-            positions.put(Ingredient.PositionKey.UNIT, new Position(0, line.length()));
+            positions.put(Ingredient.PositionKeysForIngredients.UNIT, new Position(0, line.length()));
         }
 
         List<CoreLabel> nameList = map.get(NAME);
@@ -220,10 +219,10 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             // beginPosition of the first element and endPosition of the last element
             int beginPosition = nameList.get(0).beginPosition();
             int endPosition = nameList.get(nameList.size() - 1).endPosition();
-            positions.put(Ingredient.PositionKey.NAME, new Position(beginPosition, endPosition));
+            positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(beginPosition, endPosition));
         } else {
             // if no name detected make the position the whole string
-            positions.put(Ingredient.PositionKey.NAME, new Position(0, line.length()));
+            positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(0, line.length()));
         }
         if (map.get(QUANTITY) != null) {
             // calculate the quantity using the list of tokens in labeled QUANTITY
@@ -238,17 +237,17 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
                 // beginPosition of the first element and endPosition of the last element
                 int beginPosition = succeedingQuantities.get(0).beginPosition();
                 int endPosition = succeedingQuantities.get(succeedingQuantities.size() - 1).endPosition();
-                positions.put(Ingredient.PositionKey.QUANTITY, new Position(beginPosition, endPosition));
+                positions.put(Ingredient.PositionKeysForIngredients.QUANTITY, new Position(beginPosition, endPosition));
             }
 
 
         }
-        if (positions.get(Ingredient.PositionKey.QUANTITY) == null) {
+        if (positions.get(Ingredient.PositionKeysForIngredients.QUANTITY) == null) {
             // if no quantity detected make the position the whole string
             // if no quantity detected then the position is still null so make the position the
             // whole string to signal that no quantity is detected
             // also set the quantity to 1 = "one"
-            positions.put(Ingredient.PositionKey.QUANTITY, new Position(0, line.length()));
+            positions.put(Ingredient.PositionKeysForIngredients.QUANTITY, new Position(0, line.length()));
             quantity = 1.0;
         }
 

@@ -68,6 +68,19 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     }
 
     /**
+     * Creates custom annotation pipeline for detecting ingredients in a recipe step
+     *
+     * @return Annotation pipeline
+     */
+    private static AnnotationPipeline createIngredientAnnotationPipeline() {
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+        pipeline.addAnnotator(new TokenizerAnnotator(false));
+        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
+        pipeline.addAnnotator(new POSTaggerAnnotator(false));
+        return pipeline;
+    }
+
+    /**
      * Detects the mIngredients for each recipeStep
      */
     public void doTask() {
@@ -212,14 +225,14 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @return Default ingredient
      */
     private Ingredient defaultStepIngredient(int stepSentenceLength) {
-        HashMap<Ingredient.PositionKey, Position> map = new HashMap<>();
+        HashMap<Ingredient.PositionKeysForIngredients, Position> map = new HashMap<>();
         Position defaultPos = new Position(0, stepSentenceLength);
         String name = "";
-        map.put(Ingredient.PositionKey.NAME, defaultPos);
+        map.put(Ingredient.PositionKeysForIngredients.NAME, defaultPos);
         String unit = DEFAULT_UNIT;
-        map.put(Ingredient.PositionKey.UNIT, defaultPos);
+        map.put(Ingredient.PositionKeysForIngredients.UNIT, defaultPos);
         Double quantity = DEFAULT_QUANTITY;
-        map.put(Ingredient.PositionKey.QUANTITY, defaultPos);
+        map.put(Ingredient.PositionKeysForIngredients.QUANTITY, defaultPos);
         return new Ingredient(name, unit, quantity, map);
     }
 
@@ -367,19 +380,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
         // In case the ingredient name is the first word in the step
         return true;
-    }
-
-    /**
-     * Creates custom annotation pipeline for detecting ingredients in a recipe step
-     *
-     * @return Annotation pipeline
-     */
-    private AnnotationPipeline createIngredientAnnotationPipeline() {
-        AnnotationPipeline pipeline = new AnnotationPipeline();
-        pipeline.addAnnotator(new TokenizerAnnotator(false));
-        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-        pipeline.addAnnotator(new POSTaggerAnnotator(false));
-        return pipeline;
     }
 
 }

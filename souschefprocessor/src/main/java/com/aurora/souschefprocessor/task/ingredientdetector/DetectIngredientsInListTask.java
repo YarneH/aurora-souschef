@@ -1,48 +1,27 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
-import android.util.Log;
-
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 
-import static android.content.ContentValues.TAG;
-
 /**
  * Detects the ListIngredients in the list of ingredients of a RecipeInProgress
  * It has a CRFClassifier that classifies a sentence containing an ingredient to UNIT, QUANTITY
  * and NAME
  */
-public class DetectIngredientsInListTask extends AbstractProcessingTask {
-
-
-    // generally numbers greater than twelve are not spelled out
-    private static final String[] NUMBERS_TO_TWELVE = {"zero", "one", "two", "three", "four", "five",
-            "six", "seven", "eight", "nine", "ten", "eleven", "twelve"};
-    // multiples of ten are also spelled out
-    private static final String[] MULTIPLES_OF_TEN = {"zero", "ten", "twenty", "thirty", "forty",
-            "fifty", "sixty", "seventy", "eighty", "ninety", "hundred"};
-
-    // The size if a string representing a fraction is split on the regex "/"
-    private static final int FRACTION_LENGTH = 2;
-    // The size if a string representing a number (non-fraction) is split on the regex "/"
-    private static final int NON_FRACTION_LENGTH = 1;
-
-    // The number 10
-    private static final double TEN = 10;
+public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
     // Strings representing the classes of the classifier
     private static final String QUANTITY = "QUANTITY";
@@ -56,32 +35,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
     public DetectIngredientsInListTask(RecipeInProgress recipeInProgress, CRFClassifier<CoreLabel> crfClassifier) {
         super(recipeInProgress);
         mCRFClassifier = crfClassifier;
-    }
-
-    /**
-     * Checks if the string is a spelled out version of the numbers 0 to 12 or a multiple of 10 (up to 100)
-     *
-     * @param s The string to be checked
-     * @return The numeric representation of the string
-     */
-    private static double calculateNonParsableQuantity(String s) {
-        String lower = s.toLowerCase(Locale.ENGLISH);
-        // check if  number is 0-12
-        for (int i = 0; i < NUMBERS_TO_TWELVE.length; i++) {
-            if (lower.equals(NUMBERS_TO_TWELVE[i])) {
-                return i;
-            }
-        }
-
-        // check is string is a multiple of ten
-        for (int i = 0; i < MULTIPLES_OF_TEN.length; i++) {
-            if (lower.equals(MULTIPLES_OF_TEN[i])) {
-                return i * TEN;
-            }
-        }
-
-        // if not one of the previous cases consider wrongly labeled
-        return 0.0;
     }
 
     /**
@@ -168,8 +121,10 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * in the recipe to this set of ListIngredients.
      */
     public void doTask() {
-        //TODO fallback if no mIngredients can be detected
         List<ListIngredient> list = detectIngredients(this.mRecipeInProgress.getIngredientsString());
+        if (list == null || list.isEmpty()) {
+            throw new RecipeDetectionException("No ingredients where detected, this is probably not a recipe");
+        }
         this.mRecipeInProgress.setIngredients(list);
     }
 
@@ -182,16 +137,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      */
     private List<ListIngredient> detectIngredients(String ingredientList) {
 
-        if (mCRFClassifier == null) {
-            try {
-                // if classifier not loaded yet load the classifier
-                String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
-                mCRFClassifier = CRFClassifier.getClassifier(modelName);
-            } catch (IOException | ClassNotFoundException exception) {
-                Log.e(TAG, "detect ingredients in list: classifier not loaded ", exception);
-
-            }
-        }
         // if no ingredientList is provided return an empty list
         if (ingredientList == null || ("").equals(ingredientList)) {
             return new ArrayList<>();
@@ -202,7 +147,7 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         String[] list = ingredientList.split("\n");
 
         for (String ingredient : list) {
-            if (ingredient != null) {
+            if (ingredient != null && ingredient.length() > 0) {
                 ListIngredient ing = (detectIngredient(addSpaces(ingredient)));
 
                 returnList.add(ing);
@@ -287,16 +232,24 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
             List<CoreLabel> succeedingQuantities = getSucceedingElements(map.get(QUANTITY), QUANTITY);
             quantity = calculateQuantity(succeedingQuantities);
 
-            // Calculate the position and add it to the map
-            // beginPosition of the first element and endPosition of the last element
-            int beginPosition = succeedingQuantities.get(0).beginPosition();
-            int endPosition = succeedingQuantities.get(succeedingQuantities.size() - 1).endPosition();
-            positions.put(Ingredient.PositionKey.QUANTITY, new Position(beginPosition, endPosition));
+            // if quantity is -1 then no quantity could be caluclated
+            if (quantity != -1.0) {
+                // Calculate the position and add it to the map
+                // beginPosition of the first element and endPosition of the last element
+                int beginPosition = succeedingQuantities.get(0).beginPosition();
+                int endPosition = succeedingQuantities.get(succeedingQuantities.size() - 1).endPosition();
+                positions.put(Ingredient.PositionKey.QUANTITY, new Position(beginPosition, endPosition));
+            }
 
 
-        } else {
+        }
+        if (positions.get(Ingredient.PositionKey.QUANTITY) == null) {
             // if no quantity detected make the position the whole string
+            // if no quantity detected then the position is still null so make the position the
+            // whole string to signal that no quantity is detected
+            // also set the quantity to 1 = "one"
             positions.put(Ingredient.PositionKey.QUANTITY, new Position(0, line.length()));
+            quantity = 1.0;
         }
 
         return new ListIngredient(name, unit, quantity, line, positions);
@@ -338,54 +291,6 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
         bld.deleteCharAt(bld.length() - 1);
         return bld.toString();
     }
-
-    /**
-     * Calculates the quantity based on list with tokens labeled quantity
-     *
-     * @param list The list on which to calculate the quantity
-     * @return a double representing the calculated value, if no value could be detected 1.0 is
-     * returned
-     */
-    private double calculateQuantity(List<CoreLabel> list) {
-        double result = 0.0;
-
-        StringBuilder bld = new StringBuilder();
-        for (CoreLabel cl : list) {
-            bld.append(cl.word() + " ");
-        }
-
-        String representation = bld.toString();
-
-        // split on all whitespace characters
-        String[] array = representation.split("[\\s\\xA0]+");
-        for (String s : array) {
-
-            String[] fraction = s.split("/");
-            try {
-                // if the string was splitted in to two parts it was a fraction
-                if (fraction.length == FRACTION_LENGTH) {
-
-                    double numerator = Double.parseDouble(fraction[0]);
-                    double denominator = Double.parseDouble(fraction[1]);
-                    result += numerator / denominator;
-                }
-
-                if (fraction.length == NON_FRACTION_LENGTH) {
-                    result += Double.parseDouble(s);
-                }
-            } catch (NumberFormatException iae) {
-                // String identified as quantity is not parsable...
-                result += calculateNonParsableQuantity(s);
-            }
-        }
-
-        if (result == 0.0) {
-            // if no quantity value was detected return 1.0 "one"
-            return 1.0;
-        }
-        return result;
-    }
-
 
     /**
      * Gets the first sequence of succeeding elements of a class in a list of labels.

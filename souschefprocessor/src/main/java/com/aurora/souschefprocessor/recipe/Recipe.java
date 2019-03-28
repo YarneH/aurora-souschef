@@ -64,4 +64,17 @@ public class Recipe extends PluginObject {
     }
 
 
+    @Override
+    public String toString() {
+        return "Recipe{" +
+                "mIngredients=" + mIngredients +
+                "\n mRecipeSteps=" + mRecipeSteps +
+                "\n mNumberOfPeople=" + mNumberOfPeople +
+                "\n mDescription='" + mDescription + '\'' +
+                '}';
+    }
+
+    public static PluginObject fromJson(String json){
+        return mGson.fromJson(json, Recipe.class);
+    }
 }

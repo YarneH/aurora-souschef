@@ -24,6 +24,14 @@ public class Ingredient {
     public Ingredient(String name, String unit, double value, Map<PositionKey, Position> positions) {
         this.mName = name;
         this.mAmount = new Amount(value, unit);
+
+        //Check if the positions are not null
+        for (PositionKey key : PositionKey.values()) {
+            Position position = positions.get(key);
+            if (position == null) {
+                throw new IllegalArgumentException("Position of " + key + " cannot be null");
+            }
+        }
         this.mPositions = positions;
     }
 
@@ -31,12 +39,24 @@ public class Ingredient {
         return mPositions.get(PositionKey.NAME);
     }
 
+    public void setNamePosition(Position namePosition){
+        mPositions.put(PositionKey.NAME, namePosition);
+    }
+
     public Position getQuantityPosition() {
         return mPositions.get(PositionKey.QUANTITY);
     }
 
+    public void setQuantityPosition(Position quantityPosition){
+        mPositions.put(PositionKey.QUANTITY, quantityPosition);
+    }
+
     public Position getUnitPosition() {
         return mPositions.get(PositionKey.UNIT);
+    }
+
+    public void setUnitPosition(Position unitPosition){
+        mPositions.put(PositionKey.UNIT, unitPosition);
     }
 
     public String getName() {
@@ -55,6 +75,13 @@ public class Ingredient {
         return mAmount;
     }
 
+    public void setName(String name) {
+        this.mName = name;
+    }
+
+    public void setmAmount(Amount amount) {
+        this.mAmount = amount;
+    }
 
     @Override
     public int hashCode() {
@@ -74,7 +101,7 @@ public class Ingredient {
 
     @Override
     public String toString() {
-        String res = mAmount + " ";
+        String res = mAmount + " NAME ";
         return res + mName;
     }
 
@@ -95,9 +122,9 @@ public class Ingredient {
         return true;
     }
 
+
     public enum PositionKey {
         NAME, QUANTITY, UNIT
     }
-
 
 }

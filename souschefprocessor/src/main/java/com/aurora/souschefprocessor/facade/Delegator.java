@@ -3,8 +3,9 @@ package com.aurora.souschefprocessor.facade;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschefprocessor.task.helpertasks.NonParallelizeStepTask;
 import com.aurora.souschefprocessor.task.helpertasks.ParallelizeStepsTask;
-import com.aurora.souschefprocessor.task.helpertasks.ParallellizeableTaskNames;
+import com.aurora.souschefprocessor.task.helpertasks.StepTaskNames;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 import com.aurora.souschefprocessor.task.sectiondivider.DetectNumberOfPeopleTask;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitStepsTask;
@@ -26,14 +27,17 @@ import edu.stanford.nlp.ling.CoreLabel;
  */
 public class Delegator {
 
+    private static final double HALF = 0.5;
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
     private ThreadPoolExecutor mThreadPoolExecutor;
     private CRFClassifier<CoreLabel> mIngredientClassifier;
+    private boolean mParallelize;
 
 
-    protected Delegator(CRFClassifier<CoreLabel> ingredientClassifier) {
+    public Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
         mThreadPoolExecutor = null;
         mIngredientClassifier = ingredientClassifier;
+        mParallelize = parallelize;
     }
 
 
@@ -44,9 +48,11 @@ public class Delegator {
         /*
          * Gets the number of available cores
          * (not always the same as the maximum number of cores)
+         * the processing is faster if this only half of the available cores to limit context
+         * switching
          */
-        int numberOfCores =
-                Runtime.getRuntime().availableProcessors();
+        int numberOfCores = (int)
+                (Runtime.getRuntime().availableProcessors() * HALF);
         // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue
@@ -101,14 +107,18 @@ public class Delegator {
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
         pipeline.add(new SplitStepsTask(recipeInProgress));
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));
-        ParallellizeableTaskNames[] taskNames = {ParallellizeableTaskNames.INGR, ParallellizeableTaskNames.TIMER};
-        pipeline.add(new ParallelizeStepsTask(recipeInProgress, this.mThreadPoolExecutor, taskNames));
+        StepTaskNames[] taskNames = {StepTaskNames.INGR, StepTaskNames.TIMER};
+        if (mParallelize) {
+            pipeline.add(new ParallelizeStepsTask(recipeInProgress, this.mThreadPoolExecutor, taskNames));
+        } else {
+            pipeline.add(new NonParallelizeStepTask(recipeInProgress, taskNames));
+        }
         return pipeline;
     }
 
 
     public ThreadPoolExecutor getThreadPoolExecutor() {
-        if (mThreadPoolExecutor == null) {
+        if (mParallelize && mThreadPoolExecutor == null) {
             setUpThreadPool();
         }
         return mThreadPoolExecutor;

@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
     @Override
     public void onAmountOfPeopleChanged(int newAmount) {
-        ((Tab3Steps) mSectionsPagerAdapter.getItem(2)).setText("" + newAmount);
+        ((Tab3Steps) mSectionsPagerAdapter.getItem(TAB_STEPS)).setText("" + newAmount);
     }
 
     class ProgressUpdate extends AsyncTask<Void, Integer, Void> {

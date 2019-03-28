@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -88,20 +87,23 @@ public class Tab3Steps extends Fragment {
                              Bundle savedInstanceState) {
         prepareRecipeParts();
 
-        mRootView = inflater.inflate(R.layout.tab_3_steps, container, false);
+        View rootView = inflater.inflate(R.layout.tab_3_steps, container, false);
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mStepsPagerAdapter = new StepsPagerAdapter(getActivity().getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) mRootView.findViewById(R.id.vp_steps);
+        mViewPager = (ViewPager) rootView.findViewById(R.id.vp_steps);
         mViewPager.setAdapter(mStepsPagerAdapter);
 
         // Prevent ViewPager from resetting timers
         mViewPager.setOffscreenPageLimit(mStepsPagerAdapter.getCount());
 
-        return mRootView;
+        // Save reference to the rootview
+        mRootView = rootView;
+
+        return rootView;
     }
 
     protected void setText(String newText) {

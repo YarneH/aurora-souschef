@@ -343,16 +343,21 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
         @Override
         public Fragment getItem(int position) {
+            Fragment tempFrag;
             switch (position) {
                 case TAB_OVERVIEW:
-                    return mTab1Overview;
+                    tempFrag = mTab1Overview;
+                    break;
                 case TAB_INGREDIENTS:
-                    return mTab2Ingredients;
+                    tempFrag = mTab2Ingredients;
+                    break;
                 case TAB_STEPS:
-                    return mTab3Steps;
+                    tempFrag = mTab3Steps;
+                    break;
                 default:
-                    return null;
+                    tempFrag = null;
             }
+            return tempFrag;
         }
 
         @Override

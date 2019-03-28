@@ -1,7 +1,5 @@
 package com.aurora.souschefprocessor.facade;
 
-import android.util.Log;
-
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
@@ -24,9 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotator;
-import edu.stanford.nlp.pipeline.TokenizerAnnotator;
-import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
@@ -89,7 +84,7 @@ public class Delegator {
          * switching
          */
         int numberOfCores = (int)
-                (Runtime.getRuntime().availableProcessors() );
+                (Runtime.getRuntime().availableProcessors());
         // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue

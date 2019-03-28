@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -180,7 +181,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     }
 
     @Test
-    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndNumericalQuantity(){
+    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndNumericalQuantity() {
         // Arrange
         Ingredient stepIngredient = new Ingredient("sauce", "ounces", 250.0, irrelevantPositions);
 
@@ -190,24 +191,8 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
 
         // Assert
-        assert(stepIngredients.contains(stepIngredient));
+        assert (stepIngredients.contains(stepIngredient));
     }
-
-    @Test
-    public void IngredientDetectorStep_doTask_emptyDetectedIngredientsForEmptyIngredientList(){
-        // Arrange
-        RecipeInProgress ripEmptyIngredientList = recipe;
-        ripEmptyIngredientList.setIngredients(new ArrayList<>());
-
-        // Act
-        detector0.doTask();
-
-        Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(0).getIngredients();
-
-        // Assert
-        assert(stepIngredients.isEmpty());
-    }
-
 
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndQuantityAndPosition(){

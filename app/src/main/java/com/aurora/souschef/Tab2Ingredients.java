@@ -8,7 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.aurora.souschefprocessor.recipe.Recipe;
@@ -18,8 +18,12 @@ import com.aurora.souschefprocessor.recipe.Recipe;
  */
 public class Tab2Ingredients extends Fragment {
     private Recipe mRecipe = null;
+    private TextView mAmountTextView = null;
+    private IngredientAdapter mIngredientAdapter = null;
+    private OnAmountOfPeopleChangedListener mOnAmountOfPeopleChangedListener = null;
+
     // The number of people the user picked.
-    private int mActualNumberOfPeople = 4;
+    private int mActualNumberOfPeople = 0;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -33,28 +37,26 @@ public class Tab2Ingredients extends Fragment {
         mIngredientList.setLayoutManager(new LinearLayoutManager(this.getContext()));
 
         // Feed Adapter
-        IngredientAdapter ingredientAdapter = new IngredientAdapter(mRecipe.getIngredients());
-        mIngredientList.setAdapter(ingredientAdapter);
+        mIngredientAdapter = new IngredientAdapter(mRecipe.getIngredients(), mActualNumberOfPeople);
+        mIngredientList.setAdapter(mIngredientAdapter);
 
         // Prepare parts for amount of people
-        TextView amountTextView = rootView.findViewById(R.id.tv_amount_people);
-        amountTextView.setText(String.valueOf(mActualNumberOfPeople));
+        mAmountTextView = rootView.findViewById(R.id.tv_amount_people);
+        mAmountTextView.setText(String.valueOf(mActualNumberOfPeople));
 
-        Button addButton = rootView.findViewById(R.id.btn_add);
+        ImageButton addButton = rootView.findViewById(R.id.btn_add);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mActualNumberOfPeople++;
-                amountTextView.setText(String.valueOf(mActualNumberOfPeople));
+                changeAmountOfServings(+1);
             }
         });
 
-        Button minusButton = rootView.findViewById(R.id.btn_minus);
+        ImageButton minusButton = rootView.findViewById(R.id.btn_minus);
         minusButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mActualNumberOfPeople--;
-                amountTextView.setText(String.valueOf(mActualNumberOfPeople));
+                changeAmountOfServings(-1);
             }
         });
 
@@ -64,6 +66,23 @@ public class Tab2Ingredients extends Fragment {
     protected void setRecipe(Recipe recipe) {
         mRecipe = recipe;
         mActualNumberOfPeople = recipe.getNumberOfPeople();
+    }
 
+    private void changeAmountOfServings(int difference) {
+        if (mActualNumberOfPeople + difference > 0) {
+            mActualNumberOfPeople += difference;
+            mAmountTextView.setText(String.valueOf(mActualNumberOfPeople));
+            mIngredientAdapter.setChoseAmountOfServings(mActualNumberOfPeople);
+            mIngredientAdapter.notifyDataSetChanged();
+        }
+        mOnAmountOfPeopleChangedListener.onAmountOfPeopleChanged(mActualNumberOfPeople);
+    }
+
+    protected interface OnAmountOfPeopleChangedListener {
+        void onAmountOfPeopleChanged(int newAmount);
+    }
+
+    protected void setmOnAmountOfPeopleChangedListener(OnAmountOfPeopleChangedListener listener) {
+        mOnAmountOfPeopleChangedListener = listener;
     }
 }

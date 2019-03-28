@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,6 +57,7 @@ public class Tab3Steps extends Fragment {
     private static String[] mDescriptionSteps = null;
     private StepsPagerAdapter mStepsPagerAdapter;
     private ViewPager mViewPager;
+    private static View mRootView;
 
     public Tab3Steps() {
         // Default constructor
@@ -86,20 +88,25 @@ public class Tab3Steps extends Fragment {
                              Bundle savedInstanceState) {
         prepareRecipeParts();
 
-        View rootView = inflater.inflate(R.layout.tab_3_steps, container, false);
+        mRootView = inflater.inflate(R.layout.tab_3_steps, container, false);
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mStepsPagerAdapter = new StepsPagerAdapter(getActivity().getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) rootView.findViewById(R.id.vp_steps);
+        mViewPager = (ViewPager) mRootView.findViewById(R.id.vp_steps);
         mViewPager.setAdapter(mStepsPagerAdapter);
 
         // Prevent ViewPager from resetting timers
         mViewPager.setOffscreenPageLimit(mStepsPagerAdapter.getCount());
 
-        return rootView;
+        return mRootView;
+    }
+
+    protected void setText(String newText) {
+        ((TextView) mRootView.findViewById(R.id.tv_dummy)).setText(newText);
+
     }
 
     /**
@@ -173,7 +180,7 @@ public class Tab3Steps extends Fragment {
             }
 
             // Check if there is still some text coming after the last timer
-            if (currentPosition != mDescriptionSteps[index].length()){
+            if (currentPosition != mDescriptionSteps[index].length()) {
                 TextView textView = (TextView) inflater.inflate(R.layout.step_textview, null);
                 String currentSubstring = mDescriptionSteps[index].substring(currentPosition);
                 Pattern p = Pattern.compile("\\p{Alpha}");

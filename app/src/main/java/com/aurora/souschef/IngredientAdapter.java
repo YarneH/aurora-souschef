@@ -19,9 +19,11 @@ import java.util.Locale;
  * Adapter for populating the ingredient list.
  */
 public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.CardIngredientViewHolder> {
-    private static final int MIN_DENOMINATOR_OF_FRACITONS = 2;
-    private static final int MAX_DENOMINATOR_OF_FRACITONS = 10;
+    private static final int MIN_DENOMINATOR_OF_FRACTIONS = 2;
+    private static final int MAX_DENOMINATOR_OF_FRACTIONS = 10;
     private final List<ListIngredient> ingredients;
+    private int mOriginalAmountOfServings = 0;
+    private int mChosenAmountOfServings = 0;
 
 
     /**
@@ -29,8 +31,14 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
      *
      * @param ingredients list for construction
      */
-    public IngredientAdapter(List<ListIngredient> ingredients) {
+    public IngredientAdapter(List<ListIngredient> ingredients, int originalAmountOfServings) {
         this.ingredients = ingredients;
+        mChosenAmountOfServings = originalAmountOfServings;
+        mOriginalAmountOfServings = originalAmountOfServings;
+    }
+
+    public void setChoseAmountOfServings(int chosenAmount) {
+        mChosenAmountOfServings = chosenAmount;
     }
 
     @NonNull
@@ -92,9 +100,12 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
                         + nameWithoutQuantityAndUnit.substring(1);
             }
 
+            // Calculate the amount of the ingredient
+            double amount = ingredient.getAmount().getValue() / mOriginalAmountOfServings * mChosenAmountOfServings;
 
+            // Set Textviews
+            mIngredientAmount.setText(toDisplayQuantity(amount));
             mIngredientName.setText(nameWithoutQuantityAndUnit);
-            mIngredientAmount.setText(toDisplayQuantity(ingredient.getAmount().getValue()));
             mIngredientUnit.setText(ingredient.getAmount().getUnit());
         }
 
@@ -113,7 +124,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
             if (isAlmostInteger(quantity)) {
                 return "" + ((int) Math.round(quantity));
             }
-            for (int i = MIN_DENOMINATOR_OF_FRACITONS; i <= MAX_DENOMINATOR_OF_FRACITONS; i++) {
+            for (int i = MIN_DENOMINATOR_OF_FRACTIONS; i <= MAX_DENOMINATOR_OF_FRACTIONS; i++) {
                 if (isAlmostInteger(quantity * i)) {
                     return "" + ((int) Math.round(quantity * i) + "/" + i);
                 }

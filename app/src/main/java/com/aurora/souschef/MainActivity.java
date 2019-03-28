@@ -28,7 +28,7 @@ import java.util.zip.GZIPInputStream;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Tab2Ingredients.OnAmountOfPeopleChangedListener {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
             "Finishing up..."};
 
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
+    private Tab2Ingredients.OnAmountOfPeopleChangedListener mOnAmountOfPeopleChangedListener = this;
 
     public MainActivity() {
         // Default constructor
@@ -192,6 +193,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         (new SouschefInit(inputText)).execute();
+    }
+
+    @Override
+    public void onAmountOfPeopleChanged(int newAmount) {
+        ((Tab3Steps) mSectionsPagerAdapter.getItem(2)).setText("" + newAmount);
     }
 
     class ProgressUpdate extends AsyncTask<Void, Integer, Void> {
@@ -334,6 +340,8 @@ public class MainActivity extends AppCompatActivity {
                 case TAB_INGREDIENTS:
                     tabFragment = new Tab2Ingredients();
                     ((Tab2Ingredients) tabFragment).setRecipe(mRecipe);
+                    ((Tab2Ingredients) tabFragment)
+                            .setmOnAmountOfPeopleChangedListener(mOnAmountOfPeopleChangedListener);
                     break;
                 case TAB_STEPS:
                     tabFragment = new Tab3Steps();

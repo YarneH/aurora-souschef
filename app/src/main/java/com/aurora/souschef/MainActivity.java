@@ -155,7 +155,6 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
         //This means the else case should be omitted
 
 
-
         String inputText = "";
         /*
          * Handle Aurora starting the Plugin.
@@ -181,13 +180,13 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
 
             // TODO handle a PluginObject that was cached
-            else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)){
+            else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
                 Log.d("NOT_IMPLEMENTED", "PLUGIN_INPUT_OBJECT needs to be implemented." +
                         "Instead using getText.");
                 inputText = getText();
             }
 
-        } else{
+        } else {
             inputText = getText();
         }
 
@@ -251,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
     class SouschefInit extends AsyncTask<Void, String, Recipe> {
         private String mText;
 
-        protected SouschefInit(String text){
+        protected SouschefInit(String text) {
             mText = text;
         }
 
@@ -319,6 +318,9 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
         private Recipe mRecipe = null;
+        private Tab1Overview mTab1Overview = null;
+        private Tab2Ingredients mTab2Ingredients = null;
+        private Tab3Steps mTab3Steps = null;
 
         SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -327,31 +329,30 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
         public SectionsPagerAdapter(FragmentManager fm, Recipe recipe) {
             super(fm);
             mRecipe = recipe;
+
+            mTab1Overview = new Tab1Overview();
+            mTab1Overview.setRecipe(recipe);
+
+            mTab2Ingredients = new Tab2Ingredients();
+            mTab2Ingredients.setRecipe(recipe);
+            mTab2Ingredients.setmOnAmountOfPeopleChangedListener(mOnAmountOfPeopleChangedListener);
+
+            mTab3Steps = new Tab3Steps();
+            mTab3Steps.setRecipe(recipe);
         }
 
         @Override
         public Fragment getItem(int position) {
-            Fragment tabFragment;
             switch (position) {
                 case TAB_OVERVIEW:
-                    tabFragment = new Tab1Overview();
-                    ((Tab1Overview) tabFragment).setRecipe(mRecipe);
-                    break;
+                    return mTab1Overview;
                 case TAB_INGREDIENTS:
-                    tabFragment = new Tab2Ingredients();
-                    ((Tab2Ingredients) tabFragment).setRecipe(mRecipe);
-                    ((Tab2Ingredients) tabFragment)
-                            .setmOnAmountOfPeopleChangedListener(mOnAmountOfPeopleChangedListener);
-                    break;
+                    return mTab2Ingredients;
                 case TAB_STEPS:
-                    tabFragment = new Tab3Steps();
-                    ((Tab3Steps) tabFragment).setRecipe(mRecipe);
-                    break;
+                    return mTab3Steps;
                 default:
-                    tabFragment = null;
-                    break;
+                    return null;
             }
-            return tabFragment;
         }
 
         @Override

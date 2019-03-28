@@ -2,10 +2,12 @@ package com.aurora.souschef;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,7 +58,8 @@ public class Tab3Steps extends Fragment {
     private static String[] mDescriptionSteps = null;
     private StepsPagerAdapter mStepsPagerAdapter;
     private ViewPager mViewPager;
-    private static View mRootView;
+    private TextView mDummyTextView;
+    private View mView;
 
     public Tab3Steps() {
         // Default constructor
@@ -65,7 +68,7 @@ public class Tab3Steps extends Fragment {
     /**
      * Classic setter for the Recipe, used to communicate the recipe from the Main Activity
      */
-    protected static void setRecipe(Recipe recipe) {
+    protected void setRecipe(Recipe recipe) {
         mRecipe = recipe;
     }
 
@@ -88,7 +91,9 @@ public class Tab3Steps extends Fragment {
         prepareRecipeParts();
 
         View rootView = inflater.inflate(R.layout.tab_3_steps, container, false);
+        mDummyTextView = rootView.findViewById(R.id.tv_dummy);
 
+        Log.d("Test","onCreateView " + this);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mStepsPagerAdapter = new StepsPagerAdapter(getActivity().getSupportFragmentManager());
@@ -100,14 +105,11 @@ public class Tab3Steps extends Fragment {
         // Prevent ViewPager from resetting timers
         mViewPager.setOffscreenPageLimit(mStepsPagerAdapter.getCount());
 
-        // Save reference to the rootview
-        mRootView = rootView;
-
         return rootView;
     }
 
     protected void setText(String newText) {
-        ((TextView) mRootView.findViewById(R.id.tv_dummy)).setText(newText);
+        ((TextView) getView().findViewById(R.id.tv_dummy)).setText(newText);
 
     }
 

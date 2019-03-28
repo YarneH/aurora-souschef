@@ -142,8 +142,6 @@ public class Tab3Steps extends Fragment {
             TextView titleTextView = (TextView) rootView.findViewById(R.id.tv_title);
 
             // Set the TextViews
-            TextView titleTextView = (TextView) rootView.findViewById(R.id.tv_step_title);
-            TextView stepTextView = (TextView) rootView.findViewById(R.id.tv_step_detail);
             titleTextView.setText(getString(R.string.section_format, index + 1));
 
             // Add Text and Timer
@@ -180,7 +178,7 @@ public class Tab3Steps extends Fragment {
             }
 
             // Check if there is still some text coming after the last timer
-            if (currentPosition != mDescriptionSteps[index].length()){
+            if (currentPosition != mDescriptionSteps[index].length()) {
                 TextView textView = (TextView) inflater.inflate(R.layout.step_textview, null);
                 String currentSubstring = mDescriptionSteps[index].substring(currentPosition);
                 Pattern p = Pattern.compile("\\p{Alpha}");
@@ -192,7 +190,25 @@ public class Tab3Steps extends Fragment {
                 insertPoint.addView(textView, insertPoint.getChildCount(), layoutParams);
             }
 
-            // Set the right layoutparams for the timerView
+            // Add the ImageViews to the LinearLayout for the indicator dots
+            LinearLayout linearLayout = (LinearLayout) rootView.findViewById(R.id.ll_dots);
+            ImageView tempView;
+            LinearLayout.LayoutParams layoutParamsDot = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParamsDot.setMargins(INDICATOR_DOT_MARGIN, INDICATOR_DOT_MARGIN,
+                    INDICATOR_DOT_MARGIN, INDICATOR_DOT_MARGIN);
+
+            // For every step, add a dot and make sur the right one is selected
+            for (int i = 0; i < mAmountSteps; i++) {
+                tempView = (ImageView) inflater.inflate(R.layout.dot_image_view, null);
+                if (i == index) {
+                    tempView.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.selected_dot));
+                } else {
+                    tempView.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.not_selected_dot));
+                }
+                tempView.setLayoutParams(layoutParamsDot);
+                linearLayout.addView(tempView);
+            }
             return rootView;
         }
     }

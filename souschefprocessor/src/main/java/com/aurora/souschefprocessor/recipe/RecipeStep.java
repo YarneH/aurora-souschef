@@ -19,7 +19,7 @@ import java.util.Set;
 public class RecipeStep {
 
     /**
-     * A set of {@link Ingredient}s that were detected in this stpe
+     * A set of {@link Ingredient}s that were detected in this step
      */
     private Set<Ingredient> mIngredients = new HashSet<>();
     /**
@@ -179,7 +179,7 @@ public class RecipeStep {
      * when one wants to redo the {@link com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask}
      */
     public synchronized void unsetTimers() {
-        mRecipeTimers = null;
+        mRecipeTimers.clear();
         mTimerDetectionDone = false;
 
     }

@@ -10,6 +10,7 @@ import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInL
 import com.aurora.souschefprocessor.task.sectiondivider.DetectNumberOfPeopleTask;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitStepsTask;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask;
+import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +34,14 @@ public class Delegator {
     private CRFClassifier<CoreLabel> mIngredientClassifier;
     private boolean mParallelize;
 
+    static void createAnnotationPipelines(){
+        DetectTimersInStepTask.initializeAnnotationPipeline();
+    }
 
-    public Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
+    public static void incrementProgressAnnotationPipelines(){
+        Communicator.incrementProgressAnnotationPipelines();
+    }
+     Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
         mThreadPoolExecutor = null;
         mIngredientClassifier = ingredientClassifier;
         mParallelize = parallelize;

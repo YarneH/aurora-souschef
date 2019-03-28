@@ -6,6 +6,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -184,6 +187,15 @@ public class Tab3Steps extends Fragment {
 
                 insertPoint.addView(textView, insertPoint.getChildCount(), layoutParams);
             }
+
+            // Get RecyclerView and initiate it
+            // Setup recycler view.
+            RecyclerView mIngredientList = rootView.findViewById(R.id.rv_ingredient_list);
+            mIngredientList.setLayoutManager(new LinearLayoutManager(this.getContext()));
+            // Feed Adapter
+            Log.d("Recipe", "" + mRecipe.getRecipeSteps().get(0).getIngredients());
+            StepIngredientAdapter ingredientAdapter = new StepIngredientAdapter(mRecipe.getRecipeSteps().get(index).getIngredients());
+            mIngredientList.setAdapter(ingredientAdapter);
 
             // Add all timers to the view
             // Set the right layoutparams for the timerView

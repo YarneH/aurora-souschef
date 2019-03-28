@@ -12,6 +12,8 @@
         android:id="@+id/rv_ingredient_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        android:background="@null"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

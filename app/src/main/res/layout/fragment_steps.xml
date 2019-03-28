@@ -32,12 +32,24 @@
                 android:textAlignment="center"
                 android:textSize="40dp"
                 android:textStyle="bold"
+                android:text="TEST"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <com.aurora.souschef.MaxHeightRecyclerView
+                android:id="@+id/rv_ingredient_list"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv_title" />
+
             <!-- This ScrollView is necessary to make the LinearLayout scrollable -->
             <ScrollView
+                android:id="@+id/sv_text_and_timers"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_marginStart="8dp"
@@ -46,8 +58,10 @@
                 android:scrollbars="vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tv_title">
+                app:layout_constraintTop_toBottomOf="@+id/rv_ingredient_list"
+                app:layout_constraintVertical_bias="1.0">
 
                 <!-- This LinearLayout will be filled with TextViews and UITimers -->
                 <LinearLayout

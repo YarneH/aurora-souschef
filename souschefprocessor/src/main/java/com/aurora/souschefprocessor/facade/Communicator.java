@@ -1,6 +1,15 @@
 package com.aurora.souschefprocessor.facade;
 
+import android.content.Context;
+import android.util.Log;
+
+import com.aurora.auroralib.PluginObject;
+import com.aurora.souschefprocessor.R;
 import com.aurora.souschefprocessor.recipe.Recipe;
+
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.GZIPInputStream;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -9,6 +18,8 @@ import edu.stanford.nlp.ling.CoreLabel;
  * Communicates with the kernel
  */
 public class Communicator {
+
+    private static AtomicInteger mProgressAnnotationPipelines = new AtomicInteger(0);
 
     /**
      * The recipe result of the processing
@@ -33,6 +44,30 @@ public class Communicator {
 
     }
 
+    public static Communicator createCommunicator(Context context) {
+        try (GZIPInputStream is = new GZIPInputStream(context.getResources().
+                openRawResource(R.raw.detect_ingr_list_model))) {
+            // update 1:
+            CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
+            return new Communicator(crf);
+        } catch (IOException | ClassNotFoundException e) {
+            Log.e("MODEL", "createCommunicator ", e);
+        }
+        return null;
+    }
+
+    public static void createAnnotationPipelines() {
+        Delegator.createAnnotationPipelines();
+    }
+
+    public static int getProgressAnnotationPipelines() {
+        return mProgressAnnotationPipelines.get();
+    }
+
+    static void incrementProgressAnnotationPipelines() {
+        mProgressAnnotationPipelines.incrementAndGet();
+    }
+
     /**
      * Receives a string from the AuroraKernel that will be processed into a custom Recipe Object
      *
@@ -50,7 +85,7 @@ public class Communicator {
         return mRecipe;
     }
 
-    public void sendObjectToAuroraKernel(Object o) {
+    public void sendObjectToAuroraKernel(PluginObject o) {
         // TODO either this method is inherited from a class that does not exist yet or implement here,
         // should I think be a function of PluginCommunicator a class defined by Aurora
     }

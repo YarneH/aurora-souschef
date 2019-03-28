@@ -1,7 +1,9 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
 import android.support.v4.util.Pair;
+import android.util.Log;
 
+import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.recipe.Amount;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
@@ -47,9 +49,9 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
     private static final String DEFAULT_UNIT = "";
     private static final Double DEFAULT_QUANTITY = 1.0;
-
+    private static final Object LOCK = new Object();
+    private static AnnotationPipeline sAnnotationPipeline;
     private Map<String, Double> mFractionMultipliers = new HashMap<>();
-
     private int mStepIndex;
 
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
@@ -74,11 +76,35 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private static AnnotationPipeline createIngredientAnnotationPipeline() {
         AnnotationPipeline pipeline = new AnnotationPipeline();
+
+        Log.d("INGREDIENTS:", "0");
+        Delegator.incrementProgressAnnotationPipelines();
         pipeline.addAnnotator(new TokenizerAnnotator(false));
+        Delegator.incrementProgressAnnotationPipelines();
+        Log.d("INGREDIENTS:", "1");
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
+        Delegator.incrementProgressAnnotationPipelines();
+        Log.d("INGREDIENTS:", "2");
         pipeline.addAnnotator(new POSTaggerAnnotator(false));
+        Delegator.incrementProgressAnnotationPipelines();
+        Log.d("INGREDIENTS:", "3");
         return pipeline;
     }
+
+
+    /**
+     * Initializes the AnnotationPipeline should be called before using the first detector
+     */
+    public static void initializeAnnotationPipeline() {
+        Thread initialize = new Thread(() -> {
+            sAnnotationPipeline = createIngredientAnnotationPipeline();
+            synchronized (LOCK) {
+                LOCK.notifyAll();
+            }
+        });
+        initialize.start();
+    }
+
 
     /**
      * Detects the mIngredients for each recipeStep
@@ -88,6 +114,20 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         List<ListIngredient> ingredientListRecipe = mRecipeInProgress.getIngredients();
         Set<Ingredient> iuaSet = detectIngredients(recipeStep, ingredientListRecipe);
         recipeStep.setIngredients(iuaSet);
+    }
+
+    private void waitForPipeline() {
+        while (sAnnotationPipeline == null) {
+            try {
+
+                synchronized (LOCK) {
+                    LOCK.wait();
+                }
+            } catch (InterruptedException e) {
+                Log.d("Interrupted", "detecttimer", e);
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     /**
@@ -101,6 +141,9 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private Set<Ingredient> detectIngredients(RecipeStep recipeStep, List<ListIngredient> ingredientListRecipe) {
         Set<Ingredient> set = new HashSet<>();
 
+        waitForPipeline();
+
+
         // Maps list ingredients to a an array of words in their name for matching the name in the step
         // Necessary in case only a certain word of the list ingredient is used to describe it in the step
         HashMap<ListIngredient, List<String>> ingredientListMap = new HashMap<>();
@@ -111,10 +154,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         // Keeps track of already found ListIngredients in case the ingredient
         // is mentioned multiple times in the recipe step
         List<Ingredient> foundIngredients = new ArrayList<>();
-
-        AnnotationPipeline pipeline = createIngredientAnnotationPipeline();
         Annotation recipeStepAnnotated = new Annotation(recipeStep.getDescription());
-        pipeline.annotate(recipeStepAnnotated);
+        sAnnotationPipeline.annotate(recipeStepAnnotated);
 
         List<CoreMap> stepSentences = recipeStepAnnotated.get(CoreAnnotations.SentencesAnnotation.class);
 
@@ -125,9 +166,9 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             while (tokenIndex < tokens.size()) {
                 // This boolean eliminates unnecessary searching of the token in other ingredients of the list
                 boolean foundName = false;
-                Iterator it = ingredientListMap.entrySet().iterator();
+                Iterator<Map.Entry<ListIngredient, List<String>>> it = ingredientListMap.entrySet().iterator();
                 while (it.hasNext() && !foundName) {
-                    Map.Entry<ListIngredient, List<String>> entry = (Map.Entry<ListIngredient, List<String>>) it.next();
+                    Map.Entry<ListIngredient, List<String>> entry = it.next();
                     List<String> nameParts = entry.getValue();
                     Ingredient listIngredient = entry.getKey();
 
@@ -293,8 +334,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @return Pair with a boolean indicating whether a verbose quantity was detected and the quantity itself
      */
     private Pair<Boolean, Double> detectCardinalFractions(int tokenIndex, List<CoreLabel> precedingTokens) {
-        Double quantityMultiplier = 1.0;
-        Boolean tokenIsQuantity = false;
+        double quantityMultiplier = 1.0;
+        boolean tokenIsQuantity = false;
         if ("CD".equals(precedingTokens.get(tokenIndex).tag())) {
             quantityMultiplier *= calculateQuantity(Arrays.asList(precedingTokens.get(tokenIndex)));
             tokenIsQuantity = true;

@@ -7,9 +7,11 @@ import com.aurora.souschefprocessor.task.helpertasks.NonParallelizeStepTask;
 import com.aurora.souschefprocessor.task.helpertasks.ParallelizeStepsTask;
 import com.aurora.souschefprocessor.task.helpertasks.StepTaskNames;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
+import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 import com.aurora.souschefprocessor.task.sectiondivider.DetectNumberOfPeopleTask;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitStepsTask;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask;
+import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,34 +29,77 @@ import edu.stanford.nlp.ling.CoreLabel;
  */
 public class Delegator {
 
-    /** A constant describing 1/2*/
+    /**
+     * A constant describing 1/2
+     */
     private static final double HALF = 0.5;
+    private static final Object LOCK = new Object();
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
 
-    /** A threadPoolExecutor to execute steps in parallel*/
-    private ThreadPoolExecutor mThreadPoolExecutor;
-    /** The classifier to classify ingredients*/
+
+    /**
+     * A threadPoolExecutor to execute steps in parallel
+     */
+    private static ThreadPoolExecutor sThreadPoolExecutor;
+    private static boolean startedCreatingPipelines = false;
+
+    static {
+        createAnnotationPipelines();
+    }
+
+
+    /**
+     * The classifier to classify ingredients
+     */
     private CRFClassifier<CoreLabel> mIngredientClassifier;
-    /** A boolean that indicates wheter the processin should be parallelized*/
+    /**
+     * A boolean that indicates wheter the processin should be parallelized
+     */
     private boolean mParallelize;
 
 
     /**
      * Creating the delegator
+     *
      * @param ingredientClassifier the classifier to classify the ingredients
-     * @param parallelize boolean to indicate wheter to parallelize or not
+     * @param parallelize          boolean to indicate wheter to parallelize or not
      */
-    public Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
-        mThreadPoolExecutor = null;
+    Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
+
         mIngredientClassifier = ingredientClassifier;
         mParallelize = parallelize;
+
     }
 
+    static void createAnnotationPipelines() {
+        synchronized (LOCK) {
+
+            if (startedCreatingPipelines) {
+                // creating already started or finished -> do not start again
+                return;
+            }
+            // ensure no other thread starts creating pipelines
+            startedCreatingPipelines = true;
+            LOCK.notifyAll();
+        }
+        if (sThreadPoolExecutor == null) {
+            setUpThreadPool();
+        }
+
+        DetectTimersInStepTask.initializeAnnotationPipeline();
+        DetectIngredientsInStepTask.initializeAnnotationPipeline();
+
+
+    }
+
+    public static void incrementProgressAnnotationPipelines() {
+        Communicator.incrementProgressAnnotationPipelines();
+    }
 
     /**
      * Creates the ThreadPoolExecutor for the processing of the text, this is device-dependent
      */
-    private void setUpThreadPool() {
+    private static void setUpThreadPool() {
         /*
          * Gets the number of available cores
          * (not always the same as the maximum number of cores)
@@ -62,7 +107,7 @@ public class Delegator {
          * switching
          */
         int numberOfCores = (int)
-                (Runtime.getRuntime().availableProcessors() * HALF);
+                (Runtime.getRuntime().availableProcessors());
         // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue
@@ -72,7 +117,7 @@ public class Delegator {
         // Sets the Time Unit to seconds
         final TimeUnit keepAliveTimeUnit = TimeUnit.SECONDS;
         // Creates a thread pool manager
-        mThreadPoolExecutor = new ThreadPoolExecutor(
+        sThreadPoolExecutor = new ThreadPoolExecutor(
                 // Initial pool size
                 numberOfCores,
                 // Max pool size
@@ -80,6 +125,13 @@ public class Delegator {
                 KEEP_ALIVE_TIME,
                 keepAliveTimeUnit,
                 decodeWorkQueue);
+    }
+
+    public static ThreadPoolExecutor getThreadPoolExecutor() {
+        if (sThreadPoolExecutor == null) {
+            setUpThreadPool();
+        }
+        return sThreadPoolExecutor;
     }
 
     /**
@@ -91,7 +143,7 @@ public class Delegator {
      */
     public Recipe processText(String text) {
         //TODO implement this function so that at runtime it is decided which tasks should be performed
-        if (mThreadPoolExecutor == null) {
+        if (sThreadPoolExecutor == null) {
             setUpThreadPool();
         }
         RecipeInProgress recipeInProgress = new RecipeInProgress(text);
@@ -106,7 +158,6 @@ public class Delegator {
         return recipeInProgress.convertToRecipe();
     }
 
-
     /**
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
@@ -119,15 +170,11 @@ public class Delegator {
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));
         StepTaskNames[] taskNames = {StepTaskNames.INGR, StepTaskNames.TIMER};
         if (mParallelize) {
-            pipeline.add(new ParallelizeStepsTask(recipeInProgress, this.mThreadPoolExecutor, taskNames));
+            pipeline.add(new ParallelizeStepsTask(recipeInProgress, sThreadPoolExecutor, taskNames));
         } else {
             pipeline.add(new NonParallelizeStepTask(recipeInProgress, taskNames));
         }
         return pipeline;
     }
-
-
-
-
 }
 

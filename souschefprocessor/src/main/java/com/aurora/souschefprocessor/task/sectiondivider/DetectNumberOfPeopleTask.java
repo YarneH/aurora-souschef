@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
 
-    private static final int DEFAULT_NUMBER = 4;
     private static final int DEFAULT_NO_NUMBER = -1;
     private static final String[] BEFORE_DIGIT_WORDS = {"yields", "yield", "serves", "servings", "makes", "portion of"};
     private static final String[] AFTER_DIGIT_WORDS = {"persons", "people", "servings"};
@@ -56,7 +55,8 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
         StringBuilder bld = new StringBuilder("((");
         // add the before words seperated by or
         for (String word : BEFORE_DIGIT_WORDS) {
-            bld.append(word + "|");
+            bld.append(word);
+            bld.append("|");
         }
         // remove last added "|"
         bld.deleteCharAt(bld.length() - 1);
@@ -74,7 +74,8 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
 
         bld.append("]*(");
         for (String word : AFTER_DIGIT_WORDS) {
-            bld.append(word + "|");
+            bld.append(word);
+            bld.append("|");
         }
         // remove last added "|"
         bld.deleteCharAt(bld.length() - 1);

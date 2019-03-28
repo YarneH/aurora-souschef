@@ -1,5 +1,6 @@
 package com.aurora.souschefprocessor.task;
 
+import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.helpertasks.ParallelizeStepsTask;
 import com.aurora.souschefprocessor.task.helpertasks.StepTaskNames;
@@ -80,8 +81,8 @@ public class ParallelizableTaskLongTest {
         for (RecipeStep step : recipeSteps) {
             step.setIngredients(null);
             step.setRecipeTimers(null);
-            step.setIngredientDetected(false);
-            step.setTimerDetected(false);
+            step.setIngredientDetectionDone(false);
+            step.setTimerDetectionDone(false);
         }
     }
 
@@ -94,7 +95,7 @@ public class ParallelizableTaskLongTest {
 
         // Assert
         for (RecipeStep step : recipeSteps) {
-            assert (step.isTimerDetected());
+            assert (step.isTimerDetectionDone());
             // for each of these steps a timer can be detected so assert non null value
             assert (step.getRecipeTimers() != null);
         }

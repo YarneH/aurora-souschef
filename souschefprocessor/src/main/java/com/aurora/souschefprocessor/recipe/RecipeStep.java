@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.recipe;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -11,8 +13,8 @@ import java.util.Set;
  * mRecipeTimers: a list of timers contained in this recipe (could be null)
  * mDescription:  the textual mDescription of this step, which was written in the original text,
  * possibly updated to indicate references to elements in mIngredients and mRecipeTimers
- * mIngredientDetected: a boolean that indicates if the DetectIngredientsInStepTask task has been done
- * mTimerDetected: a boolean that indicates if the DetectTimersInStepTask task has been done on this step
+ * mIngredientDetectionDone: a boolean that indicates if the DetectIngredientsInStepTask task has been done
+ * mTimerDetectionDone: a boolean that indicates if the DetectTimersInStepTask task has been done on this step
  */
 public class RecipeStep {
 
@@ -29,24 +31,26 @@ public class RecipeStep {
      * detected in
      */
     private String mDescription;
+
     /**
      * A boolean indicating whether the
      * {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask} task
      * has been executed on this step
      */
-    private boolean mIngredientDetected;
+    private boolean mIngredientDetectionDone;
     /**
      * A boolean indicating whether the
      * {@link com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask} task
      * has been executed on this step
      */
-    private boolean mTimerDetected;
+    private boolean mTimerDetectionDone;
 
     /**
      * Construct a step using the description that can be used to detect ingredients and timers
      *
      * @param description
      */
+
     public RecipeStep(String description) {
         this.mDescription = description;
     }
@@ -57,7 +61,7 @@ public class RecipeStep {
 
     /**
      * Clasic setter for {@link #mIngredients}, if the argument is null then the existing
-     * set will be cleared instead of setting the existing set to null. Also sets the {@link #mIngredientDetected}
+     * set will be cleared instead of setting the existing set to null. Also sets the {@link #mIngredientDetectionDone}
      * boolean to true.
      *
      * @param ingredients The set to set as ingredients
@@ -70,7 +74,7 @@ public class RecipeStep {
                 add(ingredient);
             }
         }
-        mIngredientDetected = true;
+        mIngredientDetectionDone = true;
     }
 
     /**
@@ -82,10 +86,26 @@ public class RecipeStep {
      * @param ingredient The ingredient to add to the list
      */
     public synchronized void add(Ingredient ingredient) {
-        if (ingredient != null && ingredient.arePositionsLegalInString(mDescription)) {
-            this.mIngredients.add(ingredient);
-        } else {
-            throw new IllegalArgumentException("Ingredients is null or Positions of ingredient are not legal!");
+        // do nothing if ingredient is null
+        if (ingredient != null) {
+            try {
+                if (ingredient.arePositionsLegalInString(mDescription)) {
+                    if (this.mIngredients == null) {
+                        this.mIngredients = new HashSet<>();
+                    }
+                    this.mIngredients.add(ingredient);
+                } else {
+
+                    throw new IllegalArgumentException("Positions of ingredient are not legal!\n" +
+                            "Ingredient: " + ingredient + "\n" +
+                            "Positions: " + ingredient.getQuantityPosition() + ", " +
+                            ingredient.getUnitPosition() + ", " + ingredient.getNamePosition() +
+                            "\nDescription: " + mDescription + " ( " + mDescription.length() + " length)");
+
+                }
+            } catch (IllegalArgumentException iae) {
+                Log.e("RECIPESTEP", "Add ingredient failed: ", iae);
+            }
         }
     }
 
@@ -95,7 +115,7 @@ public class RecipeStep {
 
     /**
      * Clasic setter for {@link #mRecipeTimers}, if the argument is null then the existing
-     * list will be cleared instead of setting the existing list to null. Also sets the {@link #mTimerDetected}
+     * list will be cleared instead of setting the existing list to null. Also sets the {@link #mTimerDetectionDone}
      * boolean to true.
      *
      * @param recipeTimers The list to set as ingredients
@@ -108,7 +128,7 @@ public class RecipeStep {
                 add(timer);
             }
         }
-        mTimerDetected = true;
+        mTimerDetectionDone = true;
     }
 
     /**
@@ -129,20 +149,20 @@ public class RecipeStep {
 
     }
 
-    public boolean isIngredientDetected() {
-        return mIngredientDetected;
+    public boolean isIngredientDetectionDone() {
+        return mIngredientDetectionDone;
     }
 
-    public void setIngredientDetected(boolean ingredientDetected) {
-        mIngredientDetected = ingredientDetected;
+    public void setIngredientDetectionDone(boolean ingredientDetectionDone) {
+        this.mIngredientDetectionDone = ingredientDetectionDone;
     }
 
-    public boolean isTimerDetected() {
-        return mTimerDetected;
+    public boolean isTimerDetectionDone() {
+        return mTimerDetectionDone;
     }
 
-    public void setTimerDetected(boolean timerDetected) {
-        mTimerDetected = timerDetected;
+    public void setTimerDetectionDone(boolean timerDetectionDone) {
+        mTimerDetectionDone = timerDetectionDone;
     }
 
     public String getDescription() {
@@ -153,29 +173,41 @@ public class RecipeStep {
         mDescription = description;
     }
 
+
     /**
-     * Clears {@link #mRecipeTimers} and set {@link #mTimerDetected} to false. This should be called
+     * Clears {@link #mRecipeTimers} and set {@link #mTimerDetectionDone} to false. This should be called
      * when one wants to redo the {@link com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask}
      */
     public synchronized void unsetTimers() {
-        mRecipeTimers.clear();
-        mTimerDetected = false;
+        mRecipeTimers = null;
+        mTimerDetectionDone = false;
+
     }
 
     @Override
     public String toString() {
         StringBuilder bld = new StringBuilder();
-        bld.append("RecipeStep:\n " + mDescription + "\n mIngredientDetected: " + mIngredientDetected +
-                "\n mIngredients:\n");
-        if (mIngredientDetected) {
+        bld.append("RecipeStep:\n ");
+        bld.append(mDescription);
+        bld.append("\n");
+        bld.append("IngredientDetectionDone ");
+        bld.append(mIngredientDetectionDone);
+        if (mIngredientDetectionDone) {
+            bld.append("\nIngredients:\n");
             for (Ingredient i : mIngredients) {
-                bld.append("\t" + i);
+                bld.append("Ingredient:\t");
+                bld.append(i);
+                bld.append("\n");
             }
         }
-        bld.append("\n mTimerDetected: " + mTimerDetected);
-        if (mTimerDetected) {
+        bld.append("TimerDetectionDone: ");
+        bld.append(mTimerDetectionDone);
+        if (mTimerDetectionDone) {
+            bld.append("\nTimers:\n");
             for (RecipeTimer t : mRecipeTimers) {
-                bld.append("\n RecipeTimer:" + t);
+                bld.append("RecipeTimer:\t");
+                bld.append(t);
+                bld.append("\n");
             }
 
         }

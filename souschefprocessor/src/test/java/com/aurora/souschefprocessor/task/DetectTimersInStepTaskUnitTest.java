@@ -1,5 +1,6 @@
 package com.aurora.souschefprocessor.task;
 
+import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
@@ -60,7 +61,7 @@ public class DetectTimersInStepTaskUnitTest {
             detector.doTask();
         }
         for (RecipeStep s : recipe.getRecipeSteps()) {
-            assert (s.isTimerDetected());
+            assert (s.isTimerDetectionDone());
             assert (s.getRecipeTimers() != null);
         }
     }

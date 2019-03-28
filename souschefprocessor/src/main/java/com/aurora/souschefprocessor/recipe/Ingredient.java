@@ -102,9 +102,8 @@ public class Ingredient {
     public boolean equals(Object o) {
         if (o instanceof Ingredient) {
             Ingredient ingredient = (Ingredient) o;
-            if (ingredient.getAmount().equals(mAmount) && ingredient.getName().equals(mName)) {
-                return true;
-            }
+            return (ingredient.getAmount().equals(mAmount) && ingredient.getName().equalsIgnoreCase(mName));
+
         }
         return false;
     }
@@ -123,7 +122,8 @@ public class Ingredient {
      * @param string The string in which to check that the positions are legal
      * @return a boolean indicating if the positions are legal
      */
-    public boolean arePositionsLegalInString(String string) {
+
+     boolean arePositionsLegalInString(String string) {
         for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
             if (!mPositions.get(key).isLegalInString(string)) {
                 return false;

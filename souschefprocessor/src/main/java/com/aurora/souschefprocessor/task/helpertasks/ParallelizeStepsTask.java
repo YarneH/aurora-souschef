@@ -121,7 +121,8 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
          */
         private CountDownLatch latch;
 
-         StepTaskThread(AbstractProcessingTask task, CountDownLatch latch) {
+
+        StepTaskThread(AbstractProcessingTask task, CountDownLatch latch) {
             this.task = task;
             this.latch = latch;
 

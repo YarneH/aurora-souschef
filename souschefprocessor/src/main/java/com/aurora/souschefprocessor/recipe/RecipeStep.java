@@ -21,8 +21,13 @@ public class RecipeStep {
     private String mDescription;
     private boolean mIngredientDetected;
     private boolean mTimerDetected;
+
     public RecipeStep(String description) {
         this.mDescription = description;
+        this.mIngredients = new HashSet<>();
+        this.mRecipeTimers = new ArrayList<>();
+        this.mIngredientDetected = false;
+        this.mTimerDetected = false;
     }
 
     public synchronized Set<Ingredient> getIngredients() {
@@ -35,9 +40,6 @@ public class RecipeStep {
                 // this also checks if the position of the ingredient is valid
                 add(ingredient);
             }
-
-        } else {
-            mIngredients = new HashSet<>();
         }
         mIngredientDetected = true;
     }
@@ -47,9 +49,6 @@ public class RecipeStep {
     // to deal with setIngredients possibly setting mIngredients to null
     public synchronized void add(Ingredient ingredient) {
         if (ingredient != null && ingredient.arePositionsLegalInString(mDescription)) {
-            if (this.mIngredients == null) {
-                this.mIngredients = new HashSet<>();
-            }
             this.mIngredients.add(ingredient);
         } else {
             throw new IllegalArgumentException("Positions of ingredient are not legal!");
@@ -61,13 +60,11 @@ public class RecipeStep {
     }
 
     public synchronized void setRecipeTimers(List<RecipeTimer> recipeTimers) {
-        if (recipeTimers != null && !recipeTimers.isEmpty()) {
+        if (recipeTimers != null) {
             for (RecipeTimer timer : recipeTimers) {
                 // this also checks if the position of the timer is valid
                 add(timer);
             }
-        } else {
-            mRecipeTimers = new ArrayList<>();
         }
         mTimerDetected = true;
     }
@@ -75,9 +72,6 @@ public class RecipeStep {
     // Same comment as for addIngredient
     public synchronized void add(RecipeTimer recipeTimer) {
         if (recipeTimer.getPosition().isLegalInString(mDescription)) {
-            if (this.mRecipeTimers == null) {
-                this.mRecipeTimers = new ArrayList<>();
-            }
             this.mRecipeTimers.add(recipeTimer);
         } else {
             throw new IllegalArgumentException("Position of timer is not legal in description");

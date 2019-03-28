@@ -14,12 +14,16 @@ public class Amount {
     private double mValue;
     private String mUnit;
 
-    Amount(double mValue, String unit) {
+    public Amount(double mValue, String unit) {
         if (mValue < 0.0) {
             throw new IllegalArgumentException("Value is negative");
         }
         this.mValue = mValue;
         this.mUnit = unit;
+    }
+
+    public void setValue(double value) {
+        this.mValue = value;
     }
 
     public double getValue() {
@@ -48,5 +52,9 @@ public class Amount {
     @Override
     public String toString() {
         return "QUANTITY " + mValue + " UNIT " + mUnit;
+    }
+
+    public void setUnit(String unit) {
+        this.mUnit = unit;
     }
 }

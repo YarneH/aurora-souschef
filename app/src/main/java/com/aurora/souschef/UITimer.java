@@ -45,6 +45,15 @@ public class UITimer extends RecipeTimer {
         resetTimer();
     }
 
+    public UITimer(RecipeTimer timer, TextView textView) {
+        super(timer.getLowerBound(), timer.getLowerBound(), null);
+        // Use getLowerBound so the lower and upper bound are switched if needed (implemented in RecipeTimer)
+        mTimeSetByUser = getLowerBound();
+        mTextViewTimer = textView;
+
+        resetTimer();
+    }
+
     /**
      * Starts the timer
      * If this is called a second time, the CountDownTimer resets with the value of mMillisLeft as

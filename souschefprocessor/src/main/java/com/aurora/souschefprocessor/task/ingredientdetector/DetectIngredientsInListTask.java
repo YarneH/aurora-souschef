@@ -24,6 +24,7 @@ import edu.stanford.nlp.ling.CoreLabel;
  * It has a CRFClassifier that classifies a sentence containing an ingredient to UNIT, QUANTITY
  * and NAME
  */
+
 public class DetectIngredientsInListTask extends AbstractProcessingTask {
 
 
@@ -91,6 +92,8 @@ public class DetectIngredientsInListTask extends AbstractProcessingTask {
      * Also, adds spaces in a line, for example 250g is turned in to 250 g. This is needed because the
      * classifier needs to see 250 and "g" as seperate tokens.
      * It also deletes the "." character when it is not between two digits, as in "1 lb. of pasta"
+     * Adds spaces in a line, for example 250g/3oz is turned into 250 g / 3 oz so the
+     * classifier sees these as different tokens
      *
      * @param line The line on which to add spaces, remove clutter and delete "."
      * @return The line with the spaces added and the points deleted

@@ -328,7 +328,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @param text the text in which to search for the mDescription of the recipe
      * @return The string representing the mDescription of the recipe
      */
-    private String findDescription(String text) {
+    private static String findDescription(String text) {
         return trimNewLines(text);
     }
 

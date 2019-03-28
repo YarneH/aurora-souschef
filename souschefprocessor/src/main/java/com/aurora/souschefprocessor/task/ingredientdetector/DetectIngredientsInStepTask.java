@@ -18,16 +18,19 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.process.Morphology;
+import edu.stanford.nlp.time.TimeAnnotator;
 import edu.stanford.nlp.util.CoreMap;
 
 // TODO add exceptions for illegal arguments and add tests for these exceptions
@@ -91,12 +94,45 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     }
 
     /**
+     * Creates custom annotation pipeline for timers using a pre-existing pipeline
+     *
+     * @return Annotation pipeline
+     */
+    private static AnnotationPipeline createIngredientAnnotationPipeline(List<Annotator> annotatorsTillWordsToSentences) {
+        Properties props = new Properties();
+
+
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+        Log.d("ingr", "3");
+        for(Annotator a: annotatorsTillWordsToSentences){
+            pipeline.addAnnotator(a);
+        }
+        Delegator.incrementProgressAnnotationPipelines();
+        pipeline.addAnnotator(new POSTaggerAnnotator(false));
+        return pipeline;
+    }
+
+
+    /**
      * Initializes the AnnotationPipeline should be called before using the first detector
      */
     public static void initializeAnnotationPipeline() {
         Thread initialize = new Thread(() -> {
-            System.out.println("Thread for ingredients started");
             sAnnotationPipeline = createIngredientAnnotationPipeline();
+            synchronized (LOCK) {
+                LOCK.notifyAll();
+            }
+        });
+        initialize.start();
+    }
+
+    /**
+     * Initializes the AnnotationPipeline (using a pre-existing pipeline with some steps,
+     * should be called before using the first detector
+     */
+    public static void initializeAnnotationPipeline(List<Annotator> annotatorsTillWordsToSentences) {
+        Thread initialize = new Thread(() -> {
+            sAnnotationPipeline = createIngredientAnnotationPipeline(annotatorsTillWordsToSentences);
             synchronized (LOCK) {
                 LOCK.notifyAll();
             }
@@ -114,17 +150,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         recipeStep.setIngredients(iuaSet);
     }
 
-    /**
-     * Detects the set of mIngredients in a recipeStep. It also checks if this corresponds with the mIngredients of the
-     * recipe.
-     *
-     * @param recipeStep           The recipeStep on which to detect the mIngredients
-     * @param ingredientListRecipe The set of mIngredients contained in the recipe of which the recipeStep is a part
-     * @return A set of Ingredient objects that represent the mIngredients contained in the recipeStep
-     */
-    private Set<Ingredient> detectIngredients(RecipeStep recipeStep, List<ListIngredient> ingredientListRecipe) {
-        Set<Ingredient> set = new HashSet<>();
-
+    private void waitForPipeline(){
         while (sAnnotationPipeline == null) {
             try {
 
@@ -136,6 +162,20 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 Thread.currentThread().interrupt();
             }
         }
+    }
+    /**
+     * Detects the set of mIngredients in a recipeStep. It also checks if this corresponds with the mIngredients of the
+     * recipe.
+     *
+     * @param recipeStep           The recipeStep on which to detect the mIngredients
+     * @param ingredientListRecipe The set of mIngredients contained in the recipe of which the recipeStep is a part
+     * @return A set of Ingredient objects that represent the mIngredients contained in the recipeStep
+     */
+    private Set<Ingredient> detectIngredients(RecipeStep recipeStep, List<ListIngredient> ingredientListRecipe) {
+        Set<Ingredient> set = new HashSet<>();
+
+        waitForPipeline();
+
 
         // Maps list ingredients to a an array of words in their name for matching the name in the step
         // Necessary in case only a certain word of the list ingredient is used to describe it in the step

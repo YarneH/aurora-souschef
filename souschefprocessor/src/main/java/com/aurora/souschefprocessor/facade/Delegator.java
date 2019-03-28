@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.facade;
 
+import android.util.Log;
+
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
@@ -22,6 +24,10 @@ import java.util.concurrent.TimeUnit;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.Annotator;
+import edu.stanford.nlp.pipeline.TokenizerAnnotator;
+import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
@@ -31,7 +37,7 @@ public class Delegator {
 
     private static final double HALF = 0.5;
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
-    private static ThreadPoolExecutor mThreadPoolExecutor;
+    private static ThreadPoolExecutor sThreadPoolExecutor;
     private CRFClassifier<CoreLabel> mIngredientClassifier;
     private boolean mParallelize;
 
@@ -39,7 +45,6 @@ public class Delegator {
     private static final Object LOCK = new Object();
 
     Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
-        mThreadPoolExecutor = null;
         mIngredientClassifier = ingredientClassifier;
         mParallelize = parallelize;
 
@@ -60,14 +65,21 @@ public class Delegator {
             startedCreatingPipelines = true;
             LOCK.notifyAll();
         }
-        if(mThreadPoolExecutor == null){
+        if(sThreadPoolExecutor == null){
             setUpThreadPool();
         }
-        System.out.println("Start timer pipeline");
-        DetectTimersInStepTask.initializeAnnotationPipeline();
-        System.out.println("start ingredient pipeline");
-        DetectIngredientsInStepTask.initializeAnnotationPipeline();
-        System.out.println("pipelines finished");
+        List<Annotator> annotators = new ArrayList<>();
+        annotators.add(new TokenizerAnnotator(false));
+        Delegator.incrementProgressAnnotationPipelines();
+        Log.d("COMMON:", "0");
+        annotators.add(new WordsToSentencesAnnotator(false));
+        Delegator.incrementProgressAnnotationPipelines();
+        Log.d("COMMON", "2");
+
+        DetectTimersInStepTask.initializeAnnotationPipeline(annotators);
+
+        DetectIngredientsInStepTask.initializeAnnotationPipeline(annotators);
+
 
     }
 
@@ -96,7 +108,7 @@ public class Delegator {
         // Sets the Time Unit to seconds
         final TimeUnit keepAliveTimeUnit = TimeUnit.SECONDS;
         // Creates a thread pool manager
-        mThreadPoolExecutor = new ThreadPoolExecutor(
+        sThreadPoolExecutor = new ThreadPoolExecutor(
                 // Initial pool size
                 numberOfCores,
                 // Max pool size
@@ -115,7 +127,7 @@ public class Delegator {
      */
     public Recipe processText(String text) {
         //TODO implement this function so that at runtime it is decided which tasks should be performed
-        if (mThreadPoolExecutor == null) {
+        if (sThreadPoolExecutor == null) {
             setUpThreadPool();
         }
         RecipeInProgress recipeInProgress = new RecipeInProgress(text);
@@ -143,7 +155,7 @@ public class Delegator {
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));
         StepTaskNames[] taskNames = {StepTaskNames.INGR, StepTaskNames.TIMER};
         if (mParallelize) {
-            pipeline.add(new ParallelizeStepsTask(recipeInProgress, this.mThreadPoolExecutor, taskNames));
+            pipeline.add(new ParallelizeStepsTask(recipeInProgress, sThreadPoolExecutor, taskNames));
         } else {
             pipeline.add(new NonParallelizeStepTask(recipeInProgress, taskNames));
         }
@@ -152,10 +164,10 @@ public class Delegator {
 
 
     public static ThreadPoolExecutor getThreadPoolExecutor() {
-        if ( mThreadPoolExecutor == null) {
+        if ( sThreadPoolExecutor == null) {
             setUpThreadPool();
         }
-        return mThreadPoolExecutor;
+        return sThreadPoolExecutor;
     }
 
 

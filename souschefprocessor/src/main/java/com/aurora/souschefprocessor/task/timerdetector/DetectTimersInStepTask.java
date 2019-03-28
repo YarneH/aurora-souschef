@@ -19,6 +19,7 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
@@ -71,11 +72,25 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
 
     /**
-     * Initializes the AnnotationPipeline should be called before using the first detector
+     * Initializes the AnnotationPipeline, should be called before using the first detector
      */
     public static void initializeAnnotationPipeline() {
         Thread initialize = new Thread(() -> {
             sAnnotationPipeline = createTimerAnnotationPipeline();
+            synchronized (LOCK) {
+                LOCK.notifyAll();
+            }
+        });
+        initialize.start();
+    }
+
+    /**
+     * Initializes the AnnotationPipeline (using a pre-existing pipeline with some steps,
+     * should be called before using the first detector
+     */
+    public static void initializeAnnotationPipeline(List<Annotator> annotatorsTillWordsToSentences) {
+        Thread initialize = new Thread(() -> {
+            sAnnotationPipeline = createTimerAnnotationPipeline(annotatorsTillWordsToSentences);
             synchronized (LOCK) {
                 LOCK.notifyAll();
             }
@@ -183,6 +198,33 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         Delegator.incrementProgressAnnotationPipelines();
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
         Log.d(PIPELINE, "3");
+        Delegator.incrementProgressAnnotationPipelines();
+        pipeline.addAnnotator(new POSTaggerAnnotator(false));
+        Log.d(PIPELINE, "4");
+        Delegator.incrementProgressAnnotationPipelines();
+        pipeline.addAnnotator(new TimeAnnotator("sutime", props));
+        Log.d(PIPELINE, "5");
+        Delegator.incrementProgressAnnotationPipelines();
+        return pipeline;
+    }
+
+    /**
+     * Creates custom annotation pipeline for timers using a pre-existing pipeline
+     *
+     * @return Annotation pipeline
+     */
+    private static AnnotationPipeline createTimerAnnotationPipeline(List<Annotator> annotatorsTillWordsToSentences) {
+        Properties props = new Properties();
+
+        // Do not use binders, these are necessary for Hollidays but those are not needed for
+        // recipesteps
+        // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
+        props.setProperty("sutime.binders", "0");
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+        Log.d(PIPELINE, "3");
+        for(Annotator a: annotatorsTillWordsToSentences){
+            pipeline.addAnnotator(a);
+        }
         Delegator.incrementProgressAnnotationPipelines();
         pipeline.addAnnotator(new POSTaggerAnnotator(false));
         Log.d(PIPELINE, "4");

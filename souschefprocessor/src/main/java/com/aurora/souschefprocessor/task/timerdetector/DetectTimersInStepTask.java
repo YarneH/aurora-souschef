@@ -2,6 +2,7 @@ package com.aurora.souschefprocessor.task.timerdetector;
 
 import android.util.Log;
 
+import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
@@ -13,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -45,18 +45,14 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     private static final String PIPELINE = "PIPELINE";
     // Position of number in timex3 format (e.g. PT1H)
     private static final Integer TIMEX_NUM_POSITION = 2;
-    private static AtomicInteger progress = new AtomicInteger(0);
+    private static final Object LOCK = new Object();
     private static AnnotationPipeline sAnnotationPipeline;
     private static Map<String, Double> sFractionMultipliers = new HashMap<>();
-    private static Object sLock = new Object();
 
     // populate the map
     static {
         sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
         sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
-        if (sAnnotationPipeline == null) {
-            createTimerAnnotationPipeline();
-        }
     }
 
     private RecipeStep recipeStep;
@@ -73,23 +69,20 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         this.recipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
     }
 
-    public static AtomicInteger getProgress() {
-        return progress;
-    }
 
     /**
-     * Initializes the AnnotationPipeline should be called before using the first detector
-     * this is done by calling it in the static{} block of this class
+     * Initializes the AnnotationPipeline, should be called before using the first detector
      */
     public static void initializeAnnotationPipeline() {
         Thread initialize = new Thread(() -> {
             sAnnotationPipeline = createTimerAnnotationPipeline();
-            synchronized (sLock) {
-                sLock.notifyAll();
+            synchronized (LOCK) {
+                LOCK.notifyAll();
             }
         });
         initialize.start();
     }
+
 
     /**
      * Converts formatted string to actual seconds
@@ -182,86 +175,25 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
         props.setProperty("sutime.binders", "0");
         Log.d(PIPELINE, "0");
-        progress.incrementAndGet();
+        Delegator.incrementProgressAnnotationPipelines();
         AnnotationPipeline pipeline = new AnnotationPipeline();
         Log.d(PIPELINE, "1");
-        progress.incrementAndGet();
+        Delegator.incrementProgressAnnotationPipelines();
         pipeline.addAnnotator(new TokenizerAnnotator(false));
         Log.d(PIPELINE, "2");
-        progress.incrementAndGet();
+        Delegator.incrementProgressAnnotationPipelines();
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
         Log.d(PIPELINE, "3");
-        progress.incrementAndGet();
+        Delegator.incrementProgressAnnotationPipelines();
         pipeline.addAnnotator(new POSTaggerAnnotator(false));
         Log.d(PIPELINE, "4");
-        progress.incrementAndGet();
+        Delegator.incrementProgressAnnotationPipelines();
         pipeline.addAnnotator(new TimeAnnotator("sutime", props));
         Log.d(PIPELINE, "5");
-        progress.incrementAndGet();
+        Delegator.incrementProgressAnnotationPipelines();
         return pipeline;
     }
 
-    /**
-     * Detects the timer in a recipeStep
-     *
-     * @param recipeStep The recipeStep in which to detect a timer
-     * @return A timer detected in the recipeStep
-     */
-    private static List<RecipeTimer> detectTimer(RecipeStep recipeStep) {
-        List<RecipeTimer> list = new ArrayList<>();
-        while (sAnnotationPipeline == null) {
-            try {
-
-                synchronized (sLock) {
-                    sLock.wait();
-                }
-            } catch (InterruptedException e) {
-                Log.d("Interrupted", "detecttimer", e);
-                Thread.currentThread().interrupt();
-            }
-        }
-        Annotation recipeStepAnnotated = new Annotation((recipeStep.getDescription()));
-        sAnnotationPipeline.annotate(recipeStepAnnotated);
-
-        List<CoreLabel> allTokens = recipeStepAnnotated.get(CoreAnnotations.TokensAnnotation.class);
-
-        // Detect and calculate symbol notations for time durations in the recipeStep
-        detectSymbolPattern(list, allTokens);
-
-        // Map fractions to their start timerPosition in the recipe step
-        Map<Integer, String> fractionPositions = getFractionPositions(allTokens);
-
-
-        List<CoreMap> timexAnnotations = recipeStepAnnotated.get(TimeAnnotations.TimexAnnotations.class);
-        for (CoreMap cm : timexAnnotations) {
-
-            List<CoreLabel> labelList = cm.get(CoreAnnotations.TokensAnnotation.class);
-
-            // The first detected token
-            CoreLabel firstTimexToken = labelList.get(0);
-
-            // the last detected token
-            CoreLabel lastTimexToken = labelList.get(labelList.size() - 1);
-
-            // The position of the detected timer = beginIndex of the first token, endIndex of the last token
-            Position timerPosition = new Position(firstTimexToken.beginPosition(), lastTimexToken.endPosition());
-
-            // The detected annotation
-            SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();
-
-            // two cases: DurationRange or Single value
-            if (!(temporal.getDuration() instanceof SUTime.DurationRange)) {
-                // single value
-                addNonDurationToList(temporal, list, timerPosition, cm, fractionPositions);
-
-            } else {
-                // case: durationRange
-
-                addDurationToList(temporal, list, timerPosition);
-            }
-        }
-        return list;
-    }
 
     /**
      * Constructs a RecipeTimer from a temporal that does not represent a duration to the list
@@ -375,6 +307,68 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             }
         }
         return recipeStepSeconds;
+    }
+
+    /**
+     * Detects the timer in a recipeStep
+     *
+     * @param recipeStep The recipeStep in which to detect a timer
+     * @return A timer detected in the recipeStep
+     */
+    private List<RecipeTimer> detectTimer(RecipeStep recipeStep) {
+        List<RecipeTimer> list = new ArrayList<>();
+        while (sAnnotationPipeline == null) {
+            try {
+
+                synchronized (LOCK) {
+                    LOCK.wait();
+                }
+            } catch (InterruptedException e) {
+                Log.d("Interrupted", "detecttimer", e);
+                Thread.currentThread().interrupt();
+            }
+        }
+        Annotation recipeStepAnnotated = new Annotation((recipeStep.getDescription()));
+        sAnnotationPipeline.annotate(recipeStepAnnotated);
+
+        List<CoreLabel> allTokens = recipeStepAnnotated.get(CoreAnnotations.TokensAnnotation.class);
+
+        // Detect and calculate symbol notations for time durations in the recipeStep
+        detectSymbolPattern(list, allTokens);
+
+        // Map fractions to their start timerPosition in the recipe step
+        Map<Integer, String> fractionPositions = getFractionPositions(allTokens);
+
+
+        List<CoreMap> timexAnnotations = recipeStepAnnotated.get(TimeAnnotations.TimexAnnotations.class);
+        for (CoreMap cm : timexAnnotations) {
+
+            List<CoreLabel> labelList = cm.get(CoreAnnotations.TokensAnnotation.class);
+
+            // The first detected token
+            CoreLabel firstTimexToken = labelList.get(0);
+
+            // the last detected token
+            CoreLabel lastTimexToken = labelList.get(labelList.size() - 1);
+
+            // The position of the detected timer = beginIndex of the first token, endIndex of the last token
+            Position timerPosition = new Position(firstTimexToken.beginPosition(), lastTimexToken.endPosition());
+
+            // The detected annotation
+            SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();
+
+            // two cases: DurationRange or Single value
+            if (!(temporal.getDuration() instanceof SUTime.DurationRange)) {
+                // single value
+                addNonDurationToList(temporal, list, timerPosition, cm, fractionPositions);
+
+            } else {
+                // case: durationRange
+
+                addDurationToList(temporal, list, timerPosition);
+            }
+        }
+        return list;
     }
 
     /**

@@ -214,6 +214,9 @@ public class IngredientUnitTest {
         // Make sure a different position does not make the equal false
         Ingredient ing4 = new Ingredient("spaghetti", "gram", 500, newPositions);
         newPositions.put(Ingredient.PositionKey.QUANTITY, new Position(0, 5));
+
+        // Capitalization should not make a difference
+        Ingredient ing5 = new Ingredient("Spaghetti", "GRAM", 500, irrelevantPositions);
         // Act and Assert
         assert (ing1.equals(ing2));
         assert (ing2.equals(ing1));
@@ -221,6 +224,7 @@ public class IngredientUnitTest {
         assert (!ing1.equals(ing3));
         String randomObject = "3";
         assert (!ing1.equals(randomObject));
+        assert(ing1.equals(ing5));
     }
 
     @Test

@@ -5,20 +5,20 @@ package com.aurora.souschefprocessor.task.sectiondivider;
  * mResult = the detected result
  * mAlteredText = the original text without the detected result
  */
-public class ResultAndAlteredTextPair {
+class ResultAndAlteredTextPair {
     private String mResult;
     private String mAlteredText;
 
-    public ResultAndAlteredTextPair(String result, String alteredText) {
+    ResultAndAlteredTextPair(String result, String alteredText) {
         this.mResult = result;
         this.mAlteredText = alteredText;
     }
 
-    public String getResult() {
+    String getResult() {
         return mResult;
     }
 
-    public String getAlteredText() {
+    String getAlteredText() {
         return mAlteredText;
     }
 }

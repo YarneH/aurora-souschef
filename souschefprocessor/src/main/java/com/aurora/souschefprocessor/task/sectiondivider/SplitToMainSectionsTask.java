@@ -27,7 +27,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     private static final String STEP_STARTER_REGEX = ".*((prep(aration)?[s]?)|instruction[s]?|method|description|" +
             "make it|step[s]?|direction[s])[: ]?$";
     private static final String INGREDIENT_STARTER_REGEX = "([iI]ngredient[s]?)[: ]?$";
-    private static final String END_TOKEN = " ENDTOKEN.";
     private static final int MAX_SENTENCES_FOR_PARSER = 100;
 
 
@@ -46,11 +45,56 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         StringBuilder bld = new StringBuilder();
         String[] lines = text.split("\n");
         for (String line : lines) {
-            bld.append(line.trim() + "\n");
+            bld.append(line.trim());
+            bld.append("\n");
         }
         // Remove last new line
         bld.deleteCharAt(bld.length() - 1);
         return bld.toString();
+    }
+
+    /**
+     * Capitalizes sentences again
+     *
+     * @param text The text to capitalize
+     * @return The text with the sentences capitalized again
+     */
+    private static String capitalize(String text) {
+        // get the first letter
+        //counter
+        int i = 0;
+        char current = text.charAt(i);
+        int length = text.length();
+
+        while (!Character.isLetter(current) && i < length - 1) {
+            i++;
+            current = text.charAt(i);
+        }
+
+        // capitalize first letter
+        text = text.substring(0, i) + Character.toUpperCase(current) + text.substring(i + 1);
+
+        boolean previousWasPunctuationOrNewLine = false;
+
+        for (int j = i; j < length; j++) {
+            current = text.charAt(j);
+            if (!previousWasPunctuationOrNewLine) {
+                boolean punctuationOrNewLine = current == '.' || current == '?' || current == '!'
+                        || current == '\n';
+                if (punctuationOrNewLine) {
+                    previousWasPunctuationOrNewLine = true;
+                }
+            } else {
+                if (!Character.isWhitespace(current)) {
+                    // first letter after punctuation -> captitalize
+                    text = text.substring(0, j) + Character.toUpperCase(current) + text.substring(j + 1);
+                    previousWasPunctuationOrNewLine = false;
+                }
+
+            }
+
+        }
+        return text;
     }
 
     /**
@@ -68,7 +112,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         String ingredients = ingredientsAndText.getResult();
 
         ResultAndAlteredTextPair stepsAndText = findSteps(ingredientsAndText.getAlteredText());
-        String steps = stepsAndText.getResult();
+        String steps = capitalize(stepsAndText.getResult());
         String description = findDescription(stepsAndText.getAlteredText());
 
         modifyRecipe(this.mRecipeInProgress, ingredients, steps, description);
@@ -84,7 +128,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @param steps       The string representing the mRecipeSteps
      * @param description The string representing the desription
      */
-    public void modifyRecipe(RecipeInProgress recipe, String ingredients, String steps, String description) {
+    private void modifyRecipe(RecipeInProgress recipe, String ingredients, String steps, String description) {
         recipe.setIngredientsString(ingredients);
         recipe.setStepsString(steps);
         recipe.setDescription(description);
@@ -97,7 +141,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return A pair with the detected ingredientlist and the altered text so that the detected
      * ingredientlist is not in the text anymore
      */
-    public ResultAndAlteredTextPair findIngredients(String text) {
+    private ResultAndAlteredTextPair findIngredients(String text) {
         // dummy
         ResultAndAlteredTextPair ingredientsAndText = findIngredientsRegexBased(text);
         if ("".equals(ingredientsAndText.getResult())) {
@@ -184,7 +228,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @param text the text in which to search for mRecipeSteps
      * @return The string representing the mRecipeSteps
      */
-    public ResultAndAlteredTextPair findSteps(String text) {
+    private ResultAndAlteredTextPair findSteps(String text) {
         // dummy
         // return "Put 500 gram spaghetti in boiling water for 9 minutes.\n"
         // + "Put the sauce in the Microwave for 3 minutes \n"
@@ -235,7 +279,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @param text      The text
      * @param lowercase indicates wheter the detection should be done on a lowercase text. Since corenlp
      *                  can be better at detecting sentences starting with a verb when it is lowercase
-     * @return
+     * @return a boolean that indicates if a verb was detectec
      */
     private boolean verbDetected(String text, boolean lowercase) {
         Annotation annotatedTextLowerCase = createAnnotatedText(text, lowercase);
@@ -284,7 +328,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @param text the text in which to search for the mDescription of the recipe
      * @return The string representing the mDescription of the recipe
      */
-    public String findDescription(String text) {
+    private static String findDescription(String text) {
         return trimNewLines(text);
     }
 

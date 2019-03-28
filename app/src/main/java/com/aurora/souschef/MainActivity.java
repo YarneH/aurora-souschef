@@ -150,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
         //This means the else case should be omitted
 
 
-
         String inputText = "";
         /*
          * Handle Aurora starting the Plugin.
@@ -172,17 +171,14 @@ public class MainActivity extends AppCompatActivity {
                         Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
                 ExtractedText extractedText = ExtractedText.fromJson(inputTextJSON);
                 inputText = extractedText.toString();
-            }
-
-
-            // TODO handle a PluginObject that was cached
-            else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)){
+            } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
+                // TODO handle a PluginObject that was cached
                 Log.d("NOT_IMPLEMENTED", "PLUGIN_INPUT_OBJECT needs to be implemented." +
                         "Instead using getText.");
                 inputText = getText();
             }
 
-        } else{
+        } else {
             inputText = getText();
         }
 
@@ -241,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
     class SouschefInit extends AsyncTask<Void, String, Recipe> {
         private String mText;
 
-        protected SouschefInit(String text){
+        protected SouschefInit(String text) {
             mText = text;
         }
 

@@ -66,9 +66,8 @@ public class RecipeTimer {
     public boolean equals(Object o) {
         if (o instanceof RecipeTimer) {
             RecipeTimer rt = (RecipeTimer) o;
-            if (rt.getLowerBound() == mLowerBound && rt.getUpperBound() == mUpperBound) {
-                return true;
-            }
+            return (rt.getLowerBound() == mLowerBound && rt.getUpperBound() == mUpperBound);
+
         }
         return false;
     }

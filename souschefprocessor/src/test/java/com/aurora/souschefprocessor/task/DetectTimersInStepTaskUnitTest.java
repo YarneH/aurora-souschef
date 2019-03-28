@@ -45,7 +45,7 @@ public class DetectTimersInStepTaskUnitTest {
     @After
     public void wipeRecipeSteps() {
         for (RecipeStep s : recipeSteps) {
-            s.unsetTimer();
+            s.unsetTimers();
         }
     }
 

@@ -19,11 +19,11 @@ public class RecipeStep {
     /**
      * A set of {@link Ingredient}s that were detected in this stpe
      */
-    private Set<Ingredient> mIngredients;
+    private Set<Ingredient> mIngredients = new HashSet<>();
     /**
      * A list of {@link RecipeTimer}s that were detected in this step (in order)
      */
-    private List<RecipeTimer> mRecipeTimers;
+    private List<RecipeTimer> mRecipeTimers = new ArrayList<>();
     /**
      * The original description of this step. This is the string where timers and ingredients have been
      * detected in

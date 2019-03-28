@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.recipe;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -11,16 +13,16 @@ import java.util.Set;
  * mRecipeTimers: a list of timers contained in this recipe (could be null)
  * mDescription:  the textual mDescription of this step, which was written in the original text,
  * possibly updated to indicate references to elements in mIngredients and mRecipeTimers
- * mIngredientDetected: a boolean that indicates if the DetectIngredientsInStepTask task has been done
- * mTimerDetected: a boolean that indicates if the DetectTimersInStepTask task has been done on this step
+ * mIngredientDetectionDone: a boolean that indicates if the DetectIngredientsInStepTask task has been done
+ * mTimerDetectionDone: a boolean that indicates if the DetectTimersInStepTask task has been done on this step
  */
 public class RecipeStep {
     // this could become a hashmap, with key the Ingredient and value the location in the mDescription
     private Set<Ingredient> mIngredients;
     private List<RecipeTimer> mRecipeTimers;
     private String mDescription;
-    private boolean mIngredientDetected;
-    private boolean mTimerDetected;
+    private boolean mIngredientDetectionDone;
+    private boolean mTimerDetectionDone;
 
     public RecipeStep(String description) {
         this.mDescription = description;
@@ -41,17 +43,33 @@ public class RecipeStep {
                 add(ingredient);
             }
         }
-        mIngredientDetected = true;
+        mIngredientDetectionDone = true;
     }
 
     // This should maybe check if mIngredients != null, but maybe also create the HashSet if it is null
     // We could also initialize an empty HashSet in the constructor (but maybe still need to check if not null
     // to deal with setIngredients possibly setting mIngredients to null
     public synchronized void add(Ingredient ingredient) {
-        if (ingredient != null && ingredient.arePositionsLegalInString(mDescription)) {
-            this.mIngredients.add(ingredient);
-        } else {
-            throw new IllegalArgumentException("Positions of ingredient are not legal!");
+        // do nothing if ingredient is null
+        if (ingredient != null) {
+            try {
+                if (ingredient.arePositionsLegalInString(mDescription)) {
+                    if (this.mIngredients == null) {
+                        this.mIngredients = new HashSet<>();
+                    }
+                    this.mIngredients.add(ingredient);
+                } else {
+
+                    throw new IllegalArgumentException("Positions of ingredient are not legal!\n" +
+                            "Ingredient: " + ingredient + "\n" +
+                            "Positions: " + ingredient.getQuantityPosition() + ", " +
+                            ingredient.getUnitPosition() + ", " + ingredient.getNamePosition() +
+                            "\nDescription: " + mDescription + " ( " + mDescription.length() + " length)");
+
+                }
+            } catch (IllegalArgumentException iae) {
+                Log.e("RECIPESTEP", "Add ingredient failed: ", iae);
+            }
         }
     }
 
@@ -66,7 +84,7 @@ public class RecipeStep {
                 add(timer);
             }
         }
-        mTimerDetected = true;
+        mTimerDetectionDone = true;
     }
 
     // Same comment as for addIngredient
@@ -79,20 +97,20 @@ public class RecipeStep {
 
     }
 
-    public boolean isIngredientDetected() {
-        return mIngredientDetected;
+    public boolean isIngredientDetectionDone() {
+        return mIngredientDetectionDone;
     }
 
-    public void setIngredientDetected(boolean ingredientDetected) {
-        mIngredientDetected = ingredientDetected;
+    public void setIngredientDetectionDone(boolean ingredientDetectionDone) {
+        this.mIngredientDetectionDone = ingredientDetectionDone;
     }
 
-    public boolean isTimerDetected() {
-        return mTimerDetected;
+    public boolean isTimerDetectionDone() {
+        return mTimerDetectionDone;
     }
 
-    public void setTimerDetected(boolean timerDetected) {
-        mTimerDetected = timerDetected;
+    public void setTimerDetectionDone(boolean timerDetectionDone) {
+        mTimerDetectionDone = timerDetectionDone;
     }
 
     public String getDescription() {
@@ -105,23 +123,33 @@ public class RecipeStep {
 
     public synchronized void unsetTimer() {
         mRecipeTimers = null;
-        mTimerDetected = false;
+        mTimerDetectionDone = false;
     }
 
     @Override
     public String toString() {
         StringBuilder bld = new StringBuilder();
-        bld.append("RecipeStep:\n " + mDescription + "\n mIngredientDetected: " + mIngredientDetected +
-                "\n mIngredients:\n");
-        if (mIngredientDetected) {
+        bld.append("RecipeStep:\n ");
+        bld.append(mDescription);
+        bld.append("\n");
+        bld.append("IngredientDetectionDone ");
+        bld.append(mIngredientDetectionDone);
+        if (mIngredientDetectionDone) {
+            bld.append("\nIngredients:\n");
             for (Ingredient i : mIngredients) {
-                bld.append("\t" + i);
+                bld.append("Ingredient:\t");
+                bld.append(i);
+                bld.append("\n");
             }
         }
-        bld.append("\n mTimerDetected: " + mTimerDetected);
-        if (mTimerDetected) {
+        bld.append("TimerDetectionDone: ");
+        bld.append(mTimerDetectionDone);
+        if (mTimerDetectionDone) {
+            bld.append("\nTimers:\n");
             for (RecipeTimer t : mRecipeTimers) {
-                bld.append("\n RecipeTimer:" + t);
+                bld.append("RecipeTimer:\t");
+                bld.append(t);
+                bld.append("\n");
             }
 
         }

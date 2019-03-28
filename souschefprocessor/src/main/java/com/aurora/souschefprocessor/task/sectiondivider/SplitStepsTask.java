@@ -38,7 +38,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
      * @return A list of all mRecipeSteps in order
      */
     private List<RecipeStep> divideIntoSteps(String steps) {
-        //TODO generate functionality to split attribute stepsText
+
         List<RecipeStep> list = new ArrayList<>();
 
         // TODO based on numeric and

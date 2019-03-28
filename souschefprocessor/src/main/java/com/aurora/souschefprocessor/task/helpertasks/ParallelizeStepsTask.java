@@ -90,7 +90,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
         private AbstractProcessingTask task;
         private CountDownLatch latch;
 
-        public StepTaskThread(AbstractProcessingTask task, CountDownLatch latch) {
+        StepTaskThread(AbstractProcessingTask task, CountDownLatch latch) {
             this.task = task;
             this.latch = latch;
 

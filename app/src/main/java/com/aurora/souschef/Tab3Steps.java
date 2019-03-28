@@ -24,9 +24,6 @@ import java.util.regex.Pattern;
  * Class defining the functionality of the recipe steps tab.
  */
 public class Tab3Steps extends Fragment {
-    private static final int TIMER_MARGIN = 10;
-    private static final int INDICATOR_DOT_MARGIN = 3;
-
     private static final String[] DUMMY_STEPS = {
             "Take the food out of the package",
             "Put the food in the microwave",
@@ -145,10 +142,10 @@ public class Tab3Steps extends Fragment {
             titleTextView.setText(getString(R.string.section_format, index + 1));
 
             // Add Text and Timer
-            int dots_margin = Math.round(getResources().getDimension(R.dimen.dots_margin));
+            int timer_margin = Math.round(getResources().getDimension(R.dimen.timer_margin));
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            layoutParams.setMargins(0, dots_margin, 0, dots_margin);
+            layoutParams.setMargins(0, timer_margin, 0, timer_margin);
             ViewGroup insertPoint = (ViewGroup) rootView.findViewById(R.id.ll_step);
             int currentPosition = 0;
 
@@ -192,12 +189,13 @@ public class Tab3Steps extends Fragment {
             }
 
             // Add the ImageViews to the LinearLayout for the indicator dots
+            int dots_margin = Math.round(getResources().getDimension(R.dimen.dots_margin));
             LinearLayout linearLayout = (LinearLayout) rootView.findViewById(R.id.ll_dots);
             ImageView tempView;
             LinearLayout.LayoutParams layoutParamsDot = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            layoutParamsDot.setMargins(INDICATOR_DOT_MARGIN, INDICATOR_DOT_MARGIN,
-                    INDICATOR_DOT_MARGIN, INDICATOR_DOT_MARGIN);
+            layoutParamsDot.setMargins(dots_margin, dots_margin,
+                    dots_margin, dots_margin);
 
             // For every step, add a dot and make sur the right one is selected
             for (int i = 0; i < mAmountSteps; i++) {

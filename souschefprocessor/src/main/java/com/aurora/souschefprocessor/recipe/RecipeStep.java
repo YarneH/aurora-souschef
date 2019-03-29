@@ -91,20 +91,16 @@ public class RecipeStep {
     public synchronized void add(RecipeTimer recipeTimer) {
         // do nothing if ingredient is null
         if (recipeTimer != null) {
-            try {
-                if (recipeTimer.getPosition().isLegalInString(mDescription)) {
-                    if (this.mRecipeTimers == null) {
-                        this.mRecipeTimers = new ArrayList<>();
-                    }
-                    this.mRecipeTimers.add(recipeTimer);
-                } else {
-                    throw new IllegalArgumentException("Positions of the recipe timer are not legal!\n" +
-                            "RecipeTimer: " + recipeTimer + "\n" +
-                            "Positions: " + recipeTimer.getPosition() +
-                            "\nDescription: " + mDescription + " ( " + mDescription.length() + " length)");
+            if (recipeTimer.getPosition().isLegalInString(mDescription)) {
+                if (this.mRecipeTimers == null) {
+                    this.mRecipeTimers = new ArrayList<>();
                 }
-            } catch (IllegalArgumentException iae) {
-                Log.e("RECIPESTEP", "Add timer failed: ", iae);
+                this.mRecipeTimers.add(recipeTimer);
+            } else {
+                throw new IllegalArgumentException("Positions of the recipe timer are not legal!\n" +
+                        "RecipeTimer: " + recipeTimer + "\n" +
+                        "Positions: " + recipeTimer.getPosition() +
+                        "\nDescription: " + mDescription + " ( " + mDescription.length() + " length)");
             }
         }
     }

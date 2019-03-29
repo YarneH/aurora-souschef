@@ -122,8 +122,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
         this.mRecipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
 
-        this.sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
-        this.sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
+        sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
+        sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
     }
 
     /**

@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -163,6 +164,7 @@ public class Tab3Steps extends Fragment {
                 Matcher m = p.matcher(currentSubstring);
                 if (m.find()) {
                     textView.setText(currentSubstring.substring(m.start()));
+                    Log.d("TEST STRING", currentSubstring.substring(m.start()));
                 }
 
                 // Create a UITimer and set its on click listeners
@@ -199,7 +201,8 @@ public class Tab3Steps extends Fragment {
             mIngredientList.setAdapter(ingredientAdapter);
 
             // Set listener for the layout of the RecyclerView
-            mIngredientList.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            mIngredientList.getViewTreeObserver().addOnGlobalLayoutListener(
+                    new ViewTreeObserver.OnGlobalLayoutListener() {
                 /**
                  * This function gets called when the layout is finished
                  * Then we can check whether the RecyclerView needs too much height

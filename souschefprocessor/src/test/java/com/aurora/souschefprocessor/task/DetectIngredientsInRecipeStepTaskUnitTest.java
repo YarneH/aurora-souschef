@@ -26,7 +26,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     private static DetectIngredientsInStepTask detector3;
     private static RecipeInProgress recipe;
     private static ArrayList<RecipeStep> recipeSteps;
-    private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
+    private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
 
     @BeforeClass
     public static void initialize() {
@@ -38,7 +38,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         // Initialize positions with dummy values
         irrelevantPositions = new HashMap<>();
         Position pos = new Position(0, 1);
-        for (Ingredient.PositionKey key : Ingredient.PositionKey.values()) {
+        for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantPositions.put(key, pos);
         }
 

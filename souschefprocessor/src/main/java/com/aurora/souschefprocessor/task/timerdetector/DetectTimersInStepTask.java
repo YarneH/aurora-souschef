@@ -35,28 +35,81 @@ import static android.content.ContentValues.TAG;
  */
 public class DetectTimersInStepTask extends AbstractProcessingTask {
     //TODO change detection of fractions and symbol notations into a non hard-coded solution
+
+    /**
+     * A string representing the word half
+     */
     private static final String FRACTION_HALF = "half";
-    private static final Double FRACTION_HALF_MUL = 0.5;
+    /**
+     * A double representing 1/2 to be used when the string "half" is detected
+     */
+    private static final double FRACTION_HALF_MUL = 0.5;
+    /**
+     * A string representing the word half
+     */
     private static final String FRACTION_QUARTER = "quarter";
-    private static final Double FRACTION_QUARTER_MUL = 0.25;
-    private static final Integer MAX_FRACTION_DISTANCE = 15;
-    private static final Integer MIN_TO_SECONDS = 60;
-    private static final Integer HOUR_TO_SECONDS = 60 * 60;
+    /**
+     * A double representing 1/4 to be used when the string "quarter" is detected
+     */
+    private static final double FRACTION_QUARTER_MUL = 0.25;
+    /**
+     * An integer that states the maximum distance the words "half" or "quarter" can have to the
+     * actual time detected
+     */
+    private static final int MAX_FRACTION_DISTANCE = 15;
+    /**
+     * An int representing the amount of seconds in a minute (60)
+     */
+    private static final int MIN_TO_SECONDS = 60;
+    /**
+     * An int representing the amount of seconds in an hour (3600)
+     */
+    private static final int HOUR_TO_SECONDS = 3600;
+    /**
+     * A constant for logging the steps of the pipeline
+     */
     private static final String PIPELINE = "PIPELINE";
-    // Position of number in timex3 format (e.g. PT1H)
-    private static final Integer TIMEX_NUM_POSITION = 2;
+    /**
+     * Position of number in timex3 format (e.g. PT1H)
+     */
+    private static final int TIMEX_NUM_POSITION = 2;
+    /**
+     * A lock that ensures the {@link #sAnnotationPipeline} is only created once
+     */
     private static final Object LOCK = new Object();
+    /**
+     * A boolean that indicates if the pipelines have been created (or the creation has started)
+     */
+    private static boolean startedCreatingPipeline = false;
+    /**
+     * The Pipeline for annotating the text to detect timers
+     */
     private static AnnotationPipeline sAnnotationPipeline;
+    /**
+     * A static map that matches the {@link #FRACTION_HALF} and {@link #FRACTION_QUARTER} strings to
+     * their numerical values
+     */
     private static Map<String, Double> sFractionMultipliers = new HashMap<>();
 
-    // populate the map
+    /* populate the map and try to create the pipeline */
     static {
         sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
         sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
+        initializeAnnotationPipeline();
     }
 
+    /**
+     * The step on which to do the detecting of timers
+     */
     private RecipeStep recipeStep;
 
+    /**
+     * Constructs a DetectTimersInStepTask by using the {@link RecipeStep} with index stepIndex from the
+     * passed recipeInprogress (also checks if the stepindex is valid)
+     *
+     * @param recipeInProgress The recipe to get the step from
+     * @param stepIndex        the index of the step to get
+     */
     public DetectTimersInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
         if (stepIndex < 0) {
@@ -71,12 +124,22 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
 
     /**
-     * Initializes the AnnotationPipeline, should be called before using the first detector
+     * Initializes the AnnotationPipeline, should be called before using the first detector. It also
+     * checks if no other thread has already started to create the pipeline
      */
     public static void initializeAnnotationPipeline() {
         Thread initialize = new Thread(() -> {
+            synchronized (LOCK) {
+                if (startedCreatingPipeline) {
+                    // creating already started or finished -> do not start again
+                    return;
+                }
+                // ensure no other thread can initialize
+                startedCreatingPipeline = true;
+            }
             sAnnotationPipeline = createTimerAnnotationPipeline();
             synchronized (LOCK) {
+                // get the lock again to notify that the pipeline has been created
                 LOCK.notifyAll();
             }
         });
@@ -86,10 +149,10 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
     /**
      * Converts formatted string to actual seconds
-     * e.g. PT1H to 1 * 60 60 (3600) seconds
+     * e.g. PT1H to 1 * 60 * 60 (3600) seconds
      *
      * @param string formatted string
-     * @return seconds
+     * @return seconds from this formatted string
      */
     private static int getSecondsFromFormattedString(String string) {
         //TODO maybe this can be done less hardcoded, although for souschef I think this is good enough
@@ -121,8 +184,10 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         char[] chars = recipeStepDescription.toCharArray();
 
         bld.append(chars[0]);
+        int length = chars.length;
 
-        for (int index = 1; index < chars.length - 1; index++) {
+        // loop for the second character to the second to last
+        for (int index = 1; index < length - 1; index++) {
             char previous = chars[index - 1];
             char current = chars[index];
             char next = chars[index + 1];
@@ -132,20 +197,31 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             boolean nexIsNumber = Character.isDigit(next);
 
             if (previousIsNumber && currentIsDash && nexIsNumber) {
-                bld.append(" " + current + " ");
+                // add spaces in the case of 4-5 -> 4 - 5
+                bld.append(" ");
+                bld.append(current);
+                bld.append(" ");
             } else {
                 bld.append(current);
             }
 
         }
         // add final character
-        bld.append(chars[chars.length - 1]);
+        bld.append(chars[length - 1]);
         return bld.toString();
 
     }
 
-    private static void addDurationToList(SUTime.Temporal temporal, List<RecipeTimer> list, Position timerPosition) {
-        SUTime.DurationRange durationRange = (SUTime.DurationRange) temporal.getDuration();
+    /**
+     * Adds a durationRange (will have a different {@link RecipeTimer#mUpperBound} and {@link RecipeTimer#mUpperBound})
+     * with its position to the list of detected timers
+     *
+     * @param durationRange the range to add
+     * @param list          the list of detected timers
+     * @param timerPosition the position of the durationRange
+     */
+    private static void addDurationToList(SUTime.DurationRange durationRange, List<RecipeTimer> list,
+                                          Position timerPosition) {
 
         //formattedstring is the only way to access private min and max fields in DurationRange object
         String formattedString = durationRange.toString();
@@ -266,7 +342,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      */
     private static void detectSymbolPattern(List<RecipeTimer> recipeTimers, List<CoreLabel> allTokens) {
         for (CoreLabel token : allTokens) {
-            if (token.originalText().matches("(\\d+)[h|m|s|H|M|S]")) {
+            if (token.originalText().matches("(\\d+)(h|m|s|H|M|S)")) {
                 try {
                     Position timerPosition = new Position(token.beginPosition(), token.endPosition());
                     recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString
@@ -319,7 +395,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         List<RecipeTimer> list = new ArrayList<>();
         while (sAnnotationPipeline == null) {
             try {
-
+                // wait unitill the pipeline is created
                 synchronized (LOCK) {
                     LOCK.wait();
                 }
@@ -365,7 +441,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             } else {
                 // case: durationRange
 
-                addDurationToList(temporal, list, timerPosition);
+                addDurationToList((SUTime.DurationRange) temporal.getDuration(), list, timerPosition);
             }
         }
         return list;

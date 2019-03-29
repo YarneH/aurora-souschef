@@ -11,7 +11,9 @@ import java.util.Objects;
  */
 public class Amount {
 
+    /** The value of this amount*/
     private double mValue;
+    /** The unit of this amount*/
     private String mUnit;
 
     public Amount(double mValue, String unit) {

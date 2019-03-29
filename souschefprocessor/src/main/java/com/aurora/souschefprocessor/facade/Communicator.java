@@ -94,11 +94,25 @@ public class Communicator {
      *
      * @param text the text to be processed
      */
-    public void process(String text) {
+    public Recipe process(String text) {
         // for now String, should be TextObject but not yet defined by Aurora
         // for now this is independent of the tasks sent
+        try{
         mRecipe = mDelegator.processText(text);
-        sendObjectToAuroraKernel(mRecipe);
+        sendObjectToAuroraKernel(mRecipe);}
+        catch(IllegalArgumentException iae) {
+            if( iae instanceof RecipeDetectionException){
+                // if something went wrong with the detection rethrow the error and let the
+                // environment decide what to do in this case
+                throw new RecipeDetectionException(iae.getMessage());
+            }
+            else{
+                // This means something is programmatically wrong, so let the programmer know extra
+                // checks are needed somewhere in the code
+                Log.e("ILLEGAL", "processText", iae);
+            }
+        }
+        return  mRecipe;
 
     }
 

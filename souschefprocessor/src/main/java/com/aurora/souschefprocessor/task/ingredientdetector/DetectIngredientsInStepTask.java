@@ -336,7 +336,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @return Default ingredient
      */
     private Ingredient defaultStepIngredient() {
-        HashMap<Ingredient.PositionKey, Position> map = new HashMap<>();
+        HashMap<Ingredient.PositionKeysForIngredients, Position> map = new HashMap<>();
 
         // Initialize position on Position(0, length)
         int stepSentenceLength = mRecipeInProgress.getRecipeSteps().get(mStepIndex).getDescription().length();

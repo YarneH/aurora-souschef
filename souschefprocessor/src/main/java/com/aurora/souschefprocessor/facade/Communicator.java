@@ -42,7 +42,7 @@ public class Communicator {
      *
      * @param ingredientsClassifier
      */
-    private Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
+    public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
         mDelegator = new Delegator(ingredientsClassifier, false);
 
     }
@@ -51,6 +51,7 @@ public class Communicator {
      * Creates a Communicator object by loading in the model for the detection of ingredients i
      * the list. It also calls the {@link #createAnnotationPipelines()} to create the pipeline if
      * this has not been done yet
+     *
      * @param context The context to access the resources to load in the model
      * @return A communicator object that has the model loaded in
      */
@@ -76,6 +77,7 @@ public class Communicator {
 
     /**
      * Get the progress of the creation of the pipelines
+     *
      * @return
      */
     public static int getProgressAnnotationPipelines() {
@@ -97,22 +99,21 @@ public class Communicator {
     public Recipe process(String text) {
         // for now String, should be TextObject but not yet defined by Aurora
         // for now this is independent of the tasks sent
-        try{
-        mRecipe = mDelegator.processText(text);
-        sendObjectToAuroraKernel(mRecipe);}
-        catch(IllegalArgumentException iae) {
-            if( iae instanceof RecipeDetectionException){
-                // if something went wrong with the detection rethrow the error and let the
-                // environment decide what to do in this case
-                throw new RecipeDetectionException(iae.getMessage());
-            }
-            else{
-                // This means something is programmatically wrong, so let the programmer know extra
-                // checks are needed somewhere in the code
-                Log.e("ILLEGAL", "processText", iae);
-            }
+        try {
+            mRecipe = mDelegator.processText(text);
+            sendObjectToAuroraKernel(mRecipe);
+        } catch (RecipeDetectionException rde) {
+
+            // if something went wrong with the detection rethrow the error and let the
+            // environment decide what to do in this case
+            throw new RecipeDetectionException(rde.getMessage());
+        } catch (IllegalArgumentException iae) {
+            // This means something is programmatically wrong, so let the programmer know extra
+            // checks are needed somewhere in the code
+            Log.e("ILLEGAL", "processText", iae);
+
         }
-        return  mRecipe;
+        return mRecipe;
 
     }
 
@@ -122,6 +123,7 @@ public class Communicator {
 
     /**
      * TODO
+     *
      * @param o
      */
     public void sendObjectToAuroraKernel(PluginObject o) {

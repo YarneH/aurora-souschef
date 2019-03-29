@@ -220,7 +220,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * @param list          the list of detected timers
      * @param timerPosition the position of the durationRange
      */
-    private static void addDurationToList(SUTime.DurationRange durationRange, List<RecipeTimer> list, Position timerPosition) {
+    private static void addDurationToList(SUTime.DurationRange durationRange, List<RecipeTimer> list,
+                                          Position timerPosition) {
 
         //formattedstring is the only way to access private min and max fields in DurationRange object
         String formattedString = durationRange.toString();

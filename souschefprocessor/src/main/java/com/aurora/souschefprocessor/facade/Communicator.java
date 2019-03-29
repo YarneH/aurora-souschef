@@ -103,7 +103,7 @@ public class Communicator {
             mRecipe = mDelegator.processText(text);
             sendObjectToAuroraKernel(mRecipe);
         } catch (RecipeDetectionException rde) {
-
+            Log.e("DETECTION", "process text", rde);
             // if something went wrong with the detection rethrow the error and let the
             // environment decide what to do in this case
             throw new RecipeDetectionException(rde.getMessage());

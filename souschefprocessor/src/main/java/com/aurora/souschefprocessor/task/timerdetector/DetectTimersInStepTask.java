@@ -49,7 +49,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      */
     private static final String FRACTION_QUARTER = "quarter";
     /**
-     * A double representing 1/2 to be used when the string "quarter" is detected
+     * A double representing 1/4 to be used when the string "quarter" is detected
      */
     private static final double FRACTION_QUARTER_MUL = 0.25;
     /**
@@ -80,7 +80,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
-    private static boolean startedCreatingPipelines = false;
+    private static boolean startedCreatingPipeline = false;
     /**
      * The Pipeline for annotating the text to detect timers
      */
@@ -130,12 +130,12 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     public static void initializeAnnotationPipeline() {
         Thread initialize = new Thread(() -> {
             synchronized (LOCK) {
-                if (startedCreatingPipelines) {
+                if (startedCreatingPipeline) {
                     // creating already started or finished -> do not start again
                     return;
                 }
                 // ensure no other thread can initialize
-                startedCreatingPipelines = true;
+                startedCreatingPipeline = true;
             }
             sAnnotationPipeline = createTimerAnnotationPipeline();
             synchronized (LOCK) {

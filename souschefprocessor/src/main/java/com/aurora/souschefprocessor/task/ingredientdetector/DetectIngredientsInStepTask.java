@@ -37,21 +37,78 @@ import edu.stanford.nlp.util.CoreMap;
  */
 public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
-    // Strings for matching in recipe step
+    /**
+     * A string representing the word half
+     */
     private static final String FRACTION_HALF = "half";
-    private static final Double FRACTION_HALF_MUL = 0.5;
+    /**
+     * A double representing 1/2 to be used when the string "half" is detected
+     */
+    private static final double FRACTION_HALF_MUL = 0.5;
+    /**
+     * A string representing the word half
+     */
     private static final String FRACTION_QUARTER = "quarter";
-    private static final Double FRACTION_QUARTER_MUL = 0.25;
+    /**
+     * A double representing 1/4 to be used when the string "quarter" is detected
+     */
+    private static final double FRACTION_QUARTER_MUL = 0.25;
+    /**
+     * A string representing the word of
+     */
     private static final String OF_PREPOSITION = "of";
+    /**
+     * TODO: @Piet
+     */
     private static final int PREPOSITION_LENGTH = 1;
+    /**
+     * TODO: @Piet
+     */
     private static final int FRACTIONS_LENGTH = 1;
+    /**
+     * TODO: @Piet
+     */
     private static final int MAX_QUANTITY_LENGTH = 2;
 
+    /**
+     * The default unit is set to the empty string
+     */
     private static final String DEFAULT_UNIT = "";
-    private static final Double DEFAULT_QUANTITY = 1.0;
+    /**
+     * Default quantity is 1.0
+     */
+    private static final double DEFAULT_QUANTITY = 1.0;
+
+    /**
+     * A lock to ensure the only one thread accesses the {@link #sAnnotationPipeline} at the same time
+     * and that the pipeline is only created once
+     */
     private static final Object LOCK = new Object();
+    /**
+     * A boolean that indicates if the pipelines have been created (or the creation has started)
+     */
+    private static boolean startedCreatingPipeline = false;
+    /**
+     * The pipeline for annotating the sentences
+     */
     private static AnnotationPipeline sAnnotationPipeline;
-    private Map<String, Double> mFractionMultipliers = new HashMap<>();
+    /**
+     * A static map that matches the {@link #FRACTION_HALF} and {@link #FRACTION_QUARTER} strings to
+     * their numerical values
+     */
+    private static Map<String, Double> sFractionMultipliers = new HashMap<>();
+
+    /* populate the map and try to create the pipeline */
+    static {
+        sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
+        sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
+        initializeAnnotationPipeline();
+    }
+
+    /**
+     * The step on which to do the detecting of ingredients
+     */
+    private RecipeStep mRecipeStep;
     private int mStepIndex;
 
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
@@ -63,10 +120,33 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             throw new IllegalArgumentException("stepIndex passed too large, stepIndex: "
                     + stepIndex + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
         }
-        this.mStepIndex = stepIndex;
+        this.mRecipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
 
-        this.mFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
-        this.mFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
+        this.sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
+        this.sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
+    }
+
+    /**
+     * Initializes the AnnotationPipeline, should be called before using the first detector. It also
+     * checks if no other thread has already started to create the pipeline
+     */
+    public static void initializeAnnotationPipeline() {
+        Thread initialize = new Thread(() -> {
+            synchronized (LOCK) {
+                if (startedCreatingPipeline) {
+                    // creating already started or finished -> do not start again
+                    return;
+                }
+                // ensure no other thread can initialize
+                startedCreatingPipeline = true;
+            }
+            sAnnotationPipeline = createIngredientAnnotationPipeline();
+            synchronized (LOCK) {
+                // get the lock again to notify that the pipeline has been created
+                LOCK.notifyAll();
+            }
+        });
+        initialize.start();
     }
 
     /**
@@ -93,29 +173,17 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
 
     /**
-     * Initializes the AnnotationPipeline should be called before using the first detector
-     */
-    public static void initializeAnnotationPipeline() {
-        Thread initialize = new Thread(() -> {
-            sAnnotationPipeline = createIngredientAnnotationPipeline();
-            synchronized (LOCK) {
-                LOCK.notifyAll();
-            }
-        });
-        initialize.start();
-    }
-
-
-    /**
      * Detects the mIngredients for each recipeStep
      */
     public void doTask() {
-        RecipeStep recipeStep = mRecipeInProgress.getRecipeSteps().get(mStepIndex);
         List<ListIngredient> ingredientListRecipe = mRecipeInProgress.getIngredients();
-        Set<Ingredient> iuaSet = detectIngredients(recipeStep, ingredientListRecipe);
-        recipeStep.setIngredients(iuaSet);
+        Set<Ingredient> iuaSet = detectIngredients(mRecipeStep, ingredientListRecipe);
+        mRecipeStep.setIngredients(iuaSet);
     }
 
+    /**
+     * Waits  until the sAnnotationPipeline is created
+     */
     private void waitForPipeline() {
         while (sAnnotationPipeline == null) {
             try {
@@ -142,7 +210,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         Set<Ingredient> set = new HashSet<>();
 
         waitForPipeline();
-
 
         // Maps list ingredients to a an array of words in their name for matching the name in the step
         // Necessary in case only a certain word of the list ingredient is used to describe it in the step
@@ -248,7 +315,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 stepIngredient.setUnitPosition(unitPos);
                 stepAmount.setUnit(listIngredient.getUnit());
             }
-            Double listQuantity = listIngredient.getAmount().getValue();
+            double listQuantity = listIngredient.getAmount().getValue();
             Pair<Position, Double> quantityPair = findQuantityPositionAndValue(precedingTokens, listQuantity);
             if (quantityPair != null) {
                 stepIngredient.setQuantityPosition(quantityPair.first);
@@ -272,7 +339,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         map.put(Ingredient.PositionKeysForIngredients.NAME, defaultPos);
         String unit = DEFAULT_UNIT;
         map.put(Ingredient.PositionKeysForIngredients.UNIT, defaultPos);
-        Double quantity = DEFAULT_QUANTITY;
+        double quantity = DEFAULT_QUANTITY;
         map.put(Ingredient.PositionKeysForIngredients.QUANTITY, defaultPos);
         return new Ingredient(name, unit, quantity, map);
     }
@@ -284,7 +351,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * and the quantity detected in the ingredient step
      */
     private Pair<Position, Double> findQuantityPositionAndValue(List<CoreLabel> precedingTokens, Double listQuantity) {
-        Double stepQuantity = 1.0;
+        double stepQuantity = 1.0;
         boolean foundQuantities = false;
 
         int beginPos = precedingTokens.get(precedingTokens.size() - 1).endPosition();
@@ -355,10 +422,10 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private Pair<Boolean, Double> detectVerboseFractions(int tokenIndex,
                                                          List<CoreLabel> precedingTokens, Double listQuantity) {
-        Double quantityMultiplier = 1.0;
-        Boolean tokenIsQuantity = false;
-        if (mFractionMultipliers.keySet().contains(precedingTokens.get(tokenIndex).originalText())) {
-            quantityMultiplier *= mFractionMultipliers.get(precedingTokens.get(tokenIndex).originalText());
+        double quantityMultiplier = 1.0;
+        boolean tokenIsQuantity = false;
+        if (sFractionMultipliers.keySet().contains(precedingTokens.get(tokenIndex).originalText())) {
+            quantityMultiplier *= sFractionMultipliers.get(precedingTokens.get(tokenIndex).originalText());
             if ("DT".equals(precedingTokens.get(precedingTokens.size() - 1).tag())) {
                 quantityMultiplier *= listQuantity;
             }

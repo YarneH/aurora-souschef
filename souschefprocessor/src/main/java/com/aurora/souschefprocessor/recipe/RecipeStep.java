@@ -152,10 +152,7 @@ public class RecipeStep {
             this.mRecipeTimers.add(recipeTimer);
         } else {
             throw new IllegalArgumentException("recipeTimer is null or Position of timer is not " +
-                    "legal in description\n" +
-                    "RecipeTimer: " + recipeTimer + "\n" +
-                    "Positions: " + recipeTimer.getPosition() + "\n" + 
-                    "Description: " + mDescription + " ( " + mDescription.length() + " length)");
+                    "legal in description\n");
         }
     }
 

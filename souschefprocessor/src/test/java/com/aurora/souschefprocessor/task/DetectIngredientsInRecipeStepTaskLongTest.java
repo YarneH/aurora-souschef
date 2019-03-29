@@ -153,7 +153,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
 
         // Assert
         double accuracy = (double) correctQuantities / totalIngredients;
-        assert(accuracy > 0.80);
+        assert(accuracy > 0.85);
     }
 
     private static int equalQuantities(List<Ingredient> correctIngredients, Set<Ingredient> detectedIngredients){

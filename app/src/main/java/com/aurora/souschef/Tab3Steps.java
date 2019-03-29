@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +26,8 @@ import java.util.regex.Pattern;
  */
 public class Tab3Steps extends Fragment {
     private static final int TIMER_MARGIN = 10;
-    private static final int MAX_HEIGHT = 300; // Also present in MaxHeightRecyclerView
+    // Also present in MaxHeightRecyclerView
+    private static final int MAX_HEIGHT = 300;
 
     private static final String[] DUMMY_STEPS = {
             "Take the food out of the package",
@@ -209,7 +209,8 @@ public class Tab3Steps extends Fragment {
                 public void onGlobalLayout() {
                     int scrolling = View.OVER_SCROLL_NEVER;
                     if (mIngredientList.getAdapter().getItemCount() != 0 &&
-                            ingredientAdapter.getItemCount() * mIngredientList.getChildAt(0).getHeight() > MAX_HEIGHT) {
+                            ingredientAdapter.getItemCount() * mIngredientList.getChildAt(0).getHeight()
+                                    > MAX_HEIGHT) {
                         scrolling = View.OVER_SCROLL_ALWAYS;
 
                     }

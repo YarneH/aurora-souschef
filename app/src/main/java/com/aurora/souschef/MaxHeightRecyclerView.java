@@ -7,7 +7,8 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 
 public class MaxHeightRecyclerView extends RecyclerView {
-    private static final int MAX_HEIGHT = 300; // Also present in Tab3Steps
+    // Also present in Tab3Steps
+    private static final int MAX_HEIGHT = 300;
 
     public MaxHeightRecyclerView(@NonNull Context context) {
         super(context);
@@ -23,7 +24,7 @@ public class MaxHeightRecyclerView extends RecyclerView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        heightMeasureSpec = MeasureSpec.makeMeasureSpec(MAX_HEIGHT, MeasureSpec.AT_MOST);
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int newHeightMeasureSpec = MeasureSpec.makeMeasureSpec(MAX_HEIGHT, MeasureSpec.AT_MOST);
+        super.onMeasure(widthMeasureSpec, newHeightMeasureSpec);
     }
 }

@@ -41,7 +41,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
 
         List<RecipeStep> list = new ArrayList<>();
 
-        // TODO based on numeric and
+        // TODO based on numeric
 
         //split based on sections (punctuation followed by newline indicates block of text)
         String[] pointAndNewLine = steps.split("\\p{Punct}\n");
@@ -54,6 +54,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
             }
 
         } else {
+            // No other detection method yielded result, so just split on the sentences
             list = splitStepsBySplittingOnPunctuation(steps);
 
         }

@@ -63,5 +63,6 @@ dependencies {
         exclude group: 'org.apache.lucene'
         exclude group: 'com.sun.xml.bind'
     }
-    //testImplementation 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
+    //gestures
+    implementation 'com.github.nisrulz:sensey:1.8.0'
 }

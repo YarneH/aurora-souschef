@@ -25,7 +25,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     private static DetectIngredientsInStepTask detector3;
     private static RecipeInProgress recipe;
     private static ArrayList<RecipeStep> recipeSteps;
-    private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
+    private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
 
     @BeforeClass
     public static void initialize() {
@@ -37,7 +37,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         // Initialize positions with dummy values
         irrelevantPositions = new HashMap<>();
         Position pos = new Position(0, 1);
-        for (Ingredient.PositionKey key : Ingredient.PositionKey.values()) {
+        for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantPositions.put(key, pos);
         }
 
@@ -175,10 +175,10 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndQuantityAndPosition() {
         detector2.doTask();
 
-        HashMap<Ingredient.PositionKey, Position> positions = new HashMap<>();
-        positions.put(Ingredient.PositionKey.NAME, new Position(26, 31));
-        positions.put(Ingredient.PositionKey.UNIT, new Position(12, 18));
-        positions.put(Ingredient.PositionKey.QUANTITY, new Position(8, 11));
+        HashMap<Ingredient.PositionKeysForIngredients, Position> positions = new HashMap<>();
+        positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(26, 31));
+        positions.put(Ingredient.PositionKeysForIngredients.UNIT, new Position(12, 18));
+        positions.put(Ingredient.PositionKeysForIngredients.QUANTITY, new Position(8, 11));
         Ingredient stepIngredient = new Ingredient("sauce", "ounces", 250.0, positions);
 
         // Retrieve the sauce ingredient detected in the recipe step

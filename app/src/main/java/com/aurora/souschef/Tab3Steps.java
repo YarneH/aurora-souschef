@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -26,6 +27,7 @@ import java.util.regex.Pattern;
  */
 public class Tab3Steps extends Fragment {
     private static final int TIMER_MARGIN = 10;
+    private static final int MAX_HEIGHT = 300; // Also present in MaxHeightRecyclerView
 
     private static final String[] DUMMY_STEPS = {
             "Take the food out of the package",
@@ -176,7 +178,7 @@ public class Tab3Steps extends Fragment {
             }
 
             // Check if there is still some text coming after the last timer
-            if (currentPosition != mDescriptionSteps[index].length()){
+            if (currentPosition != mDescriptionSteps[index].length()) {
                 TextView textView = (TextView) inflater.inflate(R.layout.step_textview, null);
                 String currentSubstring = mDescriptionSteps[index].substring(currentPosition);
                 Pattern p = Pattern.compile("\\p{Alpha}");
@@ -188,17 +190,34 @@ public class Tab3Steps extends Fragment {
                 insertPoint.addView(textView, insertPoint.getChildCount(), layoutParams);
             }
 
-            // Get RecyclerView and initiate it
             // Setup recycler view.
             RecyclerView mIngredientList = rootView.findViewById(R.id.rv_ingredient_list);
             mIngredientList.setLayoutManager(new LinearLayoutManager(this.getContext()));
             // Feed Adapter
-            Log.d("Recipe", "" + mRecipe.getRecipeSteps().get(0).getIngredients());
-            StepIngredientAdapter ingredientAdapter = new StepIngredientAdapter(mRecipe.getRecipeSteps().get(index).getIngredients());
+            StepIngredientAdapter ingredientAdapter =
+                    new StepIngredientAdapter(mRecipe.getRecipeSteps().get(index).getIngredients());
             mIngredientList.setAdapter(ingredientAdapter);
 
-            // Add all timers to the view
-            // Set the right layoutparams for the timerView
+            // Set listener for the layout of the RecyclerView
+            mIngredientList.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                /**
+                 * This function gets called when the layout is finished
+                 * Then we can check whether the RecyclerView needs too much height
+                 * If it needs more then 300, we add an over scroll effect
+                 */
+                @Override
+                public void onGlobalLayout() {
+                    int scrolling = View.OVER_SCROLL_NEVER;
+                    if (mIngredientList.getAdapter().getItemCount() != 0 &&
+                            ingredientAdapter.getItemCount() * mIngredientList.getChildAt(0).getHeight() > MAX_HEIGHT) {
+                        scrolling = View.OVER_SCROLL_ALWAYS;
+
+                    }
+
+                    mIngredientList.setOverScrollMode(scrolling);
+                }
+
+            });
             return rootView;
         }
     }

@@ -21,7 +21,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
     // Irrelevant properties
     private static String originalText = "irrelevant";
     private static String originalIngredientText = "irrelevant";
-    private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
+    private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
 
     // Container for the detected recipes
     private static List<RecipeInProgress> rips;
@@ -35,7 +35,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
     @BeforeClass
     public static void initialize() throws IOException, ClassNotFoundException {
         Position pos = new Position(0, 1);
-        for (Ingredient.PositionKey key : Ingredient.PositionKey.values()) {
+        for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantPositions.put(key, pos);
         }
 
@@ -153,7 +153,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
 
         // Assert
         double accuracy = (double) correctQuantities / totalIngredients;
-        assert(accuracy > 0.85);
+        assert(accuracy > 0.80);
     }
 
     private static int equalQuantities(List<Ingredient> correctIngredients, Set<Ingredient> detectedIngredients){
@@ -190,7 +190,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
 
         // Assert
         double accuracy = (double) correctUnits / totalIngredients;
-        assert(accuracy > 0.80);
+        assert(accuracy > 0.85);
     }
 
     private static int equalUnits(List<Ingredient> correctIngredients, Set<Ingredient> detectedIngredients){

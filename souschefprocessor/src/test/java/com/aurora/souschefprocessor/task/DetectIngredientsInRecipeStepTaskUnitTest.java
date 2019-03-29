@@ -194,10 +194,10 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndQuantityAndPosition(){
         // Arrange
-        HashMap<Ingredient.PositionKey, Position> positions = new HashMap<>();
-        positions.put(Ingredient.PositionKey.NAME, new Position(26, 31));
-        positions.put(Ingredient.PositionKey.UNIT, new Position(12, 18));
-        positions.put(Ingredient.PositionKey.QUANTITY, new Position(8, 11));
+        HashMap<Ingredient.PositionKeysForIngredients, Position> positions = new HashMap<>();
+        positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(26, 31));
+        positions.put(Ingredient.PositionKeysForIngredients.UNIT, new Position(12, 18));
+        positions.put(Ingredient.PositionKeysForIngredients.QUANTITY, new Position(8, 11));
         Ingredient stepIngredient = new Ingredient("sauce", "ounces", 250.0, positions);
 
         // Act

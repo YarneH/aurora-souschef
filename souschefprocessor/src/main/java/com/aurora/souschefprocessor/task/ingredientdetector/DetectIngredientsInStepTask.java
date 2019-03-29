@@ -339,7 +339,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         HashMap<Ingredient.PositionKeysForIngredients, Position> map = new HashMap<>();
 
         // Initialize position on Position(0, length)
-        int stepSentenceLength = mRecipeInProgress.getRecipeSteps().get(mStepIndex).getDescription().length();
+        int stepSentenceLength = mRecipeStep.getDescription().length();
         Position defaultPos = new Position(0, stepSentenceLength);
         String name = "";
         map.put(Ingredient.PositionKeysForIngredients.NAME, defaultPos);

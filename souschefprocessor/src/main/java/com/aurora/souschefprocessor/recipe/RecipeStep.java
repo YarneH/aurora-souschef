@@ -28,8 +28,8 @@ public class RecipeStep {
         this.mDescription = description;
         this.mIngredients = new HashSet<>();
         this.mRecipeTimers = new ArrayList<>();
-        this.mIngredientDetected = false;
-        this.mTimerDetected = false;
+        this.mIngredientDetectionDone = false;
+        this.mTimerDetectionDone = false;
     }
 
     public synchronized Set<Ingredient> getIngredients() {
@@ -89,12 +89,24 @@ public class RecipeStep {
 
     // Same comment as for addIngredient
     public synchronized void add(RecipeTimer recipeTimer) {
-        if (recipeTimer.getPosition().isLegalInString(mDescription)) {
-            this.mRecipeTimers.add(recipeTimer);
-        } else {
-            throw new IllegalArgumentException("Position of timer is not legal in description");
+        // do nothing if ingredient is null
+        if (recipeTimer != null) {
+            try {
+                if (recipeTimer.getPosition().isLegalInString(mDescription)) {
+                    if (this.mRecipeTimers == null) {
+                        this.mRecipeTimers = new ArrayList<>();
+                    }
+                    this.mRecipeTimers.add(recipeTimer);
+                } else {
+                    throw new IllegalArgumentException("Positions of the recipe timer are not legal!\n" +
+                            "RecipeTimer: " + recipeTimer + "\n" +
+                            "Positions: " + recipeTimer.getPosition() +
+                            "\nDescription: " + mDescription + " ( " + mDescription.length() + " length)");
+                }
+            } catch (IllegalArgumentException iae) {
+                Log.e("RECIPESTEP", "Add timer failed: ", iae);
+            }
         }
-
     }
 
     public boolean isIngredientDetectionDone() {

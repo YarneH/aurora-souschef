@@ -175,7 +175,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                     if (nameParts.contains(tokens.get(tokenIndex).originalText())
                             && !foundIngredients.contains(listIngredient)) {
                         foundIngredients.add(listIngredient);
-                        set.add(getStepIngredient(tokenIndex, listIngredient, tokens));
+                        set.add(getStepIngredient(tokenIndex, nameParts, listIngredient, tokens));
                         foundName = true;
 
                         // Check if the mentioned ingredient is being described by multiple words in the step
@@ -195,7 +195,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * Checks if there are multiple words used to represent the ingredient
      * in the recipeStep and returns the amount of used words
      *
-     * @param tokens    Tokens in front of detected name of an ingredient
+     * @param tokens    Tokens in in the recipe step
      * @param nameParts Separated words of the list ingredient it's name
      * @return the amount of additional separated words used in the recipe step
      */
@@ -223,10 +223,14 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @param tokens         List of tokens representing this sentence
      * @return Step Ingredient
      */
-    private Ingredient getStepIngredient(int nameIndex, Ingredient listIngredient, List<CoreLabel> tokens) {
-        Ingredient stepIngredient = defaultStepIngredient(tokens.get(tokens.size() - 1).endPosition());
+    private Ingredient getStepIngredient(int nameIndex, List<String> nameParts,
+                                         Ingredient listIngredient, List<CoreLabel> tokens) {
+        Ingredient stepIngredient = defaultStepIngredient();
         stepIngredient.setName(listIngredient.getName());
-        Position namePos = new Position(tokens.get(nameIndex).beginPosition(), tokens.get(nameIndex).endPosition());
+
+        // Find the other parts of the mentioned name
+        int lastNameIndex = nameIndex + succeedingNameLength(nameIndex, tokens, nameParts);
+        Position namePos = new Position(tokens.get(nameIndex).beginPosition(), tokens.get(lastNameIndex).endPosition());
         stepIngredient.setNamePosition(namePos);
 
         // Check if a quantity or unit is possible for this ingredient
@@ -261,11 +265,13 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     /**
      * Creates a default ingredient with values initialized to their absent value
      *
-     * @param stepSentenceLength The length of the step sentence
      * @return Default ingredient
      */
-    private Ingredient defaultStepIngredient(int stepSentenceLength) {
+    private Ingredient defaultStepIngredient() {
         HashMap<Ingredient.PositionKey, Position> map = new HashMap<>();
+
+        // Initialize position on Position(0, length)
+        int stepSentenceLength = mRecipeInProgress.getRecipeSteps().get(mStepIndex).getDescription().length();
         Position defaultPos = new Position(0, stepSentenceLength);
         String name = "";
         map.put(Ingredient.PositionKey.NAME, defaultPos);

@@ -33,7 +33,7 @@ public class DelegatorLongTest {
         // split into valid and invalid
         // the first 5 recipes are valid recipes
         validRecipes = recipes.subList(0, 5);
-        invalidRecipes = recipes.subList(5, 7);
+        invalidRecipes = recipes.subList(5, 8);
 
         // load in the model
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";

@@ -11,15 +11,18 @@ import java.util.Map;
  */
 public class ListIngredient extends Ingredient {
 
+    /**
+     * The originalLine this ListIngredient was detected in
+     */
     private String mOriginalLine;
 
     public ListIngredient(String name, String unit, double value, String originalText,
-                          Map<PositionKey, Position> positions) {
+                          Map<PositionKeysForIngredients, Position> positions) {
         super(name, unit, value, positions);
         mOriginalLine = originalText;
 
         // check if the positions are legal
-        for (PositionKey key : PositionKey.values()) {
+        for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
             Position position = positions.get(key);
             if (!position.isLegalInString(originalText)) {
                 throw new IllegalArgumentException("Position of " + key + " is too big");
@@ -77,6 +80,11 @@ public class ListIngredient extends Ingredient {
 
     }
 
+    /**
+     * A function that indicates whether this listingredient contains a unit detected in the string
+     *
+     * @return a boolean that indicates if a unit was detected
+     */
     private boolean unitDetected() {
         boolean stringSet = !("").equals(mAmount.getUnit());
         boolean positionSpansEntireLine = getUnitPosition().getBeginIndex() == 0 &&
@@ -84,6 +92,11 @@ public class ListIngredient extends Ingredient {
         return stringSet && !positionSpansEntireLine;
     }
 
+    /**
+     * A function that indicates whether this listingredient contains a quantity detected in the string
+     *
+     * @return a boolean that indicates if a quantity was detected
+     */
     private boolean quantityDetected() {
         return !(getQuantityPosition().getBeginIndex() == 0 &&
                 getQuantityPosition().getEndIndex() == mOriginalLine.length());

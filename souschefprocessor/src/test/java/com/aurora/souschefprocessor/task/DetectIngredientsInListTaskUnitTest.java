@@ -25,7 +25,7 @@ public class DetectIngredientsInListTaskUnitTest {
     private static CRFClassifier<CoreLabel> crfClassifier;
 
 
-    private static HashMap<Ingredient.PositionKey, Position> irrelevantPositions = new HashMap<>();
+    private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
 
     @BeforeClass
     public static void initialize() throws IOException, ClassNotFoundException {
@@ -42,7 +42,7 @@ public class DetectIngredientsInListTaskUnitTest {
         detector = new DetectIngredientsInListTask(recipe, crfClassifier);
 
         Position pos = new Position(0, 1);
-        for (Ingredient.PositionKey key : Ingredient.PositionKey.values()) {
+        for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantPositions.put(key, pos);
         }
     }

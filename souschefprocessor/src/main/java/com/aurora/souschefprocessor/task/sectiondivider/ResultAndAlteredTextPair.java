@@ -2,8 +2,8 @@ package com.aurora.souschefprocessor.task.sectiondivider;
 
 /**
  * A helper class for the SplitToMainSectionsTask, it is a dataclass that stores two strings:
- * mResult = the detected result
- * mAlteredText = the original text without the detected result
+ * {@link #mResult} = the detected result
+ * {@link #mAlteredText} = the original text without the detected result
  */
 class ResultAndAlteredTextPair {
     private String mResult;

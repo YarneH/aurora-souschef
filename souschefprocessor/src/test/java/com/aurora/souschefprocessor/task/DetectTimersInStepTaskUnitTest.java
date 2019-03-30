@@ -37,6 +37,7 @@ public class DetectTimersInStepTaskUnitTest {
         String originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
         recipe.setRecipeSteps(recipeSteps);
+
         for (int stepIndex = 0; stepIndex < recipeSteps.size(); stepIndex++) {
             detectors.add(new DetectTimersInStepTask(recipe, stepIndex));
         }
@@ -46,7 +47,7 @@ public class DetectTimersInStepTaskUnitTest {
     @After
     public void wipeRecipeSteps() {
         for (RecipeStep s : recipeSteps) {
-            s.unsetTimer();
+            s.unsetTimers();
         }
     }
 

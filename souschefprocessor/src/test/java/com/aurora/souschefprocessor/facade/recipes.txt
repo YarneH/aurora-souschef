@@ -158,3 +158,17 @@ fjfaj
 yuireld
 yield 2525
 oezjjazgiâeuta
+----------
+This is a junk recipe that has steps, but no ingredients, should trown an error
+kdqjfsj
+dkqfsjkejai
+eija
+dlkkjjjjj
+hallo
+ieja
+
+COOKING STEPS
+
+Put package in microwave for 5 minutes.
+Take it out.
+Eat.

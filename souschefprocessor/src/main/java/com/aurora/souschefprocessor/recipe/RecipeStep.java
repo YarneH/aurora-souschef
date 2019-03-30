@@ -53,6 +53,10 @@ public class RecipeStep {
 
     public RecipeStep(String description) {
         this.mDescription = description;
+        this.mIngredients = new HashSet<>();
+        this.mRecipeTimers = new ArrayList<>();
+        this.mIngredientDetectionDone = false;
+        this.mTimerDetectionDone = false;
     }
 
     public synchronized Set<Ingredient> getIngredients() {
@@ -140,13 +144,16 @@ public class RecipeStep {
      * @param recipeTimer The ingredient to add to the list
      */
     public synchronized void add(RecipeTimer recipeTimer) {
+        // do nothing if ingredient is null
         if (recipeTimer != null && recipeTimer.getPosition().isLegalInString(mDescription)) {
+            if (this.mRecipeTimers == null) {
+                this.mRecipeTimers = new ArrayList<>();
+            }
             this.mRecipeTimers.add(recipeTimer);
         } else {
             throw new IllegalArgumentException("recipeTimer is null or Position of timer is not " +
-                    "legal in description");
+                    "legal in description\n");
         }
-
     }
 
     public boolean isIngredientDetectionDone() {

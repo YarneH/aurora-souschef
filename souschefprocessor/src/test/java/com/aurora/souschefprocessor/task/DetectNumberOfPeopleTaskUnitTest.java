@@ -54,7 +54,9 @@ public class DetectNumberOfPeopleTaskUnitTest {
                 "NUMBER\t4\n" +
                 "NUMBER\t4\n" +
                 "NUMBER\t8\n" +
-                "NUMBER\t2525\n").split("\n");
+                "NUMBER\t2525\n" +
+                "NO_NUMBER\n" +
+                "NO_NUMBER\n").split("\n");
     }
 
     private static List<String> initializeDataSet() {

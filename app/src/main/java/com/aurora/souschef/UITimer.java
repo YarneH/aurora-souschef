@@ -36,12 +36,18 @@ public class UITimer extends RecipeTimer {
     private static final int SECOND_STEP = 1;
     private static final int PERCENT = 100;
 
+    // A boolean which indicates whether the timer is running
     private boolean mRunning = false;
+    // A boolean which indicates whether the alarm is playing
     private boolean mAlarming = false;
+    // A boolean which indicates whether the background is ColorPrimary or ColorPrimaryDark
     private boolean mColorDark = true;
+    // An integer indicating the time set by the user, in seconds
     private int mTimeSetByUser;
+    // An integer indicating the amount of milliseconds left on the timer
     private long mMillisLeft;
     private CountDownTimer mCountDownTimer;
+    // A Handler used for the change in background color when the alarm is playing
     private Handler mHandler;
     private TextView mTextViewTimer;
     private Ringtone mRingtone;
@@ -67,14 +73,13 @@ public class UITimer extends RecipeTimer {
                 performTick(millisUntilFinished - AMOUNT_MILLISEC_IN_SEC);
             }
 
-            // TODO: Call to onFinish is not as quick as onTick (takes +/- 1.8 sec)
-            // We could fix this by adding a second to the timer and ending it at 1 sec
             @Override
             public void onFinish() {
                 // The last tick is the one of 1 second remaining, because the actual last tick is a
                 // long one.
             }
         }.start();
+        // Set the background color to non-dark primary
         mTextViewTimer.setBackgroundColor(mTextViewTimer.getResources().getColor(R.color.colorPrimary));
 
         mRunning = true;
@@ -102,14 +107,22 @@ public class UITimer extends RecipeTimer {
      * @param millis the amount of milliseconds remaining
      */
     private void performTick(long millis) {
+        // Store the amount of milliseconds left and calculate the amount of seconds left
         mMillisLeft = millis;
         int secondsLeft = (int) millis / AMOUNT_MILLISEC_IN_SEC;
+
+        // Convert the amount left into a string representation and set the TextView
         String timerText = convertTimeToString(secondsLeft);
         mTextViewTimer.setText(timerText);
-        if (secondsLeft < 1) {
+
+        // Check if this is the last tick (NOTE: Timer ends at 1!)
+        if (secondsLeft <= 1) {
             mTextViewTimer.setBackgroundColor(mTextViewTimer.getResources().getColor(R.color.colorPrimaryDark));
+            // Start the alarm
             mRingtone.play();
             mAlarming = true;
+
+            // Start the handler, which changes to color every CHANGE_COLOR_MILLISEC_DELAY milliseconds
             if (mHandler == null) {
                 mHandler = new Handler();
                 mHandler.postDelayed(new Runnable() {
@@ -162,8 +175,11 @@ public class UITimer extends RecipeTimer {
             @Override
             public void onClick(View view) {
                 if (mAlarming) {
+                    // Stop the alarm
                     mRingtone.stop();
                     mAlarming = false;
+
+                    // Stop changing the color
                     if (mHandler != null){
                         mHandler.removeCallbacksAndMessages(null);
                     }

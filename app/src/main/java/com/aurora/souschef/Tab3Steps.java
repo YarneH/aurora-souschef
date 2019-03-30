@@ -9,7 +9,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,8 +23,6 @@ import com.aurora.souschefprocessor.recipe.RecipeTimer;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.apache.commons.lang3.StringUtils.split;
 
 /**
  * Class defining the functionality of the recipe steps tab.
@@ -148,60 +145,16 @@ public class Tab3Steps extends Fragment {
             View rootView = inflater.inflate(R.layout.fragment_steps, container, false);
             TextView titleTextView = (TextView) rootView.findViewById(R.id.tv_title);
 
-            // Set the TextViews
+            // Set the title
             titleTextView.setText(getString(R.string.section_format, index + 1));
 
-            // Add Text and Timer
-            int timer_margin = Math.round(getResources().getDimension(R.dimen.timer_margin));
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            layoutParams.setMargins(0, timer_margin, 0, timer_margin);
-            layoutParams.gravity = Gravity.CENTER;
-            ViewGroup insertPoint = (ViewGroup) rootView.findViewById(R.id.ll_step);
-            int currentPosition = 0;
+            // Add the separate TextViews and TimerCards
+            addTextAndTimers(inflater, rootView, index);
 
-            for (RecipeTimer timer : mRecipe.getRecipeSteps().get(index).getRecipeTimers()) {
-                // Inflate the layout of a text and a timer
-                View timerView = inflater.inflate(R.layout.timer_card, null);
-                TextView textView = (TextView) inflater.inflate(R.layout.step_textview, null);
-
-                // Set Text of the TextView
-                int tempPosition = timer.getPosition().getEndIndex();
-                String currentSubstring = mDescriptionSteps[index].substring(currentPosition, tempPosition);
-                Pattern p = Pattern.compile("\\p{Alpha}");
-                Matcher m = p.matcher(currentSubstring);
-                if (m.find()) {
-                    textView.setText(currentSubstring.substring(m.start()));
-                }
-
-                // Create a UITimer and set its on click listeners
-                UITimer uiTimer = new UITimer(timer, timerView.findViewById(R.id.tv_timer));
-                uiTimer.setOnClickListeners();
-
-                // Add the timer to the LinearLayout
-                insertPoint.addView(textView, insertPoint.getChildCount(), layoutParams);
-                insertPoint.addView(timerView, insertPoint.getChildCount(), layoutParams);
-
-                // Set the current position to the temporary position
-                currentPosition = tempPosition;
-            }
-
-            // Check if there is still some text coming after the last timer
-            if (currentPosition != mDescriptionSteps[index].length()) {
-                TextView textView = (TextView) inflater.inflate(R.layout.step_textview, null);
-                String currentSubstring = mDescriptionSteps[index].substring(currentPosition);
-                Pattern p = Pattern.compile("\\p{Alpha}");
-                Matcher m = p.matcher(mDescriptionSteps[index].substring(currentPosition));
-                if (m.find()) {
-                    textView.setText(currentSubstring.substring(m.start()));
-                }
-
-                insertPoint.addView(textView, insertPoint.getChildCount(), layoutParams);
-            }
-
-            // Setup recycler view.
+            // Setup the RecyclerView of the ingredients
             RecyclerView mIngredientList = rootView.findViewById(R.id.rv_ingredient_list);
             mIngredientList.setLayoutManager(new LinearLayoutManager(this.getContext()));
+
             // Feed Adapter
             StepIngredientAdapter ingredientAdapter =
                     new StepIngredientAdapter(mRecipe.getRecipeSteps().get(index).getIngredients());
@@ -252,6 +205,56 @@ public class Tab3Steps extends Fragment {
                 linearLayout.addView(tempView);
             }
             return rootView;
+        }
+
+        private void addTextAndTimers(LayoutInflater inflater, View rootView, int index) {
+            // Add Text and Timer
+            int timerMargin = Math.round(getResources().getDimension(R.dimen.timer_margin));
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParams.setMargins(0, timerMargin, 0, timerMargin);
+            layoutParams.gravity = Gravity.CENTER;
+            ViewGroup insertPoint = (ViewGroup) rootView.findViewById(R.id.ll_step);
+            int currentPosition = 0;
+
+            for (RecipeTimer timer : mRecipe.getRecipeSteps().get(index).getRecipeTimers()) {
+                // Inflate the layout of a text and a timer
+                View timerView = inflater.inflate(R.layout.timer_card, null);
+                TextView textView = (TextView) inflater.inflate(R.layout.step_textview, null);
+
+                // Set Text of the TextView
+                int tempPosition = timer.getPosition().getEndIndex();
+                String currentSubstring = mDescriptionSteps[index].substring(currentPosition, tempPosition);
+                Pattern p = Pattern.compile("\\p{Alpha}");
+                Matcher m = p.matcher(currentSubstring);
+                if (m.find()) {
+                    textView.setText(currentSubstring.substring(m.start()));
+                }
+
+                // Create a UITimer and set its on click listeners
+                UITimer uiTimer = new UITimer(timer, timerView.findViewById(R.id.tv_timer));
+                uiTimer.setOnClickListeners();
+
+                // Add the timer to the LinearLayout
+                insertPoint.addView(textView, insertPoint.getChildCount(), layoutParams);
+                insertPoint.addView(timerView, insertPoint.getChildCount(), layoutParams);
+
+                // Set the current position to the temporary position
+                currentPosition = tempPosition;
+            }
+
+            // Check if there is still some text coming after the last timer
+            if (currentPosition != mDescriptionSteps[index].length()) {
+                TextView textView = (TextView) inflater.inflate(R.layout.step_textview, null);
+                String currentSubstring = mDescriptionSteps[index].substring(currentPosition);
+                Pattern p = Pattern.compile("\\p{Alpha}");
+                Matcher m = p.matcher(mDescriptionSteps[index].substring(currentPosition));
+                if (m.find()) {
+                    textView.setText(currentSubstring.substring(m.start()));
+                }
+
+                insertPoint.addView(textView, insertPoint.getChildCount(), layoutParams);
+            }
         }
     }
 

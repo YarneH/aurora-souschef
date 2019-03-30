@@ -10,6 +10,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,11 +25,12 @@ import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.commons.lang3.StringUtils.split;
+
 /**
  * Class defining the functionality of the recipe steps tab.
  */
 public class Tab3Steps extends Fragment {
-    private static final int TIMER_MARGIN = 10;
     // Also present in MaxHeightRecyclerView
     private static final int MAX_HEIGHT = 300;
 
@@ -154,6 +156,7 @@ public class Tab3Steps extends Fragment {
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutParams.setMargins(0, timer_margin, 0, timer_margin);
+            layoutParams.gravity = Gravity.CENTER;
             ViewGroup insertPoint = (ViewGroup) rootView.findViewById(R.id.ll_step);
             int currentPosition = 0;
 
@@ -169,7 +172,6 @@ public class Tab3Steps extends Fragment {
                 Matcher m = p.matcher(currentSubstring);
                 if (m.find()) {
                     textView.setText(currentSubstring.substring(m.start()));
-                    Log.d("TEST STRING", currentSubstring.substring(m.start()));
                 }
 
                 // Create a UITimer and set its on click listeners
@@ -220,6 +222,7 @@ public class Tab3Steps extends Fragment {
                             ingredientAdapter.getItemCount() * mIngredientList.getChildAt(0).getHeight()
                                     > MAX_HEIGHT) {
                         scrolling = View.OVER_SCROLL_ALWAYS;
+                        mIngredientList.setScrollbarFadingEnabled(false);
 
                     }
 

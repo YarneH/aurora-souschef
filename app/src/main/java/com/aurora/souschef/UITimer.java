@@ -1,8 +1,13 @@
 package com.aurora.souschef;
 
 import android.content.DialogInterface;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.SeekBar;
@@ -24,6 +29,7 @@ public class UITimer extends RecipeTimer {
     private static final int AMOUNT_SEC_IN_HALF_HOUR = 1800;
     private static final int AMOUNT_SEC_IN_QUARTER = 900;
     private static final int AMOUNT_SEC_IN_MIN = 60;
+    private static final int CHANGE_COLOR_MILLISEC_DELAY = 250;
     private static final int MINUTE_STEP = 60;
     private static final int HALF_MINUTE_STEP = 30;
     private static final int QUARTER_MINUTE_STEP = 15;
@@ -31,19 +37,14 @@ public class UITimer extends RecipeTimer {
     private static final int PERCENT = 100;
 
     private boolean mRunning = false;
+    private boolean mAlarming = false;
+    private boolean mColorDark = true;
     private int mTimeSetByUser;
     private long mMillisLeft;
     private CountDownTimer mCountDownTimer;
+    private Handler mHandler;
     private TextView mTextViewTimer;
-
-    public UITimer(int lowerBound, int upperBound, TextView textView) {
-        super(lowerBound, upperBound, null);
-        // Use getLowerBound so the lower and upper bound are switched if needed (implemented in RecipeTimer)
-        mTimeSetByUser = getLowerBound();
-        mTextViewTimer = textView;
-
-        resetTimer();
-    }
+    private Ringtone mRingtone;
 
     public UITimer(RecipeTimer timer, TextView textView) {
         super(timer.getLowerBound(), timer.getLowerBound(), null);
@@ -63,18 +64,35 @@ public class UITimer extends RecipeTimer {
         mCountDownTimer = new CountDownTimer(mMillisLeft, AMOUNT_MILLISEC_IN_SEC) {
             @Override
             public void onTick(long millisUntilFinished) {
-                performTick(millisUntilFinished);
+                performTick(millisUntilFinished - AMOUNT_MILLISEC_IN_SEC);
             }
 
             // TODO: Call to onFinish is not as quick as onTick (takes +/- 1.8 sec)
             // We could fix this by adding a second to the timer and ending it at 1 sec
             @Override
             public void onFinish() {
-                performTick(0);
+                // The last tick is the one of 1 second remaining, because the actual last tick is a
+                // long one.
             }
         }.start();
+        mTextViewTimer.setBackgroundColor(mTextViewTimer.getResources().getColor(R.color.colorPrimary));
 
         mRunning = true;
+
+        // Preparing the ringtone for the alarm
+        Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        if (alert == null) {
+            // alert is null, using backup
+            alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+            // I can't see this ever being null (as always have a default notification)
+            // but just in case
+            if (alert == null) {
+                // alert backup is null, using 2nd backup
+                alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+            }
+        }
+        mRingtone = RingtoneManager.getRingtone(mTextViewTimer.getContext(), alert);
     }
 
     /**
@@ -88,6 +106,29 @@ public class UITimer extends RecipeTimer {
         int secondsLeft = (int) millis / AMOUNT_MILLISEC_IN_SEC;
         String timerText = convertTimeToString(secondsLeft);
         mTextViewTimer.setText(timerText);
+        if (secondsLeft < 1) {
+            mTextViewTimer.setBackgroundColor(mTextViewTimer.getResources().getColor(R.color.colorPrimaryDark));
+            mRingtone.play();
+            mAlarming = true;
+            if (mHandler == null) {
+                mHandler = new Handler();
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mColorDark) {
+                            mTextViewTimer.setBackgroundColor(
+                                    mTextViewTimer.getResources().getColor(R.color.colorPrimary));
+                            mColorDark = false;
+                        } else {
+                            mTextViewTimer.setBackgroundColor(
+                                    mTextViewTimer.getResources().getColor(R.color.colorPrimaryDark));
+                            mColorDark = true;
+                        }
+                        mHandler.postDelayed(this, CHANGE_COLOR_MILLISEC_DELAY);
+                    }
+                }, CHANGE_COLOR_MILLISEC_DELAY);
+            }
+        }
     }
 
     /**
@@ -97,6 +138,7 @@ public class UITimer extends RecipeTimer {
         if (mCountDownTimer != null) {
             mRunning = false;
             mCountDownTimer.cancel();
+            mTextViewTimer.setBackgroundColor(mTextViewTimer.getResources().getColor(R.color.colorPrimaryDark));
         }
     }
 
@@ -104,9 +146,11 @@ public class UITimer extends RecipeTimer {
      * Reset the timer (Can be made public if needed)
      */
     private void resetTimer() {
+        // By adding one second, we can stop the timer at 1 second left, skipping the last and longer tick
         // Subtract one to make sure the timer shows the correct value when started
-        mMillisLeft = (long) mTimeSetByUser * AMOUNT_MILLISEC_IN_SEC - 1;
+        mMillisLeft = (long) mTimeSetByUser * AMOUNT_MILLISEC_IN_SEC + AMOUNT_MILLISEC_IN_SEC - 1;
         mTextViewTimer.setText(convertTimeToString(mTimeSetByUser));
+        mTextViewTimer.setBackgroundColor(mTextViewTimer.getResources().getColor(R.color.colorPrimaryDark));
     }
 
     /**
@@ -117,10 +161,18 @@ public class UITimer extends RecipeTimer {
         mTextViewTimer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mRunning) {
-                    pauseTimer();
+                if (mAlarming) {
+                    mRingtone.stop();
+                    mAlarming = false;
+                    if (mHandler != null){
+                        mHandler.removeCallbacksAndMessages(null);
+                    }
                 } else {
-                    startTimer();
+                    if (mRunning) {
+                        pauseTimer();
+                    } else {
+                        startTimer();
+                    }
                 }
             }
         });
@@ -158,7 +210,7 @@ public class UITimer extends RecipeTimer {
 
         // Initiate the LayoutInflater and inflate the Popup layout
         LayoutInflater li = LayoutInflater.from(mTextViewTimer.getContext());
-        View promptView = li.inflate(R.layout.card_timer, null);
+        View promptView = li.inflate(R.layout.prompt_timer_card, null);
         SeekBar seekBar = (SeekBar) promptView.findViewById(R.id.sk_timer);
 
         // Get the TextView of the popup and set to the initial value
@@ -233,5 +285,4 @@ public class UITimer extends RecipeTimer {
 
         return timerText;
     }
-
 }

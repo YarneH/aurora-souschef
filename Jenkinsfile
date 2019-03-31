@@ -122,6 +122,35 @@ pipeline {
                     slack_error_long_test()
                 }
             }
+        } // Long Unit tests stage
+
+        stage('Integration Tests') {
+            steps {
+                script {
+                    // Compile and run the unit tests for the app and its dependencies
+                    if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'dev') {
+                        sh "./gradlew testReleaseUnitTest --tests '*IntegTest'"
+                        sh "./gradlew souschefprocessor:testReleaseUnitTest --tests '*IntegTest'"
+                    } else {
+                        sh "./gradlew testDebugUnitTest --tests '*IntegTest'"
+                        sh "./gradlew souschefprocessor:testDebugUnitTest --tests '*IntegTest'"
+                    }
+
+
+                    // Analyse the test results and update the build result as appropriate
+                    junit allowEmptyResults: true, testResults: '**/TEST-*.xml'
+
+                    // Analyze coverage info
+                    jacoco sourcePattern: '**/src/main/java/com/aurora', 
+                        classPattern: '**/classes/com/aurora', 
+                        exclusionPattern: '**/*Test*.class,  **/souschef/*.class, **/R.class, **/R$*.class, **/BuildConfig'
+                }
+            }
+            post {
+                failure {
+                    slack_error_integration_test()
+                }
+            }
         }
 
         stage('Javadoc') {
@@ -163,7 +192,7 @@ pipeline {
  * Gets called when build of the project fails
  */
 def slack_error_build() {
-    slack_report(false, ':x: Aurora could not be built.', null, 'Build')
+    slack_report(false, ':x: Souschef could not be built.', null, 'Build')
 }
 
 
@@ -179,6 +208,13 @@ def slack_error_test() {
  */
 def slack_error_long_test() {
     slack_report(false, ':x: Long unit tests failed', null, 'Long Unit Tests')
+}
+
+/**
+ * Gets called when integration tests fail
+ */
+def slack_error_integration_test() {
+    slack_report(false, ':x: Integration tests failed', null, 'Integration Tests')
 }
 
 /**

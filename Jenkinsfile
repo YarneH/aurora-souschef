@@ -50,7 +50,7 @@ pipeline {
 
             post {
                 failure {
-                    slack_error_long_test()
+                    slack_error_test()
                 }
             }
         } // Unit test stage

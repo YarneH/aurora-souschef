@@ -7,9 +7,11 @@ import com.aurora.souschefprocessor.task.helpertasks.NonParallelizeStepTask;
 import com.aurora.souschefprocessor.task.helpertasks.ParallelizeStepsTask;
 import com.aurora.souschefprocessor.task.helpertasks.StepTaskNames;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
+import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 import com.aurora.souschefprocessor.task.sectiondivider.DetectNumberOfPeopleTask;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitStepsTask;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask;
+import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,24 +29,92 @@ import edu.stanford.nlp.ling.CoreLabel;
  */
 public class Delegator {
 
+    /**
+     * A constant describing 1/2
+     */
     private static final double HALF = 0.5;
+    /**
+     * An object that serves as a lock to ensure that the pipelines are only created once
+     */
+    private static final Object LOCK = new Object();
+    /**
+     * A boolean that indicates if the pipelines have been created (or the creation has started)
+     */
+    private static boolean startedCreatingPipelines = false;
+
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
-    private ThreadPoolExecutor mThreadPoolExecutor;
-    private CRFClassifier<CoreLabel> mIngredientClassifier;
-    private boolean mParallelize;
 
 
-    public Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
-        mThreadPoolExecutor = null;
-        mIngredientClassifier = ingredientClassifier;
-        mParallelize = parallelize;
+    /**
+     * A threadPoolExecutor to execute steps in parallel
+     */
+    private static ThreadPoolExecutor sThreadPoolExecutor;
+
+    /**
+     * Makes sure that the {@link #createAnnotationPipelines()} method is always called if a delegator is
+     * used, to ensure that the pipelines have been created
+     */
+    static {
+        createAnnotationPipelines();
     }
 
 
     /**
+     * The classifier to classify ingredients
+     */
+    private CRFClassifier<CoreLabel> mIngredientClassifier;
+    /**
+     * A boolean that indicates whether the processing should be parallelized
+     */
+    private boolean mParallelize;
+
+
+    /**
+     * Creating the delegator
+     *
+     * @param ingredientClassifier the classifier to classify the ingredients
+     * @param parallelize          boolean to indicate wheter to parallelize or not
+     */
+    Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
+
+        mIngredientClassifier = ingredientClassifier;
+        mParallelize = parallelize;
+
+    }
+
+    /**
+     * Creates the annotation pipelines for the {@link DetectIngredientsInStepTask} and
+     * {@link DetectTimersInStepTask} if the creation has not started yet
+     */
+    static void createAnnotationPipelines() {
+        synchronized (LOCK) {
+
+            if (startedCreatingPipelines) {
+                // creating already started or finished -> do not start again
+                return;
+            }
+            // ensure no other thread starts creating pipelines
+            startedCreatingPipelines = true;
+            LOCK.notifyAll();
+        }
+
+        DetectTimersInStepTask.initializeAnnotationPipeline();
+        DetectIngredientsInStepTask.initializeAnnotationPipeline();
+
+
+    }
+
+    /**
+     * Increments the {@link Communicator#mProgressAnnotationPipelines} value of the communicator
+     */
+    public static void incrementProgressAnnotationPipelines() {
+        Communicator.incrementProgressAnnotationPipelines();
+    }
+
+    /**
      * Creates the ThreadPoolExecutor for the processing of the text, this is device-dependent
      */
-    private void setUpThreadPool() {
+    private static void setUpThreadPool() {
         /*
          * Gets the number of available cores
          * (not always the same as the maximum number of cores)
@@ -62,7 +132,7 @@ public class Delegator {
         // Sets the Time Unit to seconds
         final TimeUnit keepAliveTimeUnit = TimeUnit.SECONDS;
         // Creates a thread pool manager
-        mThreadPoolExecutor = new ThreadPoolExecutor(
+        sThreadPoolExecutor = new ThreadPoolExecutor(
                 // Initial pool size
                 numberOfCores,
                 // Max pool size
@@ -70,6 +140,13 @@ public class Delegator {
                 KEEP_ALIVE_TIME,
                 keepAliveTimeUnit,
                 decodeWorkQueue);
+    }
+
+    public static ThreadPoolExecutor getThreadPoolExecutor() {
+        if (sThreadPoolExecutor == null) {
+            setUpThreadPool();
+        }
+        return sThreadPoolExecutor;
     }
 
     /**
@@ -81,7 +158,7 @@ public class Delegator {
      */
     public Recipe processText(String text) {
         //TODO implement this function so that at runtime it is decided which tasks should be performed
-        if (mThreadPoolExecutor == null) {
+        if (sThreadPoolExecutor == null) {
             setUpThreadPool();
         }
         RecipeInProgress recipeInProgress = new RecipeInProgress(text);
@@ -96,7 +173,6 @@ public class Delegator {
         return recipeInProgress.convertToRecipe();
     }
 
-
     /**
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
@@ -109,21 +185,11 @@ public class Delegator {
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));
         StepTaskNames[] taskNames = {StepTaskNames.INGR, StepTaskNames.TIMER};
         if (mParallelize) {
-            pipeline.add(new ParallelizeStepsTask(recipeInProgress, this.mThreadPoolExecutor, taskNames));
+            pipeline.add(new ParallelizeStepsTask(recipeInProgress, sThreadPoolExecutor, taskNames));
         } else {
             pipeline.add(new NonParallelizeStepTask(recipeInProgress, taskNames));
         }
         return pipeline;
     }
-
-
-    public ThreadPoolExecutor getThreadPoolExecutor() {
-        if (mParallelize && mThreadPoolExecutor == null) {
-            setUpThreadPool();
-        }
-        return mThreadPoolExecutor;
-    }
-
-
 }
 

@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.task.sectiondivider;
 
 
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
@@ -24,10 +25,20 @@ import edu.stanford.nlp.util.CoreMap;
  */
 public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
+    /**
+     * A regex that covers most commonly used words that indicate the instructions of the recipe are
+     * following
+     */
     private static final String STEP_STARTER_REGEX = ".*((prep(aration)?[s]?)|instruction[s]?|method|description|" +
             "make it|step[s]?|direction[s])[: ]?$";
+    /**
+     * A regex that covers most commonly used words that indicate the ingredients of the recipe are
+     * following
+     */
     private static final String INGREDIENT_STARTER_REGEX = "([iI]ngredient[s]?)[: ]?$";
-    private static final String END_TOKEN = " ENDTOKEN.";
+    /**
+     * A constant needed for the creation of the parser (should be moved to Aurora)
+     */
     private static final int MAX_SENTENCES_FOR_PARSER = 100;
 
 
@@ -37,7 +48,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
 
     /**
-     * This trims each line of a block of text
+     * This trims each line (via split on new line character) of a block of text
      *
      * @param text The text to trim
      * @return The trimmed text
@@ -46,11 +57,60 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         StringBuilder bld = new StringBuilder();
         String[] lines = text.split("\n");
         for (String line : lines) {
-            bld.append(line.trim() + "\n");
+            bld.append(line.trim());
+            bld.append("\n");
         }
         // Remove last new line
         bld.deleteCharAt(bld.length() - 1);
         return bld.toString();
+    }
+
+    /**
+     * Capitalizes sentences again
+     *
+     * @param text The text to capitalize
+     * @return The text with the sentences capitalized again
+     */
+    private static String capitalize(String text) {
+        //TODO do this with the original text if possible
+
+        //counter
+        int i = 0;
+
+
+        char current = text.charAt(i);
+        int length = text.length();
+
+        // get the first letter of the text
+        while (!Character.isLetter(current) && i < length - 1) {
+            i++;
+            current = text.charAt(i);
+        }
+
+        // capitalize first letter
+        text = text.substring(0, i) + Character.toUpperCase(current) + text.substring(i + 1);
+
+        boolean previousWasPunctuationOrNewLine = false;
+
+        for (int j = i; j < length; j++) {
+            current = text.charAt(j);
+            if (!previousWasPunctuationOrNewLine) {
+                boolean punctuationOrNewLine = current == '.' || current == '?' || current == '!'
+                        || current == '\n';
+                if (punctuationOrNewLine) {
+                    previousWasPunctuationOrNewLine = true;
+                }
+            } else {
+                if (!Character.isWhitespace(current)) {
+                    // first letter after punctuation -> captitalize
+                    text = text.substring(0, j) + Character.toUpperCase(current) + text.substring(j + 1);
+                    previousWasPunctuationOrNewLine = false;
+                }
+
+            }
+
+        }
+        return text;
     }
 
     /**
@@ -60,15 +120,18 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * with these fields
      */
     public void doTask() {
-        // TODO add check that an original text is contained
+
         String text = this.mRecipeInProgress.getOriginalText();
 
+        if(("").equals(text)){
+            throw new RecipeDetectionException("No original text found, this is probably not a recipe");
+        }
 
         ResultAndAlteredTextPair ingredientsAndText = findIngredients(text);
         String ingredients = ingredientsAndText.getResult();
 
         ResultAndAlteredTextPair stepsAndText = findSteps(ingredientsAndText.getAlteredText());
-        String steps = stepsAndText.getResult();
+        String steps = capitalize(stepsAndText.getResult());
         String description = findDescription(stepsAndText.getAlteredText());
 
         modifyRecipe(this.mRecipeInProgress, ingredients, steps, description);
@@ -76,28 +139,30 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     }
 
     /**
-     * Modifies the recipe so that the ingredientsString, stepsString, mDescription and amountOfPeople
-     * fields are set.
+     * Modifies the {@link RecipeInProgress} so that the {@link RecipeInProgress#mIngredientsString},
+     * {@link RecipeInProgress#mStepsString}, and {@link RecipeInProgress#mDescription} fields are set
      *
      * @param recipe      The recipe to modify
      * @param ingredients The string representing the mIngredients
      * @param steps       The string representing the mRecipeSteps
      * @param description The string representing the desription
      */
-    public void modifyRecipe(RecipeInProgress recipe, String ingredients, String steps, String description) {
+    private void modifyRecipe(RecipeInProgress recipe, String ingredients, String steps, String description) {
         recipe.setIngredientsString(ingredients);
         recipe.setStepsString(steps);
         recipe.setDescription(description);
     }
 
     /**
-     * Finds the ingredientslist in a text
+     * Finds the ingredientslist in a text, by first trying {@link #findIngredientsRegexBased(String)}
+     * to check if a common word is present and if that fails by using the {@link #findIngredientsDigit(String)}
+     * to check if there is a block of text that has a lot of lines starting with digits
      *
      * @param text the text in which to search for mIngredients
      * @return A pair with the detected ingredientlist and the altered text so that the detected
      * ingredientlist is not in the text anymore
      */
-    public ResultAndAlteredTextPair findIngredients(String text) {
+    private ResultAndAlteredTextPair findIngredients(String text) {
         // dummy
         ResultAndAlteredTextPair ingredientsAndText = findIngredientsRegexBased(text);
         if ("".equals(ingredientsAndText.getResult())) {
@@ -109,7 +174,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
     /**
      * Finds the ingredients based on a regex. It checks whether some common names that start
-     * the ingredients section are present. This is based on the INGREDIENT_STARTER_REGEX
+     * the ingredients section are present. This is based on the {@link #INGREDIENT_STARTER_REGEX}
      *
      * @param text the text in which to search for mIngredients
      * @return A pair with the detected ingredientlist and the altered text so that the detected
@@ -184,15 +249,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @param text the text in which to search for mRecipeSteps
      * @return The string representing the mRecipeSteps
      */
-    public ResultAndAlteredTextPair findSteps(String text) {
-        // dummy
-        // return "Put 500 gram spaghetti in boiling water for 9 minutes.\n"
-        // + "Put the sauce in the Microwave for 3 minutes \n"
-        //        + "Put them together."
-
-
+    private ResultAndAlteredTextPair findSteps(String text) {
         //first try rule based
-        ResultAndAlteredTextPair pair = findStepsRuleBased(text);
+        ResultAndAlteredTextPair pair = findStepsRegexBased(text);
         if (("").equals(pair.getResult())) {
             pair = findStepsNLP(text);
         }
@@ -203,13 +262,13 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
     /**
      * Finds the steps based on a regex. It checks whether some common names that start
-     * the instruction section are present. This is based on the STEP_STARTER_REGEX
+     * the instruction section are present. This is based on the {@link #STEP_STARTER_REGEX}
      *
      * @param text the text in which to search for mIngredients
      * @return A pair with the detected ingredientlist and the altered text so that the detected
      * ingredientlist is not in the text anymore
      */
-    private ResultAndAlteredTextPair findStepsRuleBased(String text) {
+    private ResultAndAlteredTextPair findStepsRegexBased(String text) {
 
         String[] lines = text.split("\n");
         String steps = "";
@@ -235,9 +294,10 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @param text      The text
      * @param lowercase indicates wheter the detection should be done on a lowercase text. Since corenlp
      *                  can be better at detecting sentences starting with a verb when it is lowercase
-     * @return
+     * @return a boolean that indicates if a verb was detectec
      */
     private boolean verbDetected(String text, boolean lowercase) {
+        // TODO adapt this method to new input of aurora
         Annotation annotatedTextLowerCase = createAnnotatedText(text, lowercase);
         List<CoreMap> sentences = annotatedTextLowerCase.get(CoreAnnotations.SentencesAnnotation.class);
 
@@ -284,14 +344,15 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @param text the text in which to search for the mDescription of the recipe
      * @return The string representing the mDescription of the recipe
      */
-    public String findDescription(String text) {
+    private static String findDescription(String text) {
         return trimNewLines(text);
     }
 
     /**
-     * Creates annotation pipeline for
+     * Creates annotation pipeline and parses the text
+     * (this should be in Aurora)
      *
-     * @return Annotation pipeline
+     * @return the annotated text
      */
     private Annotation createAnnotatedText(String text, boolean lowercase) {
         AnnotationPipeline pipeline = new AnnotationPipeline();

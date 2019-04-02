@@ -7,13 +7,24 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A processing task that detects the number of people in a text describing a recipe
+ */
 public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
 
-    private static final int DEFAULT_NUMBER = 4;
+    /** The default number is set to -1 when no people are detected */
     private static final int DEFAULT_NO_NUMBER = -1;
+    /** Words that are commonly set before the number of people a recipe is for */
     private static final String[] BEFORE_DIGIT_WORDS = {"yields", "yield", "serves", "servings", "makes", "portion of"};
+    /** Words that are commonly set after the number of people a recipe is for */
     private static final String[] AFTER_DIGIT_WORDS = {"persons", "people", "servings"};
+    /** Words or characters that are commonly placed between the {@link #BEFORE_DIGIT_WORDS} or
+     * {@link #AFTER_DIGIT_WORDS} and the actual digits*/
     private static final String[] SEPERATOR_CHARACTERS = {":", " ", "(about)"};
+    /**
+     * The regex built using the {@link #BEFORE_DIGIT_WORDS}, {@link #AFTER_DIGIT_WORDS} and
+     * {@link #SEPERATOR_CHARACTERS}
+     */
     private static String regex = buildRegex();
 
     public DetectNumberOfPeopleTask(RecipeInProgress recipeInProgress) {
@@ -56,7 +67,8 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
         StringBuilder bld = new StringBuilder("((");
         // add the before words seperated by or
         for (String word : BEFORE_DIGIT_WORDS) {
-            bld.append(word + "|");
+            bld.append(word);
+            bld.append("|");
         }
         // remove last added "|"
         bld.deleteCharAt(bld.length() - 1);
@@ -74,7 +86,8 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
 
         bld.append("]*(");
         for (String word : AFTER_DIGIT_WORDS) {
-            bld.append(word + "|");
+            bld.append(word);
+            bld.append("|");
         }
         // remove last added "|"
         bld.deleteCharAt(bld.length() - 1);

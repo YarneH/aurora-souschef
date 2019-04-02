@@ -121,16 +121,17 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
          * @return String containing the resulting quantity.
          */
         private String toDisplayQuantity(double quantity) {
-            String output;
             if (isAlmostInteger(quantity)) {
-                output = "" + ((int) Math.round(quantity));
+                return "" + ((int) Math.round(quantity));
             }
             for (int i = MIN_DENOMINATOR_OF_FRACTIONS; i <= MAX_DENOMINATOR_OF_FRACTIONS; i++) {
                 if (isAlmostInteger(quantity * i)) {
-                    output = "" + ((int) Math.round(quantity * i) + "/" + i);
+                    return "" + ((int) Math.round(quantity * i) + "/" + i);
                 }
             }
+
             // If all fails, just return double with 2 decimals (if needed)
+            String output;
             if (quantity == (long) quantity) {
                 output = String.format("%d", (long) quantity);
             } else {

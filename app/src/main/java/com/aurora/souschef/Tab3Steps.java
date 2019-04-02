@@ -160,29 +160,14 @@ public class Tab3Steps extends Fragment {
                     new StepIngredientAdapter(mRecipe.getRecipeSteps().get(index).getIngredients());
             mIngredientList.setAdapter(ingredientAdapter);
 
-            // Set listener for the layout of the RecyclerView
-            mIngredientList.getViewTreeObserver().addOnGlobalLayoutListener(
-                    new ViewTreeObserver.OnGlobalLayoutListener() {
-                /**
-                 * This function gets called when the layout is finished
-                 * Then we can check whether the RecyclerView needs too much height
-                 * If it needs more then 300, we add an over scroll effect
-                 */
-                @Override
-                public void onGlobalLayout() {
-                    int scrolling = View.OVER_SCROLL_NEVER;
-                    if (mIngredientList.getAdapter().getItemCount() != 0 &&
-                            ingredientAdapter.getItemCount() * mIngredientList.getChildAt(0).getHeight()
-                                    > MAX_HEIGHT) {
-                        scrolling = View.OVER_SCROLL_ALWAYS;
-                        mIngredientList.setScrollbarFadingEnabled(false);
+            // Disable the line if there are no ingredients listed
+            if (mRecipe.getRecipeSteps().get(index).getIngredients().size() == 0) {
+                rootView.findViewById(R.id.v_line).setVisibility(View.GONE);
+            }
 
-                    }
-
-                    mIngredientList.setOverScrollMode(scrolling);
-                }
-
-            });
+            // Disable OVER_SCROLL effect (scrollbar is always visible, so effect not needed)
+            mIngredientList.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            rootView.findViewById(R.id.sv_text_and_timers).setOverScrollMode(View.OVER_SCROLL_NEVER);
 
             // Add the ImageViews to the LinearLayout for the indicator dots
             int dots_margin = Math.round(getResources().getDimension(R.dimen.dots_margin));

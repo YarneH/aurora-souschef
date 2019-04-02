@@ -4,4 +4,5 @@
     <color name="colorPrimaryDark">#CC0000</color>
     <color name="colorAccent">#FF1BD8</color>
     <color name="dots_grey">#AAAAAA</color>
+    <color name="separation_line">#505050</color>
 </resources>

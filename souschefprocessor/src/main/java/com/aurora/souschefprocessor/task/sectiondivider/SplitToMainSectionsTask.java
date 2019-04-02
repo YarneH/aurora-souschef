@@ -44,7 +44,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     /**
      * The original text of this recipe
      */
-    private static String mOriginalText;
+    private String mOriginalText;
 
 
     public SplitToMainSectionsTask(RecipeInProgress recipeInProgress) {
@@ -76,8 +76,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @param text The text to capitalize
      * @return The text with the sentences capitalized again
      */
-    private static String capitalize(String text) {
-
+    private  String capitalize(String text) {
 
         if (text.length() == 0) {
             // if text is empty just return text
@@ -216,7 +215,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return A pair with the detected ingredientlist and the altered text so that the detected
      * ingredientlist is not in the text anymore
      */
-    private ResultAndAlteredTextPair findIngredientsDigit(String text) {
+    private static ResultAndAlteredTextPair findIngredientsDigit(String text) {
         String[] sections = text.split("\n\n");
         boolean found = false;
         String ingredientsSection = "";
@@ -364,30 +363,31 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return annotation;
 
     }
+    /**
+     * A helper class for the SplitToMainSectionsTask, it is a dataclass that stores two strings:
+     * {@link #mResult} = the detected result
+     * {@link #mAlteredText} = the original text without the detected result
+     */
+    private static class ResultAndAlteredTextPair {
+        private String mResult;
+        private String mAlteredText;
+
+        ResultAndAlteredTextPair(String result, String alteredText) {
+            this.mResult = result;
+            this.mAlteredText = alteredText;
+        }
+
+        String getResult() {
+            return mResult;
+        }
+
+        String getAlteredText() {
+            return mAlteredText;
+        }
+    }
 
 
 }
 
-/**
- * A helper class for the SplitToMainSectionsTask, it is a dataclass that stores two strings:
- * {@link #mResult} = the detected result
- * {@link #mAlteredText} = the original text without the detected result
- */
-class ResultAndAlteredTextPair {
-    private String mResult;
-    private String mAlteredText;
 
-    ResultAndAlteredTextPair(String result, String alteredText) {
-        this.mResult = result;
-        this.mAlteredText = alteredText;
-    }
-
-    String getResult() {
-        return mResult;
-    }
-
-    String getAlteredText() {
-        return mAlteredText;
-    }
-}
 

@@ -129,7 +129,11 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
                     return "" + ((int) Math.round(quantity * i) + "/" + i);
                 }
             }
-            return "" + quantity;
+            // If all fails, just return double with 2 decimals (if needed)
+            if(quantity == (long) quantity)
+                return String.format("%d",(long)quantity);
+            else
+                return String.format("%.2f",quantity);
         }
 
         /**

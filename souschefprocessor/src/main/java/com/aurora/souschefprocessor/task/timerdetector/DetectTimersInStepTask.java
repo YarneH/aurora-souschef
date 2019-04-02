@@ -85,6 +85,11 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      */
     private static final Object LOCK = new Object();
     /**
+     * A list of words that are detected by the annotator as time expresssion but which is not needed
+     * for souschef (e.g "overnight")
+     */
+    private static final ArrayList<String> TIME_WORDS_NOT_TO_INCLUDE = new ArrayList<>();
+    /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
     private static boolean startedCreatingPipeline = false;
@@ -97,9 +102,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * their numerical values
      */
     private static Map<String, Double> sFractionMultipliers = new HashMap<>();
-
-    private static ArrayList<String> TIME_WORDS_NOT_TO_INCLUDE = new ArrayList<>();
-
 
     /* populate the map, fill the not include list and try to create the pipeline */
     static {
@@ -377,7 +379,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      */
     private int changeToFractions(Map<Integer, String> fractionPositions,
                                   Position originalPosition, int recipeStepSeconds) {
-        String description = mRecipeStep.getDescription();
+
         if (!fractionPositions.isEmpty()) {
             for (Map.Entry<Integer, String> fractionPosition : fractionPositions.entrySet()) {
                 int relPosition = fractionPosition.getKey() - originalPosition.getBeginIndex();
@@ -385,30 +387,54 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                 // Fraction behind timex tag is assumed to be an increasing multiplier (e.g. for an hour and a half)
                 if (relPosition < 0) {
                     // no comma allowed between the fraction and the timer
-                    boolean containsComma = description.substring(
-                            fractionPosition.getKey(), originalPosition.getEndIndex()).contains(",");
-                    if (!containsComma && -MAX_FRACTION_DISTANCE_BEFORE <= relPosition) {
-                        recipeStepSeconds *= sFractionMultipliers.get(fractionPosition.getValue());
-                        // change the position so that the multiplier is included in the position
-                        originalPosition.setBeginIndex(fractionPosition.getKey());
-                    }
+                    recipeStepSeconds *= calculateMultiplierBefore(fractionPosition, originalPosition,
+                            relPosition);
+
+
                 } else {
                     relPosition = fractionPosition.getKey() - originalPosition.getEndIndex();
                     if (0 < relPosition) {
-                        boolean containsComma = description.substring(
-                                originalPosition.getEndIndex(), fractionPosition.getKey()).contains(",");
-                        System.out.println(relPosition);
-                        if (!containsComma && relPosition <= MAX_FRACTION_DISTANCE_AFTER) {
-                            recipeStepSeconds *= (1 + sFractionMultipliers.get(fractionPosition.getValue()));
-                            // change the position so that the multiplier is included in the position
-                            originalPosition.setEndIndex(fractionPosition.getKey() +
-                                    fractionPosition.getValue().length());
-                        }
+                        recipeStepSeconds *= calculateMultiplierAfter(fractionPosition, originalPosition,
+                                relPosition);
+
                     }
                 }
             }
         }
         return recipeStepSeconds;
+    }
+
+    private double calculateMultiplierBefore(Map.Entry<Integer, String> fractionPosition, Position originalPosition,
+                                             int relPosition) {
+
+        double multiplier = 1.0;
+        String description = mRecipeStep.getDescription();
+        boolean containsComma = description.substring(
+                fractionPosition.getKey(), originalPosition.getEndIndex()).contains(",");
+        if (!containsComma && -MAX_FRACTION_DISTANCE_BEFORE <= relPosition) {
+            multiplier = sFractionMultipliers.get(fractionPosition.getValue());
+            // change the position so that the multiplier is included in the position
+            originalPosition.setBeginIndex(fractionPosition.getKey());
+        }
+        return multiplier;
+
+    }
+
+    private double calculateMultiplierAfter(Map.Entry<Integer, String> fractionPosition, Position originalPosition,
+                                             int relPosition) {
+
+        double multiplier = 1.0;
+        String description = mRecipeStep.getDescription();
+        boolean containsComma = description.substring(
+                originalPosition.getEndIndex(), fractionPosition.getKey()).contains(",");
+        if (!containsComma && relPosition <= MAX_FRACTION_DISTANCE_AFTER) {
+            multiplier *= (1 + sFractionMultipliers.get(fractionPosition.getValue()));
+            // change the position so that the multiplier is included in the position
+            originalPosition.setEndIndex(fractionPosition.getKey() +
+                    fractionPosition.getValue().length());
+        }
+        return multiplier;
+
     }
 
     /**
@@ -508,7 +534,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      */
     private boolean nextTokenIsTo(List<CoreLabel> allTokens, CoreLabel lastTimexToken) {
         int lastIndexInOriginalList = allTokens.indexOf(lastTimexToken);
-        if (lastIndexInOriginalList < allTokens.size() - 2) {
+        if (lastIndexInOriginalList < allTokens.size() - 1) {
             CoreLabel nextToken = allTokens.get(lastIndexInOriginalList + 1);
 
             if (("to").equalsIgnoreCase(nextToken.originalText())) {
@@ -560,7 +586,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * @return a new list with the necessary timers merged
      */
     private List<RecipeTimer> mergeTimers(List<RecipeTimer> list) {
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             return list;
         }
         ArrayList<RecipeTimer> newList = new ArrayList<>();

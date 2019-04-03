@@ -140,4 +140,10 @@ public class Ingredient {
         NAME, QUANTITY, UNIT
     }
 
+    public void trimPositionsToString(String s){
+        for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
+            mPositions.get(key).trimToLengthOfString(s);
+        }
+    }
+
 }

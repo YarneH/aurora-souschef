@@ -134,6 +134,17 @@ public class Position {
         return false;
     }
 
+    public void trimToLengthOfString(String s){
+        int length = s.length();
+        if(mBeginIndex >= length){
+            throw new IllegalArgumentException("This string is shorter than the beginIndex of " +
+                    "this position, trimming is impossible");
+        }
+        if( mEndIndex > length){
+            mEndIndex = length;
+        }
+    }
+
     @Override
     public String toString() {
         return "Position{" +

@@ -4,6 +4,7 @@ import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
+import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 
 import org.junit.After;
@@ -217,6 +218,10 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         assert(detectedIngredient.getUnitPosition().equals(stepIngredient.getUnitPosition()));
         assert(detectedIngredient.getQuantityPosition().equals(stepIngredient.getQuantityPosition()));
     }
+
+
+
+
 
 
 }

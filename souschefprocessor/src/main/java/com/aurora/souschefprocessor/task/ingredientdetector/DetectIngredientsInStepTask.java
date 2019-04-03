@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -84,6 +85,19 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * and that the pipeline is only created once
      */
     private static final Object LOCK = new Object();
+
+    /**
+     * An array of strings that should be ignored when looking for matches between the ingredientlist and
+     * the step description
+     */
+    private static final String[] STRINGS_TO_IGNORE = {"to", "all", "or", "and", "with", ".", ",",
+            "(", ")", "warm", "cold", "!"};
+    /**
+     * An array of tags that should be ignored when looking for matches between the ingredientlist and
+     * the step description. For the meaning of these tags checkout
+     * <a href="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">The PennTreeBankProject</a>
+     */
+    private static final String[] TAGS_TO_IGNORE = {"TO", "IN", "JJ", "JJR", "JJS"};
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
@@ -109,7 +123,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * The step on which to do the detecting of ingredients
      */
     private RecipeStep mRecipeStep;
-    private int mStepIndex;
 
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
@@ -122,8 +135,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
         this.mRecipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
 
-        sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
-        sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
     }
 
     /**
@@ -177,8 +188,12 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     public void doTask() {
         List<ListIngredient> ingredientListRecipe = mRecipeInProgress.getIngredients();
-        Set<Ingredient> iuaSet = detectIngredients(mRecipeStep, ingredientListRecipe);
-        mRecipeStep.setIngredients(iuaSet);
+        Set<Ingredient> ingredientSet = detectIngredients(mRecipeStep, ingredientListRecipe);
+        for (Ingredient ing : ingredientSet) {
+            // make sure all the positions are legal and not longer than the length of the description
+            ing.trimPositionsToString(mRecipeStep.getDescription());
+        }
+        mRecipeStep.setIngredients(ingredientSet);
     }
 
     /**
@@ -215,7 +230,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         // Necessary in case only a certain word of the list ingredient is used to describe it in the step
         HashMap<ListIngredient, List<String>> ingredientListMap = new HashMap<>();
         for (ListIngredient listIngr : ingredientListRecipe) {
-            ingredientListMap.put(listIngr, Arrays.asList(listIngr.getName().toLowerCase().split(" ")));
+            ingredientListMap.put(listIngr, Arrays.asList(listIngr.getName().toLowerCase(Locale.ENGLISH)
+                    .replace(",", "").split(" ")));
         }
 
         // Keeps track of already found ListIngredients in case the ingredient
@@ -240,7 +256,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                     Ingredient listIngredient = entry.getKey();
 
                     // Found name of an ingredient from the list of ingredients
-                    if (nameParts.contains(tokens.get(tokenIndex).originalText())
+                    if (namePartsContainsTokenOneCharOff(tokens.get(tokenIndex), nameParts)
                             && !foundIngredients.contains(listIngredient)) {
                         foundIngredients.add(listIngredient);
                         set.add(getStepIngredient(tokenIndex, nameParts, listIngredient, tokens));
@@ -258,6 +274,127 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
         return set;
     }
+
+    /**
+     * Checks if a string should be ignored (if it is contained in the {@link #STRINGS_TO_IGNORE}
+     * list
+     *
+     * @param string the string to check
+     * @return false if the string should be ignored, true if the string should not be ignored
+     */
+    private boolean doNotIgnoreString(String string) {
+        for (String ignore : STRINGS_TO_IGNORE) {
+            if (string.equalsIgnoreCase(ignore)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if a string should be ignored (if it is contained in the {@link #STRINGS_TO_IGNORE}
+     * list or it is an adjective
+     *
+     * @param token the token to check
+     * @return false if the token should be ignored, true if the token should not be ignored
+     */
+    private boolean doNotIgnoreToken(CoreLabel token) {
+        String tokenText = token.originalText();
+        if (!doNotIgnoreString(tokenText)) {
+            return false;
+        }
+        for (String tagToIgnore : TAGS_TO_IGNORE) {
+            if (token.tag().equals(tagToIgnore)) {
+                return false;
+            }
+        }
+        return true;
+
+
+    }
+
+    /**
+     * Checks if two strings only differ in the fact that one character is not present to catch
+     * plurals (e.g "onion" and "onions" and spelling mistakes "fettuccine" and "fettucine"
+     *
+     * @param string1 the first string
+     * @param string2 the second string
+     * @return a boolean indicating whether these strings differ in one erasure
+     */
+    private boolean differInOneErasure(String string1, String string2) {
+        // check for one erasure
+
+        int string2Length = string2.length();
+        int string1Length = string1.length();
+        int lengthDif = string1Length - string2Length;
+
+        String longest = "";
+        String shortest = "";
+        int shortLength;
+        boolean lengthDifIs1 = Math.abs(lengthDif) == 1;
+        if (lengthDifIs1) {
+            if (lengthDif > 0) {
+                longest = string1;
+                shortest = string2;
+                shortLength = string2Length;
+            } else {
+                longest = string2;
+                shortest = string1;
+                shortLength = string1Length;
+            }
+            // check if longest just contains an extra character at the back
+            // to bypass the loop
+            if (longest.substring(0, shortLength).equalsIgnoreCase(shortest)) {
+                return true;
+            }
+
+            boolean difFound = false;
+            char shortChar;
+            char longChar;
+            for (int i = 0; i < shortLength; i++) {
+                shortChar = shortest.charAt(i);
+                if (!difFound) {
+                    longChar = longest.charAt(i);
+                    if (longChar != shortChar) {
+                        difFound = true;
+                        if (i > 0 && i == shortLength - 1) {
+                            return false;
+                        }
+
+                    }
+                }
+                if (difFound) {
+                    longChar = longest.charAt(i + 1);
+                    if (longChar != shortChar) {
+                        // second difference found
+                        return false;
+                    }
+
+
+                }
+                if (i == shortLength - 1) {
+                    return true;
+                }
+
+            }
+        }
+
+        return false;
+    }
+
+    private boolean namePartsContainsTokenOneCharOff(CoreLabel token, List<String> nameParts) {
+        String tokenText = token.originalText().toLowerCase(Locale.ENGLISH);
+
+        if (doNotIgnoreToken((token))) {
+            for (String part : nameParts) {
+                if (doNotIgnoreString(part) && (part.equalsIgnoreCase(tokenText) || differInOneErasure(tokenText, part))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Checks if there are multiple words used to represent the ingredient

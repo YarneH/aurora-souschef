@@ -1,6 +1,10 @@
 package com.aurora.souschefprocessor.facade;
 
 import com.aurora.souschefprocessor.recipe.Recipe;
+import com.aurora.souschefprocessor.recipe.RecipeStep;
+import com.aurora.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
+import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
 import org.junit.After;
@@ -94,7 +98,8 @@ public class DelegatorLongTest {
         try {
 
             for (String text : validRecipes) {
-                delegator.processText(text);
+                Recipe recipe = delegator.processText(text);
+                System.out.println(recipe.getRecipeSteps());
 
             }
         } catch (Exception e) {
@@ -146,7 +151,7 @@ public class DelegatorLongTest {
         for (String recipeText : validRecipes) {
             // do the processing and add the time this processing costed
             long start = System.currentTimeMillis();
-            Recipe recipe = delegator.processText(recipeText);
+            delegator.processText(recipeText);
             long finish = System.currentTimeMillis();
             long time = finish - start;
             average_non += time;
@@ -192,5 +197,52 @@ public class DelegatorLongTest {
         delegator = new Delegator(crfClassifier, true);
     }
 
+    @Test
+    public void newTest(){
+        RecipeStep step = new RecipeStep("Zucchini is easy to shred on the large holes of a box grater, with the shredding attachment of a food processor, or with a mandoline.");
+        RecipeInProgress rip = new RecipeInProgress("");
+        rip.setIngredientsString("Salt\n" +
+                "1 pound fettuccine\n" +
+                "4 tablespoons extra-virgin olive oil\n" +
+                "3 or 4 garlic cloves, finely chopped or grated\n" +
+                "Zest of 1 to 2 lemons\n" +
+                "2 medium- large or 4 small zucchini, cleaned but not peeled, and shredded\n" +
+                "Freshly ground pepper\n" +
+                "1/4 cup chopped fresh flat-leaf parsley\n" +
+                "1/4 cup chopped fresh mint\n" +
+                "1 cup fresh whole-milk ricotta cheese, at room temperature");
+        DetectIngredientsInListTask listTask = new DetectIngredientsInListTask(rip, crfClassifier);
+        listTask.doTask();
+        ArrayList<RecipeStep> list = new ArrayList<>();
+        list.add(step);
+        rip.setRecipeSteps(list);
+        DetectIngredientsInStepTask task = new DetectIngredientsInStepTask(rip,0);
+        task.doTask();
+        System.out.println(rip.getIngredients());
+        System.out.println(step);
+
+    }
+
+    @Test
+    public void newTest2(){
+        RecipeStep step = new RecipeStep("7) Serve these warm with your favorite filling!");
+        RecipeInProgress rip = new RecipeInProgress("");
+        rip.setIngredientsString("2 c. Gluten-free all purpose flour (or 2 c. White rice flour)\n" +
+                "2 tsp. Xanthan gum or Guar gum\n" +
+                "1 tsp. Gluten-free baking powder\n" +
+                "2 tsp. Brown sugar\n" +
+                "1 tsp. Salt\n" +
+                "1 c. Warm water\n" +
+                " Top-Rated Gluten-Free Flour at AmazonTop-Rated Gluten-Free Flour");
+        DetectIngredientsInListTask listTask = new DetectIngredientsInListTask(rip, crfClassifier);
+        listTask.doTask();
+        ArrayList<RecipeStep> list = new ArrayList<>();
+        list.add(step);
+        rip.setRecipeSteps(list);
+        DetectIngredientsInStepTask task = new DetectIngredientsInStepTask(rip,0);
+        task.doTask();
+        System.out.println(step);
+
+    }
 
 }

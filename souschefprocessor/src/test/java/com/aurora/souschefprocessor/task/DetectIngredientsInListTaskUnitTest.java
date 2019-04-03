@@ -20,8 +20,7 @@ public class DetectIngredientsInListTaskUnitTest {
 
     private static RecipeInProgress recipe;
     private static DetectIngredientsInListTask detector;
-    private static String originalText;
-    private static String ingredientList;
+    private static String[] ingredientList;
     private static CRFClassifier<CoreLabel> crfClassifier;
 
 
@@ -29,12 +28,21 @@ public class DetectIngredientsInListTaskUnitTest {
 
     @BeforeClass
     public static void initialize() throws IOException, ClassNotFoundException {
+        ingredientList = new String[11];
+        ingredientList[0] = "500g spaghetti"; //0 "g" and no space
+        ingredientList[1] = "500 ounces sauce"; //1 ounces
+        ingredientList[2] = "1 1/2 kg minced meat"; //2 kg and sum of number and fraction
+        ingredientList[3] = "1 clove garlic"; //3 clove as unit
+        ingredientList[4] = "twenty basil leaves"; //4 no unit and spelled out number
+        ingredientList[5] = "salt"; //5 no quantity and unit
+        ingredientList[6] = "1 tsp. sugar"; //6 unit with a "."
+        ingredientList[7] = "4 x 120 g pack mixed nuts and dried fruit"; //7 multipliction symbol
+        ingredientList[8] = "5 free-range eggs"; //8 free-range is not a unit
+        ingredientList[9] = "55g/2oz Stinking Bishop cheese, diced"; //9 clutter
+        ingredientList[10] = "750–900ml/1⅓–1⅔ pint readymade chicken gravy"; //10 cluttered with a dash
 
-        ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 kg minced meat\n 1 clove garlic\n twenty basil leaves\n" +
-                "salt\n 1 tsp. sugar\n4 x 120 g pack mixed nuts and dried fruit";
-        originalText = "irrelevant";
+        String originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
-        recipe.setIngredientsString(ingredientList);
 
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
         crfClassifier = CRFClassifier.getClassifier(modelName);
@@ -49,18 +57,23 @@ public class DetectIngredientsInListTaskUnitTest {
 
     @Before
     public void wipeRecipe() {
-        ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 kg minced meat\n 1 clove garlic\n twenty basil leaves\n" +
-                "salt\n 1 tsp. sugar\n4 x 120 g pack mixed nuts and dried fruit";
-        recipe.setIngredients(null);
-        recipe.setIngredientsString(ingredientList);
-    }
 
+        recipe.setIngredients(null);
+        recipe.setIngredientsString("");
+    }
 
     @Test
     public void DetectIngredientsInList_doTask_setHasBeenSet() {
         /**
          * After doing the detectingredientinlisttask the ingredients of the recipe cannot be null
          */
+        //Arrange put all the ingredients as the string
+        StringBuilder bld = new StringBuilder();
+        for (String ing : ingredientList) {
+            bld.append(ing);
+            bld.append("\n");
+        }
+        recipe.setIngredientsString(bld.toString());
         // Act
         detector.doTask();
         // Assert
@@ -72,95 +85,257 @@ public class DetectIngredientsInListTaskUnitTest {
         /**
          * After doing the detectingredientinlisttask the number of detected ingredients is correct
          */
+        //Arrange put all the ingredients as the string
+        StringBuilder bld = new StringBuilder();
+        for (String ing : ingredientList) {
+            bld.append(ing);
+            bld.append("\n");
+        }
+        recipe.setIngredientsString(bld.toString());
         // Act
         detector.doTask();
         System.out.println(recipe.getIngredients());
         // Assert
-        assert (recipe.getIngredients().size() == 8);
+        assert (recipe.getIngredients().size() == ingredientList.length);
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityNoPosition() {
-        /**
-         * These sample ingredients should be detected correctly
-         */
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForOuncesSimplestCase() {
+        ingredientList[1] = "500 ounces sauce"; //1 ounces
         // Arrange
-        Ingredient spaghettiIngredient = new ListIngredient("spaghetti", "g", 500, "irrelevant", irrelevantPositions);
+        recipe.setIngredientsString(ingredientList[1]);
         Ingredient sauceIngredient = new ListIngredient("sauce", "ounces", 500, "irrelevant", irrelevantPositions);
-        Ingredient meatIngredient = new ListIngredient("minced meat", "kg", 1.5, "irrelevant", irrelevantPositions);
-        Ingredient garlicIngredient = new ListIngredient("garlic", "clove", 1.0, "irrelevant", irrelevantPositions);
-        Ingredient basilIngredient = new ListIngredient("basil leaves", "", 20.0, "irrelevant", irrelevantPositions);
-        Ingredient sugarIngredient = new ListIngredient("sugar", "tsp", 1.0, "irrelevant", irrelevantPositions);
-        Ingredient saltIngredient = new ListIngredient("salt", "", 1.0, "irrelevant", irrelevantPositions);
-        Ingredient nutsIngredient = new ListIngredient("mixed nuts and dried fruit", "g", 4*120, "irrelevant", irrelevantPositions);
         // Act
         detector.doTask();
-
         // Assert
-        boolean spaghetti = recipe.getIngredients().contains(spaghettiIngredient);
-        boolean sauce = recipe.getIngredients().contains(sauceIngredient);
-        boolean meat = recipe.getIngredients().contains(meatIngredient);
-        boolean garlic = recipe.getIngredients().contains(garlicIngredient);
-        boolean basil = recipe.getIngredients().contains(basilIngredient);
-        boolean sugar = recipe.getIngredients().contains(sugarIngredient);
-        boolean salt = recipe.getIngredients().contains(saltIngredient);
-        boolean nuts = recipe.getIngredients().contains(nutsIngredient);
-        assert (spaghetti);
-        assert (sauce);
-        assert (meat);
-        assert (garlic);
-        assert (basil);
-        assert (sugar);
-        assert (salt);
-        assert(nuts);
+        assert (recipe.getIngredients().contains(sauceIngredient));
+
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_ifNoIngredientsRaiseException() {
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForNoSpaceBetweenQuantityAndUnit() {
+        //ingredientList[0] = "500g spaghetti"; //0 "g" and no space
         // Arrange
-        recipe.setIngredientsString("");
-        boolean thrown = false;
+        recipe.setIngredientsString(ingredientList[0]);
+        Ingredient spaghettiIngredient = new ListIngredient("spaghetti", "g", 500, "irrelevant", irrelevantPositions);
         // Act
-        try {
-            detector.doTask();
-        } catch (Exception e) {
-            thrown = true;
-        }
+        detector.doTask();
         // Assert
-        assert (thrown);
-
+        assert (recipe.getIngredients().contains(spaghettiIngredient));
 
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_randomInputStringDoesNotThrowError() {
-        boolean thrown = false;
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityFractions() {
+        //ingredientList[2] = "1 1/2 kg minced meat"; //2 kg and sum of number and fraction
+        // Arrange
+        recipe.setIngredientsString("1 1/2 kg minced meat\n" + "½ cup cashews\n" + "2 1/2 cups tequila (such as 1800® Premium Reposado)\n" + "1½ tablespoons tomato paste\n");
+        Ingredient meatIngredient = new ListIngredient("minced meat", "kg", 1.5, "irrelevant", irrelevantPositions);
+        Ingredient cashewIngredient = new ListIngredient("cashews", "cup", 0.5, "irrelevant", irrelevantPositions);
+        Ingredient tequillaIngredient = new ListIngredient("tequila", "cups", 2.5, "irrelevant", irrelevantPositions);
+        Ingredient pasteIngredient = new ListIngredient("tomato paste", "tablespoons", 1.5, "irrelevant", irrelevantPositions);
 
-        recipe.setIngredientsString("20 pound xxx \n jqkfdksqfjkd// \n 45055 450 47d dkjq4 kdj  4 dqfd/n \n kjfqkf 450 ounce lfqj \n 20 pound xxx\"\n");
-        try {
-            detector.doTask();
-        } catch (Exception e) {
-            thrown = true;
-        }
-        assert (!thrown);
+        // Act
+        detector.doTask();
+        // Assert
+        List<ListIngredient> list = recipe.getIngredients();
+        System.out.println(recipe.getIngredients());
+        assert (list.contains(meatIngredient));
+        assert (list.contains(cashewIngredient));
+        assert (list.contains(tequillaIngredient));
+        assert (list.contains(pasteIngredient));
+
     }
 
+    @Test
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForUnusualUnit() {
+        // ingredientList[3] = "1 clove garlic"; //3 clove as unit
+        // Arrange
+        recipe.setIngredientsString("1 clove garlic\n" + "4 slices Cheddar cheese\n" + "1 small handful shelled unsalted pistachio nuts");
+        Ingredient garlicIngredient = new ListIngredient("garlic", "clove", 1.0, "irrelevant", irrelevantPositions);
+        Ingredient cheeseIngredient = new ListIngredient("Cheddar cheese", "slices", 4, "irrelevant", irrelevantPositions);
+        Ingredient pistachioIngredient = new ListIngredient("pistachio nuts", "small handful", 1, "irrelevant", irrelevantPositions);
+        // Act
+        detector.doTask();
+        // Assert
+        List<ListIngredient> list = recipe.getIngredients();
+        System.out.println(recipe.getIngredients());
+        assert (list.contains(garlicIngredient));
+        assert (list.contains(cheeseIngredient));
+        assert (list.contains(pistachioIngredient));
+
+    }
+
+
+    @Test
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForSpelledOutQuantityAndNoUnit() {
+
+        // ingredientList[4] = "twenty basil leaves"; //4 no unit and spelled out number
+        // Arrange
+        recipe.setIngredientsString(ingredientList[4]);
+        Ingredient basilIngredient = new ListIngredient("basil leaves", "", 20.0, "irrelevant", irrelevantPositions);
+        // Act
+        detector.doTask();
+        // Assert
+        assert (recipe.getIngredients().contains(basilIngredient));
+
+    }
+
+    @Test
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForUnitWithPoint() {
+        //ingredientList[6] = "1 tsp. sugar"; //6 unit with a "."
+
+        // Arrange
+        recipe.setIngredientsString("1 tsp. sugar\n" + "2 tsp. whole mustard seeds");
+        Ingredient sugarIngredient = new ListIngredient("sugar", "tsp", 1.0, "irrelevant", irrelevantPositions);
+        Ingredient mustardIngredient = new ListIngredient("whole mustard seeds", "tsp", 2.0, "irrelevant", irrelevantPositions);
+
+        // Act
+        detector.doTask();
+        // Assert
+        List<ListIngredient> list = recipe.getIngredients();
+        System.out.println(recipe.getIngredients());
+        assert (list.contains(mustardIngredient));
+        assert (list.contains(sugarIngredient));
+    }
+
+    @Test
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForNoUnitAndNoQuantity() {
+        // ingredientList[5] = "salt"; //5 no quantity and unit
+
+        // Arrange
+        recipe.setIngredientsString("salt\n" +
+                "Olive oil (optional)\n" + "juice of 1 lemon");
+        Ingredient saltIngredient = new ListIngredient("salt", "", 1.0, "irrelevant", irrelevantPositions);
+        Ingredient oilIngredient = new ListIngredient("Olive oil", "", 1.0, "irrelevant", irrelevantPositions);
+        Ingredient juiceIngredient = new ListIngredient("juice of 1 lemon", "", 1.0, "irrelevant", irrelevantPositions);
+
+        // Act
+        detector.doTask();
+        // Assert
+        List<ListIngredient> list = recipe.getIngredients();
+        System.out.println(recipe.getIngredients());
+        assert (list.contains(saltIngredient));
+        assert (list.contains(oilIngredient));
+        assert (list.contains(juiceIngredient));
+    }
+
+
+    @Test
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForCaseMultiplication() {
+
+        // Arrange
+        recipe.setIngredientsString("4 x 120 g pack mixed nuts and dried fruit\n" +
+                "2 x 375g/13oz ready-made all-butter puff pastry");
+        Ingredient nutsIngredient = new ListIngredient("mixed nuts and dried fruit", "g", 4 * 120, "irrelevant", irrelevantPositions);
+        Ingredient pastryIngredient = new ListIngredient("ready-made all-butter puff pastry", "g", 2 * 375, "irrelevant", irrelevantPositions);
+
+        // Act
+        detector.doTask();
+        // Assert
+        List<ListIngredient> list = recipe.getIngredients();
+        System.out.println(recipe.getIngredients());
+        assert (list.contains(nutsIngredient));
+        assert (list.contains(pastryIngredient));
+
+    }
+
+    @Test
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForSecondWordIsNotUnit() {
+
+        // Arrange
+        recipe.setIngredientsString("5 free-range eggs\n" + //free-range is not a unit but part of the name
+                "1 large red bell pepper, cut into 3/4-inch-thick strips"); // large is not a unit
+        Ingredient eggsIngredient = new ListIngredient("free-range eggs", "", 5, "irrelevant", irrelevantPositions);
+        Ingredient pepperIngredient = new ListIngredient("red bell pepper", "", 1, "irrelevant", irrelevantPositions);
+
+        // Act
+        detector.doTask();
+        // Assert
+        List<ListIngredient> list = recipe.getIngredients();
+        System.out.println(recipe.getIngredients());
+        assert (list.contains(eggsIngredient));
+        assert (list.contains(pepperIngredient));
+
+    }
+
+
+    @Test
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForClutteredIngredientWithDash() {
+
+        //  ingredientList[10] =  "750–900ml/1⅓–1⅔ pint readymade chicken gravy"; //10 cluttered with a dash
+        recipe.setIngredientsString(ingredientList[10]);
+        Ingredient gravyIngredient = new Ingredient("readymade chicken gravy", "ml", 750, irrelevantPositions);
+        // Act
+        detector.doTask();
+        // Assert
+        assert (recipe.getIngredients().contains(gravyIngredient));
+
+    }
+
+
+    @Test
+    public void DetectIngredientsInListTask_doTask_ClutterExamplesCorrect() {
+        // Arrange
+        String clutterExamples = "2.5kg/5lb 8oz turkey crown (fully thawed if frozen)\n" +
+                "55g/2oz Stinking Bishop cheese, diced\n" +
+                "500ml/18fl oz milk\n" +
+                "200ml/7fl oz crème frâiche\n" +
+                "350ml/12¼fl oz warm water\n" +
+                "200ml/7fl oz fromage frais\n" +
+                "100g/5½oz raisins";
+        RecipeInProgress rip = new RecipeInProgress("");
+        rip.setIngredientsString(clutterExamples);
+        DetectIngredientsInListTask task = new DetectIngredientsInListTask(rip, crfClassifier);
+        Ingredient turkeyIngredient = new Ingredient("turkey crown", "kg", 2.5, irrelevantPositions);
+        Ingredient cheeseIngredient = new ListIngredient("Stinking Bishop cheese", "g", 55, "irrelevant", irrelevantPositions);
+        Ingredient milkIngredient = new Ingredient("milk", "ml", 500.0, irrelevantPositions);
+        Ingredient cremeIngredient = new Ingredient("crème frâiche", "ml", 200, irrelevantPositions);
+        Ingredient waterIngredient = new Ingredient("warm water", "ml", 350, irrelevantPositions);
+        Ingredient fromageIngredient = new Ingredient("fromage frais", "ml", 200, irrelevantPositions);
+        Ingredient raisinsIngredient = new Ingredient("raisins", "g", 100, irrelevantPositions);
+
+        // Act
+        task.doTask();
+
+        // Assert
+        List<ListIngredient> list = rip.getIngredients();
+        boolean turkey = list.contains(turkeyIngredient);
+        boolean cheese = list.contains(cheeseIngredient);
+        boolean milk = list.contains(milkIngredient);
+        boolean creme = list.contains(cremeIngredient);
+        boolean water = list.contains(waterIngredient);
+        boolean fromage = list.contains(fromageIngredient);
+        boolean raisins = list.contains(raisinsIngredient);
+        assert (turkey);
+        assert (milk);
+        assert (creme);
+        assert (water);
+        assert (fromage);
+        assert (raisins);
+
+
+    }
 
     @Test
     public void DetectIngredientsInList_CorrectPositons() {
+        // Arrange
+        recipe.setIngredientsString("500g spaghetti \n500 ounces sauce \n1 1/2 kg minced meat\n 1 clove garlic\n twenty basil leaves");
+
+        // Act
         detector.doTask();
 
         // first ingredient: 500 g spaghetti (spaces are added between numbers and letters)
+        // Arrange
         Position quantityPos = new Position(0, 3);
         Position unitPos = new Position(4, 5);
         Position namePos = new Position(6, 15);
 
+        // Assert
         Ingredient ingredient = recipe.getIngredients().get(0);
         assert (ingredient.getNamePosition().equals(namePos));
         assert (ingredient.getQuantityPosition().equals(quantityPos));
         assert (ingredient.getUnitPosition().equals(unitPos));
-
-        ingredientList = "500g spaghetti \n500 ounces sauce \n1 1/2 pounds minced meat\n 1 clove garlic\n twenty basil leaves";
 
         // second ingredient: 500 ounces sauce
         quantityPos = new Position(0, 3);
@@ -209,46 +384,33 @@ public class DetectIngredientsInListTaskUnitTest {
     }
 
     @Test
-    public void DetectIngredientsInListTask_doTask_ClutterExamplesCorrect() {
+    public void DetectIngredientsInList_doTask_ifNoIngredientsRaiseException() {
         // Arrange
-        String clutterExamples = "2.5kg/5lb 8oz turkey crown (fully thawed if frozen)\n" +
-                "750–900ml/1⅓–1⅔ pint readymade chicken gravy\n" +
-                "500ml/18fl oz milk\n" +
-                "200ml/7fl oz crème frâiche\n" +
-                "350ml/12¼fl oz warm water\n" +
-                "200ml/7fl oz fromage frais\n" +
-                "100g/5½oz raisins";
-        RecipeInProgress rip = new RecipeInProgress("");
-        rip.setIngredientsString(clutterExamples);
-        DetectIngredientsInListTask task = new DetectIngredientsInListTask(rip, crfClassifier);
-        Ingredient turkeyIngredient = new Ingredient("turkey crown", "kg", 2.5, irrelevantPositions);
-        Ingredient gravyIngredient = new Ingredient("readymade chicken gravy", "ml", 750, irrelevantPositions);
-        Ingredient milkIngredient = new Ingredient("milk", "ml", 500.0, irrelevantPositions);
-        Ingredient cremeIngredient = new Ingredient("crème frâiche", "ml", 200, irrelevantPositions);
-        Ingredient waterIngredient = new Ingredient("warm water", "ml", 350, irrelevantPositions);
-        Ingredient fromageIngredient = new Ingredient("fromage frais", "ml", 200, irrelevantPositions);
-        Ingredient raisinsIngredient = new Ingredient("raisins", "g", 100, irrelevantPositions);
-
+        recipe.setIngredientsString("");
+        boolean thrown = false;
         // Act
-        task.doTask();
-
+        try {
+            detector.doTask();
+        } catch (Exception e) {
+            thrown = true;
+        }
         // Assert
-        List<ListIngredient> list = rip.getIngredients();
-        boolean turkey = list.contains(turkeyIngredient);
-        boolean gravy = list.contains(gravyIngredient);
-        boolean milk = list.contains(milkIngredient);
-        boolean creme = list.contains(cremeIngredient);
-        boolean water = list.contains(waterIngredient);
-        boolean fromage = list.contains(fromageIngredient);
-        boolean raisins = list.contains(raisinsIngredient);
-        assert(turkey);
-        assert(gravy);
-        assert(milk);
-        assert(creme);
-        assert(water);
-        assert(fromage);
-        assert(raisins);
+        assert (thrown);
 
 
     }
+
+    @Test
+    public void DetectIngredientsInList_doTask_randomInputStringDoesNotThrowError() {
+        boolean thrown = false;
+
+        recipe.setIngredientsString("20 pound xxx \n jqkfdksqfjkd// \n 45055 450 47d dkjq4 kdj  4 dqfd/n \n kjfqkf 450 ounce lfqj \n 20 pound xxx\"\n");
+        try {
+            detector.doTask();
+        } catch (Exception e) {
+            thrown = true;
+        }
+        assert (!thrown);
+    }
+
 }

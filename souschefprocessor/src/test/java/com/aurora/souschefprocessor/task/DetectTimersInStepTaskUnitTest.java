@@ -1,6 +1,5 @@
 package com.aurora.souschefprocessor.task;
 
-import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
@@ -32,7 +31,8 @@ public class DetectTimersInStepTaskUnitTest {
         recipeSteps.add(new RecipeStep("Let cool down for an hour and a half.")); //5 (verbose hour)
         recipeSteps.add(new RecipeStep("Put the lasagna in the oven for 1h"));//6 (symbol hour)
         recipeSteps.add(new RecipeStep("Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //7 (upperbound and lowerbound different)))
-
+        recipeSteps.add(new RecipeStep("Let boil for 1 minute 30 seconds")); //8 merging timer
+        recipeSteps.add(new RecipeStep("Put in the oven for 50 minutes to 1 hour")); //9 to case
 
         String originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
@@ -266,6 +266,26 @@ public class DetectTimersInStepTaskUnitTest {
         substring = description.substring(pos.getBeginIndex(), pos.getEndIndex());
         assert (substring.equals(timeString));
 
+    }
+
+    @Test
+    public void DetectTimersInStep_doTask_ToWithDifferentUnitsStillcorrect() {
+        int index = 9;
+        DetectTimersInStepTask task = new DetectTimersInStepTask(recipe, index);
+        RecipeTimer goal = new RecipeTimer(50 * 60, 1 * 3600, irrelevantPosition);
+        task.doTask();
+        assert (recipeSteps.get(index).getRecipeTimers().contains(goal));
+
+
+    }
+
+    @Test
+    public void DetectTimersInStep_doTask_TimerToBeMergedIsmerged() {
+        int index = 8;
+        DetectTimersInStepTask task = new DetectTimersInStepTask(recipe, index);
+        RecipeTimer goal = new RecipeTimer(1 * 60 + 30, irrelevantPosition);
+        task.doTask();
+        assert (recipeSteps.get(index).getRecipeTimers().contains(goal));
     }
 
 

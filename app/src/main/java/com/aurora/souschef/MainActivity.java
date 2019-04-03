@@ -23,7 +23,7 @@ import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.facade.Communicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Tab2Ingredients.OnAmountOfPeopleChangedListener {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
             "Finishing up..."};
 
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
+    private Tab2Ingredients.OnAmountOfPeopleChangedListener mOnAmountOfPeopleChangedListener = this;
     private Context mContext = this;
 
     public MainActivity() {
@@ -171,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
                         Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
                 ExtractedText extractedText = ExtractedText.fromJson(inputTextJSON);
                 inputText = extractedText.toString();
+
             } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
                 // TODO handle a PluginObject that was cached
                 Log.d("NOT_IMPLEMENTED", "PLUGIN_INPUT_OBJECT needs to be implemented." +
@@ -184,6 +186,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         (new SouschefInit(inputText)).execute();
+    }
+
+    @Override
+    public void onAmountOfPeopleChanged(int newAmount) {
+        ((Tab3Steps) mSectionsPagerAdapter.getItem(TAB_STEPS)).setText("" + newAmount);
     }
 
     class ProgressUpdate extends AsyncTask<Void, Integer, Void> {
@@ -302,6 +309,9 @@ public class MainActivity extends AppCompatActivity {
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
         private Recipe mRecipe = null;
+        private Tab1Overview mTab1Overview = null;
+        private Tab2Ingredients mTab2Ingredients = null;
+        private Tab3Steps mTab3Steps = null;
 
         SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -310,29 +320,35 @@ public class MainActivity extends AppCompatActivity {
         public SectionsPagerAdapter(FragmentManager fm, Recipe recipe) {
             super(fm);
             mRecipe = recipe;
+
+            mTab1Overview = new Tab1Overview();
+            mTab1Overview.setRecipe(recipe);
+
+            mTab2Ingredients = new Tab2Ingredients();
+            mTab2Ingredients.setRecipe(recipe);
+            mTab2Ingredients.setmOnAmountOfPeopleChangedListener(mOnAmountOfPeopleChangedListener);
+
+            mTab3Steps = new Tab3Steps();
+            mTab3Steps.setRecipe(recipe);
         }
 
         @Override
         public Fragment getItem(int position) {
-            Fragment tabFragment;
+            Fragment tempFrag;
             switch (position) {
                 case TAB_OVERVIEW:
-                    tabFragment = new Tab1Overview();
-                    ((Tab1Overview) tabFragment).setRecipe(mRecipe);
+                    tempFrag = mTab1Overview;
                     break;
                 case TAB_INGREDIENTS:
-                    tabFragment = new Tab2Ingredients();
-                    ((Tab2Ingredients) tabFragment).setRecipe(mRecipe);
+                    tempFrag = mTab2Ingredients;
                     break;
                 case TAB_STEPS:
-                    tabFragment = new Tab3Steps();
-                    ((Tab3Steps) tabFragment).setRecipe(mRecipe);
+                    tempFrag = mTab3Steps;
                     break;
                 default:
-                    tabFragment = null;
-                    break;
+                    tempFrag = null;
             }
-            return tabFragment;
+            return tempFrag;
         }
 
         @Override

@@ -10,10 +10,10 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,37 +28,6 @@ import java.util.regex.Pattern;
  * Class defining the functionality of the recipe steps tab.
  */
 public class Tab3Steps extends Fragment {
-    // Also present in MaxHeightRecyclerView
-    private static final int MAX_HEIGHT = 300;
-
-    private static final String[] DUMMY_STEPS = {
-            "Take the food out of the package",
-            "Put the food in the microwave",
-            "Serve the hot food on a plate",
-            "Enjoy your meal!"
-    };
-
-    private static final int[] DUMMY_TIMER_LOWER = {
-            60,
-            180,
-            30,
-            3600,
-            60,
-            180,
-            30,
-            3600
-    };
-
-    private static final int[] DUMMY_TIMER_UPPER = {
-            120,
-            200,
-            45,
-            4000,
-            60,
-            180,
-            30,
-            3600,
-    };
     private static Recipe mRecipe = null;
     private static String[] mDescriptionSteps = null;
     private StepsPagerAdapter mStepsPagerAdapter;
@@ -95,6 +64,7 @@ public class Tab3Steps extends Fragment {
 
         View rootView = inflater.inflate(R.layout.tab_3_steps, container, false);
 
+        Log.d("Test","onCreateView " + this);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mStepsPagerAdapter = new StepsPagerAdapter(getActivity().getSupportFragmentManager());
@@ -107,6 +77,11 @@ public class Tab3Steps extends Fragment {
         mViewPager.setOffscreenPageLimit(mStepsPagerAdapter.getCount());
 
         return rootView;
+    }
+
+    protected void setText(String newText) {
+        ((TextView) getView().findViewById(R.id.tv_dummy)).setText(newText);
+
     }
 
     /**

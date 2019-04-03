@@ -285,6 +285,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private boolean doNotIgnoreString(String string) {
         for (String ignore : STRINGS_TO_IGNORE) {
             if (string.equalsIgnoreCase(ignore)) {
+                // if the string is contained in de STRINGS_TO_IGNORE array then ignore this string
+                // and return false
                 return false;
             }
         }
@@ -301,6 +303,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private boolean doNotIgnoreToken(CoreLabel token) {
         String tokenText = token.originalText();
         if (!doNotIgnoreString(tokenText)) {
+            // if the string of the token should be ignored, the whole token should be ignored
+            // so return false
             return false;
         }
         for (String tagToIgnore : TAGS_TO_IGNORE) {
@@ -321,7 +325,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @param string2 the second string
      * @return a boolean indicating whether these strings differ in one erasure
      */
-    private boolean differInOneErasure(String string1, String string2) {
+    public static boolean differInOneErasure(String string1, String string2) {
         // check for one erasure
 
         int string2Length = string2.length();
@@ -331,8 +335,11 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         String longest = "";
         String shortest = "";
         int shortLength;
+        // One erasure is only possible when the difference in lenght is 1
         boolean lengthDifIs1 = Math.abs(lengthDif) == 1;
         if (lengthDifIs1) {
+            // get the shortest and longest
+            // lengthDif is string1Length - string2Length
             if (lengthDif > 0) {
                 longest = string1;
                 shortest = string2;
@@ -348,22 +355,22 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 return true;
             }
 
+            // a boolean to indicate if a difference has been found
             boolean difFound = false;
+            // the character of the shortest string
             char shortChar;
+            // the character of the longest string
             char longChar;
             for (int i = 0; i < shortLength; i++) {
                 shortChar = shortest.charAt(i);
                 if (!difFound) {
+                    // if no difference found yet check the character at the same index
                     longChar = longest.charAt(i);
-                    if (longChar != shortChar) {
-                        difFound = true;
-                        if (i > 0 && i == shortLength - 1) {
-                            return false;
-                        }
-
-                    }
+                    // if they are unequal a difference has been found
+                    difFound = longChar != shortChar;
                 }
                 if (difFound) {
+                    // if one difference has been found check the character after this character
                     longChar = longest.charAt(i + 1);
                     if (longChar != shortChar) {
                         // second difference found
@@ -372,14 +379,12 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
 
                 }
-                if (i == shortLength - 1) {
-                    return true;
-                }
+
 
             }
         }
 
-        return false;
+        return lengthDifIs1;
     }
 
     private boolean namePartsContainsTokenOneCharOff(CoreLabel token, List<String> nameParts) {

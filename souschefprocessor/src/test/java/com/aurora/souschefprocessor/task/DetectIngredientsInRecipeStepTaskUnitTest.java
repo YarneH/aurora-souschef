@@ -220,6 +220,12 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     }
 
 
+    @Test
+    public void differ(){
+        String aaa= "fettucine";
+        String b = "fettuccine";
+        assert(detector0.differInOneErasure(aaa, b));
+    }
 
 
 

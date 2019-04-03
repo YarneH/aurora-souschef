@@ -267,7 +267,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return A pair with the detected ingredientlist and the altered text so that the detected
      * ingredientlist is not in the text anymore
      */
-    private ResultAndAlteredTextPair findStepsRegexBased(String text) {
+    private static ResultAndAlteredTextPair findStepsRegexBased(String text) {
 
         String[] lines = text.split("\n");
         String steps = "";

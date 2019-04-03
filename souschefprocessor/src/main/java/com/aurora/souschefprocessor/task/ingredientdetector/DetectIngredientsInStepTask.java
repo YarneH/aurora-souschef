@@ -30,7 +30,6 @@ import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.process.Morphology;
 import edu.stanford.nlp.util.CoreMap;
 
-// TODO add exceptions for illegal arguments and add tests for these exceptions
 
 /**
  * Detects the mIngredients in the list of mIngredients
@@ -83,7 +82,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * A lock to ensure the only one thread accesses the {@link #sAnnotationPipeline} at the same time
      * and that the pipeline is only created once
      */
-    private static final Object LOCK = new Object();
+    private static final Object LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE = new Object();
 
     /**
      * An array of strings that should be ignored when looking for matches between the ingredientlist and
@@ -141,23 +140,23 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     }
 
     /**
-     * Initializes the AnnotationPipeline, should be called before using the first detector. It also
-     * checks if no other thread has already started to create the pipeline
+     * Initializes the AnnotationPipeline for ingredients, should be called before using the first detector.
+     * It also checks if no other thread has already started to create the pipeline
      */
     public static void initializeAnnotationPipeline() {
         Thread initialize = new Thread(() -> {
-            synchronized (LOCK) {
+            synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
                 if (startedCreatingPipeline) {
-                    // creating already started or finished -> do not start again
+                    // creating already started or finished  so do not start again
                     return;
                 }
                 // ensure no other thread can initialize
                 startedCreatingPipeline = true;
             }
             sAnnotationPipeline = createIngredientAnnotationPipeline();
-            synchronized (LOCK) {
+            synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
                 // get the lock again to notify that the pipeline has been created
-                LOCK.notifyAll();
+                LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.notifyAll();
             }
         });
         initialize.start();
@@ -305,8 +304,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         // wait as long as the pipeline object is null
         while (sAnnotationPipeline == null) {
             try {
-                synchronized (LOCK) {
-                    LOCK.wait();
+                synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
+                    LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.wait();
                 }
             } catch (InterruptedException e) {
                 Log.d("Interrupted", "detecttimer", e);

@@ -41,6 +41,11 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private static final int MAX_SENTENCES_FOR_PARSER = 100;
 
+    /**
+     * The original text of this recipe
+     */
+    private String mOriginalText;
+
 
     public SplitToMainSectionsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
@@ -71,46 +76,40 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @param text The text to capitalize
      * @return The text with the sentences capitalized again
      */
-    private static String capitalize(String text) {
-        //TODO do this with the original text if possible
+    private  String capitalize(String text) {
 
-        //counter
-        int i = 0;
-
-
-        char current = text.charAt(i);
-        int length = text.length();
-
-        // get the first letter of the text
-        while (!Character.isLetter(current) && i < length - 1) {
-            i++;
-            current = text.charAt(i);
+        if (text.length() == 0) {
+            // if text is empty just return text
+            return text;
         }
 
-        // capitalize first letter
-        text = text.substring(0, i) + Character.toUpperCase(current) + text.substring(i + 1);
+        // get both original and argument text in lowercase
+        String lowerCaseOriginal = mOriginalText.toLowerCase(Locale.ENGLISH);
+        String lowerCaseText = text.toLowerCase(Locale.ENGLISH);
 
-        boolean previousWasPunctuationOrNewLine = false;
+        // try to find the lowerCaseText in the original lower case text
+        int startIndex = lowerCaseOriginal.indexOf(lowerCaseText);
 
-        for (int j = i; j < length; j++) {
-            current = text.charAt(j);
-            if (!previousWasPunctuationOrNewLine) {
-                boolean punctuationOrNewLine = current == '.' || current == '?' || current == '!'
-                        || current == '\n';
-                if (punctuationOrNewLine) {
-                    previousWasPunctuationOrNewLine = true;
-                }
-            } else {
-                if (!Character.isWhitespace(current)) {
-                    // first letter after punctuation -> captitalize
-                    text = text.substring(0, j) + Character.toUpperCase(current) + text.substring(j + 1);
-                    previousWasPunctuationOrNewLine = false;
-                }
-
-            }
-
+        if (startIndex < 0) {
+            // if the original text was not found just return the text (this should not happen)
+            return text;
         }
-        return text;
+
+        // get the original substring that with capitalization that matches the argument string
+        // without captialization
+        int endIndex = startIndex + text.length();
+        return mOriginalText.substring(startIndex, endIndex);
+
+    }
+
+    /**
+     * Finds the mDescription of the recipe in a text
+     *
+     * @param text the text in which to search for the mDescription of the recipe
+     * @return The string representing the mDescription of the recipe
+     */
+    private static String findDescription(String text) {
+        return trimNewLines(text);
     }
 
     /**
@@ -121,21 +120,20 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     public void doTask() {
 
-        String text = this.mRecipeInProgress.getOriginalText();
+        mOriginalText = this.mRecipeInProgress.getOriginalText();
 
-        if(("").equals(text)){
+        if (("").equals(mOriginalText)) {
             throw new RecipeDetectionException("No original text found, this is probably not a recipe");
         }
 
-        ResultAndAlteredTextPair ingredientsAndText = findIngredients(text);
+        ResultAndAlteredTextPair ingredientsAndText = findIngredients(mOriginalText);
         String ingredients = ingredientsAndText.getResult();
 
         ResultAndAlteredTextPair stepsAndText = findSteps(ingredientsAndText.getAlteredText());
-        String steps = capitalize(stepsAndText.getResult());
+        String steps = stepsAndText.getResult();
         String description = findDescription(stepsAndText.getAlteredText());
 
         modifyRecipe(this.mRecipeInProgress, ingredients, steps, description);
-
     }
 
     /**
@@ -206,7 +204,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         }
         text = text.replace(bld.toString(), "");
 
-        return new ResultAndAlteredTextPair(trimNewLines(bld.toString()), text);
+        return new ResultAndAlteredTextPair(trimNewLines(capitalize(bld.toString())), text);
     }
 
     /**
@@ -217,7 +215,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return A pair with the detected ingredientlist and the altered text so that the detected
      * ingredientlist is not in the text anymore
      */
-    private ResultAndAlteredTextPair findIngredientsDigit(String text) {
+    private static ResultAndAlteredTextPair findIngredientsDigit(String text) {
         String[] sections = text.split("\n\n");
         boolean found = false;
         String ingredientsSection = "";
@@ -255,6 +253,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         if (("").equals(pair.getResult())) {
             pair = findStepsNLP(text);
         }
+
 
         return pair;
 
@@ -326,9 +325,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     private ResultAndAlteredTextPair findStepsNLP(String text) {
         String[] sections = text.split("\n\n");
         for (String section : sections) {
-            boolean verbDetected = verbDetected(section, true);
+            boolean verbDetected = verbDetected(section, false);
             if (!verbDetected) {
-                verbDetected = verbDetected(section, false);
+                verbDetected = verbDetected(section, true);
             }
             if (verbDetected) {
                 return new ResultAndAlteredTextPair(trimNewLines(section), text.replace(section, ""));
@@ -336,16 +335,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         }
 
         return new ResultAndAlteredTextPair("", text);
-    }
-
-    /**
-     * Finds the mDescription of the recipe in a text
-     *
-     * @param text the text in which to search for the mDescription of the recipe
-     * @return The string representing the mDescription of the recipe
-     */
-    private static String findDescription(String text) {
-        return trimNewLines(text);
     }
 
     /**
@@ -374,6 +363,31 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return annotation;
 
     }
+    /**
+     * A helper class for the SplitToMainSectionsTask, it is a dataclass that stores two strings:
+     * {@link #mResult} = the detected result
+     * {@link #mAlteredText} = the original text without the detected result
+     */
+    private static class ResultAndAlteredTextPair {
+        private String mResult;
+        private String mAlteredText;
+
+        ResultAndAlteredTextPair(String result, String alteredText) {
+            this.mResult = result;
+            this.mAlteredText = alteredText;
+        }
+
+        String getResult() {
+            return mResult;
+        }
+
+        String getAlteredText() {
+            return mAlteredText;
+        }
+    }
 
 
 }
+
+
+

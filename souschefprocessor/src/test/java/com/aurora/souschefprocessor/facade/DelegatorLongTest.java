@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.facade;
 
+import android.util.Log;
+
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 import org.junit.After;
@@ -24,13 +26,12 @@ public class DelegatorLongTest {
 
     @BeforeClass
     public static void initialize() {
-        //DetectTimersInStepTask.initializeAnnotationPipeline();
         // load in the recipes
         List<String> recipes = initializeRecipes();
         // split into valid and invalid
         // the first 5 recipes are valid recipes
         validRecipes = recipes.subList(0, 5);
-        invalidRecipes = recipes.subList(5, 6);
+        invalidRecipes = recipes.subList(5, 8);
 
         // load in the model
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
@@ -51,7 +52,7 @@ public class DelegatorLongTest {
      *
      * @return A list of testrecipes
      */
-    private static List<String> initializeRecipes() {
+    public static List<String> initializeRecipes() {
         String filename = "src/test/java/com/aurora/souschefprocessor/facade/recipes.txt";
         List<String> list = new ArrayList<>();
         try {
@@ -93,8 +94,8 @@ public class DelegatorLongTest {
         try {
 
             for (String text : validRecipes) {
-                Recipe recipe = delegator.processText(text);
-                System.out.println(recipe.getRecipeSteps());
+               Recipe recipe =  delegator.processText(text);
+               System.out.println(recipe+ "\n--------------------------------");
 
             }
         } catch (Exception e) {
@@ -114,23 +115,26 @@ public class DelegatorLongTest {
         /**
          * Check that no exceptions are thrown when these recipes are read in
          */
-        // Arrange
-        // initialize on false
-        boolean thrown = false;
 
-        // Act
-        try {
-            // the 6th recipe is invalid
-            for (String text : invalidRecipes) {
+        // the 6th and 7th recipes are invalid
+        for (String text : invalidRecipes) {
+            // Arrange
+            // initialize on false
+            boolean thrown = false;
+            // Act
+            try {
                 delegator.processText(text);
+            } catch (Exception e) {
+                // set thrown to true, this should happen
+                Log.e("Woop", "Error was thrown", e);
+                thrown = true;
             }
-        } catch (Exception e) {
-            // set thrown to true, this should happen
-            thrown = true;
+            // Assert
+            // assert that an error was thrown
+            assert (thrown);
         }
-        // Assert
-        // assert that an error was thrown
-        assert (thrown);
+
+
     }
 
     @Test

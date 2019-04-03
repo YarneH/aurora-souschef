@@ -158,3 +158,56 @@ fjfaj
 yuireld
 yield 2525
 oezjjazgiâeuta
+----------
+This is a junk recipe that has steps, but no ingredients, should trown an error
+kdqjfsj
+dkqfsjkejai
+eija
+dlkkjjjjj
+hallo
+ieja
+
+COOKING STEPS
+
+Put package in microwave for 5 minutes.
+Take it out.
+Eat.
+
+
+----------
+Sometimes your professor will ask you to include an abstract, or general summary of your work, with your research paper. The abstract allows you to elaborate upon each major aspect of the paper and helps readers decide whether they want to read the rest of the paper. Therefore, enough key information [e.g., summary results, observations, trends, etc.] must be included to make the abstract useful to someone who may want to examine your work.
+
+How do you know when you have enough information in your abstract? A simple rule-of-thumb is to imagine that you are another researcher doing a similar study. Then ask yourself: if your abstract was the only part of the paper you could access, would you be happy with the amount of information presented there? Does it tell the whole story about your study? If the answer is "no" then the abstract likely needs to be revised.
+
+How to Write a Research Abstract. Office of Undergraduate Research. University of Kentucky; Staiger, David L. “What Today’s Students Need to Know about Writing Abstracts.” International Journal of Business Communication January 3 (1966): 29-33; Swales, John M. and Christine B. Feak. Abstracts and the Writing of Abstracts. Ann Arbor, MI: University of Michigan Press, 2009.
+Structure and Writing Style
+
+I.  Types of Abstracts
+
+To begin, you need to determine which type of abstract you should include with your paper. There are four general types.
+
+Critical Abstract
+A critical abstract provides, in addition to describing main findings and information, a judgement or comment about the study’s validity, reliability, or completeness. The researcher evaluates the paper and often compares it with other works on the same subject. Critical abstracts are generally 400-500 words in length due to the additional interpretive commentary. These types of abstracts are used infrequently.
+
+Descriptive Abstract
+A descriptive abstract indicates the type of information found in the work. It makes no judgments about the work, nor does it provide results or conclusions of the research. It does incorporate key words found in the text and may include the purpose, methods, and scope of the research. Essentially, the descriptive abstract only describes the work being summarized. Some researchers consider it an outline of the work, rather than a summary. Descriptive abstracts are usually very short, 100 words or less.
+
+Informative Abstract
+The majority of abstracts are informative. While they still do not critique or evaluate a work, they do more than describe it. A good informative abstract acts as a surrogate for the work itself. That is, the researcher presents and explains all the main arguments and the important results and evidence in the paper. An informative abstract includes the information that can be found in a descriptive abstract [purpose, methods, scope] but it also includes the results and conclusions of the research and the recommendations of the author. The length varies according to discipline, but an informative abstract is usually no more than 300 words in length.
+
+Highlight Abstract
+A highlight abstract is specifcally written to attract the reader’s attention to the study. No pretence is made of there being either a balanced or complete picture of the paper and, in fact, incomplete and leading remarks may be used to spark the reader’s interest. In that a highlight abstract cannot stand independent of its associated article, it is not a true abstract and, therefore, rarely used in academic writing.
+
+II.  Writing Style
+
+Use the active voice when possible, but note that much of your abstract may require passive sentence constructions. Regardless, write your abstract using concise, but complete, sentences. Get to the point quickly and always use the past tense because you are reporting on a study that has been completed.
+
+Although it is the first section of your paper, the abstract, by definition, should be written last since it will summarize the contents of your entire paper. To begin composing your abstract, take whole sentences or key phrases from each section and put them in a sequence that summarizes the paper. Then revise or add connecting phrases or words to make the narrative flow clearly and smoothly. Before handing in your final paper, check to make sure that the information in the abstract completely agrees with what you have written in the paper. Think of the abstract as describing the most information using the fewest necessary words in complete sentences.
+
+The abstract SHOULD NOT contain:
+
+    Lengthy background information,
+    References to other literature [say something like, "current research shows that..." or "studies have indicated..."],
+    Using ellipticals [i.e., ending with "..."] or incomplete sentences,
+    Abbreviations, jargon, or terms that may be confusing to the reader, and
+    Any sort of image, illustration, figure, or table, or references to them.

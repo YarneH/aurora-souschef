@@ -193,7 +193,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
     public void doTask() {
         List<ListIngredient> list = detectIngredients(this.mRecipeInProgress.getIngredientsString());
         if (list == null || list.isEmpty()) {
-            throw new RecipeDetectionException("No ingredients where detected, this is probably not a recipe");
+            throw new RecipeDetectionException("No ingredients were detected, this is probably not a recipe");
         }
         this.mRecipeInProgress.setIngredients(list);
     }

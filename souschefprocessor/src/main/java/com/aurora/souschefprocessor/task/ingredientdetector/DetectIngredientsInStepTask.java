@@ -182,6 +182,96 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         return pipeline;
     }
 
+    /**
+     * Checks if a string should be ignored (if it is contained in the {@link #STRINGS_TO_IGNORE}
+     * list
+     *
+     * @param string the string to check
+     * @return false if the string should be ignored, true if the string should not be ignored
+     */
+    private static boolean doNotIgnoreString(String string) {
+        for (String ignore : STRINGS_TO_IGNORE) {
+            if (string.equalsIgnoreCase(ignore)) {
+                // if the string is contained in de STRINGS_TO_IGNORE array then ignore this string
+                // and return false
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if the difference is just in one erased character and not a completely different word
+     *
+     * @param shortest the shortest string (its length is smaller than the longest)
+     * @param longest  the longest string
+     * @return a boolean indicating if the difference is one erased character or not
+     */
+    private static boolean differenceIsOneErasedCharacter(String shortest, String longest) {
+        int shortLength = shortest.length();
+
+        // check if longest just contains an extra character at the back
+        // to bypass the loop
+        if (longest.substring(0, shortLength).equalsIgnoreCase(shortest)) {
+            return true;
+        }
+
+        // a boolean to indicate if one difference has been found
+        boolean difFound = false;
+        // the character of the shortest string
+        char shortChar;
+        // the character of the longest string
+        char longChar;
+        for (int i = 0; i < shortLength; i++) {
+            shortChar = shortest.charAt(i);
+            if (!difFound) {
+                // if no difference found yet check the character at the same index
+                longChar = longest.charAt(i);
+                // if they are unequal a difference has been found
+                difFound = longChar != shortChar;
+            }
+            if (difFound) {
+                // if one difference has been found check the character after this character
+                longChar = longest.charAt(i + 1);
+                if (longChar != shortChar) {
+                    // second difference found
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if two strings only differ in the fact that one character is not present to catch
+     * plurals (e.g "onion" and "onions" and spelling mistakes "fettuccine" and "fettucine"
+     *
+     * @param string1 the first string
+     * @param string2 the second string
+     * @return a boolean indicating whether these strings differ in one erasure
+     */
+    public static boolean differInOneErasure(String string1, String string2) {
+        // check for one erasure
+
+        int string2Length = string2.length();
+        int string1Length = string1.length();
+        int lengthDif = string1Length - string2Length;
+
+        // start with this initialization, if needed they will be swapped
+        String longest = string2;
+        String shortest = string1;
+        // One erasure is only possible when the difference in lenght is 1
+        if (Math.abs(lengthDif) == 1) {
+            // get the shortest and longest
+            // lengthDif is string1Length - string2Length
+            if (lengthDif > 0) {
+                longest = string1;
+                shortest = string2;
+            }
+            return differenceIsOneErasedCharacter(shortest, longest);
+        }
+        return false;
+    }
 
     /**
      * Detects the mIngredients for each recipeStep
@@ -256,7 +346,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                     Ingredient listIngredient = entry.getKey();
 
                     // Found name of an ingredient from the list of ingredients
-                    if (namePartsContainsTokenOneCharOff(tokens.get(tokenIndex), nameParts)
+                    if (tokenIsContainedInNameParts(tokens.get(tokenIndex), nameParts)
                             && !foundIngredients.contains(listIngredient)) {
                         foundIngredients.add(listIngredient);
                         set.add(getStepIngredient(tokenIndex, nameParts, listIngredient, tokens));
@@ -273,24 +363,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
 
         return set;
-    }
-
-    /**
-     * Checks if a string should be ignored (if it is contained in the {@link #STRINGS_TO_IGNORE}
-     * list
-     *
-     * @param string the string to check
-     * @return false if the string should be ignored, true if the string should not be ignored
-     */
-    private boolean doNotIgnoreString(String string) {
-        for (String ignore : STRINGS_TO_IGNORE) {
-            if (string.equalsIgnoreCase(ignore)) {
-                // if the string is contained in de STRINGS_TO_IGNORE array then ignore this string
-                // and return false
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -318,81 +390,22 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     }
 
     /**
-     * Checks if two strings only differ in the fact that one character is not present to catch
-     * plurals (e.g "onion" and "onions" and spelling mistakes "fettuccine" and "fettucine"
+     * Checks if the token is contained in the nameParts and if this is relevant (not part of the
+     * {@link #TAGS_TO_IGNORE} or {@link #STRINGS_TO_IGNORE} arrays). It will also be contained
+     * if the token differs with a namePart in one erasure see {@link #differInOneErasure(String, String)}
+     * this is needed to detect that "onion" refers to "onions" and to correct some spelling mistakes
      *
-     * @param string1 the first string
-     * @param string2 the second string
-     * @return a boolean indicating whether these strings differ in one erasure
+     * @param token     the token to check
+     * @param nameParts the list of nameStrings to check
+     * @return true if the token is contained
      */
-    public static boolean differInOneErasure(String string1, String string2) {
-        // check for one erasure
-
-        int string2Length = string2.length();
-        int string1Length = string1.length();
-        int lengthDif = string1Length - string2Length;
-
-        String longest = "";
-        String shortest = "";
-        int shortLength;
-        // One erasure is only possible when the difference in lenght is 1
-        boolean lengthDifIs1 = Math.abs(lengthDif) == 1;
-        if (lengthDifIs1) {
-            // get the shortest and longest
-            // lengthDif is string1Length - string2Length
-            if (lengthDif > 0) {
-                longest = string1;
-                shortest = string2;
-                shortLength = string2Length;
-            } else {
-                longest = string2;
-                shortest = string1;
-                shortLength = string1Length;
-            }
-            // check if longest just contains an extra character at the back
-            // to bypass the loop
-            if (longest.substring(0, shortLength).equalsIgnoreCase(shortest)) {
-                return true;
-            }
-
-            // a boolean to indicate if a difference has been found
-            boolean difFound = false;
-            // the character of the shortest string
-            char shortChar;
-            // the character of the longest string
-            char longChar;
-            for (int i = 0; i < shortLength; i++) {
-                shortChar = shortest.charAt(i);
-                if (!difFound) {
-                    // if no difference found yet check the character at the same index
-                    longChar = longest.charAt(i);
-                    // if they are unequal a difference has been found
-                    difFound = longChar != shortChar;
-                }
-                if (difFound) {
-                    // if one difference has been found check the character after this character
-                    longChar = longest.charAt(i + 1);
-                    if (longChar != shortChar) {
-                        // second difference found
-                        return false;
-                    }
-
-
-                }
-
-
-            }
-        }
-
-        return lengthDifIs1;
-    }
-
-    private boolean namePartsContainsTokenOneCharOff(CoreLabel token, List<String> nameParts) {
+    private boolean tokenIsContainedInNameParts(CoreLabel token, List<String> nameParts) {
         String tokenText = token.originalText().toLowerCase(Locale.ENGLISH);
 
         if (doNotIgnoreToken((token))) {
             for (String part : nameParts) {
-                if (doNotIgnoreString(part) && (part.equalsIgnoreCase(tokenText) || differInOneErasure(tokenText, part))) {
+                if (doNotIgnoreString(part) &&
+                        (part.equalsIgnoreCase(tokenText) || differInOneErasure(tokenText, part))) {
                     return true;
                 }
             }

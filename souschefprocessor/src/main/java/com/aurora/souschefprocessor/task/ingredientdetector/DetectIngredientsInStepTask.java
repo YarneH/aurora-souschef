@@ -485,7 +485,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             Position unitPos = findUnitPosition(precedingTokens, listIngredient.getUnit());
             if (unitPos != null) {
                 stepIngredient.setUnitPosition(unitPos);
-                stepAmount.setUnit(mRecipeStep.getDescription().substring(unitPos.getBeginIndex(), unitPos.getEndIndex()));
+                stepAmount.setUnit(mRecipeStep.getDescription().substring(unitPos.getBeginIndex(),
+                        unitPos.getEndIndex()));
 
             }
             double listQuantity = listIngredient.getAmount().getValue();
@@ -614,7 +615,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         if (token.originalText().contains(",")) {
             return true;
         }
-        return mNamesOfListIngredients.contains(token.originalText().replace(",",""));
+        return mNamesOfListIngredients.contains(token.originalText().replace(",", ""));
 
     }
 

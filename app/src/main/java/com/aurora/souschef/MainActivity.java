@@ -75,11 +75,16 @@ public class MainActivity extends AppCompatActivity {
                 "Directions\n" +
                 "\n" +
                 "\n" +
-                "    Hak de chocolade fijn. Laat de chocolade in ca. 5 min. au bain-marie smelten in een kom boven een pan kokend water. Roer af en toe. Neem de kom van de pan.\n" +
-                "    Splits de eieren. Klop het eiwit met de helft van de suiker met een mixer ca. 5 min. totdat het glanzende stijve pieken vormt. Doe de slagroom in een ruime kom en klop in ca. 3 min. stijf.\n" +
+                "    Hak de chocolade fijn. Laat de chocolade in ca. 5 min. au bain-marie smelten in " +
+                "een kom boven een pan kokend water. Roer af en toe. Neem de kom van de pan.\n" +
+                "    Splits de eieren. Klop het eiwit met de helft van de suiker met een mixer ca. " +
+                "5 min. totdat het glanzende stijve pieken vormt. Doe de slagroom in een ruime kom en " +
+                "klop in ca. 3 min. stijf.\n" +
                 "    Klop de eidooiers los met een garde. Roer de rest van de suiker erdoor.\n" +
-                "    Roer de gesmolten chocolade door het eidooier-suikermengsel. Spatel het door de slagroom. Spatel het eiwit snel en luchtig in delen door het chocolademengsel.\n" +
-                "    Schep de chocolademousse in glazen, potjes of coupes, dek af met vershoudfolie en laat minimaal 2 uur opstijven in de koelkast.\n";
+                "    Roer de gesmolten chocolade door het eidooier-suikermengsel. Spatel het door de " +
+                "slagroom. Spatel het eiwit snel en luchtig in delen door het chocolademengsel.\n" +
+                "    Schep de chocolademousse in glazen, potjes of coupes, dek af met vershoudfolie " +
+                "en laat minimaal 2 uur opstijven in de koelkast.\n";
     }
 
     @Override

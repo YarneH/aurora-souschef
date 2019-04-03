@@ -12,9 +12,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 public class DetectIngredientsInRecipeStepTaskLongTest {
 
@@ -53,8 +53,8 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
 
         // Perform the detection of ingredients in steps
         DetectIngredientsInStepTask.initializeAnnotationPipeline();
-        for(int r = 0; r < rips.size(); r++){
-            for(int s = 0; s < rips.get(r).getRecipeSteps().size(); s++){
+        for (int r = 0; r < rips.size(); r++) {
+            for (int s = 0; s < rips.get(r).getRecipeSteps().size(); s++) {
                 // Execute the detection for each recipe step in this RecipeInProgress
                 DetectIngredientsInStepTask detector = new DetectIngredientsInStepTask(rips.get(r), s);
                 detector.doTask();
@@ -62,16 +62,16 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         }
     }
 
-    private static void setListIngredients(){
+    private static void setListIngredients() {
         String allIngredients = initializeIngredientsString();
         String[] ingredientsPerRecipe = allIngredients.split("\n\n");
-        for(String ingredientsForOneRecipe : ingredientsPerRecipe){
+        for (String ingredientsForOneRecipe : ingredientsPerRecipe) {
             RecipeInProgress rip = new RecipeInProgress(originalText);
             rip.setIngredientsString(ingredientsForOneRecipe);
             List<ListIngredient> listIngredients = new ArrayList<>();
 
             String[] ingredients = ingredientsForOneRecipe.split("\n");
-            for(String ingredient : ingredients){
+            for (String ingredient : ingredients) {
                 String[] ingredientProperties = ingredient.split("\t");
                 Double quantity = Double.parseDouble(ingredientProperties[0]);
                 String unit = ingredientProperties[1];
@@ -85,14 +85,14 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         }
     }
 
-    private static void setRecipeSteps(){
+    private static void setRecipeSteps() {
         String allRecipeSteps = initializeStepsString();
         String[] stepsPerRecipe = allRecipeSteps.split("\n\n");
-        for(int i = 0; i < stepsPerRecipe.length; i++){
+        for (int i = 0; i < stepsPerRecipe.length; i++) {
             String[] recipeStepsString = stepsPerRecipe[i].split("\n");
 
             List<RecipeStep> recipeSteps = new ArrayList<>();
-            for(String stepString : recipeStepsString){
+            for (String stepString : recipeStepsString) {
                 RecipeStep recipeStep = new RecipeStep(stepString);
                 recipeSteps.add(recipeStep);
             }
@@ -100,23 +100,22 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         }
     }
 
-    private static List<List<List<Ingredient>>> getCorrectIngredientsPerRecipe(){
+    private static List<List<List<Ingredient>>> getCorrectIngredientsPerRecipe() {
         List<List<List<Ingredient>>> correctIngredients = new ArrayList<>();
         String allStepIngredients = initializeCorrectIngredientsInStepsString();
         String[] stepIngredientsPerRecipe = allStepIngredients.split("\n\n\n");
-        for(int i = 0; i < stepIngredientsPerRecipe.length; i++){
+        for (int i = 0; i < stepIngredientsPerRecipe.length; i++) {
 
             List<List<Ingredient>> correctIngredientsPerStep = new ArrayList<>();
 
             String[] ingredientsPerStep = stepIngredientsPerRecipe[i].split("\n\n");
-            for(int x = 0; x < ingredientsPerStep.length; x++){
+            for (int x = 0; x < ingredientsPerStep.length; x++) {
                 if (ingredientsPerStep[x].equals("NO_INGREDIENTS")) {
                     correctIngredientsPerStep.add(new ArrayList<>());
-                }
-                else{
+                } else {
                     List<Ingredient> correctIngredientsForStep = new ArrayList<>();
                     String[] ingredientsForStep = ingredientsPerStep[x].split("\n");
-                    for(int y = 0; y < ingredientsForStep.length; y++){
+                    for (int y = 0; y < ingredientsForStep.length; y++) {
                         String[] ingredientProperties = ingredientsForStep[y].split("\t");
                         Double quantity = Double.parseDouble(ingredientProperties[0]);
                         String unit = ingredientProperties[1];
@@ -134,34 +133,12 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         return correctIngredients;
     }
 
-    @Test
-    public void DetectIngredientsInStepTask_doTask_AccuracyForQuantityThreshold(){
-        // Arrange
-        int correctQuantities = 0;
-        for(int r = 0; r < rips.size(); r++){
-            List<List<Ingredient>> correctRecipe = correctIngredientsPerRecipe.get(r);
-
-            for(int s = 0; s < rips.get(r).getRecipeSteps().size(); s++){
-
-                List<Ingredient> correctStepIngredients = correctRecipe.get(s);
-                Set<Ingredient> detectedStepIngredients = rips.get(r).getRecipeSteps().get(s).getIngredients();
-
-                 // Compare detected ingredients with correct ingredients
-                correctQuantities += equalQuantities(correctStepIngredients, detectedStepIngredients);
-            }
-        }
-
-        // Assert
-        double accuracy = (double) correctQuantities / totalIngredients;
-        assert(accuracy > 0.85);
-    }
-
-    private static int equalQuantities(List<Ingredient> correctIngredients, Set<Ingredient> detectedIngredients){
+    private static int equalQuantities(List<Ingredient> correctIngredients, Collection<Ingredient> detectedIngredients) {
         int equalQuantities = 0;
-        for(Ingredient detectedIngr : detectedIngredients){
-            for(Ingredient correctIngr : correctIngredients){
-                if(correctIngr.getName().equals(detectedIngr.getName())){
-                    if(correctIngr.getAmount().getValue() == detectedIngr.getAmount().getValue()){
+        for (Ingredient detectedIngr : detectedIngredients) {
+            for (Ingredient correctIngr : correctIngredients) {
+                if (correctIngr.getName().equals(detectedIngr.getName())) {
+                    if (correctIngr.getAmount().getValue() == detectedIngr.getAmount().getValue()) {
                         equalQuantities += 1;
                     }
                 }
@@ -170,49 +147,30 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         return equalQuantities;
     }
 
-
-    @Test
-    public void DetectIngredientsInStepTask_doTask_AccuracyForUnitThreshold(){
-        // Arrange
-        int correctUnits = 0;
-        for(int r = 0; r < rips.size(); r++){
-            List<List<Ingredient>> correctRecipe = correctIngredientsPerRecipe.get(r);
-
-            for(int s = 0; s < rips.get(r).getRecipeSteps().size(); s++){
-
-                List<Ingredient> correctStepIngredients = correctRecipe.get(s);
-                Set<Ingredient> detectedStepIngredients = rips.get(r).getRecipeSteps().get(s).getIngredients();
-
-                // Compare detected ingredients with correct ingredients
-                correctUnits += equalUnits(correctStepIngredients, detectedStepIngredients);
-            }
-        }
-
-        // Assert
-        double accuracy = (double) correctUnits / totalIngredients;
-        assert(accuracy > 0.85);
-    }
-
-    private static int equalUnits(List<Ingredient> correctIngredients, Set<Ingredient> detectedIngredients){
+    private static int equalUnits(List<Ingredient> correctIngredients, Collection<Ingredient> detectedIngredients) {
         int equalUnits = 0;
-        for(Ingredient detectedIngr : detectedIngredients){
-            for(Ingredient correctIngr : correctIngredients){
-                if(correctIngr.getName().equals(detectedIngr.getName())){
-                    if(correctIngr.getAmount().getUnit().equals(detectedIngr.getAmount().getUnit())){
-                        equalUnits += 1;
-                    }
+        int index = 0;
+        for (Ingredient detectedIngr : detectedIngredients) {
+            for (Ingredient correctIngr : correctIngredients) {
+                if (correctIngr.getName().equals(detectedIngr.getName()) &&
+                        correctIngr.getUnit().equals(detectedIngr.getUnit())) {
+
+                    equalUnits += 1;
+                } else if (correctIngr.getName().equals(detectedIngr.getName())){
+                System.out.println(index + ": " + correctIngr + "  " + detectedIngr);
+
                 }
+                index++;
             }
         }
         return equalUnits;
     }
 
-
-    private static String initializeCorrectIngredientsInStepsString(){
+    private static String initializeCorrectIngredientsInStepsString() {
         return ("NO_INGREDIENTS\n" +
                 "\n" +
                 "1.0\t\tchopped onion\n" +
-                "1.0\t\tunsalted butter\n" +
+                "1.0\ttablespoon\tunsalted butter\n" +
                 "\n" +
                 "1.0\t\tsalt\n" +
                 "1.0\t\tbaking soda\n" +
@@ -1199,7 +1157,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "\n" +
                 "\n" +
                 "1.0\t\tangel food cake\n" +
-                "1.0\t\tSeven Minute Frosting\n" +
+                "1.0\tcup\tSeven Minute Frosting\n" +
                 "1.0\t\tcake plate\n" +
                 "1.0\t\tSmall offset spatula\n" +
                 "\n" +
@@ -1212,10 +1170,11 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tAssorted eggcups\n" +
                 "1.0\t\tDisposable decorating bag\n" +
                 "\n" +
-                "\n");
+                "\n"
+        );
     }
 
-    private static String initializeStepsString(){
+    private static String initializeStepsString() {
         return ("Preheat oven to 400 degrees F (205 degrees C). Butter a 9x9x2 inch baking pan.\n" +
                 "Melt 1 tablespoon butter in medium nonstick skillet over medium-low heat. " +
                 "Add onion and saute until tender, about 10 minutes. Cool.\n" +
@@ -1930,7 +1889,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "\n" +
                 "1. Place the tomatoes, garlic, salt, paprika, tomato paste, " +
                 "and vegetable oil in a small saucepan. Bring to a simmer and cook, " +
-                 "uncovered, over low heat until thick, for about 30 minutes, stirring occasionally.\n" +
+                "uncovered, over low heat until thick, for about 30 minutes, stirring occasionally.\n" +
                 "2. Ladle the tomato sauce into a greased 12-inch frying pan. " +
                 "Bring to a simmer and break the eggs over the tomatoes. " +
                 "Gently break the yolks with a fork. Cover and continue to cook for about 3 to 4 minutes, " +
@@ -2006,7 +1965,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "Discard any leftovers. Store frosted cake in a cool, dry place until ready to serve.\n" +
                 "\n" +
                 "1. With a mixer on medium speed, beat together the shortening, vanilla extract, " +
-                 "and lemon extract in a medium bowl for 30 seconds.\n" +
+                "and lemon extract in a medium bowl for 30 seconds.\n" +
                 "2. Slowly add half the confectioners' sugar, beating well. Beat in 2 tablespoons of the milk. " +
                 "Gradually beat in the remaining powdered sugar and enough of the remaining milk " +
                 "until the icing reaches a spreadable consistency. " +
@@ -2025,8 +1984,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "\n");
     }
 
-
-    private static String initializeIngredientsString(){
+    private static String initializeIngredientsString() {
         return ("0.5\tcup\tunsalted butter\n" +
                 "1.0\tcup\tchopped onion\n" +
                 "1.75\tcups\tcornmeal\n" +
@@ -2504,6 +2462,51 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tSmall offset spatula\n" +
                 "1.0\t\tDisposable decorating bag\n" +
                 "1.0\t\tAssorted eggcups");
+    }
+
+    @Test
+    public void DetectIngredientsInStepTask_doTask_AccuracyForQuantityThreshold() {
+        // Arrange
+        int correctQuantities = 0;
+        for (int r = 0; r < rips.size(); r++) {
+            List<List<Ingredient>> correctRecipe = correctIngredientsPerRecipe.get(r);
+
+            for (int s = 0; s < rips.get(r).getRecipeSteps().size(); s++) {
+
+                List<Ingredient> correctStepIngredients = correctRecipe.get(s);
+                Collection<Ingredient> detectedStepIngredients = rips.get(r).getRecipeSteps().get(s).getIngredients();
+
+                // Compare detected ingredients with correct ingredients
+                correctQuantities += equalQuantities(correctStepIngredients, detectedStepIngredients);
+            }
+        }
+
+        // Assert
+        double accuracy = (double) correctQuantities / totalIngredients;
+        assert (accuracy > 0.85);
+    }
+
+    @Test
+    public void DetectIngredientsInStepTask_doTask_AccuracyForUnitThreshold() {
+        // Arrange
+        int correctUnits = 0;
+        for (int r = 0; r < rips.size(); r++) {
+            List<List<Ingredient>> correctRecipe = correctIngredientsPerRecipe.get(r);
+
+            for (int s = 0; s < rips.get(r).getRecipeSteps().size(); s++) {
+
+                List<Ingredient> correctStepIngredients = correctRecipe.get(s);
+                Collection<Ingredient> detectedStepIngredients = rips.get(r).getRecipeSteps().get(s).getIngredients();
+                System.out.println("Recipe: " + r + ", step: " + s);
+                // Compare detected ingredients with correct ingredients
+                correctUnits += equalUnits(correctStepIngredients, detectedStepIngredients);
+                System.out.println("------------------------------------");
+            }
+        }
+
+        // Assert
+        double accuracy = (double) correctUnits / totalIngredients;
+        assert (accuracy > 0.85);
     }
 
 }

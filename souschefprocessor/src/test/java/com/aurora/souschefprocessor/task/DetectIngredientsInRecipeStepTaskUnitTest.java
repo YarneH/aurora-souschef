@@ -12,6 +12,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -97,7 +98,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
         Ingredient ingredientNoQuantity = null;
         Ingredient ingredientNoUnit = null;
-        Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
+        Collection<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
         for (Ingredient ingr : stepIngredients) {
             if (ingr.getName().equals(stepIngredientNoQuantity.getName())) {
                 ingredientNoQuantity = ingr;
@@ -144,7 +145,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         // Act
         detector0.doTask();
 
-        Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(0).getIngredients();
+        Collection<Ingredient> stepIngredients = recipe.getRecipeSteps().get(0).getIngredients();
 
         // Assert
         assert(stepIngredients.contains(stepIngredient));
@@ -158,7 +159,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         // Act
         detector1.doTask();
 
-        Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(1).getIngredients();
+        Collection<Ingredient> stepIngredients = recipe.getRecipeSteps().get(1).getIngredients();
 
         // Assert
         assert(stepIngredients.contains(stepIngredient));
@@ -172,7 +173,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         // Act
         detector2.doTask();
 
-        Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
+        Collection<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
 
         // Assert
         assert(stepIngredients.contains(stepIngredient));
@@ -186,7 +187,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         // Act
         detector2.doTask();
 
-        Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
+        List<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
 
         // Assert
         assert (stepIngredients.contains(stepIngredient));
@@ -205,7 +206,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         detector2.doTask();
 
         // Retrieve the sauce ingredient detected in the recipe step
-        Set<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
+        Collection<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
         Ingredient detectedIngredient = null;
         for (Ingredient ingr : stepIngredients) {
             if (ingr.equals(stepIngredient)) {
@@ -221,10 +222,22 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
 
     @Test
-    public void differ(){
-        String aaa= "fettucine";
-        String b = "fettuccine";
-        assert(detector0.differInOneErasure(aaa, b));
+    public void newTest(){
+        RecipeStep step = new RecipeStep("Add one tablespoon of melted butter");
+        RecipeInProgress rip = new RecipeInProgress("");
+        ListIngredient ing = new ListIngredient("butter", "", 1.0, "  ",irrelevantPositions);
+        ArrayList<ListIngredient> list = new ArrayList<>();
+        list.add(ing);
+        rip.setIngredients(list);
+        ArrayList<RecipeStep> stepList = new ArrayList<>();
+        stepList.add(step);
+        rip.setRecipeSteps(stepList);
+
+        DetectIngredientsInStepTask task = new DetectIngredientsInStepTask(rip, 0);
+        task.doTask();
+        System.out.println(step);
+        assert(step.getIngredients().get(0).getUnit().equals("tablespoon"));
+
     }
 
 

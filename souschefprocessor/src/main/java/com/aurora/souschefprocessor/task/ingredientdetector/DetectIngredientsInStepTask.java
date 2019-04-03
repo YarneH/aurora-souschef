@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -98,6 +97,9 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * <a href="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">The PennTreeBankProject</a>
      */
     private static final String[] TAGS_TO_IGNORE = {"TO", "IN", "JJ", "JJR", "JJS"};
+
+    private static final String[] COMMON_UNITS = {"cup", "cups", "tablespoon", "tablespoons", "gram", "ounce",
+            "ounces", "pound", "pounds", "teaspoon", "teaspoons", "kg", "ml", "kilogram", "gram"};
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
@@ -123,6 +125,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * The step on which to do the detecting of ingredients
      */
     private RecipeStep mRecipeStep;
+    private HashSet<String> mNamesOfListIngredients;
 
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
@@ -250,7 +253,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @param string2 the second string
      * @return a boolean indicating whether these strings differ in one erasure
      */
-    public static boolean differInOneErasure(String string1, String string2) {
+    private static boolean differInOneErasure(String string1, String string2) {
         // check for one erasure
 
         int string2Length = string2.length();
@@ -278,7 +281,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     public void doTask() {
         List<ListIngredient> ingredientListRecipe = mRecipeInProgress.getIngredients();
-        Set<Ingredient> ingredientSet = detectIngredients(mRecipeStep, ingredientListRecipe);
+        initializeNamesOfListIngredientsSet(ingredientListRecipe);
+        List<Ingredient> ingredientSet = detectIngredients(mRecipeStep, ingredientListRecipe);
         for (Ingredient ing : ingredientSet) {
             // make sure all the positions are legal and not longer than the length of the description
             ing.trimPositionsToString(mRecipeStep.getDescription());
@@ -286,13 +290,21 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         mRecipeStep.setIngredients(ingredientSet);
     }
 
+    private void initializeNamesOfListIngredientsSet(List<ListIngredient> list) {
+        mNamesOfListIngredients = new HashSet<>();
+        for (ListIngredient ing : list) {
+            String[] parts = ing.getName().replace(",", "").split(" ");
+            mNamesOfListIngredients.addAll(Arrays.asList(parts));
+        }
+    }
+
     /**
      * Waits  until the sAnnotationPipeline is created
      */
     private void waitForPipeline() {
+        // wait as long as the pipeline object is null
         while (sAnnotationPipeline == null) {
             try {
-
                 synchronized (LOCK) {
                     LOCK.wait();
                 }
@@ -311,8 +323,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @param ingredientListRecipe The set of mIngredients contained in the recipe of which the recipeStep is a part
      * @return A set of Ingredient objects that represent the mIngredients contained in the recipeStep
      */
-    private Set<Ingredient> detectIngredients(RecipeStep recipeStep, List<ListIngredient> ingredientListRecipe) {
-        Set<Ingredient> set = new HashSet<>();
+    private List<Ingredient> detectIngredients(RecipeStep recipeStep, List<ListIngredient> ingredientListRecipe) {
+        List<Ingredient> set = new ArrayList<>();
 
         waitForPipeline();
 
@@ -374,6 +386,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private boolean doNotIgnoreToken(CoreLabel token) {
         String tokenText = token.originalText();
+
         if (!doNotIgnoreString(tokenText)) {
             // if the string of the token should be ignored, the whole token should be ignored
             // so return false
@@ -419,7 +432,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * in the recipeStep and returns the amount of used words
      *
      * @param tokens    Tokens in in the recipe step
-     * @param nameParts Separated words of the list ingredient it's name
+     * @param nameParts Separated words of the list ingredient's name
      * @return the amount of additional separated words used in the recipe step
      */
     private int succeedingNameLength(int tokenIndex, List<CoreLabel> tokens, List<String> nameParts) {
@@ -472,7 +485,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             Position unitPos = findUnitPosition(precedingTokens, listIngredient.getUnit());
             if (unitPos != null) {
                 stepIngredient.setUnitPosition(unitPos);
-                stepAmount.setUnit(listIngredient.getUnit());
+                stepAmount.setUnit(mRecipeStep.getDescription().substring(unitPos.getBeginIndex(), unitPos.getEndIndex()));
+
             }
             double listQuantity = listIngredient.getAmount().getValue();
             Pair<Position, Double> quantityPair = findQuantityPositionAndValue(precedingTokens, listQuantity);
@@ -595,6 +609,15 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         return new Pair<>(tokenIsQuantity, quantityMultiplier);
     }
 
+
+    private boolean stopSearchingForUnit(CoreLabel token) {
+        if (token.originalText().contains(",")) {
+            return true;
+        }
+        return mNamesOfListIngredients.contains(token.originalText().replace(",",""));
+
+    }
+
     /**
      * Finds the position of unit tokens in the recipe step
      *
@@ -612,23 +635,38 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         Morphology singularMorph = new Morphology();
         String[] unitParts = unit.split(" ");
         List<String> unitPartsWithSingulars = new ArrayList<>();
-        for (int i = 0; i < unitParts.length; i++) {
-            unitPartsWithSingulars.add(unitParts[i]);
-            unitPartsWithSingulars.add(singularMorph.stem(unitParts[i]));
+        for (String unitPart : unitParts) {
+            unitPartsWithSingulars.add(unitPart);
+            unitPartsWithSingulars.add(singularMorph.stem(unitPart));
+
         }
 
+        // Add common units to the possible unit names
+        unitPartsWithSingulars.addAll(Arrays.asList(COMMON_UNITS));
+
         // TODO add additional condition that it should stop when no more unit strings are found
-        // TODO for e.g. add one tablespoon of melted better
-        // TODO this means first skipping the determiners and adjectives such as melted
         int i = precedingTokens.size() - 1;
         while (i > 0) {
-            if (unitPartsWithSingulars.contains(precedingTokens.get(i).originalText())) {
-                unitTokens.add(precedingTokens.get(i));
+            if (stopSearchingForUnit(precedingTokens.get(i))) {
+                i = 0;
             }
-            i--;
+            if (doNotIgnoreToken(precedingTokens.get(i)) &&
+                    unitPartsWithSingulars.contains(precedingTokens.get(i).originalText())) {
+                unitTokens.add(precedingTokens.get(i));
+                i--;
+            } else if (!unitTokens.isEmpty()) {
+                // previous unit words were found and this is not a unit anymore, this means
+                // it is time to stop
+                i = 0;
+
+            } else {
+                i--;
+            }
+
         }
 
         if (!unitTokens.isEmpty()) {
+
             int unitStart = unitTokens.get(0).beginPosition();
             int unitEnd = unitTokens.get(unitTokens.size() - 1).endPosition();
             return new Position(unitStart, unitEnd);

@@ -21,11 +21,11 @@ public class RecipeStep {
     /**
      * A set of {@link Ingredient}s that were detected in this step
      */
-    private Set<Ingredient> mIngredients = new HashSet<>();
+    private List<Ingredient> mIngredients;
     /**
      * A list of {@link RecipeTimer}s that were detected in this step (in order)
      */
-    private List<RecipeTimer> mRecipeTimers = new ArrayList<>();
+    private List<RecipeTimer> mRecipeTimers;
     /**
      * The original description of this step. This is the string where timers and ingredients have been
      * detected in
@@ -48,18 +48,17 @@ public class RecipeStep {
     /**
      * Construct a step using the description that can be used to detect ingredients and timers
      *
-     * @param description
+     * @param description the description of this step
      */
-
     public RecipeStep(String description) {
         this.mDescription = description;
-        this.mIngredients = new HashSet<>();
+        this.mIngredients = new ArrayList<>();
         this.mRecipeTimers = new ArrayList<>();
         this.mIngredientDetectionDone = false;
         this.mTimerDetectionDone = false;
     }
 
-    public synchronized Set<Ingredient> getIngredients() {
+    public synchronized List<Ingredient> getIngredients() {
         return mIngredients;
     }
 
@@ -70,7 +69,7 @@ public class RecipeStep {
      *
      * @param ingredients The set to set as ingredients
      */
-    public synchronized void setIngredients(Set<Ingredient> ingredients) {
+    public synchronized void setIngredients(List<Ingredient> ingredients) {
         mIngredients.clear();
         if (ingredients != null) {
             for (Ingredient ingredient : ingredients) {
@@ -95,7 +94,7 @@ public class RecipeStep {
             try {
                 if (ingredient.arePositionsLegalInString(mDescription)) {
                     if (this.mIngredients == null) {
-                        this.mIngredients = new HashSet<>();
+                        this.mIngredients = new ArrayList<>();
                     }
                     this.mIngredients.add(ingredient);
                 } else {

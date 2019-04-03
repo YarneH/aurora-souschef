@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
     @Override
     public void onAmountOfPeopleChanged(int newAmount) {
-        ((Tab3Steps) mSectionsPagerAdapter.getItem(TAB_STEPS)).setText("" + newAmount);
+        ((Tab3Steps) mSectionsPagerAdapter.getItem(TAB_STEPS)).setNewAmount(newAmount);
     }
 
     class ProgressUpdate extends AsyncTask<Void, Integer, Void> {
@@ -268,8 +268,6 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
             comm.process(text);
             publishProgress("Done!");
             return comm.getRecipe();
-
-
         }
 
         @Override
@@ -298,8 +296,6 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
             appBarLayout.setVisibility(View.VISIBLE);
             mViewPager.setVisibility(View.VISIBLE);
             tabLayout.setVisibility(View.VISIBLE);
-
-
         }
     }
 

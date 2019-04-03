@@ -247,7 +247,7 @@ public class DetectIngredientsInListTaskUnitTest {
         recipe.setIngredientsString("5 free-range eggs\n" + //free-range is not a unit but part of the name
                 "1 large red bell pepper, cut into 3/4-inch-thick strips"); // large is not a unit
         Ingredient eggsIngredient = new ListIngredient("free-range eggs", "", 5, "irrelevant", irrelevantPositions);
-        Ingredient pepperIngredient = new ListIngredient("red bell pepper", "", 1, "irrelevant", irrelevantPositions);
+        Ingredient pepperIngredient = new ListIngredient("large red bell pepper", "", 1, "irrelevant", irrelevantPositions);
 
         // Act
         detector.doTask();

@@ -17,8 +17,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -30,7 +30,6 @@ import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.process.Morphology;
 import edu.stanford.nlp.util.CoreMap;
 
-// TODO add exceptions for illegal arguments and add tests for these exceptions
 
 /**
  * Detects the mIngredients in the list of mIngredients
@@ -83,7 +82,23 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * A lock to ensure the only one thread accesses the {@link #sAnnotationPipeline} at the same time
      * and that the pipeline is only created once
      */
-    private static final Object LOCK = new Object();
+    private static final Object LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE = new Object();
+
+    /**
+     * An array of strings that should be ignored when looking for matches between the ingredientlist and
+     * the step description
+     */
+    private static final String[] STRINGS_TO_IGNORE = {"to", "all", "or", "and", "with", ".", ",",
+            "(", ")", "warm", "cold", "!"};
+    /**
+     * An array of tags that should be ignored when looking for matches between the ingredientlist and
+     * the step description. For the meaning of these tags checkout
+     * <a href="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">The PennTreeBankProject</a>
+     */
+    private static final String[] TAGS_TO_IGNORE = {"TO", "IN", "JJ", "JJR", "JJS"};
+
+    private static final String[] COMMON_UNITS = {"cup", "cups", "tablespoon", "tablespoons", "gram", "ounce",
+            "ounces", "pound", "pounds", "teaspoon", "teaspoons", "kg", "ml", "kilogram", "gram"};
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
@@ -109,7 +124,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * The step on which to do the detecting of ingredients
      */
     private RecipeStep mRecipeStep;
-    private int mStepIndex;
+    private HashSet<String> mNamesOfListIngredients;
 
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
         super(recipeInProgress);
@@ -122,28 +137,26 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
         this.mRecipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
 
-        sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
-        sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
     }
 
     /**
-     * Initializes the AnnotationPipeline, should be called before using the first detector. It also
-     * checks if no other thread has already started to create the pipeline
+     * Initializes the AnnotationPipeline for ingredients, should be called before using the first detector.
+     * It also checks if no other thread has already started to create the pipeline
      */
     public static void initializeAnnotationPipeline() {
         Thread initialize = new Thread(() -> {
-            synchronized (LOCK) {
+            synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
                 if (startedCreatingPipeline) {
-                    // creating already started or finished -> do not start again
+                    // creating already started or finished  so do not start again
                     return;
                 }
                 // ensure no other thread can initialize
                 startedCreatingPipeline = true;
             }
             sAnnotationPipeline = createIngredientAnnotationPipeline();
-            synchronized (LOCK) {
+            synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
                 // get the lock again to notify that the pipeline has been created
-                LOCK.notifyAll();
+                LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.notifyAll();
             }
         });
         initialize.start();
@@ -171,25 +184,128 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         return pipeline;
     }
 
+    /**
+     * Checks if a string should be ignored (if it is contained in the {@link #STRINGS_TO_IGNORE}
+     * list
+     *
+     * @param string the string to check
+     * @return false if the string should be ignored, true if the string should not be ignored
+     */
+    private static boolean doNotIgnoreString(String string) {
+        for (String ignore : STRINGS_TO_IGNORE) {
+            if (string.equalsIgnoreCase(ignore)) {
+                // if the string is contained in de STRINGS_TO_IGNORE array then ignore this string
+                // and return false
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if the difference is just in one erased character and not a completely different word
+     *
+     * @param shortest the shortest string (its length is smaller than the longest)
+     * @param longest  the longest string
+     * @return a boolean indicating if the difference is one erased character or not
+     */
+    private static boolean differenceIsOneErasedCharacter(String shortest, String longest) {
+        int shortLength = shortest.length();
+
+        // check if longest just contains an extra character at the back
+        // to bypass the loop
+        if (longest.substring(0, shortLength).equalsIgnoreCase(shortest)) {
+            return true;
+        }
+
+        // a boolean to indicate if one difference has been found
+        boolean difFound = false;
+        // the character of the shortest string
+        char shortChar;
+        // the character of the longest string
+        char longChar;
+        for (int i = 0; i < shortLength; i++) {
+            shortChar = shortest.charAt(i);
+            if (!difFound) {
+                // if no difference found yet check the character at the same index
+                longChar = longest.charAt(i);
+                // if they are unequal a difference has been found
+                difFound = longChar != shortChar;
+            }
+            if (difFound) {
+                // if one difference has been found check the character after this character
+                longChar = longest.charAt(i + 1);
+                if (longChar != shortChar) {
+                    // second difference found
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if two strings only differ in the fact that one character is not present to catch
+     * plurals (e.g "onion" and "onions" and spelling mistakes "fettuccine" and "fettucine"
+     *
+     * @param string1 the first string
+     * @param string2 the second string
+     * @return a boolean indicating whether these strings differ in one erasure
+     */
+    private static boolean differInOneErasure(String string1, String string2) {
+        // check for one erasure
+
+        int string2Length = string2.length();
+        int string1Length = string1.length();
+        int lengthDif = string1Length - string2Length;
+
+        // start with this initialization, if needed they will be swapped
+        String longest = string2;
+        String shortest = string1;
+        // One erasure is only possible when the difference in lenght is 1
+        if (Math.abs(lengthDif) == 1) {
+            // get the shortest and longest
+            // lengthDif is string1Length - string2Length
+            if (lengthDif > 0) {
+                longest = string1;
+                shortest = string2;
+            }
+            return differenceIsOneErasedCharacter(shortest, longest);
+        }
+        return false;
+    }
 
     /**
      * Detects the mIngredients for each recipeStep
      */
     public void doTask() {
         List<ListIngredient> ingredientListRecipe = mRecipeInProgress.getIngredients();
-        Set<Ingredient> iuaSet = detectIngredients(mRecipeStep, ingredientListRecipe);
-        mRecipeStep.setIngredients(iuaSet);
+        initializeNamesOfListIngredientsSet(ingredientListRecipe);
+        List<Ingredient> ingredientSet = detectIngredients(mRecipeStep, ingredientListRecipe);
+        for (Ingredient ing : ingredientSet) {
+            // make sure all the positions are legal and not longer than the length of the description
+            ing.trimPositionsToString(mRecipeStep.getDescription());
+        }
+        mRecipeStep.setIngredients(ingredientSet);
+    }
+
+    private void initializeNamesOfListIngredientsSet(List<ListIngredient> list) {
+        mNamesOfListIngredients = new HashSet<>();
+        for (ListIngredient ing : list) {
+            String[] parts = ing.getName().replace(",", "").split(" ");
+            mNamesOfListIngredients.addAll(Arrays.asList(parts));
+        }
     }
 
     /**
      * Waits  until the sAnnotationPipeline is created
      */
     private void waitForPipeline() {
+        // wait as long as the pipeline object is null
         while (sAnnotationPipeline == null) {
             try {
-
-                synchronized (LOCK) {
-                    LOCK.wait();
+                synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
+                    LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.wait();
                 }
             } catch (InterruptedException e) {
                 Log.d("Interrupted", "detecttimer", e);
@@ -206,8 +322,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @param ingredientListRecipe The set of mIngredients contained in the recipe of which the recipeStep is a part
      * @return A set of Ingredient objects that represent the mIngredients contained in the recipeStep
      */
-    private Set<Ingredient> detectIngredients(RecipeStep recipeStep, List<ListIngredient> ingredientListRecipe) {
-        Set<Ingredient> set = new HashSet<>();
+    private List<Ingredient> detectIngredients(RecipeStep recipeStep, List<ListIngredient> ingredientListRecipe) {
+        List<Ingredient> set = new ArrayList<>();
 
         waitForPipeline();
 
@@ -215,7 +331,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         // Necessary in case only a certain word of the list ingredient is used to describe it in the step
         HashMap<ListIngredient, List<String>> ingredientListMap = new HashMap<>();
         for (ListIngredient listIngr : ingredientListRecipe) {
-            ingredientListMap.put(listIngr, Arrays.asList(listIngr.getName().toLowerCase().split(" ")));
+            ingredientListMap.put(listIngr, Arrays.asList(listIngr.getName().toLowerCase(Locale.ENGLISH)
+                    .replace(",", "").split(" ")));
         }
 
         // Keeps track of already found ListIngredients in case the ingredient
@@ -240,7 +357,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                     Ingredient listIngredient = entry.getKey();
 
                     // Found name of an ingredient from the list of ingredients
-                    if (nameParts.contains(tokens.get(tokenIndex).originalText())
+                    if (tokenIsContainedInNameParts(tokens.get(tokenIndex), nameParts)
                             && !foundIngredients.contains(listIngredient)) {
                         foundIngredients.add(listIngredient);
                         set.add(getStepIngredient(tokenIndex, nameParts, listIngredient, tokens));
@@ -260,11 +377,61 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     }
 
     /**
+     * Checks if a string should be ignored (if it is contained in the {@link #STRINGS_TO_IGNORE}
+     * list or it is an adjective
+     *
+     * @param token the token to check
+     * @return false if the token should be ignored, true if the token should not be ignored
+     */
+    private boolean doNotIgnoreToken(CoreLabel token) {
+        String tokenText = token.originalText();
+
+        if (!doNotIgnoreString(tokenText)) {
+            // if the string of the token should be ignored, the whole token should be ignored
+            // so return false
+            return false;
+        }
+        for (String tagToIgnore : TAGS_TO_IGNORE) {
+            if (token.tag().equals(tagToIgnore)) {
+                return false;
+            }
+        }
+        return true;
+
+
+    }
+
+    /**
+     * Checks if the token is contained in the nameParts and if this is relevant (not part of the
+     * {@link #TAGS_TO_IGNORE} or {@link #STRINGS_TO_IGNORE} arrays). It will also be contained
+     * if the token differs with a namePart in one erasure see {@link #differInOneErasure(String, String)}
+     * this is needed to detect that "onion" refers to "onions" and to correct some spelling mistakes
+     *
+     * @param token     the token to check
+     * @param nameParts the list of nameStrings to check
+     * @return true if the token is contained
+     */
+    private boolean tokenIsContainedInNameParts(CoreLabel token, List<String> nameParts) {
+        String tokenText = token.originalText().toLowerCase(Locale.ENGLISH);
+
+        if (doNotIgnoreToken((token))) {
+            for (String part : nameParts) {
+                if (doNotIgnoreString(part) &&
+                        (part.equalsIgnoreCase(tokenText) || differInOneErasure(tokenText, part))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+    /**
      * Checks if there are multiple words used to represent the ingredient
      * in the recipeStep and returns the amount of used words
      *
      * @param tokens    Tokens in in the recipe step
-     * @param nameParts Separated words of the list ingredient it's name
+     * @param nameParts Separated words of the list ingredient's name
      * @return the amount of additional separated words used in the recipe step
      */
     private int succeedingNameLength(int tokenIndex, List<CoreLabel> tokens, List<String> nameParts) {
@@ -317,7 +484,9 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             Position unitPos = findUnitPosition(precedingTokens, listIngredient.getUnit());
             if (unitPos != null) {
                 stepIngredient.setUnitPosition(unitPos);
-                stepAmount.setUnit(listIngredient.getUnit());
+                stepAmount.setUnit(mRecipeStep.getDescription().substring(unitPos.getBeginIndex(),
+                        unitPos.getEndIndex()));
+
             }
             double listQuantity = listIngredient.getAmount().getValue();
             Pair<Position, Double> quantityPair = findQuantityPositionAndValue(precedingTokens, listQuantity);
@@ -440,6 +609,15 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         return new Pair<>(tokenIsQuantity, quantityMultiplier);
     }
 
+
+    private boolean stopSearchingForUnit(CoreLabel token) {
+        if (token.originalText().contains(",")) {
+            return true;
+        }
+        return mNamesOfListIngredients.contains(token.originalText().replace(",", ""));
+
+    }
+
     /**
      * Finds the position of unit tokens in the recipe step
      *
@@ -457,23 +635,38 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         Morphology singularMorph = new Morphology();
         String[] unitParts = unit.split(" ");
         List<String> unitPartsWithSingulars = new ArrayList<>();
-        for (int i = 0; i < unitParts.length; i++) {
-            unitPartsWithSingulars.add(unitParts[i]);
-            unitPartsWithSingulars.add(singularMorph.stem(unitParts[i]));
+        for (String unitPart : unitParts) {
+            unitPartsWithSingulars.add(unitPart);
+            unitPartsWithSingulars.add(singularMorph.stem(unitPart));
+
         }
 
+        // Add common units to the possible unit names
+        unitPartsWithSingulars.addAll(Arrays.asList(COMMON_UNITS));
+
         // TODO add additional condition that it should stop when no more unit strings are found
-        // TODO for e.g. add one tablespoon of melted better
-        // TODO this means first skipping the determiners and adjectives such as melted
         int i = precedingTokens.size() - 1;
         while (i > 0) {
-            if (unitPartsWithSingulars.contains(precedingTokens.get(i).originalText())) {
-                unitTokens.add(precedingTokens.get(i));
+            if (stopSearchingForUnit(precedingTokens.get(i))) {
+                i = 0;
             }
-            i--;
+            if (doNotIgnoreToken(precedingTokens.get(i)) &&
+                    unitPartsWithSingulars.contains(precedingTokens.get(i).originalText())) {
+                unitTokens.add(precedingTokens.get(i));
+                i--;
+            } else if (!unitTokens.isEmpty()) {
+                // previous unit words were found and this is not a unit anymore, this means
+                // it is time to stop
+                i = 0;
+
+            } else {
+                i--;
+            }
+
         }
 
         if (!unitTokens.isEmpty()) {
+
             int unitStart = unitTokens.get(0).beginPosition();
             int unitEnd = unitTokens.get(unitTokens.size() - 1).endPosition();
             return new Position(unitStart, unitEnd);

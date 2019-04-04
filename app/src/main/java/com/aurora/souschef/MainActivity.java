@@ -64,49 +64,28 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
      * @return a recipe text
      */
     private static String getText() {
-        return "Yield\n" +
-                "    4 servings\n" +
-                "Active Time\n" +
-                "    30 minutes\n" +
-                "Total Time\n" +
-                "    35 minutes\n" +
+        return "4 people\n" +
                 "\n" +
                 "Ingredients\n" +
                 "\n" +
-                "        1 lb. linguine or other long pasta\n" +
-                "        Kosher salt\n" +
-                "        1 (14-oz.) can diced tomatoes\n" +
-                "        1/2 cup extra-virgin olive oil, divided\n" +
-                "        1/4 cup capers, drained\n" +
-                "        6 oil-packed anchovy fillets\n" +
-                "        1 Tbsp. tomato paste\n" +
-                "        1/3 cup pitted Kalamata olives, halved\n" +
-                "        2 tsp. dried oregano\n" +
-                "        1/2 tsp. crushed red pepper flakes\n" +
-                "        6 oz. oil-packed tuna\n" +
+                "    150 g pure chocolade 78%\n" +
+                "    2 large eggs\n" +
+                "    50 g witte basterdsuiker\n" +
+                "    200 ml verse slagroom\n" +
                 "\n" +
-                "Preparation\n" +
+                "Directions\n" +
                 "\n" +
-                "        Cook pasta in a large pot of boiling salted water, stirring " +
-                "occasionally, until al dente. Drain pasta, reserving 1 cup pasta cooking " +
-                "liquid; return pasta to pot.\n" +
-                "        While pasta cooks, pour tomatoes into a fine-mesh sieve set over " +
-                "a medium bowl. Shake to release as much juice as possible, then let tomatoes " +
-                "drain in sieve, collecting juices in bowl, until ready to use.\n" +
-                "        Heat 1/4 cup oil in a large deep-sided skillet over medium-high. " +
-                "Add capers and cook, swirling pan occasionally, until they burst and are " +
-                "crisp, about 3 minutes. Using a slotted spoon, transfer capers to a paper " +
-                "towel-lined plate, reserving oil in skillet.\n" +
-                "        Combine anchovies, tomato paste, and drained tomatoes in skillet. " +
-                "Cook over medium-high heat, stirring occasionally, until tomatoes begin " +
-                "to caramelize and anchovies start to break down, about 5 minutes. Add " +
-                "collected tomato juices, olives, oregano, and red pepper flakes and bring " +
-                "to a simmer. Cook, stirring occasionally, until sauce is slightly thickened, " +
-                "about 5 minutes. Add pasta, remaining 1/4 cup oil, and 3/4 cup pasta " +
-                "cooking liquid to pan. Cook over medium heat, stirring and adding remaining " +
-                "1/4 cup pasta cooking liquid to loosen if needed, until sauce is thickened " +
-                "and emulsified, about 2 minutes. Flake tuna into pasta and toss to combine.\n" +
-                "        Divide pasta among plates. Top with fried capers.\n";
+                "\n" +
+                "    Hak de chocolade fijn. Laat de chocolade in ca. 5 min. au bain-marie smelten in " +
+                "een kom boven een pan kokend water. Roer af en toe. Neem de kom van de pan.\n" +
+                "    Splits de eieren. Klop het eiwit met de helft van de suiker met een mixer ca. " +
+                "5 min. totdat het glanzende stijve pieken vormt. Doe de slagroom in een ruime kom en " +
+                "klop in ca. 3 min. stijf.\n" +
+                "    Klop de eidooiers los met een garde. Roer de rest van de suiker erdoor.\n" +
+                "    Roer de gesmolten chocolade door het eidooier-suikermengsel. Spatel het door de " +
+                "slagroom. Spatel het eiwit snel en luchtig in delen door het chocolademengsel.\n" +
+                "    Schep de chocolademousse in glazen, potjes of coupes, dek af met vershoudfolie " +
+                "en laat minimaal 2 uur opstijven in de koelkast.\n";
     }
 
     @Override

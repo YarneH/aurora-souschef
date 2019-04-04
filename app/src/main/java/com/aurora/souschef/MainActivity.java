@@ -1,6 +1,7 @@
 package com.aurora.souschef;
 
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -23,7 +24,7 @@ import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.facade.Communicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
-public class MainActivity extends AppCompatActivity implements Tab2Ingredients.OnAmountOfPeopleChangedListener {
+public class MainActivity extends AppCompatActivity {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -40,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
     private static final int PROGRESS_PER_STEP = 14;
     private static final int MILLIS_BETWEEN_UPDATES = 500;
     private static final int MAX_WAIT_TIME = 15000;
-    private static final int DETECTION_STEPS = 6;
+    private static final int DETECTION_STEPS = 20;
     private static final String[] STEPS = {
             "Initializing...",
             "Creating new pipeline...",
@@ -51,8 +52,8 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
             "Finishing up..."};
 
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
-    private Tab2Ingredients.OnAmountOfPeopleChangedListener mOnAmountOfPeopleChangedListener = this;
     private Context mContext = this;
+    private RecipeViewModel recipe;
 
     public MainActivity() {
         // Default constructor
@@ -93,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
         // The first thing we do is Souschef specific:
         // generate pipeline for creating annotations in separate thread.
 
-        Communicator.createAnnotationPipelines();
+        recipe = ViewModelProviders.of(this).get(RecipeViewModel.class);
 
         /*
          * The {@link ViewPager} that will host the section contents.
@@ -103,7 +104,6 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
          *
          * Same for mSectionsPagerAdapter
          */
-        ViewPager mViewPager;
 
         super.onCreate(savedInstanceState);
         // TODO: Change back to the correct view
@@ -113,17 +113,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-        mViewPager.setOffscreenPageLimit(mSectionsPagerAdapter.getCount());
-        mViewPager.setVisibility(View.GONE);
-
-        // Set up the TabLayout to follow the ViewPager.
-        TabLayout tabLayout = findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-        tabLayout.setVisibility(View.GONE);
+        showProgress();
 
         //TODO: Update the following
         //Should only start in response to PLUGIN_ACTION in production
@@ -136,11 +126,10 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
          */
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-
-            //BasicPluginObject basicPluginObject = null;
-
-            // TODO remove this if statement probably. Is currently used to handle cases where a
-            // plain String is sent instead of an ExtractedText
+            /*BasicPluginObject basicPluginObject = null;
+             * TODO remove this if statement probably. Is currently used to handle cases where a
+             * plain String is sent instead of an ExtractedText
+             */
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
                 inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
             }
@@ -164,122 +153,57 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
         }
 
 
-        (new SouschefInit(inputText)).execute();
-    }
-
-    @Override
-    public void onAmountOfPeopleChanged(int newAmount) {
-        ((Tab3Steps) mSectionsPagerAdapter.getItem(TAB_STEPS)).setText("" + newAmount);
-    }
-
-    class ProgressUpdate extends AsyncTask<Void, Integer, Void> {
-        private ProgressBar pb = null;
-        private TextView tv = null;
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            int upTime = 0;
-            boolean isLoading = true;
-            try {
-                while (isLoading) {
-                    Thread.sleep(MILLIS_BETWEEN_UPDATES);
-                    upTime += MILLIS_BETWEEN_UPDATES;
-                    publishProgress(Communicator.getProgressAnnotationPipelines());
-                    if (Communicator.getProgressAnnotationPipelines() >= DETECTION_STEPS) {
-                        isLoading = false;
-                    }
-                    if (upTime > MAX_WAIT_TIME) {
-                        isLoading = false;
-                    }
+//        (new SouschefInit(inputText)).execute();
+        recipe.getProgressStep().observe(this, integer -> {
+                    ProgressBar pb = findViewById(R.id.pb_loading_screen);
+                    pb.setProgress(recipe.getProgress());
+                    // TODO: set textfield to visualize progress;
                 }
-            } catch (InterruptedException e) {
-                Log.e("THREAD", "Caught interruptedException in MainActivity");
-                Thread.currentThread().interrupt();
-
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            pb = findViewById(R.id.pb_loading_screen);
-            tv = findViewById(R.id.tv_loading_text);
-
-        }
-
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-            if (values[0] >= STEPS.length) {
+        );
+        recipe.getInitialised().observe(this, o -> {
+            if (o == null) {
                 return;
             }
-            tv.setText(STEPS[values[0]]);
-            pb.setProgress(PROGRESS_PER_STEP * (values[0] + 1));
-        }
+            if (!o) {
+                return;
+            }
+            Log.d("TEST", "hiding");
+            hideProgress();
+        });
+        recipe.initialise();
     }
 
-    class SouschefInit extends AsyncTask<Void, String, Recipe> {
-        private String mText;
+    private void showProgress() {
+        ViewPager mViewPager;
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = findViewById(R.id.container);
+        mViewPager.setVisibility(View.GONE);
 
-        protected SouschefInit(String text) {
-            mText = text;
-        }
+        // Set up the TabLayout to follow the ViewPager.
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(mViewPager);
+        tabLayout.setVisibility(View.GONE);
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            TextView tv = findViewById(R.id.tv_loading_text);
-            tv.setText("Initializing...");
-            (new ProgressUpdate()).execute();
-        }
+        ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+        cl.setVisibility(View.VISIBLE);
+    }
 
-        @Override
-        protected Recipe doInBackground(Void... voids) {
-            // Progressupdates are in demostate
+    private void hideProgress() {
+        // get fields to update visibility
+        AppBarLayout appBarLayout = findViewById(R.id.appbar);
+        ViewPager mViewPager = findViewById(R.id.container);
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
 
-            Communicator comm = Communicator.createCommunicator(mContext);
+        // Load recipe in the user interface
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        mViewPager.setAdapter(mSectionsPagerAdapter);
 
-            // update 1:
-            publishProgress("Loading the magic important stuff...");
-            String text = getText();
-            comm.process(text);
-            publishProgress("Done!");
-            return comm.getRecipe();
-
-
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
-            TextView tv = findViewById(R.id.tv_loading_text);
-            tv.setText(values[0]);
-        }
-
-        @Override
-        protected void onPostExecute(Recipe recipe) {
-            super.onPostExecute(recipe);
-
-            // get fields to update visibility
-            AppBarLayout appBarLayout = findViewById(R.id.appbar);
-            ViewPager mViewPager = findViewById(R.id.container);
-            TabLayout tabLayout = findViewById(R.id.tabs);
-            ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
-
-            // Load recipe in the user interface
-            mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), recipe);
-            mViewPager.setAdapter(mSectionsPagerAdapter);
-
-            // update visibilities
-            cl.setVisibility(View.GONE);
-            appBarLayout.setVisibility(View.VISIBLE);
-            mViewPager.setVisibility(View.VISIBLE);
-            tabLayout.setVisibility(View.VISIBLE);
-
-
-        }
+        // update visibilities
+        cl.setVisibility(View.GONE);
+        appBarLayout.setVisibility(View.VISIBLE);
+        mViewPager.setVisibility(View.VISIBLE);
+        tabLayout.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -287,28 +211,16 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
      * one of the sections/tabs/pages.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
-        private Recipe mRecipe = null;
         private Tab1Overview mTab1Overview = null;
         private Tab2Ingredients mTab2Ingredients = null;
         private Tab3Steps mTab3Steps = null;
 
-        SectionsPagerAdapter(FragmentManager fm) {
+        public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
-        }
-
-        public SectionsPagerAdapter(FragmentManager fm, Recipe recipe) {
-            super(fm);
-            mRecipe = recipe;
 
             mTab1Overview = new Tab1Overview();
-            mTab1Overview.setRecipe(recipe);
-
             mTab2Ingredients = new Tab2Ingredients();
-            mTab2Ingredients.setRecipe(recipe);
-            mTab2Ingredients.setmOnAmountOfPeopleChangedListener(mOnAmountOfPeopleChangedListener);
-
             mTab3Steps = new Tab3Steps();
-            mTab3Steps.setRecipe(recipe);
         }
 
         @Override

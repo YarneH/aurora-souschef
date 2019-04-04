@@ -1,5 +1,6 @@
 package com.aurora.souschef;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -24,6 +25,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
     private final List<ListIngredient> ingredients;
     private int mOriginalAmountOfServings = 0;
     private int mChosenAmountOfServings = 0;
+    private RecipeViewModel mRecipe;
 
 
     /**
@@ -39,6 +41,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
 
     public void setChoseAmountOfServings(int chosenAmount) {
         mChosenAmountOfServings = chosenAmount;
+        notifyDataSetChanged();
     }
 
     @NonNull

@@ -59,6 +59,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return The trimmed text
      */
     private static String trimNewLines(String text) {
+        if (text.length() == 0) {
+            return text;
+        }
         StringBuilder bld = new StringBuilder();
         String[] lines = text.split("\n");
         for (String line : lines) {
@@ -66,8 +69,84 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             bld.append("\n");
         }
         // Remove last new line
-        bld.deleteCharAt(bld.length() - 1);
-        return bld.toString();
+        if (bld.length() == 0) {
+            return text;
+        } else {
+            bld.deleteCharAt(bld.length() - 1);
+            return bld.toString();
+        }
+    }
+
+    /**
+     * Finds the mDescription of the recipe in a text
+     *
+     * @param text the text in which to search for the mDescription of the recipe
+     * @return The string representing the mDescription of the recipe
+     */
+    private static String findDescription(String text) {
+        return trimNewLines(text);
+    }
+
+    /**
+     * Finds the ingredients based on the fact that for most recipes at least one of the ingredients
+     * will start with a digit.
+     *
+     * @param text the text in which to search for mIngredients
+     * @return A pair with the detected ingredientlist and the altered text so that the detected
+     * ingredientlist is not in the text anymore
+     */
+    private static ResultAndAlteredTextPair findIngredientsDigit(String text) {
+        String[] sections = text.split("\n\n");
+        boolean found = false;
+        String ingredientsSection = "";
+        for (String section : sections) {
+            if (!found) {
+
+                String[] lines = section.trim().split("\n");
+
+                for (String line : lines) {
+
+                    if (line.length() > 0) {
+                        line = line.trim();
+                        char c = line.charAt(0);
+                        if (Character.isDigit(c)) {
+                            found = true;
+                            ingredientsSection = section;
+                        }
+                    }
+                }
+            }
+        }
+        text = text.replace(ingredientsSection, "");
+        return new ResultAndAlteredTextPair(trimNewLines(ingredientsSection), text);
+    }
+
+    /**
+     * Finds the steps based on a regex. It checks whether some common names that start
+     * the instruction section are present. This is based on the {@link #STEP_STARTER_REGEX}
+     *
+     * @param text the text in which to search for mIngredients
+     * @return A pair with the detected ingredientlist and the altered text so that the detected
+     * ingredientlist is not in the text anymore
+     */
+    private static ResultAndAlteredTextPair findStepsRegexBased(String text) {
+
+        String[] lines = text.split("\n");
+        String steps = "";
+
+        for (String line : lines) {
+            String lowerCaseLine = line.toLowerCase(Locale.ENGLISH);
+            Matcher match = Pattern.compile(STEP_STARTER_REGEX).matcher(lowerCaseLine);
+
+            if (match.find()) {
+                int startIndexLine = text.indexOf(line);
+                int startIndexSteps = startIndexLine + line.length();
+                steps = text.substring(startIndexSteps);
+                text = text.substring(0, startIndexLine);
+
+            }
+        }
+        return new ResultAndAlteredTextPair(trimNewLines(steps), text);
     }
 
     /**
@@ -76,7 +155,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @param text The text to capitalize
      * @return The text with the sentences capitalized again
      */
-    private  String capitalize(String text) {
+    private String capitalize(String text) {
 
         if (text.length() == 0) {
             // if text is empty just return text
@@ -100,16 +179,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         int endIndex = startIndex + text.length();
         return mOriginalText.substring(startIndex, endIndex);
 
-    }
-
-    /**
-     * Finds the mDescription of the recipe in a text
-     *
-     * @param text the text in which to search for the mDescription of the recipe
-     * @return The string representing the mDescription of the recipe
-     */
-    private static String findDescription(String text) {
-        return trimNewLines(text);
     }
 
     /**
@@ -208,40 +277,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     }
 
     /**
-     * Finds the ingredients based on the fact that for most recipes at least one of the ingredients
-     * will start with a digit.
-     *
-     * @param text the text in which to search for mIngredients
-     * @return A pair with the detected ingredientlist and the altered text so that the detected
-     * ingredientlist is not in the text anymore
-     */
-    private static ResultAndAlteredTextPair findIngredientsDigit(String text) {
-        String[] sections = text.split("\n\n");
-        boolean found = false;
-        String ingredientsSection = "";
-        for (String section : sections) {
-            if (!found) {
-
-                String[] lines = section.trim().split("\n");
-
-                for (String line : lines) {
-
-                    if (line.length() > 0) {
-                        line = line.trim();
-                        char c = line.charAt(0);
-                        if (Character.isDigit(c)) {
-                            found = true;
-                            ingredientsSection = section;
-                        }
-                    }
-                }
-            }
-        }
-        text = text.replace(ingredientsSection, "");
-        return new ResultAndAlteredTextPair(trimNewLines(ingredientsSection), text);
-    }
-
-    /**
      * Finds the mRecipeSteps in a text
      *
      * @param text the text in which to search for mRecipeSteps
@@ -257,34 +292,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         return pair;
 
-    }
-
-    /**
-     * Finds the steps based on a regex. It checks whether some common names that start
-     * the instruction section are present. This is based on the {@link #STEP_STARTER_REGEX}
-     *
-     * @param text the text in which to search for mIngredients
-     * @return A pair with the detected ingredientlist and the altered text so that the detected
-     * ingredientlist is not in the text anymore
-     */
-    private static ResultAndAlteredTextPair findStepsRegexBased(String text) {
-
-        String[] lines = text.split("\n");
-        String steps = "";
-
-        for (String line : lines) {
-            String lowerCaseLine = line.toLowerCase(Locale.ENGLISH);
-            Matcher match = Pattern.compile(STEP_STARTER_REGEX).matcher(lowerCaseLine);
-
-            if (match.find()) {
-                int startIndexLine = text.indexOf(line);
-                int startIndexSteps = startIndexLine + line.length();
-                steps = text.substring(startIndexSteps);
-                text = text.substring(0, startIndexLine);
-
-            }
-        }
-        return new ResultAndAlteredTextPair(trimNewLines(steps), text);
     }
 
     /**
@@ -363,6 +370,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return annotation;
 
     }
+
     /**
      * A helper class for the SplitToMainSectionsTask, it is a dataclass that stores two strings:
      * {@link #mResult} = the detected result

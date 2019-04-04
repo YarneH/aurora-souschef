@@ -1,5 +1,8 @@
 package com.aurora.souschefprocessor.facade;
 
+
+
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
@@ -147,6 +150,30 @@ public class Delegator {
             setUpThreadPool();
         }
         return sThreadPoolExecutor;
+    }
+
+    /**
+     * This is the core function of the delegator, where the text is processed by applying the filters
+     * This function should be able to at run time decide to do certain filters or not (graceful degradation)
+     *
+     * @param text The text to be processed in to a recipe Object
+     * @return A Recipe object that was constructed from the text
+     */
+    public Recipe processText(ExtractedText text) {
+        //TODO implement this function so that at runtime it is decided which tasks should be performed
+        if (sThreadPoolExecutor == null) {
+            setUpThreadPool();
+        }
+        RecipeInProgress recipeInProgress = new RecipeInProgress(text);
+        List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
+        if (pipeline != null) {
+            for (AbstractProcessingTask task : pipeline) {
+                task.doTask();
+            }
+        }
+
+
+        return recipeInProgress.convertToRecipe();
     }
 
     /**

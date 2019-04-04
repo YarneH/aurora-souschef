@@ -1,5 +1,6 @@
 package com.aurora.souschefprocessor.task;
 
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 /**
@@ -25,10 +26,20 @@ public class RecipeInProgress extends Recipe {
      */
     private String mOriginalText;
 
+    /**
+     * An extractedtet object from Aurora
+     */
+    private ExtractedText mExtractedText;
+
 
     public RecipeInProgress(String originalText) {
         super();
         this.mOriginalText = originalText;
+    }
+
+    public RecipeInProgress(ExtractedText originalText) {
+        super();
+        this.mExtractedText = originalText;
     }
 
     @Override
@@ -68,5 +79,9 @@ public class RecipeInProgress extends Recipe {
      */
     public Recipe convertToRecipe() {
         return new Recipe(mIngredients, mRecipeSteps, mNumberOfPeople, mDescription);
+    }
+
+    public ExtractedText getExtractedText() {
+        return mExtractedText;
     }
 }

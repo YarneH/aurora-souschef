@@ -155,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
 
         String inputText = "";
+        ExtractedText extractedText = null;
         /*
          * Handle Aurora starting the Plugin.
          */
@@ -173,23 +174,32 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
                 String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
                         Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
-                ExtractedText extractedText = ExtractedText.fromJson(inputTextJSON);
-                inputText = extractedText.toString();
+                extractedText = ExtractedText.fromJson(inputTextJSON);
+
 
             } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
                 // TODO handle a PluginObject that was cached
                 String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
                         Constants.PLUGIN_INPUT_OBJECT);
-                PluginObject extractedText = PluginObject.fromJson(inputTextJSON);
-                inputText = extractedText.toString();
+                PluginObject receivedObject = PluginObject.fromJson(inputTextJSON);
+                if (receivedObject instanceof Recipe) {
+                    SouschefInit init = new SouschefInit("I don't think this text is important");
+                    init.initiateWithCachedObject((Recipe) receivedObject);
+
+                }
             }
 
         } else {
             inputText = getText();
         }
+        if (extractedText != null) {
+            // maybe in production this should always be the case
+            // and the else should throw an error or let the user know that extracting text failed
+            (new SouschefInit(extractedText)).execute();
+        } else {
 
-
-        (new SouschefInit(inputText)).execute();
+            (new SouschefInit(inputText)).execute();
+        }
     }
 
     @Override
@@ -247,12 +257,19 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
     class SouschefInit extends AsyncTask<Void, String, Recipe> {
         private String mText;
+        private ExtractedText mExtractedText = null;
 
         protected SouschefInit(String text) {
             mText = text;
         }
 
-        @Override
+        protected SouschefInit(ExtractedText text){
+            mExtractedText = text;
+        }
+
+        protected void initiateWithCachedObject(Recipe recipe) {
+            onPostExecute(recipe);
+        }        @Override
         protected void onPreExecute() {
             super.onPreExecute();
             TextView tv = findViewById(R.id.tv_loading_text);
@@ -268,9 +285,12 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
             // update 1:
             publishProgress("Loading the magic important stuff...");
-            // String text = getText();
             try {
-                comm.process(mText);
+                if(mExtractedText == null){
+                comm.process(mText);}
+                else{
+                    comm.process(mExtractedText);
+                }
                 publishProgress("Done!");
                 return comm.getRecipe();
             } catch (RecipeDetectionException e) {
@@ -310,6 +330,8 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
 
         }
+
+
     }
 
     /**

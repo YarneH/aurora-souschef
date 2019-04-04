@@ -274,7 +274,8 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
                 publishProgress("Done!");
                 return comm.getRecipe();
             } catch (RecipeDetectionException e) {
-
+                Log.e("DETECTION", "opening failed", e);
+                //TODO implement correct response
             }
             return null;
 

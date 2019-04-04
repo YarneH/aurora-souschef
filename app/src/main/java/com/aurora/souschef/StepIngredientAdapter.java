@@ -28,12 +28,9 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
      *
      * @param ingredients list for construction
      */
-    public StepIngredientAdapter(Set<Ingredient> ingredients) {
-        List<Ingredient> tempIngredients = null;
-        if (ingredients != null) {
-            tempIngredients = new ArrayList<>(ingredients);
-        }
-        this.ingredients = tempIngredients;
+    public StepIngredientAdapter(List<Ingredient> ingredients) {
+
+        this.ingredients = ingredients;
     }
 
     @NonNull

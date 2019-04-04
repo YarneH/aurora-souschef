@@ -20,7 +20,9 @@ import android.widget.TextView;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.PluginObject;
 import com.aurora.souschefprocessor.facade.Communicator;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 public class MainActivity extends AppCompatActivity implements Tab2Ingredients.OnAmountOfPeopleChangedListener {
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
     private Tab2Ingredients.OnAmountOfPeopleChangedListener mOnAmountOfPeopleChangedListener = this;
     private Context mContext = this;
+
 
     public MainActivity() {
         // Default constructor
@@ -175,9 +178,10 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
             } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
                 // TODO handle a PluginObject that was cached
-                Log.d("NOT_IMPLEMENTED", "PLUGIN_INPUT_OBJECT needs to be implemented." +
-                        "Instead using getText.");
-                inputText = getText();
+                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
+                        Constants.PLUGIN_INPUT_OBJECT);
+                PluginObject extractedText = PluginObject.fromJson(inputTextJSON);
+                inputText = extractedText.toString();
             }
 
         } else {
@@ -264,10 +268,17 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
             // update 1:
             publishProgress("Loading the magic important stuff...");
-            String text = getText();
-            comm.process(text);
-            publishProgress("Done!");
-            return comm.getRecipe();
+
+            // String text = getText();
+            try {
+                comm.process(mText);
+                publishProgress("Done!");
+                return comm.getRecipe();
+            } catch (RecipeDetectionException e) {
+                Log.e("DETECTION", "opening failed", e);
+                //TODO implement correct response
+            }
+            return null;
         }
 
         @Override
@@ -376,4 +387,6 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
         }
     }
 }
+
+
 

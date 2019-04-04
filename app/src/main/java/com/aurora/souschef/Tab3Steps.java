@@ -87,7 +87,7 @@ public class Tab3Steps extends Fragment {
     }
 
     protected void setNewAmount(int newAmount) {
-        mStepsPagerAdapter.updateFragments(newAmount);
+        // mStepsPagerAdapter.updateFragments(newAmount);
     }
 
     /**

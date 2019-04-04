@@ -83,7 +83,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     /**
      * A lock that ensures the {@link #sAnnotationPipeline} is only created once
      */
-    private static final Object LOCK = new Object();
+    private static final Object LOCK_DETECT_TIMERS_IN_STEP_PIPELINE = new Object();
     /**
      * A list of words that are detected by the annotator as time expresssion but which is not needed
      * for souschef (e.g "overnight")
@@ -144,7 +144,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      */
     public static void initializeAnnotationPipeline() {
         Thread initialize = new Thread(() -> {
-            synchronized (LOCK) {
+            synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
                 if (startedCreatingPipeline) {
                     // creating already started or finished -> do not start again
                     return;
@@ -153,9 +153,9 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                 startedCreatingPipeline = true;
             }
             sAnnotationPipeline = createTimerAnnotationPipeline();
-            synchronized (LOCK) {
+            synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
                 // get the lock again to notify that the pipeline has been created
-                LOCK.notifyAll();
+                LOCK_DETECT_TIMERS_IN_STEP_PIPELINE.notifyAll();
             }
         });
         initialize.start();
@@ -448,8 +448,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         while (sAnnotationPipeline == null) {
             try {
                 // wait unitill the pipeline is created
-                synchronized (LOCK) {
-                    LOCK.wait();
+                synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
+                    LOCK_DETECT_TIMERS_IN_STEP_PIPELINE.wait();
                 }
             } catch (InterruptedException e) {
                 Log.d("Interrupted", "detecttimer", e);

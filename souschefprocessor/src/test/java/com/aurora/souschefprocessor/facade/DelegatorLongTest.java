@@ -3,7 +3,6 @@ package com.aurora.souschefprocessor.facade;
 import android.util.Log;
 
 import com.aurora.souschefprocessor.recipe.Recipe;
-import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -151,7 +150,7 @@ public class DelegatorLongTest {
         for (String recipeText : validRecipes) {
             // do the processing and add the time this processing costed
             long start = System.currentTimeMillis();
-            Recipe recipe = delegator.processText(recipeText);
+            delegator.processText(recipeText);
             long finish = System.currentTimeMillis();
             long time = finish - start;
             average_non += time;

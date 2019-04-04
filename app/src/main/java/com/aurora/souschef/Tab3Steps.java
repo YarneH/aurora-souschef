@@ -77,7 +77,7 @@ public class Tab3Steps extends Fragment {
     }
 
     protected void setText(String newText) {
-        ((TextView) getView().findViewById(R.id.tv_dummy)).setText(newText);
+        //((TextView) getView().findViewById(R.id.tv_dummy)).setText(newText);
 
     }
 

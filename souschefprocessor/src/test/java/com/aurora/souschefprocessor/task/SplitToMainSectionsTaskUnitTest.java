@@ -74,7 +74,7 @@ public class SplitToMainSectionsTaskUnitTest {
 
         // recipe 2
         map = new HashMap<>();
-        map.put("STEPS", "\n\ncook pasta in a large pot of boiling salted water, stirring occasionally, until al dente. drain pasta, reserving 1 cup pasta cooking liquid; return pasta to pot.\n" +
+        map.put("STEPS", "cook pasta in a large pot of boiling salted water, stirring occasionally, until al dente. drain pasta, reserving 1 cup pasta cooking liquid; return pasta to pot.\n" +
                 "while pasta cooks, pour tomatoes into a fine-mesh sieve set over a medium bowl. shake to release as much juice as possible, then let tomatoes drain in sieve, collecting juices in bowl, until ready to use.\n" +
                 "heat 1/4 cup oil in a large deep-sided skillet over medium-high. add capers and cook, swirling pan occasionally, until they burst and are crisp, about 3 minutes. using a slotted spoon, transfer capers to a paper towel-lined plate, reserving oil in skillet.\n" +
                 "combine anchovies, tomato paste, and drained tomatoes in skillet. cook over medium-high heat, stirring occasionally, until tomatoes begin to caramelize and anchovies start to break down, about 5 minutes. add collected tomato juices, olives, oregano, and red pepper flakes and bring to a simmer. cook, stirring occasionally, until sauce is slightly thickened, about 5 minutes. add pasta, remaining 1/4 cup oil, and 3/4 cup pasta cooking liquid to pan. cook over medium heat, stirring and adding remaining 1/4 cup pasta cooking liquid to loosen if needed, until sauce is thickened and emulsified, about 2 minutes. flake tuna into pasta and toss to combine.\n" +
@@ -199,9 +199,9 @@ public class SplitToMainSectionsTaskUnitTest {
 
             // Assert
 
-            assert (rip.getIngredientsString().equalsIgnoreCase(fieldsList.get(i).get("INGR")));
-            //System.out.println(rip.getStepsString());
-            //System.out.println(fieldsList.get(i).get("STEPS"));
+            assert (rip.getIngredientsString().trim().equalsIgnoreCase(fieldsList.get(i).get("INGR")));
+            System.out.println(rip.getStepsString());
+            System.out.println(fieldsList.get(i).get("STEPS"));
             assert (rip.getStepsString().equalsIgnoreCase(fieldsList.get(i).get("STEPS")));
             assert (rip.getDescription() != null);
         }
@@ -228,22 +228,78 @@ public class SplitToMainSectionsTaskUnitTest {
     }
 
     @Test
-    public void newTest() {
+    public void SplitToMainSectionsTaskTest_doTask_CorrectDetectionOfSectionsWithExtractedTextObject() {
+        // parser is not needed
+
+        // Arrange
         String json = "{\"mFilename\":\"\",\"mTitle\":\"How to make chocolate mousse\\n2 ratings\\nHow to make chocolate mousse\\nBy Lesley Waters\",\"mSections\":[{\"mBody\":\"Shopping list\"},{\"mBody\":\"Print recipe\"},{\"mBody\":\"Preparation time\"},{\"mBody\":\"30 mins to 1 hour\"},{\"mBody\":\"Cooking time\"},{\"mBody\":\"10 to 30 mins\"},{\"mBody\":\"Serves\"},{\"mBody\":\"Serves 6-8\"},{\"mBody\":\"Dietary\\n \"},{\"mBody\":\"Vegetarian\"},{\"mBody\":\"\\n    225g/8oz dark chocolate\\n    5 medium free-range eggs\\n    100g/3½oz caster sugar\\n    170g/6oz unsalted butter\\n    200ml/7fl oz crème fraîche\\n    12-16 fresh cherries\\n    cocoa powder, for dusting\"},{\"mBody\":\"Method\"},{\"mBody\":\"    Place a bowl over a pan of simmering water (the water shouldn\\u0027t touch the bottom of the bowl) and gently melt the chocolate in the bowl. Remove from the heat once melted and let it cool slightly.\"},{\"mBody\":\"    Separate the egg yolks from the egg whites. Beat the egg yolks and most of the sugar together until creamy and pale in colour (keep two teaspoons of sugar to one side for the egg whites).\"},{\"mBody\":\"    When it has cooled slightly, whisk the chocolate into the egg yolk and sugar mixture.\"},{\"mBody\":\"    Melt the butter in a pan over a low heat.\"},{\"mBody\":\"    Whisk the melted butter into the chocolate mixture. If it gets too thick, add a couple of tablespoons of water.\"},{\"mBody\":\"    In a clean bowl, whisk the egg whites and the remaining two teaspoons of sugar with an electric whisk until they\\u0027re light and fluffy and hold a soft peak. Do not over-beat. The sugar will give them a gentle sheen.\"},{\"mBody\":\"    Carefully fold the egg whites into the chocolate mixture using a metal spoon.\"},{\"mBody\":\"    Spoon the chocolate mixture into small teacups or ramekins and refrigerate for about two hours.\"},{\"mBody\":\"    Just before serving, top each marquise with a dollop of crème fraîche and two fresh cherries, then sprinkle with cocoa powder.\\n\"}]}\n";
         ExtractedText text = ExtractedText.fromJson(json);
         RecipeInProgress rip = new RecipeInProgress(text);
         SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+        String description = "How to make chocolate mousse\n" +
+                "2 ratings\n" +
+                "How to make chocolate mousse\n" +
+                "By Lesley Waters\n" +
+                "Preparation time\n" +
+                "30 mins to 1 hour\n" +
+                "Cooking time\n" +
+                "10 to 30 mins\n" +
+                "Serves\n" +
+                "Serves 6-8\n" +
+                "Dietary\n" +
+                "Vegetarian";
+        String ingredients = "225g/8oz dark chocolate\n" +
+                "5 medium free-range eggs\n" +
+                "100g/3½oz caster sugar\n" +
+                "170g/6oz unsalted butter\n" +
+                "200ml/7fl oz crème fraîche\n" +
+                "12-16 fresh cherries\n" +
+                "cocoa powder, for dusting";
+
+        String steps = "Place a bowl over a pan of simmering water (the water shouldn't touch the bottom of the bowl) and gently melt the chocolate in the bowl. Remove from the heat once melted and let it cool slightly.\n" +
+                "\n" +
+                "Separate the egg yolks from the egg whites. Beat the egg yolks and most of the sugar together until creamy and pale in colour (keep two teaspoons of sugar to one side for the egg whites).\n" +
+                "\n" +
+                "When it has cooled slightly, whisk the chocolate into the egg yolk and sugar mixture.\n" +
+                "\n" +
+                "Melt the butter in a pan over a low heat.\n" +
+                "\n" +
+                "Whisk the melted butter into the chocolate mixture. If it gets too thick, add a couple of tablespoons of water.\n" +
+                "\n" +
+                "In a clean bowl, whisk the egg whites and the remaining two teaspoons of sugar with an electric whisk until they're light and fluffy and hold a soft peak. Do not over-beat. The sugar will give them a gentle sheen.\n" +
+                "\n" +
+                "Carefully fold the egg whites into the chocolate mixture using a metal spoon.\n" +
+                "\n" +
+                "Spoon the chocolate mixture into small teacups or ramekins and refrigerate for about two hours.\n" +
+                "\n" +
+                "Just before serving, top each marquise with a dollop of crème fraîche and two fresh cherries, then sprinkle with cocoa powder.";
+
+
+        // Act
         task.doTask();
-        System.out.println(rip + "\n\n\n--------------------\n\n\n");
+
+        assert(rip.getDescription().equals(description));
+        assert(rip.getIngredientsString().equals(ingredients));
+        assert(rip.getStepsString().equals(steps));
+
+
 
         // test that needs the parser
 
+        // Arrange
         json = "{\"mFilename\":\"\",\"mTitle\":\"How to make chocolate mousse\\n2 ratings\\nHow to make chocolate mousse\\nBy Lesley Waters\",\"mSections\":[{\"mBody\":\"Shopping list\"},{\"mBody\":\"Print recipe\"},{\"mBody\":\"Preparation time\"},{\"mBody\":\"30 mins to 1 hour\"},{\"mBody\":\"Cooking time\"},{\"mBody\":\"10 to 30 mins\"},{\"mBody\":\"Serves\"},{\"mBody\":\"Serves 6-8\"},{\"mBody\":\"Dietary\\n \"},{\"mBody\":\"Vegetarian\"},{\"mBody\":\"\\n    225g/8oz dark chocolate\\n    5 medium free-range eggs\\n    100g/3½oz caster sugar\\n    170g/6oz unsalted butter\\n    200ml/7fl oz crème fraîche\\n    12-16 fresh cherries\\n    cocoa powder, for dusting\"},{\"mBody\":\"\"},{\"mBody\":\"    Place a bowl over a pan of simmering water (the water shouldn\\u0027t touch the bottom of the bowl) and gently melt the chocolate in the bowl. Remove from the heat once melted and let it cool slightly.\"},{\"mBody\":\"    Separate the egg yolks from the egg whites. Beat the egg yolks and most of the sugar together until creamy and pale in colour (keep two teaspoons of sugar to one side for the egg whites).\"},{\"mBody\":\"    When it has cooled slightly, whisk the chocolate into the egg yolk and sugar mixture.\"},{\"mBody\":\"    Melt the butter in a pan over a low heat.\"},{\"mBody\":\"    Whisk the melted butter into the chocolate mixture. If it gets too thick, add a couple of tablespoons of water.\"},{\"mBody\":\"    In a clean bowl, whisk the egg whites and the remaining two teaspoons of sugar with an electric whisk until they\\u0027re light and fluffy and hold a soft peak. Do not over-beat. The sugar will give them a gentle sheen.\"},{\"mBody\":\"    Carefully fold the egg whites into the chocolate mixture using a metal spoon.\"},{\"mBody\":\"    Spoon the chocolate mixture into small teacups or ramekins and refrigerate for about two hours.\"},{\"mBody\":\"    Just before serving, top each marquise with a dollop of crème fraîche and two fresh cherries, then sprinkle with cocoa powder.\\n\"}]}\n";
         text = ExtractedText.fromJson(json);
         rip = new RecipeInProgress(text);
         task = new SplitToMainSectionsTask(rip);
+
+
+        // Act
         task.doTask();
-        System.out.println(rip);
+
+        // Assert
+        assert(rip.getDescription().equals(description));
+        assert(rip.getIngredientsString().equals(ingredients));
+        assert(rip.getStepsString().equals(steps));
 
 
     }

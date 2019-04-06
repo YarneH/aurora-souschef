@@ -338,6 +338,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     }
 
 
+
     private boolean sectionIsClutter(String section) {
         for (String s : CLUTTER_STRINGS) {
             if (section.toLowerCase(Locale.ENGLISH).contains(s)) {
@@ -349,6 +350,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
     private String findDescription() {
         StringBuilder bld = new StringBuilder();
+        // append the title
+        bld.append(mRecipeInProgress.getExtractedText().getTitle());
+        bld.append("\n");
         for (String section : mSectionsBodies) {
             bld.append(section.trim());
             // append a new line between the sections for readability
@@ -419,9 +423,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private void modifyRecipe(RecipeInProgress recipe, String ingredients, String steps, String
             description) {
-        recipe.setIngredientsString(ingredients);
-        recipe.setStepsString(steps);
-        recipe.setDescription(description);
+        recipe.setIngredientsString(ingredients.trim());
+        recipe.setStepsString(steps.trim());
+        recipe.setDescription(description.trim());
     }
 
     /**

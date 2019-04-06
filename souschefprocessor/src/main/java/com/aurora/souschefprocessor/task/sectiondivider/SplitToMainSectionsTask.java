@@ -8,6 +8,7 @@ import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -44,11 +45,21 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * A constant needed for the creation of the parser (should be moved to Aurora)
      */
     private static final int MAX_SENTENCES_FOR_PARSER = 100;
+    /**
+     * An array of strings that are clutter in the description of a recipe. These lines would confuse
+     * a user and must thus be removed
+     */
+    private static String[] CLUTTER_STRINGS = {"print recipe", "shopping list"};
+    /**
+     * An annotation pipeline specific for parsing of sentences
+     */
+    private static AnnotationPipeline sAnnotationPipeline;
     private List<String> mSectionsBodies = new ArrayList<>();
     /**
      * The original text of this recipe
      */
     private String mOriginalText;
+
     public SplitToMainSectionsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
     }
@@ -89,7 +100,44 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     }
 
     /**
-     * @param
+     * Creates the {@link #sAnnotationPipeline}
+     */
+    private static void createAnnotationPipeline() {
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+        pipeline.addAnnotator(new TokenizerAnnotator(false, "en"));
+        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
+
+        pipeline.addAnnotator(new ParserAnnotator(false, MAX_SENTENCES_FOR_PARSER));
+        pipeline.addAnnotator(new MorphaAnnotator(false));
+        sAnnotationPipeline = pipeline;
+    }
+
+    private String findStepsNLP() {
+        StringBuilder bld = new StringBuilder();
+        List<String> sectionsToRemove = new ArrayList<>();
+        boolean allreadyFound = false;
+        for (String section : mSectionsBodies) {
+            if (!allreadyFound) {
+                boolean verbDetected = verbDetected(section, false);
+                if (!verbDetected) {
+                    verbDetected = verbDetected(section, true);
+                }
+                allreadyFound = verbDetected;
+            }
+            if (allreadyFound) {
+                // remove this section
+                sectionsToRemove.add(section);
+                // append it to the builder
+                bld.append(section.trim());
+                bld.append("\n\n");
+
+            }
+        }
+        mSectionsBodies.removeAll(sectionsToRemove);
+        return bld.toString();
+    }
+
+    /**
      * @return the index of the
      * section of the line where the steps start
      */
@@ -105,21 +153,26 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 Matcher match = Pattern.compile(STEP_STARTER_REGEX).matcher(lowerCaseLine);
 
                 if (found) {
-                    bld.append(line);
+                    bld.append(trimNewLines(line));
 
                 } else {
                     if (match.find()) {
                         found = true;
                         sectionIndex = mSectionsBodies.indexOf(section);
+                        // remove this line and any following of this section from the body
                         mSectionsBodies.set(sectionIndex, section.substring(0, section.indexOf(line)));
                     }
                 }
             }
+            // make sure the bodies (steps) are split up by \n\n
+            bld.append("\n\n");
 
         }
-
-        mSectionsBodies = mSectionsBodies.subList(0, sectionIndex + 1);
-        return bld.toString();
+        if (sectionIndex >= 0) {
+            // remove the section containing steps from the list, only remove if some steps were found
+            mSectionsBodies = mSectionsBodies.subList(0, sectionIndex + 1);
+        }
+        return bld.toString().trim();
 
     }
 
@@ -196,10 +249,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         String[] sections = text.split("\n\n");
         mSectionsBodies.clear();
-        for (String s : sections) {
-            mSectionsBodies.add(s);
-        }
-        String ingredientsSection = "";
+        mSectionsBodies.addAll(Arrays.asList(sections));
+
+        String ingredientsSection;
         int indexOfSection = findIngredientsDigit();
         if (indexOfSection < 0) {
             return new ResultAndAlteredTextPair("", text);
@@ -260,32 +312,58 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             }
 
             ResultAndAlteredTextPair ingredientsAndText = findIngredients(mOriginalText);
-             ingredients = ingredientsAndText.getResult();
+            ingredients = ingredientsAndText.getResult();
 
             ResultAndAlteredTextPair stepsAndText = findSteps(ingredientsAndText.getAlteredText());
-             steps = stepsAndText.getResult();
-             description = findDescription(stepsAndText.getAlteredText());
+            steps = stepsAndText.getResult();
+            description = findDescription(stepsAndText.getAlteredText());
 
         } else {
             ExtractedText text = mRecipeInProgress.getExtractedText();
             mSectionsBodies = new ArrayList<>();
             for (Section sec : text.getSections()) {
-                mSectionsBodies.add(sec.getBody());
+                if (!sectionIsClutter(sec.getBody())) {
+                    mSectionsBodies.add(sec.getBody());
+                }
             }
-             ingredients = findIngredients();
-            System.out.println(ingredients);
-             steps = findSteps();
-            System.out.println(steps);
-             description = "";
+            ingredients = findIngredients();
+            steps = findSteps();
+            description = findDescription();
 
 
         }
+
         modifyRecipe(this.mRecipeInProgress, ingredients, steps, description);
 
     }
 
+
+    private boolean sectionIsClutter(String section) {
+        for (String s : CLUTTER_STRINGS) {
+            if (section.toLowerCase(Locale.ENGLISH).contains(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String findDescription() {
+        StringBuilder bld = new StringBuilder();
+        for (String section : mSectionsBodies) {
+            bld.append(section.trim());
+            // append a new line between the sections for readability
+            bld.append("\n");
+
+        }
+        return trimNewLines(bld.toString());
+    }
+
     private String findSteps() {
-        return findStepsRegexBased();
+        String steps = findStepsRegexBased();
+        if (steps.length() == 0) {
+            steps = findStepsNLP();
+        }
+        return steps;
     }
 
     private String findIngredients() {
@@ -365,9 +443,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return ingredientsAndText;
     }
 
-    private void findIngredients(ExtractedText text) {
-
-    }
 
     /**
      * Finds the ingredients based on a regex. It checks whether some common names that start
@@ -381,9 +456,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         text = text.toLowerCase(Locale.ENGLISH);
         String[] lines = text.split("\n\n");
         mSectionsBodies.clear();
-        for (String section : lines) {
-            mSectionsBodies.add(section);
-        }
+        mSectionsBodies.addAll(Arrays.asList(lines));
 
         int indexOfIngredients = findIngredientsRegexBased();
         if (indexOfIngredients < 0) {
@@ -453,17 +526,15 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private ResultAndAlteredTextPair findStepsNLP(String text) {
         String[] sections = text.split("\n\n");
-        for (String section : sections) {
-            boolean verbDetected = verbDetected(section, false);
-            if (!verbDetected) {
-                verbDetected = verbDetected(section, true);
-            }
-            if (verbDetected) {
-                return new ResultAndAlteredTextPair(trimNewLines(section), text.replace(section, ""));
-            }
+        mSectionsBodies = new ArrayList<>();
+        mSectionsBodies.addAll(Arrays.asList(sections));
+        String steps = findStepsNLP();
+        if (steps.length() == 0) {
+            // nothing found return empty string and unaltered text
+            return new ResultAndAlteredTextPair("", text);
+        } else {
+            return new ResultAndAlteredTextPair(trimNewLines(steps), text.replace(steps, ""));
         }
-
-        return new ResultAndAlteredTextPair("", text);
     }
 
     /**
@@ -473,12 +544,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return the annotated text
      */
     private Annotation createAnnotatedText(String text, boolean lowercase) {
-        AnnotationPipeline pipeline = new AnnotationPipeline();
-        pipeline.addAnnotator(new TokenizerAnnotator(false, "en"));
-        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-
-        pipeline.addAnnotator(new ParserAnnotator(false, MAX_SENTENCES_FOR_PARSER));
-        pipeline.addAnnotator(new MorphaAnnotator(false));
+        if (sAnnotationPipeline == null) {
+            createAnnotationPipeline();
+        }
         // The parser could perform better on imperative sentences (instructions) when the
         // first word is decapitalize see: https://stackoverflow.com/questions/35872324/stanford-nlp-vp-vs-np
         Annotation annotation;
@@ -488,7 +556,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             annotation = new Annotation(text);
         }
 
-        pipeline.annotate(annotation);
+        sAnnotationPipeline.annotate(annotation);
         return annotation;
 
     }
@@ -515,9 +583,4 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             return mAlteredText;
         }
     }
-
-
 }
-
-
-

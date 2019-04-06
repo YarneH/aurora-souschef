@@ -206,8 +206,8 @@ public class Delegator {
      */
     public List<AbstractProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
         ArrayList<AbstractProcessingTask> pipeline = new ArrayList<>();
-        pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
+        pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));
         pipeline.add(new SplitStepsTask(recipeInProgress));
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));
         StepTaskNames[] taskNames = {StepTaskNames.INGR, StepTaskNames.TIMER};

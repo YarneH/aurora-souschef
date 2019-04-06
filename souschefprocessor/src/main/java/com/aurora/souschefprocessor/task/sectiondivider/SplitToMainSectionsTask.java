@@ -49,7 +49,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * An array of strings that are clutter in the description of a recipe. These lines would confuse
      * a user and must thus be removed
      */
-    private static String[] CLUTTER_STRINGS = {"print recipe", "shopping list"};
+    private static final String[] CLUTTER_STRINGS = {"print recipe", "shopping list"};
     /**
      * An annotation pipeline specific for parsing of sentences
      */
@@ -224,11 +224,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                         if (line.length() > 0) {
                             line = line.trim();
                             char c = line.charAt(0);
-                            if (Character.isDigit(c)) {
-                                found = true;
-                                ingredientsSection = section;
-
-                            }
+                            found = Character.isDigit(c);
+                            // if found  this is set to the correct section
+                            ingredientsSection = section;
                         }
                     }
                 }
@@ -251,12 +249,12 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         mSectionsBodies.clear();
         mSectionsBodies.addAll(Arrays.asList(sections));
 
-        String ingredientsSection;
+
         int indexOfSection = findIngredientsDigit();
         if (indexOfSection < 0) {
             return new ResultAndAlteredTextPair("", text);
         }
-        ingredientsSection = sections[indexOfSection];
+        String ingredientsSection = sections[indexOfSection];
         text = text.replace(ingredientsSection, "");
         return new ResultAndAlteredTextPair(trimNewLines(ingredientsSection), text);
     }
@@ -339,7 +337,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
 
 
-    private boolean sectionIsClutter(String section) {
+    private static boolean sectionIsClutter(String section) {
         for (String s : CLUTTER_STRINGS) {
             if (section.toLowerCase(Locale.ENGLISH).contains(s)) {
                 return true;

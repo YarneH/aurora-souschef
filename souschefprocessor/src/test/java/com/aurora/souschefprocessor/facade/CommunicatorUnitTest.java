@@ -2,6 +2,8 @@ package com.aurora.souschefprocessor.facade;
 
 import android.util.Log;
 
+import com.aurora.souschefprocessor.recipe.Recipe;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -47,7 +49,8 @@ public class CommunicatorUnitTest {
             boolean thrown = false;
             // Act
             try {
-                communicator.process(text);
+                Recipe rip = communicator.process(text);
+                System.out.println(rip);
             } catch (Exception e) {
                 // set thrown to true, this should happen
                 Log.e("Woop", "Error was thrown", e);

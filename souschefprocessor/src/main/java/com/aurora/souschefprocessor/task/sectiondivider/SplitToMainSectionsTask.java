@@ -112,6 +112,15 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         sAnnotationPipeline = pipeline;
     }
 
+    private static boolean sectionIsClutter(String section) {
+        for (String s : CLUTTER_STRINGS) {
+            if (section.toLowerCase(Locale.ENGLISH).contains(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private String findStepsNLP() {
         StringBuilder bld = new StringBuilder();
         List<String> sectionsToRemove = new ArrayList<>();
@@ -213,13 +222,13 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         boolean found = false;
         String ingredientsSection = "";
         for (String section : mSectionsBodies) {
-            if (!found) {
 
-                String[] lines = section.trim().split("\n");
-                // at least two ingredients needed
-                if (lines.length > 1) {
-                    for (String line : lines) {
 
+            String[] lines = section.trim().split("\n");
+            // at least two ingredients needed
+            if (lines.length > 1) {
+                for (String line : lines) {
+                    if (!found) {
                         // no recipe has only one ingredient
                         if (line.length() > 0) {
                             line = line.trim();
@@ -227,12 +236,17 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                             found = Character.isDigit(c);
                             // if found  this is set to the correct section
                             ingredientsSection = section;
+
                         }
                     }
                 }
             }
         }
-        return mSectionsBodies.indexOf(ingredientsSection);
+        if (found) {
+            return mSectionsBodies.indexOf(ingredientsSection);
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -254,6 +268,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         if (indexOfSection < 0) {
             return new ResultAndAlteredTextPair("", text);
         }
+
         String ingredientsSection = sections[indexOfSection];
         text = text.replace(ingredientsSection, "");
         return new ResultAndAlteredTextPair(trimNewLines(ingredientsSection), text);
@@ -312,6 +327,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             ResultAndAlteredTextPair ingredientsAndText = findIngredients(mOriginalText);
             ingredients = ingredientsAndText.getResult();
 
+
             ResultAndAlteredTextPair stepsAndText = findSteps(ingredientsAndText.getAlteredText());
             steps = stepsAndText.getResult();
             description = findDescription(stepsAndText.getAlteredText());
@@ -333,17 +349,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         modifyRecipe(this.mRecipeInProgress, ingredients, steps, description);
 
-    }
 
-
-
-    private static boolean sectionIsClutter(String section) {
-        for (String s : CLUTTER_STRINGS) {
-            if (section.toLowerCase(Locale.ENGLISH).contains(s)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private String findDescription() {

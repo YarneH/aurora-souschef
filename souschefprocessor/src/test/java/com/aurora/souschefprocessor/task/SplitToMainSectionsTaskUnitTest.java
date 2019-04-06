@@ -112,13 +112,13 @@ public class SplitToMainSectionsTaskUnitTest {
 
         // recipe 4
         map = new HashMap<>();
-        map.put("STEPS", "\n\nPlace a large pot of water over high heat. When the water is at a rolling boil, add a big pinch of salt, drop in the fettucine, and stir. Cook the pasta, stirring from time to time, according to package directions for al dente, usually about 12 minutes. Meanwhile, heat the olive oil in a large skillet over medium heat. When the oil is warm, add the garlic and sauté until golden, about 1 minute. Add the lemon zest and cook for 30 seconds longer. Increase the heat to medium-high, add the zucchini, and cook, stirring, until tender, 2 to 3 minutes. Season with salt and pepper.\n" +
+        map.put("STEPS", "Place a large pot of water over high heat. When the water is at a rolling boil, add a big pinch of salt, drop in the fettucine, and stir. Cook the pasta, stirring from time to time, according to package directions for al dente, usually about 12 minutes. Meanwhile, heat the olive oil in a large skillet over medium heat. When the oil is warm, add the garlic and sauté until golden, about 1 minute. Add the lemon zest and cook for 30 seconds longer. Increase the heat to medium-high, add the zucchini, and cook, stirring, until tender, 2 to 3 minutes. Season with salt and pepper.\n" +
                 "Remove and reserve about 1/2 cup of the cooking water, then drain the pasta and quickly toss with the zucchini, parsley, and mint. Spoon on the ricotta and toss lightly again, add small amounts of the cooking water to lighten the cheese to the consistency you like, and serve.\n" +
                 "\n" +
                 "Cooks' Note\n" +
                 "Zucchini is easy to shred on the large holes of a box grater, with the shredding attachment of a food processor, or with a mandoline."
         );
-        map.put("INGR", "\n" +
+        map.put("INGR", "" +
                 "Salt\n" +
                 "1 pound fettuccine\n" +
                 "4 tablespoons extra-virgin olive oil\n" +
@@ -134,7 +134,7 @@ public class SplitToMainSectionsTaskUnitTest {
 
         // recipe 5
         map = new HashMap<>();
-        map.put("STEPS", "\n1) Add the dry ingredients to a large mixing bowl and mix the ingredients thoroughly.\n" +
+        map.put("STEPS", "1) Add the dry ingredients to a large mixing bowl and mix the ingredients thoroughly.\n" +
                 "\n" +
                 "2) Add the cup of warm water to the bowl and mix the dry ingredients into the water with your hand until its an even mixture.\n" +
                 "\n" +
@@ -189,7 +189,7 @@ public class SplitToMainSectionsTaskUnitTest {
         // Arrange
         List<Map<String, String>> fieldsList = initializeFieldList();
 
-        for (int i = 1; i < 2; i++) {
+        for (int i = 0; i < fieldsList.size(); i++) {
             // Arrange
             String text = recipeTexts.get(i);
             RecipeInProgress rip = new RecipeInProgress(text);
@@ -199,9 +199,8 @@ public class SplitToMainSectionsTaskUnitTest {
 
             // Assert
 
-            assert (rip.getIngredientsString().trim().equalsIgnoreCase(fieldsList.get(i).get("INGR")));
-            System.out.println(rip.getStepsString());
-            System.out.println(fieldsList.get(i).get("STEPS"));
+
+            assert (rip.getIngredientsString().equalsIgnoreCase(fieldsList.get(i).get("INGR")));
             assert (rip.getStepsString().equalsIgnoreCase(fieldsList.get(i).get("STEPS")));
             assert (rip.getDescription() != null);
         }

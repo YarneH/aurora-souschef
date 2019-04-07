@@ -118,14 +118,14 @@ public class Communicator {
     /**
      * Receives an extractedText object from the AuroraKernel that will be processed into a custom Recipe Object
      *
-     * @param text the text to be processed
+     * @param extractedText the text to be processed
      */
-    public Recipe process(ExtractedText text) {
+    public Recipe process(ExtractedText extractedText) {
         // for now String, should be TextObject but not yet defined by Aurora
         // for now this is independent of the tasks sent
         Recipe recipe = null;
         try {
-            recipe = mDelegator.processText(text);
+            recipe = mDelegator.processText(extractedText);
             sendObjectToAuroraKernel(recipe);
         } catch (RecipeDetectionException rde) {
             Log.e("DETECTION", "process text", rde);

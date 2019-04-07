@@ -26,10 +26,6 @@ public class Communicator {
     private static AtomicInteger mProgressAnnotationPipelines = new AtomicInteger(0);
 
     /**
-     * The recipe result of the processing
-     */
-    private Recipe mRecipe;
-    /**
      * The delgator that executes the processing
      */
     private Delegator mDelegator;
@@ -100,9 +96,10 @@ public class Communicator {
     public Recipe process(String text) {
         // for now String, should be TextObject but not yet defined by Aurora
         // for now this is independent of the tasks sent
+        Recipe recipe = null;
         try {
-            mRecipe = mDelegator.processText(text);
-            sendObjectToAuroraKernel(mRecipe);
+            recipe = mDelegator.processText(text);
+            sendObjectToAuroraKernel(recipe);
         } catch (RecipeDetectionException rde) {
             Log.e("DETECTION", "process text", rde);
             // if something went wrong with the detection rethrow the error and let the
@@ -114,21 +111,22 @@ public class Communicator {
             Log.e("ILLEGAL", "processText", iae);
 
         }
-        return mRecipe;
+        return recipe;
 
     }
 
     /**
      * Receives an extractedText object from the AuroraKernel that will be processed into a custom Recipe Object
      *
-     * @param text the text to be processed
+     * @param extractedText the text to be processed
      */
-    public Recipe process(ExtractedText text) {
+    public Recipe process(ExtractedText extractedText) {
         // for now String, should be TextObject but not yet defined by Aurora
         // for now this is independent of the tasks sent
+        Recipe recipe = null;
         try {
-            mRecipe = mDelegator.processText(text);
-            sendObjectToAuroraKernel(mRecipe);
+            recipe = mDelegator.processText(extractedText);
+            sendObjectToAuroraKernel(recipe);
         } catch (RecipeDetectionException rde) {
             Log.e("DETECTION", "process text", rde);
             // if something went wrong with the detection rethrow the error and let the
@@ -140,12 +138,8 @@ public class Communicator {
             Log.e("ILLEGAL", "processText", iae);
 
         }
-        return mRecipe;
+        return recipe;
 
-    }
-
-    public Recipe getRecipe() {
-        return mRecipe;
     }
 
     /**

@@ -151,16 +151,16 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     private String findStepsNLP() {
         StringBuilder bld = new StringBuilder();
         List<String> sectionsToRemove = new ArrayList<>();
-        boolean allreadyFound = false;
+        boolean alreadyFound = false;
         for (String section : mSectionsBodies) {
-            if (!allreadyFound) {
+            if (!alreadyFound) {
                 boolean verbDetected = verbDetected(section, false);
                 if (!verbDetected) {
                     verbDetected = verbDetected(section, true);
                 }
-                allreadyFound = verbDetected;
+                alreadyFound = verbDetected;
             }
-            if (allreadyFound) {
+            if (alreadyFound) {
                 // remove this section
                 sectionsToRemove.add(section);
                 // append it to the builder

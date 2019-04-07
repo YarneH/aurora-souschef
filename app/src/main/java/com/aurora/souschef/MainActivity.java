@@ -162,7 +162,6 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
 
-            //BasicPluginObject basicPluginObject = null;
 
             // TODO remove this if statement probably. Is currently used to handle cases where a
             // plain String is sent instead of an ExtractedText
@@ -181,12 +180,11 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
                 // TODO handle a PluginObject that was cached
                 String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
                         Constants.PLUGIN_INPUT_OBJECT);
-                PluginObject receivedObject = PluginObject.fromJson(inputTextJSON);
-                if (receivedObject instanceof Recipe) {
-                    SouschefInit init = new SouschefInit("I don't think this text is important");
-                    init.initiateWithCachedObject((Recipe) receivedObject);
-
-                }
+                Recipe receivedObject = PluginObject.fromJson(inputTextJSON, Recipe.class);
+                // TODO catch if the receivedObject was not able to be de-JSONed.
+                // Waiting for auroralib update for this.
+                SouschefInit init = new SouschefInit("I don't think this text is important");
+                init.initiateWithCachedObject((Recipe) receivedObject);
             }
 
         } else {
@@ -288,20 +286,18 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
             // update 1:
             publishProgress("Loading the magic important stuff...");
             try {
+                Recipe processedRecipe;
                 if (mExtractedText == null) {
-                    comm.process(mText);
+                    processedRecipe = comm.process(mText);
                 } else {
-                    comm.process(mExtractedText);
+                    processedRecipe = comm.process(mExtractedText);
                 }
                 publishProgress("Done!");
-                return comm.getRecipe();
+                return processedRecipe;
             } catch (RecipeDetectionException e) {
-                runOnUiThread(() -> {
-                    Toast.makeText(mContext, "Representation failed because " + e.getMessage(),
-                            Toast.LENGTH_SHORT).show();
-                });
-               
-
+                runOnUiThread(() ->
+                        Toast.makeText(mContext, "Representation failed because " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show());
             }
             return null;
 
@@ -366,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
             mTab2Ingredients = new Tab2Ingredients();
             mTab2Ingredients.setRecipe(recipe);
-            mTab2Ingredients.setmOnAmountOfPeopleChangedListener(mOnAmountOfPeopleChangedListener);
+            mTab2Ingredients.setOnAmountOfPeopleChangedListener(mOnAmountOfPeopleChangedListener);
 
             mTab3Steps = new Tab3Steps();
             mTab3Steps.setRecipe(recipe);

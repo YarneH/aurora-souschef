@@ -65,7 +65,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
                 mThreadPoolExecutor.execute(thread);
             }
         }
-        // wait unitll all threads have finished
+        // wait unitl all threads have finished
         waitForThreads(latch);
     }
 

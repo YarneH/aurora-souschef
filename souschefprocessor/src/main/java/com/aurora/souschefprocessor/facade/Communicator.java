@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.facade;
 import android.content.Context;
 import android.util.Log;
 
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
 import com.aurora.souschefprocessor.R;
 import com.aurora.souschefprocessor.recipe.Recipe;
@@ -97,6 +98,32 @@ public class Communicator {
      * @param text the text to be processed
      */
     public Recipe process(String text) {
+        // for now String, should be TextObject but not yet defined by Aurora
+        // for now this is independent of the tasks sent
+        try {
+            mRecipe = mDelegator.processText(text);
+            sendObjectToAuroraKernel(mRecipe);
+        } catch (RecipeDetectionException rde) {
+            Log.e("DETECTION", "process text", rde);
+            // if something went wrong with the detection rethrow the error and let the
+            // environment decide what to do in this case
+            throw new RecipeDetectionException(rde.getMessage());
+        } catch (IllegalArgumentException iae) {
+            // This means something is programmatically wrong, so let the programmer know extra
+            // checks are needed somewhere in the code
+            Log.e("ILLEGAL", "processText", iae);
+
+        }
+        return mRecipe;
+
+    }
+
+    /**
+     * Receives an extractedText object from the AuroraKernel that will be processed into a custom Recipe Object
+     *
+     * @param text the text to be processed
+     */
+    public Recipe process(ExtractedText text) {
         // for now String, should be TextObject but not yet defined by Aurora
         // for now this is independent of the tasks sent
         try {

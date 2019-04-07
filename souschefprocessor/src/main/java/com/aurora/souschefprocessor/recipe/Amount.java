@@ -2,9 +2,18 @@ package com.aurora.souschefprocessor.recipe;
 
 import java.util.Objects;
 
+/**
+ * A dataclass that represents an amount (e.g. 500 ounces)
+ * <p>
+ * Two fields:
+ * value: a double that is the value
+ * unit: a string that is the unit
+ */
 public class Amount {
 
+    /** The value of this amount*/
     private double mValue;
+    /** The unit of this amount*/
     private String mUnit;
 
     public Amount(double mValue, String unit) {
@@ -13,6 +22,10 @@ public class Amount {
         }
         this.mValue = mValue;
         this.mUnit = unit;
+    }
+
+    public void setValue(double value) {
+        this.mValue = value;
     }
 
     public double getValue() {
@@ -32,9 +45,8 @@ public class Amount {
     public boolean equals(Object o) {
         if (o instanceof Amount) {
             Amount a = (Amount) o;
-            if (a.getUnit().equals(mUnit) && a.getValue() == mValue) {
-                return true;
-            }
+            return (a.getUnit().equalsIgnoreCase(mUnit) && a.getValue() == mValue);
+
         }
         return false;
     }
@@ -42,5 +54,9 @@ public class Amount {
     @Override
     public String toString() {
         return "QUANTITY " + mValue + " UNIT " + mUnit;
+    }
+
+    public void setUnit(String unit) {
+        this.mUnit = unit;
     }
 }

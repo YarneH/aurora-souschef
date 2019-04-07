@@ -1,5 +1,6 @@
 package com.aurora.souschefprocessor.task;
 
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 /**
@@ -10,14 +11,35 @@ import com.aurora.souschefprocessor.recipe.Recipe;
  * mOriginalText: a string that is the original text that was extracted by Aurora
  */
 public class RecipeInProgress extends Recipe {
+    /**
+     * The string representing the ingredients list that was detected using the
+     * {@link com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask}
+     */
     private String mIngredientsString;
+    /**
+     * The string representing the steps list that was detected using the
+     * {@link com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask}
+     */
     private String mStepsString;
+    /**
+     * The original text given by Aurora (could change to Annotation)
+     */
     private String mOriginalText;
+
+    /**
+     * An extractedtet object from Aurora
+     */
+    private ExtractedText mExtractedText;
 
 
     public RecipeInProgress(String originalText) {
         super();
         this.mOriginalText = originalText;
+    }
+
+    public RecipeInProgress(ExtractedText originalText) {
+        super();
+        this.mExtractedText = originalText;
     }
 
     @Override
@@ -57,5 +79,9 @@ public class RecipeInProgress extends Recipe {
      */
     public Recipe convertToRecipe() {
         return new Recipe(mIngredients, mRecipeSteps, mNumberOfPeople, mDescription);
+    }
+
+    public ExtractedText getExtractedText() {
+        return mExtractedText;
     }
 }

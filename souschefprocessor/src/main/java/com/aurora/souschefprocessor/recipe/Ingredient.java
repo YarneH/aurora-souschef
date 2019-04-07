@@ -16,31 +16,65 @@ import java.util.Objects;
  */
 public class Ingredient {
 
+    /**
+     * The name of this ingredient
+     */
     protected String mName;
+    /**
+     * The {@link Amount} that has as value quantity and as unit the unit of this ingredient
+     */
     protected Amount mAmount;
 
-    protected Map<PositionKey, Position> mPositions;
+    /**
+     * A map with the {@link Position}s of te name, unit and value of this ingredient in the string
+     * they were classified. Each of these Positions cannot be null.
+     */
+    protected Map<PositionKeysForIngredients, Position> mPositions;
 
-    public Ingredient(String name, String unit, double value, Map<PositionKey, Position> positions) {
+    public Ingredient(String name, String unit, double value, Map<PositionKeysForIngredients, Position> positions) {
         this.mName = name;
         this.mAmount = new Amount(value, unit);
+
+        //Check if the positions are not null
+        for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
+            Position position = positions.get(key);
+            if (position == null) {
+                throw new IllegalArgumentException("Position of " + key + " cannot be null");
+            }
+        }
         this.mPositions = positions;
     }
 
     public Position getNamePosition() {
-        return mPositions.get(PositionKey.NAME);
+        return mPositions.get(PositionKeysForIngredients.NAME);
+    }
+
+    public void setNamePosition(Position namePosition) {
+        mPositions.put(PositionKeysForIngredients.NAME, namePosition);
     }
 
     public Position getQuantityPosition() {
-        return mPositions.get(PositionKey.QUANTITY);
+        return mPositions.get(PositionKeysForIngredients.QUANTITY);
+    }
+
+    public void setQuantityPosition(Position quantityPosition) {
+        mPositions.put(PositionKeysForIngredients.QUANTITY, quantityPosition);
     }
 
     public Position getUnitPosition() {
-        return mPositions.get(PositionKey.UNIT);
+        return mPositions.get(PositionKeysForIngredients.UNIT);
+    }
+
+    public void setUnitPosition(Position unitPosition) {
+        mPositions.put(PositionKeysForIngredients.UNIT, unitPosition);
     }
 
     public String getName() {
         return mName;
+    }
+
+    public void setName(String name) {
+        this.mName = name;
     }
 
     public String getUnit() {
@@ -55,6 +89,9 @@ public class Ingredient {
         return mAmount;
     }
 
+    public void setmAmount(Amount amount) {
+        this.mAmount = amount;
+    }
 
     @Override
     public int hashCode() {
@@ -65,9 +102,8 @@ public class Ingredient {
     public boolean equals(Object o) {
         if (o instanceof Ingredient) {
             Ingredient ingredient = (Ingredient) o;
-            if (ingredient.getAmount().equals(mAmount) && ingredient.getName().equals(mName)) {
-                return true;
-            }
+            return (ingredient.getAmount().equals(mAmount) && ingredient.getName().equalsIgnoreCase(mName));
+
         }
         return false;
     }
@@ -86,8 +122,9 @@ public class Ingredient {
      * @param string The string in which to check that the positions are legal
      * @return a boolean indicating if the positions are legal
      */
-    public boolean arePositionsLegalInString(String string) {
-        for (PositionKey key : PositionKey.values()) {
+
+     boolean arePositionsLegalInString(String string) {
+        for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
             if (!mPositions.get(key).isLegalInString(string)) {
                 return false;
             }
@@ -96,8 +133,17 @@ public class Ingredient {
     }
 
 
-    public enum PositionKey {
+    /**
+     * Keys for a map storing positions for ingredients
+     */
+    public enum PositionKeysForIngredients {
         NAME, QUANTITY, UNIT
+    }
+
+    public void trimPositionsToString(String s){
+        for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
+            mPositions.get(key).trimToLengthOfString(s);
+        }
     }
 
 }

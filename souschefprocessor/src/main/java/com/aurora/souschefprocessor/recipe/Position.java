@@ -10,7 +10,13 @@ import java.util.Objects;
  */
 public class Position {
 
+    /** The beginIndex of this position. This is the index of the first character of the detected
+     * element.
+     */
     private int mBeginIndex;
+    /**
+     * The endindex. This is (as usual in Java) the offset of the char after this detected element.
+     */
     private int mEndIndex;
 
     public Position(int beginIndex, int endIndex) {
@@ -96,10 +102,13 @@ public class Position {
      * beginIndex is at most the index of the last character of the string and the endIndex is at most
      * the length of the string (index after the last character)
      *
-     * @param string
-     * @return
+     * @param string the string to check the legality of the position in
+     * @return A boolean that indicates whether this position is legal in the string
      */
     public boolean isLegalInString(String string) {
+        if (string == null) {
+            return false;
+        }
         int length = string.length();
 
         // beginIndex should be at least as small as the length of the string - 1
@@ -119,11 +128,21 @@ public class Position {
     public boolean equals(Object o) {
         if (o instanceof Position) {
             Position p = (Position) o;
-            if (p.getBeginIndex() == mBeginIndex && p.getEndIndex() == mEndIndex) {
-                return true;
-            }
+            return (p.getBeginIndex() == mBeginIndex && p.getEndIndex() == mEndIndex);
+
         }
         return false;
+    }
+
+    public void trimToLengthOfString(String s){
+        int length = s.length();
+        if(mBeginIndex >= length){
+            throw new IllegalArgumentException("This string is shorter than the beginIndex of " +
+                    "this position, trimming is impossible");
+        }
+        if( mEndIndex > length){
+            mEndIndex = length;
+        }
     }
 
     @Override

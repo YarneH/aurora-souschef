@@ -22,8 +22,10 @@ public class DetectNumberOfPeopleTaskUnitTest {
 
     @BeforeClass
     public static void initialize() {
+
         originalText = initializeRecipeText();
-        recipe = new RecipeInProgress(originalText);
+        recipe = new RecipeInProgress("");
+        recipe.setDescription(originalText);
         detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipe);
     }
 
@@ -54,7 +56,9 @@ public class DetectNumberOfPeopleTaskUnitTest {
                 "NUMBER\t4\n" +
                 "NUMBER\t4\n" +
                 "NUMBER\t8\n" +
-                "NUMBER\t2525\n").split("\n");
+                "NUMBER\t2525\n" +
+                "NO_NUMBER\n" +
+                "NO_NUMBER\n").split("\n");
     }
 
     private static List<String> initializeDataSet() {
@@ -107,6 +111,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
         // arrange
         String originalTextNoNumber = originalText.substring(0, originalText.indexOf('\n') + 1);
         RecipeInProgress recipeNoNumber = new RecipeInProgress(originalTextNoNumber);
+        recipeNoNumber.setDescription(originalTextNoNumber);
         DetectNumberOfPeopleTask detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipeNoNumber);
         // act
         detectNumberOfPeopleTask.doTask();
@@ -130,6 +135,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
             String recipeTag = dataSetTags[i - 1];
 
             RecipeInProgress recipe = new RecipeInProgress(recipeText);
+            recipe.setDescription(recipeText);
             DetectNumberOfPeopleTask detector = new DetectNumberOfPeopleTask(recipe);
             detector.doTask();
 

@@ -1,5 +1,8 @@
 package com.aurora.souschef;
 
+
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
@@ -14,27 +17,17 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.aurora.auroralib.Constants;
+import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.PluginObject;
 import com.aurora.souschefprocessor.facade.Communicator;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.Recipe;
-import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
-import java.io.IOException;
-import java.util.zip.GZIPInputStream;
+public class MainActivity extends AppCompatActivity implements Tab2Ingredients.OnAmountOfPeopleChangedListener {
 
-import edu.stanford.nlp.ie.crf.CRFClassifier;
-import edu.stanford.nlp.ling.CoreLabel;
-
-public class MainActivity extends AppCompatActivity {
-
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
     private static final int TAB_OVERVIEW = 0;
     private static final int TAB_INGREDIENTS = 1;
     private static final int TAB_STEPS = 2;
@@ -51,8 +44,18 @@ public class MainActivity extends AppCompatActivity {
             "Revising some stuff",
             "Searching for timers...",
             "Finishing up..."};
-
+    /**
+     * The {@link android.support.v4.view.PagerAdapter} that will provide
+     * fragments for each of the sections. We use a
+     * {@link FragmentPagerAdapter} derivative, which will keep every
+     * loaded fragment in memory. If this becomes too memory intensive, it
+     * may be best to switch to a
+     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
+     */
+    private Context mContext = this;
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
+    private Tab2Ingredients.OnAmountOfPeopleChangedListener mOnAmountOfPeopleChangedListener = this;
+
 
     public MainActivity() {
         // Default constructor
@@ -85,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 "        1/2 tsp. crushed red pepper flakes\n" +
                 "        6 oz. oil-packed tuna\n" +
                 "\n" +
-                "Preparation\n" +
+                "\n" +
                 "\n" +
                 "        Cook pasta in a large pot of boiling salted water, stirring " +
                 "occasionally, until al dente. Drain pasta, reserving 1 cup pasta cooking " +
@@ -113,8 +116,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // The first thing we do is Souschef specific:
         // generate pipeline for creating annotations in separate thread.
-        // I removed this, by adding the call to this in the static{} block of
-        DetectTimersInStepTask.initializeAnnotationPipeline();
+
+        Communicator.createAnnotationPipelines();
 
         /*
          * The {@link ViewPager} that will host the section contents.
@@ -146,7 +149,60 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.setVisibility(View.GONE);
 
-        (new SouschefInit()).execute();
+        //TODO: Update the following
+        //Should only start in response to PLUGIN_ACTION in production
+        //This means the else case should be omitted
+
+
+        String inputText = "";
+        ExtractedText extractedText = null;
+        /*
+         * Handle Aurora starting the Plugin.
+         */
+        Intent intentThatStartedThisActivity = getIntent();
+        if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+
+
+            // TODO remove this if statement probably. Is currently used to handle cases where a
+            // plain String is sent instead of an ExtractedText
+            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
+                inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
+            }
+
+            // TODO Souschef should probably take an ExtracttedText as input instead of just a String
+            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
+                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
+                        Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
+                extractedText = ExtractedText.fromJson(inputTextJSON);
+
+
+            } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
+                // TODO handle a PluginObject that was cached
+                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
+                        Constants.PLUGIN_INPUT_OBJECT);
+                Recipe receivedObject = PluginObject.fromJson(inputTextJSON, Recipe.class);
+                // TODO catch if the receivedObject was not able to be de-JSONed.
+                // Waiting for auroralib update for this.
+                SouschefInit init = new SouschefInit("I don't think this text is important");
+                init.initiateWithCachedObject((Recipe) receivedObject);
+            }
+
+        } else {
+            inputText = getText();
+        }
+        if (extractedText != null) {
+            // maybe in production this should always be the case
+            // and the else should throw an error or let the user know that extracting text failed
+            (new SouschefInit(extractedText)).execute();
+        } else {
+
+            (new SouschefInit(inputText)).execute();
+        }
+    }
+
+    @Override
+    public void onAmountOfPeopleChanged(int newAmount) {
+        ((Tab3Steps) mSectionsPagerAdapter.getItem(TAB_STEPS)).setText("" + newAmount);
     }
 
     class ProgressUpdate extends AsyncTask<Void, Integer, Void> {
@@ -161,8 +217,8 @@ public class MainActivity extends AppCompatActivity {
                 while (isLoading) {
                     Thread.sleep(MILLIS_BETWEEN_UPDATES);
                     upTime += MILLIS_BETWEEN_UPDATES;
-                    publishProgress(DetectTimersInStepTask.getProgress().get());
-                    if (DetectTimersInStepTask.getProgress().get() >= DETECTION_STEPS) {
+                    publishProgress(Communicator.getProgressAnnotationPipelines());
+                    if (Communicator.getProgressAnnotationPipelines() >= DETECTION_STEPS) {
                         isLoading = false;
                     }
                     if (upTime > MAX_WAIT_TIME) {
@@ -198,6 +254,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class SouschefInit extends AsyncTask<Void, String, Recipe> {
+        private String mText;
+        private ExtractedText mExtractedText = null;
+
+        protected SouschefInit(String text) {
+            mText = text;
+        }
+
+        protected SouschefInit(ExtractedText text) {
+            mExtractedText = text;
+        }
+
+        protected void initiateWithCachedObject(Recipe recipe) {
+            onPostExecute(recipe);
+        }
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -209,20 +280,28 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Recipe doInBackground(Void... voids) {
             // Progressupdates are in demostate
-            try (GZIPInputStream is = new GZIPInputStream(getResources().
-                    openRawResource(R.raw.detect_ingr_list_model))) {
-                // update 1:
-                publishProgress("Loading the magic important stuff...");
-                CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
-                Communicator mCommunicator = new Communicator(crf);
-                String text = getText();
-                mCommunicator.process(text);
+
+            Communicator comm = Communicator.createCommunicator(mContext);
+
+            // update 1:
+            publishProgress("Loading the magic important stuff...");
+            try {
+                Recipe processedRecipe;
+                if (mExtractedText == null) {
+                    processedRecipe = comm.process(mText);
+                } else {
+                    processedRecipe = comm.process(mExtractedText);
+                }
                 publishProgress("Done!");
-                return mCommunicator.getRecipe();
-            } catch (IOException | ClassNotFoundException e) {
-                Log.e("Model", "demo ", e);
+                return processedRecipe;
+            } catch (RecipeDetectionException e) {
+                runOnUiThread(() ->
+                        Toast.makeText(mContext, "Representation failed because " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show());
             }
             return null;
+
+
         }
 
         @Override
@@ -234,26 +313,30 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Recipe recipe) {
-            super.onPostExecute(recipe);
+            if (recipe != null) {
+                super.onPostExecute(recipe);
 
-            // get fields to update visibility
-            AppBarLayout appBarLayout = findViewById(R.id.appbar);
-            ViewPager mViewPager = findViewById(R.id.container);
-            TabLayout tabLayout = findViewById(R.id.tabs);
-            ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+                // get fields to update visibility
+                AppBarLayout appBarLayout = findViewById(R.id.appbar);
+                ViewPager mViewPager = findViewById(R.id.container);
+                TabLayout tabLayout = findViewById(R.id.tabs);
+                ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
 
-            // Load recipe in the user interface
-            mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), recipe);
-            mViewPager.setAdapter(mSectionsPagerAdapter);
+                // Load recipe in the user interface
+                mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), recipe);
+                mViewPager.setAdapter(mSectionsPagerAdapter);
 
-            // update visibilities
-            cl.setVisibility(View.GONE);
-            appBarLayout.setVisibility(View.VISIBLE);
-            mViewPager.setVisibility(View.VISIBLE);
-            tabLayout.setVisibility(View.VISIBLE);
+                // update visibilities
+                cl.setVisibility(View.GONE);
+                appBarLayout.setVisibility(View.VISIBLE);
+                mViewPager.setVisibility(View.VISIBLE);
+                tabLayout.setVisibility(View.VISIBLE);
+            }
 
 
         }
+
+
     }
 
     /**
@@ -262,6 +345,9 @@ public class MainActivity extends AppCompatActivity {
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
         private Recipe mRecipe = null;
+        private Tab1Overview mTab1Overview = null;
+        private Tab2Ingredients mTab2Ingredients = null;
+        private Tab3Steps mTab3Steps = null;
 
         SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -270,29 +356,35 @@ public class MainActivity extends AppCompatActivity {
         public SectionsPagerAdapter(FragmentManager fm, Recipe recipe) {
             super(fm);
             mRecipe = recipe;
+
+            mTab1Overview = new Tab1Overview();
+            mTab1Overview.setRecipe(recipe);
+
+            mTab2Ingredients = new Tab2Ingredients();
+            mTab2Ingredients.setRecipe(recipe);
+            mTab2Ingredients.setOnAmountOfPeopleChangedListener(mOnAmountOfPeopleChangedListener);
+
+            mTab3Steps = new Tab3Steps();
+            mTab3Steps.setRecipe(recipe);
         }
 
         @Override
         public Fragment getItem(int position) {
-            Fragment tabFragment;
+            Fragment tempFrag;
             switch (position) {
                 case TAB_OVERVIEW:
-                    tabFragment = new Tab1Overview();
-                    ((Tab1Overview) tabFragment).setRecipe(mRecipe);
+                    tempFrag = mTab1Overview;
                     break;
                 case TAB_INGREDIENTS:
-                    tabFragment = new Tab2Ingredients();
-                    ((Tab2Ingredients) tabFragment).setRecipe(mRecipe);
+                    tempFrag = mTab2Ingredients;
                     break;
                 case TAB_STEPS:
-                    tabFragment = new Tab3Steps();
-                    ((Tab3Steps) tabFragment).setRecipe(mRecipe);
+                    tempFrag = mTab3Steps;
                     break;
                 default:
-                    tabFragment = null;
-                    break;
+                    tempFrag = null;
             }
-            return tabFragment;
+            return tempFrag;
         }
 
         @Override
@@ -324,4 +416,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
+
+
 

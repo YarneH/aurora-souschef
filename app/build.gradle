@@ -6,8 +6,8 @@ android {
         applicationId "com.aurora.souschef"
         minSdkVersion 22
         targetSdkVersion 28
-        versionCode 3
-        versionName "0.3"
+        versionCode 4
+        versionName "0.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -63,5 +63,6 @@ dependencies {
         exclude group: 'org.apache.lucene'
         exclude group: 'com.sun.xml.bind'
     }
-    //testImplementation 'edu.stanford.nlp:stanford-corenlp:3.9.2:models'
+    //gestures
+    implementation 'com.github.nisrulz:sensey:1.8.0'
 }

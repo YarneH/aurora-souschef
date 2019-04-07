@@ -2,20 +2,33 @@ package com.aurora.souschefprocessor.recipe;
 
 import com.aurora.auroralib.PluginObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * A data class representing a recipe. It has 4 fields:
- * mIngredients: a set of ListIngredient objecs, this represents the ListIngredients needed for
+ * mIngredients: a list of ListIngredient objecs, this represents the ListIngredients needed for
  * this recipe.
  * mRecipeSteps: A list of RecipeSteps in this recipe
  * mNumberOfPeople: the amount of people the basic recipe is for
  * mDescription: a description of the recipe (could be that it is not present)
  */
 public class Recipe extends PluginObject {
-    protected List<ListIngredient> mIngredients;
-    protected List<RecipeStep> mRecipeSteps;
+    /**
+     * The list of detected {@link ListIngredient} in this recipe
+     */
+    protected List<ListIngredient> mIngredients = new ArrayList<>();
+    /**
+     * The list of detected {@link RecipeStep} in this recipe
+     */
+    protected List<RecipeStep> mRecipeSteps = new ArrayList<>();
+    /**
+     * The detected number of people this recipe is for
+     */
     protected int mNumberOfPeople;
+    /**
+     * The (optional) description of this recipe
+     */
     protected String mDescription;
 
 
@@ -27,9 +40,7 @@ public class Recipe extends PluginObject {
         this.mDescription = description;
     }
 
-    public Recipe() {
-
-    }
+    public Recipe() {}
 
     public synchronized int getNumberOfPeople() {
         return mNumberOfPeople;
@@ -52,7 +63,11 @@ public class Recipe extends PluginObject {
     }
 
     public synchronized void setRecipeSteps(List<RecipeStep> recipeSteps) {
-        this.mRecipeSteps = recipeSteps;
+        if (recipeSteps == null) {
+            mRecipeSteps.clear();
+        } else {
+            this.mRecipeSteps = recipeSteps;
+        }
     }
 
     public synchronized List<ListIngredient> getIngredients() {
@@ -60,9 +75,12 @@ public class Recipe extends PluginObject {
     }
 
     public synchronized void setIngredients(List<ListIngredient> ingredients) {
-        this.mIngredients = ingredients;
+        if (ingredients == null) {
+            mIngredients.clear();
+        } else {
+            this.mIngredients = ingredients;
+        }
     }
-
 
     @Override
     public String toString() {

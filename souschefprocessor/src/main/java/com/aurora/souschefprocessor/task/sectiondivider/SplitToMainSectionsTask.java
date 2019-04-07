@@ -1,6 +1,8 @@
 package com.aurora.souschefprocessor.task.sectiondivider;
 
 
+import android.util.Log;
+
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
@@ -112,7 +114,14 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         pipeline.addAnnotator(new TokenizerAnnotator(false, "en"));
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
 
-        pipeline.addAnnotator(new ParserAnnotator(false, MAX_SENTENCES_FOR_PARSER));
+        // this fails on android but not in the tests
+        try {
+            pipeline.addAnnotator(new ParserAnnotator(false, MAX_SENTENCES_FOR_PARSER));
+        } catch (Exception e) {
+            Log.e("PARSE", "loading parser failed", e);
+            throw new RecipeDetectionException("This recipe needs parsing, which currently fails on android");
+        }
+
         pipeline.addAnnotator(new MorphaAnnotator(false));
         sAnnotationPipeline = pipeline;
     }
@@ -295,7 +304,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
 
         int indexOfSection = findIngredientsDigit();
-        if (indexOfSection < 0) return new ResultAndAlteredTextPair("", text);
+        if (indexOfSection < 0) {
+            return new ResultAndAlteredTextPair("", text);
+        }
 
         String ingredientsSection = sections[indexOfSection];
         text = text.replace(ingredientsSection, "");

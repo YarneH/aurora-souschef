@@ -82,7 +82,7 @@ public class Tab2Ingredients extends Fragment {
         void onAmountOfPeopleChanged(int newAmount);
     }
 
-    protected void setmOnAmountOfPeopleChangedListener(OnAmountOfPeopleChangedListener listener) {
+    protected void setOnAmountOfPeopleChangedListener(OnAmountOfPeopleChangedListener listener) {
         mOnAmountOfPeopleChangedListener = listener;
     }
 }

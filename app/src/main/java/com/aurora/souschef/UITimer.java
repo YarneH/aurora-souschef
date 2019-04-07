@@ -37,7 +37,7 @@ public class UITimer extends RecipeTimer {
     private TextView mTextViewTimer;
 
     public UITimer(int lowerBound, int upperBound, TextView textView) {
-        super(lowerBound, upperBound, null);
+        super(upperBound, lowerBound, null);
         // Use getLowerBound so the lower and upper bound are switched if needed (implemented in RecipeTimer)
         mTimeSetByUser = getLowerBound();
         mTextViewTimer = textView;
@@ -46,7 +46,7 @@ public class UITimer extends RecipeTimer {
     }
 
     public UITimer(RecipeTimer timer, TextView textView) {
-        super(timer.getLowerBound(), timer.getLowerBound(), null);
+        super(timer.getUpperBound(), timer.getLowerBound(), null);
         // Use getLowerBound so the lower and upper bound are switched if needed (implemented in RecipeTimer)
         mTimeSetByUser = getLowerBound();
         mTextViewTimer = textView;

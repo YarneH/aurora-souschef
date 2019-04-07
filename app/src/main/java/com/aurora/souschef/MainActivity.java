@@ -362,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
             mTab2Ingredients = new Tab2Ingredients();
             mTab2Ingredients.setRecipe(recipe);
-            mTab2Ingredients.setmOnAmountOfPeopleChangedListener(mOnAmountOfPeopleChangedListener);
+            mTab2Ingredients.setOnAmountOfPeopleChangedListener(mOnAmountOfPeopleChangedListener);
 
             mTab3Steps = new Tab3Steps();
             mTab3Steps.setRecipe(recipe);

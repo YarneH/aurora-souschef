@@ -82,15 +82,15 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         StringBuilder bld = new StringBuilder();
         String[] lines = text.split("\n");
         for (String line : lines) {
-                bld.append(line.trim());
-                bld.append("\n");
+            bld.append(line.trim());
+            bld.append("\n");
 
         }
         // Remove last new line
         if (bld.length() == 0) {
             return text;
         } else {
-            return bld.toString().trim().replace("\n\n\n","\n\n");
+            return bld.toString().trim().replace("\n\n\n", "\n\n");
         }
     }
 
@@ -295,45 +295,11 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
 
         int indexOfSection = findIngredientsDigit();
-        if (indexOfSection < 0) {
-            return new ResultAndAlteredTextPair("", text);
-        }
+        if (indexOfSection < 0) return new ResultAndAlteredTextPair("", text);
 
         String ingredientsSection = sections[indexOfSection];
         text = text.replace(ingredientsSection, "");
         return new ResultAndAlteredTextPair(ingredientsSection, text);
-    }
-
-    /**
-     * Capitalizes sentences again
-     *
-     * @param text The text to capitalize
-     * @return The text with the sentences capitalized again
-     */
-    private String capitalize(String text) {
-
-        if (text.length() == 0) {
-            // if text is empty just return text
-            return text;
-        }
-
-        // get both original and argument text in lowercase
-        String lowerCaseOriginal = mOriginalText.toLowerCase(Locale.ENGLISH);
-        String lowerCaseText = text.toLowerCase(Locale.ENGLISH);
-
-        // try to find the lowerCaseText in the original lower case text
-        int startIndex = lowerCaseOriginal.indexOf(lowerCaseText);
-
-        if (startIndex < 0) {
-            // if the original text was not found just return the text (this should not happen)
-            return text;
-        }
-
-        // get the original substring that with capitalization that matches the argument string
-        // without captialization
-        int endIndex = startIndex + text.length();
-        return mOriginalText.substring(startIndex, endIndex);
-
     }
 
     /**

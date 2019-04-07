@@ -180,12 +180,11 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
                 // TODO handle a PluginObject that was cached
                 String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
                         Constants.PLUGIN_INPUT_OBJECT);
-                PluginObject receivedObject = PluginObject.fromJson(inputTextJSON);
-                if (receivedObject instanceof Recipe) {
-                    SouschefInit init = new SouschefInit("I don't think this text is important");
-                    init.initiateWithCachedObject((Recipe) receivedObject);
-
-                }
+                Recipe receivedObject = PluginObject.fromJson(inputTextJSON, Recipe.class);
+                // TODO catch if the receivedObject was not able to be de-JSONed.
+                // Waiting for auroralib update for this.
+                SouschefInit init = new SouschefInit("I don't think this text is important");
+                init.initiateWithCachedObject((Recipe) receivedObject);
             }
 
         } else {

@@ -4,6 +4,7 @@ import com.aurora.auroralib.PluginObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A data class representing a recipe. It has 4 fields:
@@ -88,6 +89,20 @@ public class Recipe extends PluginObject {
         }
     }
 
+    @Override
+    public boolean equals(Object o){
+        if(o instanceof Recipe){
+            Recipe r = (Recipe) o;
+            return r.getIngredients().equals(mIngredients) && r.getNumberOfPeople() == mNumberOfPeople
+                    && r.getRecipeSteps().equals(mRecipeSteps) && r.getDescription().equals(mDescription);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode(){
+        return Objects.hash(mIngredients, mNumberOfPeople, mRecipeSteps, mDescription);
+    }
     @Override
     public String toString() {
         return "Recipe{" +

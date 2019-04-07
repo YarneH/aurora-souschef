@@ -53,7 +53,7 @@ public class Delegator {
      */
     private static ThreadPoolExecutor sThreadPoolExecutor;
 
-    /**
+    /*
      * Makes sure that the {@link #createAnnotationPipelines()} method is always called if a delegator is
      * used, to ensure that the pipelines have been created
      */
@@ -145,12 +145,6 @@ public class Delegator {
                 decodeWorkQueue);
     }
 
-    public static ThreadPoolExecutor getThreadPoolExecutor() {
-        if (sThreadPoolExecutor == null) {
-            setUpThreadPool();
-        }
-        return sThreadPoolExecutor;
-    }
 
     /**
      * This is the core function of the delegator, where the text is processed by applying the filters
@@ -204,7 +198,7 @@ public class Delegator {
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
      */
-    public List<AbstractProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
+    private List<AbstractProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
         ArrayList<AbstractProcessingTask> pipeline = new ArrayList<>();
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
         pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));

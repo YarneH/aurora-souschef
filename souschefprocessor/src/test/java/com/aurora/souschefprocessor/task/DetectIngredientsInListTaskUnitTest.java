@@ -264,12 +264,16 @@ public class DetectIngredientsInListTaskUnitTest {
     public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForClutteredIngredientWithDash() {
 
         //  ingredientList[10] =  "750–900ml/1⅓–1⅔ pint readymade chicken gravy"; //10 cluttered with a dash
-        recipe.setIngredientsString(ingredientList[10]);
+        recipe.setIngredientsString("750–900ml/1⅓–1⅔ pint readymade chicken gravy\n" +
+                "3-4 cups of rice");
+
         Ingredient gravyIngredient = new Ingredient("readymade chicken gravy", "ml", 750, irrelevantPositions);
+        Ingredient riceIngredient = new Ingredient("rice", "cups", 3, irrelevantPositions);
         // Act
         detector.doTask();
         // Assert
         assert (recipe.getIngredients().contains(gravyIngredient));
+        assert(recipe.getIngredients().contains(riceIngredient));
 
     }
 

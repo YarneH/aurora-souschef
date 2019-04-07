@@ -121,10 +121,10 @@ public class Tab3Steps extends Fragment {
             titleTextView.setText(getString(R.string.section_format, index + 1));
 
             // Add Text and Timer
-            int timer_margin = Math.round(getResources().getDimension(R.dimen.timer_margin));
+            int timerMargin = Math.round(getResources().getDimension(R.dimen.timer_margin));
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            layoutParams.setMargins(0, timer_margin, 0, timer_margin);
+            layoutParams.setMargins(0, timerMargin, 0, timerMargin);
             ViewGroup insertPoint = (ViewGroup) rootView.findViewById(R.id.ll_step);
             int currentPosition = 0;
 
@@ -168,13 +168,13 @@ public class Tab3Steps extends Fragment {
             }
 
             // Add the ImageViews to the LinearLayout for the indicator dots
-            int dots_margin = Math.round(getResources().getDimension(R.dimen.dots_margin));
+            int dotsMargin = Math.round(getResources().getDimension(R.dimen.dots_margin));
             LinearLayout linearLayout = (LinearLayout) rootView.findViewById(R.id.ll_dots);
             ImageView tempView;
             LinearLayout.LayoutParams layoutParamsDot = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            layoutParamsDot.setMargins(dots_margin, dots_margin,
-                    dots_margin, dots_margin);
+            layoutParamsDot.setMargins(dotsMargin, dotsMargin,
+                    dotsMargin, dotsMargin);
 
             // For every step, add a dot and make sur the right one is selected
             for (int i = 0; i < mAmountSteps; i++) {

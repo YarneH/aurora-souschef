@@ -162,7 +162,6 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
 
-            //BasicPluginObject basicPluginObject = null;
 
             // TODO remove this if statement probably. Is currently used to handle cases where a
             // plain String is sent instead of an ExtractedText
@@ -296,12 +295,9 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
                 publishProgress("Done!");
                 return comm.getRecipe();
             } catch (RecipeDetectionException e) {
-                runOnUiThread(() -> {
-                    Toast.makeText(mContext, "Representation failed because " + e.getMessage(),
-                            Toast.LENGTH_SHORT).show();
-                });
-               
-
+                runOnUiThread(() ->
+                        Toast.makeText(mContext, "Representation failed because " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show());
             }
             return null;
 

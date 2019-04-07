@@ -133,9 +133,9 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
             // If all fails, just return double with 2 decimals (if needed)
             String output;
             if (quantity == (long) quantity) {
-                output = String.format("%d", (long) quantity);
+                output = String.format(Locale.ENGLISH, "%d", (long) quantity);
             } else {
-                output = String.format("%.2f", quantity);
+                output = String.format(Locale.ENGLISH,"%.2f", quantity);
             }
 
             return output;

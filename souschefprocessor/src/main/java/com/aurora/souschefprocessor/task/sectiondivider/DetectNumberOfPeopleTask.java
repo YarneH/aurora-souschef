@@ -25,7 +25,7 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
      * The regex built using the {@link #BEFORE_DIGIT_WORDS}, {@link #AFTER_DIGIT_WORDS} and
      * {@link #SEPERATOR_CHARACTERS}
      */
-    private static String regex = buildRegex();
+    private static String sRegex = buildRegex();
 
     public DetectNumberOfPeopleTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
@@ -44,7 +44,7 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
         String[] lines = text.split("\n");
 
         for (String line : lines) {
-            Matcher match = Pattern.compile(regex).matcher(line.toLowerCase(Locale.ENGLISH));
+            Matcher match = Pattern.compile(sRegex).matcher(line.toLowerCase(Locale.ENGLISH));
             if (match.find()) {
                 Matcher digitMatcher = Pattern.compile("\\d+").matcher((match.group()));
                 if (digitMatcher.find()) {

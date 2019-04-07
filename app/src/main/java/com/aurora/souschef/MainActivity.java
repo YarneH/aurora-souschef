@@ -286,13 +286,14 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
             // update 1:
             publishProgress("Loading the magic important stuff...");
             try {
+                Recipe processedRecipe;
                 if (mExtractedText == null) {
-                    comm.process(mText);
+                    processedRecipe = comm.process(mText);
                 } else {
-                    comm.process(mExtractedText);
+                    processedRecipe = comm.process(mExtractedText);
                 }
                 publishProgress("Done!");
-                return comm.getRecipe();
+                return processedRecipe;
             } catch (RecipeDetectionException e) {
                 runOnUiThread(() ->
                         Toast.makeText(mContext, "Representation failed because " + e.getMessage(),

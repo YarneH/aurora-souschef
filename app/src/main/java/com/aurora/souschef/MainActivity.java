@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
@@ -27,14 +28,6 @@ import com.aurora.souschefprocessor.recipe.Recipe;
 
 public class MainActivity extends AppCompatActivity implements Tab2Ingredients.OnAmountOfPeopleChangedListener {
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
     private static final int TAB_OVERVIEW = 0;
     private static final int TAB_INGREDIENTS = 1;
     private static final int TAB_STEPS = 2;
@@ -51,10 +44,17 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
             "Revising some stuff",
             "Searching for timers...",
             "Finishing up..."};
-
+    /**
+     * The {@link android.support.v4.view.PagerAdapter} that will provide
+     * fragments for each of the sections. We use a
+     * {@link FragmentPagerAdapter} derivative, which will keep every
+     * loaded fragment in memory. If this becomes too memory intensive, it
+     * may be best to switch to a
+     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
+     */
+    private Context mContext = this;
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
     private Tab2Ingredients.OnAmountOfPeopleChangedListener mOnAmountOfPeopleChangedListener = this;
-    private Context mContext = this;
 
 
     public MainActivity() {
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
                 "        1/2 tsp. crushed red pepper flakes\n" +
                 "        6 oz. oil-packed tuna\n" +
                 "\n" +
-                "Preparation\n" +
+                "\n" +
                 "\n" +
                 "        Cook pasta in a large pot of boiling salted water, stirring " +
                 "occasionally, until al dente. Drain pasta, reserving 1 cup pasta cooking " +
@@ -155,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
 
         String inputText = "";
+        ExtractedText extractedText = null;
         /*
          * Handle Aurora starting the Plugin.
          */
@@ -173,23 +174,32 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
                 String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
                         Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
-                ExtractedText extractedText = ExtractedText.fromJson(inputTextJSON);
-                inputText = extractedText.toString();
+                extractedText = ExtractedText.fromJson(inputTextJSON);
+
 
             } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
                 // TODO handle a PluginObject that was cached
                 String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
                         Constants.PLUGIN_INPUT_OBJECT);
-                PluginObject extractedText = PluginObject.fromJson(inputTextJSON);
-                inputText = extractedText.toString();
+                PluginObject receivedObject = PluginObject.fromJson(inputTextJSON);
+                if (receivedObject instanceof Recipe) {
+                    SouschefInit init = new SouschefInit("I don't think this text is important");
+                    init.initiateWithCachedObject((Recipe) receivedObject);
+
+                }
             }
 
         } else {
             inputText = getText();
         }
+        if (extractedText != null) {
+            // maybe in production this should always be the case
+            // and the else should throw an error or let the user know that extracting text failed
+            (new SouschefInit(extractedText)).execute();
+        } else {
 
-
-        (new SouschefInit(inputText)).execute();
+            (new SouschefInit(inputText)).execute();
+        }
     }
 
     @Override
@@ -247,9 +257,18 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
     class SouschefInit extends AsyncTask<Void, String, Recipe> {
         private String mText;
+        private ExtractedText mExtractedText = null;
 
         protected SouschefInit(String text) {
             mText = text;
+        }
+
+        protected SouschefInit(ExtractedText text) {
+            mExtractedText = text;
+        }
+
+        protected void initiateWithCachedObject(Recipe recipe) {
+            onPostExecute(recipe);
         }
 
         @Override
@@ -268,16 +287,24 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
             // update 1:
             publishProgress("Loading the magic important stuff...");
-            // String text = getText();
             try {
-                comm.process(mText);
+                if (mExtractedText == null) {
+                    comm.process(mText);
+                } else {
+                    comm.process(mExtractedText);
+                }
                 publishProgress("Done!");
                 return comm.getRecipe();
             } catch (RecipeDetectionException e) {
-                Log.e("DETECTION", "opening failed", e);
-                //TODO implement correct response
+                runOnUiThread(() -> {
+                    Toast.makeText(mContext, "Representation failed because " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
+               
+
             }
             return null;
+
 
         }
 
@@ -290,26 +317,30 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
 
         @Override
         protected void onPostExecute(Recipe recipe) {
-            super.onPostExecute(recipe);
+            if (recipe != null) {
+                super.onPostExecute(recipe);
 
-            // get fields to update visibility
-            AppBarLayout appBarLayout = findViewById(R.id.appbar);
-            ViewPager mViewPager = findViewById(R.id.container);
-            TabLayout tabLayout = findViewById(R.id.tabs);
-            ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+                // get fields to update visibility
+                AppBarLayout appBarLayout = findViewById(R.id.appbar);
+                ViewPager mViewPager = findViewById(R.id.container);
+                TabLayout tabLayout = findViewById(R.id.tabs);
+                ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
 
-            // Load recipe in the user interface
-            mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), recipe);
-            mViewPager.setAdapter(mSectionsPagerAdapter);
+                // Load recipe in the user interface
+                mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), recipe);
+                mViewPager.setAdapter(mSectionsPagerAdapter);
 
-            // update visibilities
-            cl.setVisibility(View.GONE);
-            appBarLayout.setVisibility(View.VISIBLE);
-            mViewPager.setVisibility(View.VISIBLE);
-            tabLayout.setVisibility(View.VISIBLE);
+                // update visibilities
+                cl.setVisibility(View.GONE);
+                appBarLayout.setVisibility(View.VISIBLE);
+                mViewPager.setVisibility(View.VISIBLE);
+                tabLayout.setVisibility(View.VISIBLE);
+            }
 
 
         }
+
+
     }
 
     /**

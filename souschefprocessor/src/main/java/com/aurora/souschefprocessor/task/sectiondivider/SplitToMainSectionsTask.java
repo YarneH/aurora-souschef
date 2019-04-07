@@ -222,31 +222,30 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         boolean found = false;
         String ingredientsSection = "";
         for (String section : mSectionsBodies) {
-
-
             String[] lines = section.trim().split("\n");
             // at least two ingredients needed
             if (lines.length > 1) {
                 for (String line : lines) {
-                    if (!found) {
-                        // no recipe has only one ingredient
-                        if (line.length() > 0) {
-                            line = line.trim();
-                            char c = line.charAt(0);
-                            found = Character.isDigit(c);
-                            // if found  this is set to the correct section
-                            ingredientsSection = section;
+                    // only do this of not found already and the line has at least two characters
+                    // (one character can never be an ingredient)
+                    boolean notFoundAndAtLeastTwoCharacters = !found && line.length() > 1;
+                    if (notFoundAndAtLeastTwoCharacters) {
+                        line = line.trim();
+                        char c = line.charAt(0);
+                        found = Character.isDigit(c);
+                        // if found  this is set to the correct section
+                        ingredientsSection = section;
 
-                        }
                     }
+
                 }
             }
         }
         if (found) {
             return mSectionsBodies.indexOf(ingredientsSection);
-        } else {
-            return -1;
         }
+        // let caller know nothing was found
+        return -1;
     }
 
     /**

@@ -296,11 +296,12 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
                 publishProgress("Done!");
                 return comm.getRecipe();
             } catch (RecipeDetectionException e) {
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        Toast.makeText(mContext, "Representation failed because " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
+                runOnUiThread(() -> {
+                    Toast.makeText(mContext, "Representation failed because " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
                 });
+               
+
             }
             return null;
 

@@ -30,6 +30,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
      * Constructs the adapter with a list
      *
      * @param ingredients list for construction
+     * @param originalAmountOfServings the number of servings in the original text
      */
     public IngredientAdapter(List<ListIngredient> ingredients, int originalAmountOfServings) {
         this.ingredients = ingredients;

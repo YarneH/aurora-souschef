@@ -7,7 +7,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,7 +60,6 @@ public class Tab3Steps extends Fragment {
 
         View rootView = inflater.inflate(R.layout.tab_3_steps, container, false);
 
-        Log.d("Test","onCreateView " + this);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mStepsPagerAdapter = new StepsPagerAdapter(getActivity().getSupportFragmentManager());

@@ -198,8 +198,6 @@ public class SplitToMainSectionsTaskUnitTest {
             task.doTask();
 
             // Assert
-
-
             assert (rip.getIngredientsString().equalsIgnoreCase(fieldsList.get(i).get("INGR")));
             assert (rip.getStepsString().equalsIgnoreCase(fieldsList.get(i).get("STEPS")));
             assert (rip.getDescription() != null);
@@ -276,7 +274,7 @@ public class SplitToMainSectionsTaskUnitTest {
 
         // Act
         task.doTask();
-
+        System.out.println(rip.getStepsString());
         assert(rip.getDescription().equals(description));
         assert(rip.getIngredientsString().equals(ingredients));
         assert(rip.getStepsString().equals(steps));

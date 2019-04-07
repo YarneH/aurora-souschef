@@ -263,13 +263,15 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
             mText = text;
         }
 
-        protected SouschefInit(ExtractedText text){
+        protected SouschefInit(ExtractedText text) {
             mExtractedText = text;
         }
 
         protected void initiateWithCachedObject(Recipe recipe) {
             onPostExecute(recipe);
-        }        @Override
+        }
+
+        @Override
         protected void onPreExecute() {
             super.onPreExecute();
             TextView tv = findViewById(R.id.tv_loading_text);
@@ -286,9 +288,9 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
             // update 1:
             publishProgress("Loading the magic important stuff...");
             try {
-                if(mExtractedText == null){
-                comm.process(mText);}
-                else{
+                if (mExtractedText == null) {
+                    comm.process(mText);
+                } else {
                     comm.process(mExtractedText);
                 }
                 publishProgress("Done!");

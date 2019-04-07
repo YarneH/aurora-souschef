@@ -46,7 +46,7 @@ public class RecipeUnitTest {
         ingredients.add(LI2);
         rip.setIngredients(ingredients);
         rip.setDescription("This is a very simple recipe");
-        
+
     }
 
     @Test

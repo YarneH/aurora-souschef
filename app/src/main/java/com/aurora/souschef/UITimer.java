@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.SeekBar;

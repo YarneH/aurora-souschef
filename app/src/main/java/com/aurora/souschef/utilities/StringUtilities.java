@@ -6,6 +6,10 @@ public class StringUtilities {
     private static final double ROUND_EPSILON = 0.05;
 
 
+    private StringUtilities() {
+        throw new IllegalStateException("Utility Class");
+    }
+
     /**
      * Generates fraction from double
      *

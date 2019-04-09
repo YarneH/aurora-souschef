@@ -31,9 +31,9 @@ public class StepPlaceholderFragment extends Fragment {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private static int mAmountSteps = 0;
     private static Recipe mRecipe = null;
     private static String[] mDescriptionSteps = null;
+    private int mAmountSteps = 0;
     private List<ListIngredient> mStepIngredients = null;
     private ArrayList<TextView> mStepDescriptionParts = new ArrayList<>();
     private ArrayList<Integer> mStepPositions = new ArrayList<>();
@@ -102,13 +102,13 @@ public class StepPlaceholderFragment extends Fragment {
         rootView.findViewById(R.id.sv_text_and_timers).setOverScrollMode(View.OVER_SCROLL_NEVER);
 
         // Add the ImageViews to the LinearLayout for the indicator dots
-        int dots_margin = Math.round(getResources().getDimension(R.dimen.dots_margin));
+        int dotsMargin = Math.round(getResources().getDimension(R.dimen.dots_margin));
         LinearLayout linearLayout = (LinearLayout) rootView.findViewById(R.id.ll_dots);
         ImageView tempView;
         LinearLayout.LayoutParams layoutParamsDot = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParamsDot.setMargins(dots_margin, dots_margin,
-                dots_margin, dots_margin);
+        layoutParamsDot.setMargins(dotsMargin, dotsMargin,
+                dotsMargin, dotsMargin);
 
         // For every step, add a dot and make sure the right one is selected
         for (int i = 0; i < mAmountSteps; i++) {

@@ -11,10 +11,8 @@ import android.widget.TextView;
 import com.aurora.souschef.utilities.StringUtilities;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * Adapter for populating the ingredient list.

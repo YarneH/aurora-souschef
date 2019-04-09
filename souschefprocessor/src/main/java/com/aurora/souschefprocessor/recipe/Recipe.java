@@ -41,13 +41,7 @@ public class Recipe extends PluginObject {
         this.mDescription = description;
     }
 
-    public Recipe() {
-
-    }
-
-    public static PluginObject fromJson(String json) {
-        return mGson.fromJson(json, Recipe.class);
-    }
+    public Recipe() {}
 
     public synchronized int getNumberOfPeople() {
         return mNumberOfPeople;
@@ -112,4 +106,5 @@ public class Recipe extends PluginObject {
                 "\n mDescription='" + mDescription + '\'' +
                 '}';
     }
+
 }

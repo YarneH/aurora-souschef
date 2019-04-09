@@ -43,7 +43,7 @@ public class Delegator {
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
-    private static boolean startedCreatingPipelines = false;
+    private static boolean sStartedCreatingPipelines = false;
 
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
 
@@ -92,12 +92,12 @@ public class Delegator {
     static void createAnnotationPipelines() {
         synchronized (LOCK) {
 
-            if (startedCreatingPipelines) {
+            if (sStartedCreatingPipelines) {
                 // creating already started or finished -> do not start again
                 return;
             }
             // ensure no other thread starts creating pipelines
-            startedCreatingPipelines = true;
+            sStartedCreatingPipelines = true;
             LOCK.notifyAll();
         }
 

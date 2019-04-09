@@ -174,12 +174,16 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return bld.toString();
     }
 
-    private String findStepsRegexBasedTitles() {
+    private String findStepsOrIngredientsRegexBasedTitles(boolean steps) {
+        String regex = INGREDIENT_STARTER_REGEX;
+        if (steps) {
+            regex = STEP_STARTER_REGEX;
+        }
         ExtractedText extractedText = mRecipeInProgress.getExtractedText();
         if (extractedText != null) {
             for (Section s : extractedText.getSections()) {
                 String title = s.getTitle();
-                if (title != null && Pattern.compile(STEP_STARTER_REGEX).matcher(
+                if (title != null && Pattern.compile(regex).matcher(
                         title.toLowerCase(Locale.ENGLISH)).find()) {
                     return s.getBody();
                 }
@@ -200,7 +204,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private String findStepsRegexBased() {
         // first try with the titles
-        String result = findStepsRegexBasedTitles();
+        String result = findStepsOrIngredientsRegexBasedTitles(true);
         if (result.length() > 0) {
             mSectionsBodies.remove(result);
             return result;
@@ -396,10 +400,18 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         // append the title
         bld.append(mRecipeInProgress.getExtractedText().getTitle());
         bld.append("\n");
-        for (String section : mSectionsBodies) {
-            bld.append(section.trim());
-            // append a new line between the sections for readability
-            bld.append("\n");
+        for (Section s : mRecipeInProgress.getExtractedText().getSections()) {
+            String body = s.getBody();
+            if (mSectionsBodies.contains(body)) {
+                String title = s.getTitle();
+                if (title != null) {
+                    bld.append(title);
+                }
+                bld.append(body.trim());
+                // append a new line between the sections for readability
+                bld.append("\n");
+            }
+
 
         }
         return bld.toString();
@@ -452,6 +464,12 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * if no ingredients are found -1 is returned.
      */
     private int findIngredientsRegexBased() {
+        /* first try with the titles
+         */
+        String result = findStepsOrIngredientsRegexBasedTitles(false);
+        if (result.length() > 0) {
+            return mSectionsBodies.indexOf(result);
+        }
         boolean found = false;
         boolean sectionAdded = false;
         String ingredientsSection = "";

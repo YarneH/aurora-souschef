@@ -15,13 +15,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.aurora.souschef.utilities.StringUtilities;
-import com.aurora.souschefprocessor.recipe.ListIngredient;
+import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.Recipe;
+import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,10 +31,9 @@ public class StepPlaceholderFragment extends Fragment {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private static Recipe mRecipe = null;
-    private static String[] mDescriptionSteps = null;
     private int mAmountSteps = 0;
-    private List<ListIngredient> mStepIngredients = null;
+    private RecipeStep mRecipeStep = null;
+    private int mOriginalAmount = 0;
     private ArrayList<TextView> mStepDescriptionParts = new ArrayList<>();
     private ArrayList<Integer> mStepPositions = new ArrayList<>();
     private ArrayList<Integer> mQuantityPositions = new ArrayList<>();
@@ -54,18 +53,15 @@ public class StepPlaceholderFragment extends Fragment {
         fragment.mAmountSteps = amountSteps;
         Bundle args = new Bundle();
         args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-        mRecipe = recipe;
 
-        int stepsCount = mRecipe.getRecipeSteps().size();
-        mDescriptionSteps = new String[stepsCount];
+        fragment.mRecipeStep = recipe.getRecipeSteps().get(sectionNumber);
+        // Sort ingredients on descending beginIndex
+        Collections.sort(fragment.mRecipeStep.getIngredients(), (l0, l1) ->
+                l0.getQuantityPosition().getBeginIndex() + l1.getQuantityPosition().getBeginIndex());
 
-        for (int i = 0; i < stepsCount; i++) {
-            mDescriptionSteps[i] = mRecipe.getRecipeSteps().get(i).getDescription();
-        }
+        fragment.mOriginalAmount = recipe.getNumberOfPeople();
 
         fragment.setArguments(args);
-        Collections.sort(mRecipe.getIngredients(), (l0, l1) ->
-                l0.getQuantityPosition().getBeginIndex() - l1.getQuantityPosition().getBeginIndex());
         return fragment;
     }
 
@@ -89,11 +85,11 @@ public class StepPlaceholderFragment extends Fragment {
 
         // Feed Adapter
         StepIngredientAdapter ingredientAdapter =
-                new StepIngredientAdapter(mRecipe.getRecipeSteps().get(index).getIngredients());
+                new StepIngredientAdapter(mRecipeStep.getIngredients());
         mIngredientList.setAdapter(ingredientAdapter);
 
         // Disable the line if there are no ingredients listed
-        if (mRecipe.getRecipeSteps().get(index).getIngredients().size() == 0) {
+        if (mRecipeStep.getIngredients().size() == 0) {
             rootView.findViewById(R.id.v_line).setVisibility(View.GONE);
         }
 
@@ -125,17 +121,6 @@ public class StepPlaceholderFragment extends Fragment {
     }
 
     private void addTextAndTimers(LayoutInflater inflater, View rootView, int index) {
-        // Add a zero to the positions of the parts
-        mStepPositions.add(0);
-
-        // Add the positions of ingredients to the list
-        for (ListIngredient ingredient : mRecipe.getIngredients()) {
-            mQuantityPositions.add(ingredient.getQuantityPosition().getBeginIndex());
-            int quantityLength = ingredient.getQuantityPosition().getEndIndex() -
-                    ingredient.getQuantityPosition().getBeginIndex();
-            mQuantityLengths.add(quantityLength);
-        }
-
         // Add Text and Timer
         int timerMargin = Math.round(getResources().getDimension(R.dimen.timer_margin));
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
@@ -145,14 +130,14 @@ public class StepPlaceholderFragment extends Fragment {
         ViewGroup insertPoint = (ViewGroup) rootView.findViewById(R.id.ll_step);
         int currentPosition = 0;
 
-        for (RecipeTimer timer : mRecipe.getRecipeSteps().get(index).getRecipeTimers()) {
+        for (RecipeTimer timer : mRecipeStep.getRecipeTimers()) {
             // Inflate the layout of a text and a timer
             View timerView = inflater.inflate(R.layout.timer_card, null);
             TextView textView = (TextView) inflater.inflate(R.layout.step_textview, null);
 
             // Set Text of the TextView
             int tempPosition = timer.getPosition().getEndIndex();
-            String currentSubstring = mDescriptionSteps[index].substring(currentPosition, tempPosition);
+            String currentSubstring = mRecipeStep.getDescription().substring(currentPosition, tempPosition);
             Pattern p = Pattern.compile("\\p{Alpha}");
             Matcher m = p.matcher(currentSubstring);
             if (m.find()) {
@@ -169,7 +154,6 @@ public class StepPlaceholderFragment extends Fragment {
 
             // Add TextView to the list
             mStepDescriptionParts.add(textView);
-            Log.d("Add TextView", "" + mStepDescriptionParts.size());
             mStepPositions.add(tempPosition);
 
             // Set the current position to the temporary position
@@ -177,11 +161,11 @@ public class StepPlaceholderFragment extends Fragment {
         }
 
         // Check if there is still some text coming after the last timer
-        if (currentPosition != mDescriptionSteps[index].length()) {
+        if (currentPosition != mRecipeStep.getDescription().length()) {
             TextView textView = (TextView) inflater.inflate(R.layout.step_textview, null);
-            String currentSubstring = mDescriptionSteps[index].substring(currentPosition);
+            String currentSubstring = mRecipeStep.getDescription().substring(currentPosition);
             Pattern p = Pattern.compile("\\p{Alpha}");
-            Matcher m = p.matcher(mDescriptionSteps[index].substring(currentPosition));
+            Matcher m = p.matcher(mRecipeStep.getDescription().substring(currentPosition));
             if (m.find()) {
                 textView.setText(currentSubstring.substring(m.start()));
             }
@@ -191,48 +175,62 @@ public class StepPlaceholderFragment extends Fragment {
     }
 
     protected void update(int newAmount) {
-        // Keeps track of the changes in positions
-        int offset = 0;
+        StringBuilder bld = new StringBuilder(mRecipeStep.getDescription());
 
-        for (int indexIngredient = 0; indexIngredient < mRecipe.getIngredients().size(); indexIngredient++) {
-            ListIngredient ingredient = mRecipe.getIngredients().get(indexIngredient);
-            boolean replaced = false;
+        for (Ingredient ingredient : mRecipeStep.getIngredients()){
+            if (ingredient.getQuantityPosition().getBeginIndex() != 0) {
+                double newQuantity = ingredient.getValue() / mOriginalAmount * newAmount;
+                String newQuantityString = StringUtilities.toDisplayQuantity(newQuantity);
 
-            // Calculate the current length of the quantity
-            int currentLength = ingredient.getQuantityPosition().getEndIndex() -
-                    ingredient.getQuantityPosition().getBeginIndex();
-            // Calculate the begin position considering the new offset which could be different from
-            // zero when a previous ingredient had a different length
-            int beginPosition = ingredient.getQuantityPosition().getBeginIndex() + offset;
-            ingredient.getQuantityPosition().setBeginIndex(beginPosition);
-
-            double newQuantity = ingredient.getValue() / mRecipe.getNumberOfPeople() * newAmount;
-            String newQuantityString = StringUtilities.toDisplayQuantity(newQuantity);
-
-            int newLength = newQuantityString.length();
-            ingredient.getQuantityPosition().setEndIndex(beginPosition + newLength);
-
-
-            for (int i = 0; i < mStepPositions.size() - 1; i++) {
-                if (beginPosition < mStepPositions.get(i + 1) && !replaced) {
-
-                    // Calculate the relative index
-                    int relativeIndex = beginPosition - mStepPositions.get(i);
-
-                    // Get old text and replace the old quantity with the new quantity
-                    Log.d("Get Text", "i = " + i + " length of list = " + mStepDescriptionParts.size());
-                    String currentText = String.valueOf(mStepDescriptionParts.get(i).getText());
-                    StringBuilder builder = new StringBuilder(currentText);
-                    builder.replace(relativeIndex, relativeIndex + currentLength, newQuantityString);
-                    String newText = builder.toString();
-                    mStepDescriptionParts.get(i).setText(newText);
-
-                    // Update the offset and the 'replaced' boolean
-                    offset = newLength - currentLength;
-                    replaced = true;
-                }
-                mStepPositions.set(i, mStepPositions.get(i) + offset);
+                bld.replace(ingredient.getQuantityPosition().getBeginIndex(),
+                        ingredient.getQuantityPosition().getEndIndex(),
+                        newQuantityString);
             }
         }
+
+        Log.d("Description", bld.toString());
+//        // Keeps track of the changes in positions
+//        int offset = 0;
+//
+//        for (int indexIngredient = 0; indexIngredient < mRecipe.getIngredients().size(); indexIngredient++) {
+//            ListIngredient ingredient = mRecipe.getIngredients().get(indexIngredient);
+//            boolean replaced = false;
+//
+//            // Calculate the current length of the quantity
+//            int currentLength = ingredient.getQuantityPosition().getEndIndex() -
+//                    ingredient.getQuantityPosition().getBeginIndex();
+//            // Calculate the begin position considering the new offset which could be different from
+//            // zero when a previous ingredient had a different length
+//            int beginPosition = ingredient.getQuantityPosition().getBeginIndex() + offset;
+//            ingredient.getQuantityPosition().setBeginIndex(beginPosition);
+//
+//            double newQuantity = ingredient.getValue() / mRecipe.getNumberOfPeople() * newAmount;
+//            String newQuantityString = StringUtilities.toDisplayQuantity(newQuantity);
+//
+//            int newLength = newQuantityString.length();
+//            ingredient.getQuantityPosition().setEndIndex(beginPosition + newLength);
+//
+//
+//            for (int i = 0; i < mStepPositions.size() - 1; i++) {
+//                if (beginPosition < mStepPositions.get(i + 1) && !replaced) {
+//
+//                    // Calculate the relative index
+//                    int relativeIndex = beginPosition - mStepPositions.get(i);
+//
+//                    // Get old text and replace the old quantity with the new quantity
+//                    Log.d("Get Text", "i = " + i + " length of list = " + mStepDescriptionParts.size());
+//                    String currentText = String.valueOf(mStepDescriptionParts.get(i).getText());
+//                    StringBuilder builder = new StringBuilder(currentText);
+//                    builder.replace(relativeIndex, relativeIndex + currentLength, newQuantityString);
+//                    String newText = builder.toString();
+//                    mStepDescriptionParts.get(i).setText(newText);
+//
+//                    // Update the offset and the 'replaced' boolean
+//                    offset = newLength - currentLength;
+//                    replaced = true;
+//                }
+//                mStepPositions.set(i, mStepPositions.get(i) + offset);
+//            }
+//        }
     }
 }

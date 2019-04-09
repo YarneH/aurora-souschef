@@ -174,6 +174,21 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return bld.toString();
     }
 
+    private String findStepsRegexBasedTitles() {
+        ExtractedText extractedText = mRecipeInProgress.getExtractedText();
+        if (extractedText != null) {
+            for (Section s : extractedText.getSections()) {
+                String title = s.getTitle();
+                if (title != null && Pattern.compile(STEP_STARTER_REGEX).matcher(
+                        title.toLowerCase(Locale.ENGLISH)).find()) {
+                    return s.getBody();
+                }
+
+            }
+        }
+        return "";
+
+    }
 
     /**
      * Finds the steps based on a regex. It checks whether some common names that start
@@ -184,9 +199,18 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return A string representing the steps of this recipe
      */
     private String findStepsRegexBased() {
+        // first try with the titles
+        String result = findStepsRegexBasedTitles();
+        if (result.length() > 0) {
+            mSectionsBodies.remove(result);
+            return result;
+        }
+
         boolean found = false;
-        StringBuilder bld = new StringBuilder();
         int sectionIndex = -1;
+        StringBuilder bld = new StringBuilder();
+
+
         for (String section : mSectionsBodies) {
             String[] lines = section.split("\n");
 
@@ -216,6 +240,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             // remove the section containing steps from the list, only remove if some steps were found
             mSectionsBodies = mSectionsBodies.subList(0, sectionIndex + 1);
         }
+
 
         return bld.toString().trim();
 
@@ -486,7 +511,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         return ingredientsAndText;
     }
-
 
     /**
      * Finds the ingredients based on a regex. It checks whether some common names that start

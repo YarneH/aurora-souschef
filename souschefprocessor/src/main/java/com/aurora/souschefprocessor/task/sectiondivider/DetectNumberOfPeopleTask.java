@@ -25,28 +25,31 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
      * The regex built using the {@link #BEFORE_DIGIT_WORDS}, {@link #AFTER_DIGIT_WORDS} and
      * {@link #SEPERATOR_CHARACTERS}
      */
-    private static String regex = buildRegex();
+    private static String sRegex = buildRegex();
 
     public DetectNumberOfPeopleTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
     }
 
     /**
-     * Finds the amount of the people the recipe is for in a text
+     * Finds the amount of the people the recipe is for in the description of the {@link #mRecipeInProgress}
+     * It also alter the description of the this recipe so that a user does not see how many people
+     * it was originally for
      *
-     * @param text the text in which to search for the amount of people
      * @return The int representing the amount of people
      * returns -1 if no amount of people was detected in the recipe text
      */
-    private static int findNumberOfPeople(String text) {
-
+    private  int findNumberOfPeople() {
+        String text = mRecipeInProgress.getDescription();
         String[] lines = text.split("\n");
 
         for (String line : lines) {
-            Matcher match = Pattern.compile(regex).matcher(line.toLowerCase(Locale.ENGLISH));
+            Matcher match = Pattern.compile(sRegex).matcher(line.toLowerCase(Locale.ENGLISH));
             if (match.find()) {
                 Matcher digitMatcher = Pattern.compile("\\d+").matcher((match.group()));
                 if (digitMatcher.find()) {
+                    // alter the description
+                    mRecipeInProgress.setDescription(text.replace(line, ""));
                     String number = digitMatcher.group();
                     return Integer.parseInt(number);
                 }
@@ -101,8 +104,7 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
      * Detects the number of people in the original text of the recipe that is being processed
      */
     public void doTask() {
-        String text = this.mRecipeInProgress.getOriginalText();
-        int number = findNumberOfPeople(text);
+        int number = findNumberOfPeople();
         this.mRecipeInProgress.setNumberOfPeople(number);
     }
 }

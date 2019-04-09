@@ -92,7 +92,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
-    private static boolean startedCreatingPipeline = false;
+    private static boolean sStartedCreatingPipeline = false;
     /**
      * The Pipeline for annotating the text to detect timers
      */
@@ -145,12 +145,12 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     public static void initializeAnnotationPipeline() {
         Thread initialize = new Thread(() -> {
             synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
-                if (startedCreatingPipeline) {
+                if (sStartedCreatingPipeline) {
                     // creating already started or finished -> do not start again
                     return;
                 }
                 // ensure no other thread can initialize
-                startedCreatingPipeline = true;
+                sStartedCreatingPipeline = true;
             }
             sAnnotationPipeline = createTimerAnnotationPipeline();
             synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
@@ -441,7 +441,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * Detects the timer in a mRecipeStep
      *
      * @param recipeStep The mRecipeStep in which to detect a timer
-     * @return A timer detected in the mRecipeStep
+     * @return A list of timers detected in the mRecipeStep
      */
     private List<RecipeTimer> detectTimer(RecipeStep recipeStep) {
         List<RecipeTimer> list = new ArrayList<>();

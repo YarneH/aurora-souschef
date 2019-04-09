@@ -71,7 +71,6 @@ public class Tab3Steps extends Fragment {
 
         View rootView = inflater.inflate(R.layout.tab_3_steps, container, false);
 
-        Log.d("Test", "onCreateView " + this);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mStepsPagerAdapter = new StepsPagerAdapter(getActivity().getSupportFragmentManager());
@@ -167,7 +166,7 @@ public class Tab3Steps extends Fragment {
             layoutParamsDot.setMargins(dots_margin, dots_margin,
                     dots_margin, dots_margin);
 
-            // For every step, add a dot and make sur the right one is selected
+            // For every step, add a dot and make sure the right one is selected
             for (int i = 0; i < mAmountSteps; i++) {
                 tempView = (ImageView) inflater.inflate(R.layout.dot_image_view, null);
                 if (i == index) {

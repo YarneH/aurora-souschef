@@ -317,6 +317,7 @@ public class DetectIngredientsInListTaskUnitTest {
         assert (water);
         assert (fromage);
         assert (raisins);
+        assert(cheese);
 
 
     }
@@ -415,6 +416,37 @@ public class DetectIngredientsInListTaskUnitTest {
             thrown = true;
         }
         assert (!thrown);
+    }
+
+    @Test
+    public void DetectIngredientsInListTask_doTask_IngredientsWithWeirdBackslashForFraction(){
+        // Arrange
+        String ingredients = "1⁄2 c. chopped onion\n" +
+                "1⁄4 c. chopped bell pepper\n" +
+                "1⁄4 tsp. salt\n" +
+                "1⁄4 tsp. garlic salt\n" +
+                "1⁄2 tsp. ground black pepper";
+        Ingredient onion = new Ingredient("chopped onion", "c", 0.5, irrelevantPositions);
+        Ingredient bellPepper = new Ingredient("chopped bell pepper", "c", 0.25, irrelevantPositions);
+        Ingredient salt = new Ingredient("salt", "tsp", 0.25, irrelevantPositions);
+        Ingredient garlicSalt = new Ingredient("garlic salt", "tsp", 0.25, irrelevantPositions);
+        Ingredient pepper = new Ingredient("black pepper", "tsp", 0.5, irrelevantPositions);
+
+
+        RecipeInProgress rip = new RecipeInProgress("");
+        rip.setIngredientsString(ingredients);
+        DetectIngredientsInListTask task = new DetectIngredientsInListTask(rip, crfClassifier);
+
+        //Act
+        task.doTask();
+
+        //Assert
+
+        assert (rip.getIngredients().contains(salt));
+        assert(rip.getIngredients().contains(garlicSalt));
+        assert (rip.getIngredients().contains(pepper));
+        assert(rip.getIngredients().contains(bellPepper));
+        assert(rip.getIngredients().contains(onion));
     }
 
 }

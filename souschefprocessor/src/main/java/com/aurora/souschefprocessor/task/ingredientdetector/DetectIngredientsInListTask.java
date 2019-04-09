@@ -196,6 +196,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             throw new RecipeDetectionException("No ingredients were detected, this is probably not a recipe");
         }
         this.mRecipeInProgress.setIngredients(list);
+
     }
 
     /**
@@ -218,6 +219,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         for (String ingredient : list) {
             if (ingredient != null && ingredient.length() > 0) {
+
                 ListIngredient ing = (detectIngredient(removeClutterAddSpacesAndRemovePoint(ingredient)));
 
                 returnList.add(ing);
@@ -239,6 +241,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         List<List<CoreLabel>> classifiedList = mCRFClassifier.classify(line);
         // map to put classes and labeled tokens
         Map<String, List<CoreLabel>> map = new HashMap<>();
+
 
         for (List<CoreLabel> l : classifiedList) {
             for (CoreLabel cl : l) {

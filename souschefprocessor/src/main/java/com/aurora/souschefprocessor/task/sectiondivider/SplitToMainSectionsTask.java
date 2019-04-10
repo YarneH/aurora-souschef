@@ -406,6 +406,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 String title = s.getTitle();
                 if (title != null) {
                     bld.append(title);
+                    bld.append("\n");
                 }
                 bld.append(body.trim());
                 // append a new line between the sections for readability

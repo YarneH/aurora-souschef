@@ -2,6 +2,8 @@ package com.aurora.souschefprocessor.facade;
 
 import android.util.Log;
 
+import com.aurora.souschefprocessor.recipe.Recipe;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -13,18 +15,18 @@ import edu.stanford.nlp.ling.CoreLabel;
 
 public class CommunicatorUnitTest {
 
-    private static List<String> validRecipes;
-    private static List<String> invalidRecipes;
+    private static List<String> validRecipesFromPlainText;
+    private static List<String> invalidRecipesFromPlainText;
     private static Communicator communicator;
     private static CRFClassifier<CoreLabel> crfClassifier;
     @BeforeClass
     public static void initialize() {
         // load in the recipes
-        List<String> recipes = DelegatorLongTest.initializeRecipes();
+        List<String> recipesFromPlainText = DelegatorLongTest.initializeRecipes();
         // split into valid and invalid
         // the first 5 recipes are valid recipes
-        validRecipes = recipes.subList(0, 5);
-        invalidRecipes = recipes.subList(5, 8);
+        validRecipesFromPlainText = recipesFromPlainText.subList(0, 5);
+        invalidRecipesFromPlainText = recipesFromPlainText.subList(5, 8);
 
         // load in the model
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
@@ -41,13 +43,14 @@ public class CommunicatorUnitTest {
     @Test
     public void Communicator_process_ThrowsExceptionForInvalidRecipe(){
 
-        for (String text : invalidRecipes) {
+        for (String text : invalidRecipesFromPlainText) {
             // Arrange
             // initialize on false
             boolean thrown = false;
             // Act
             try {
-                communicator.process(text);
+                Recipe rip = communicator.process(text);
+                System.out.println(rip);
             } catch (Exception e) {
                 // set thrown to true, this should happen
                 Log.e("Woop", "Error was thrown", e);

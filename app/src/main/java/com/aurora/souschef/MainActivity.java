@@ -20,14 +20,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.PluginObject;
 import com.aurora.souschefprocessor.facade.Communicator;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 public class MainActivity extends AppCompatActivity {
 
+    /**
+     * Tag for logging.
+     */
+    private static final String TAG = MainActivity.class.getSimpleName();
     /**
      * ID of the overview tab.
      */
@@ -69,32 +76,54 @@ public class MainActivity extends AppCompatActivity {
      * @return a recipe text
      */
     private static String getText() {
-        return "4 people\n" +
+        return "Yield\n" +
+                "    4 servings\n" +
+                "Active Time\n" +
+                "    30 minutes\n" +
+                "Total Time\n" +
+                "    35 minutes\n" +
                 "\n" +
                 "Ingredients\n" +
                 "\n" +
-                "    150 g pure chocolade 78%\n" +
-                "    2 large eggs\n" +
-                "    50 g witte basterdsuiker\n" +
-                "    200 ml verse slagroom\n" +
+                "        1 lb. linguine or other long pasta\n" +
+                "        Kosher salt\n" +
+                "        1 (14-oz.) can diced tomatoes\n" +
+                "        1/2 cup extra-virgin olive oil, divided\n" +
+                "        1/4 cup capers, drained\n" +
+                "        6 oil-packed anchovy fillets\n" +
+                "        1 Tbsp. tomato paste\n" +
+                "        1/3 cup pitted Kalamata olives, halved\n" +
+                "        2 tsp. dried oregano\n" +
+                "        1/2 tsp. crushed red pepper flakes\n" +
+                "        6 oz. oil-packed tuna\n" +
                 "\n" +
-                "Directions\n" +
+                "Preparation \n" +
                 "\n" +
-                "\n" +
-                "    Hak de chocolade fijn. Laat de chocolade in ca. 5 min. au bain-marie smelten in " +
-                "een kom boven een pan kokend water. Roer af en toe. Neem de kom van de pan.\n" +
-                "    Splits de eieren. Klop het eiwit met de helft van de suiker met een mixer ca. " +
-                "5 min. totdat het glanzende stijve pieken vormt. Doe de slagroom in een ruime kom en " +
-                "klop in ca. 3 min. stijf.\n" +
-                "    Klop de eidooiers los met een garde. Roer de rest van de suiker erdoor.\n" +
-                "    Roer de gesmolten chocolade door het eidooier-suikermengsel. Spatel het door de " +
-                "slagroom. Spatel het eiwit snel en luchtig in delen door het chocolademengsel.\n" +
-                "    Schep de chocolademousse in glazen, potjes of coupes, dek af met vershoudfolie " +
-                "en laat minimaal 2 uur opstijven in de koelkast.\n";
+                "        Cook pasta in a large pot of boiling salted water, stirring " +
+                "occasionally, until al dente. Drain pasta, reserving 1 cup pasta cooking " +
+                "liquid; return pasta to pot.\n" +
+                "        While pasta cooks, pour tomatoes into a fine-mesh sieve set over " +
+                "a medium bowl. Shake to release as much juice as possible, then let tomatoes " +
+                "drain in sieve, collecting juices in bowl, until ready to use.\n" +
+                "        Heat 1/4 cup oil in a large deep-sided skillet over medium-high. " +
+                "Add capers and cook, swirling pan occasionally, until they burst and are " +
+                "crisp, about 3 minutes. Using a slotted spoon, transfer capers to a paper " +
+                "towel-lined plate, reserving oil in skillet.\n" +
+                "        Combine anchovies, tomato paste, and drained tomatoes in skillet. " +
+                "Cook over medium-high heat, stirring occasionally, until tomatoes begin " +
+                "to caramelize and anchovies start to break down, about 5 minutes. Add " +
+                "collected tomato juices, olives, oregano, and red pepper flakes and bring " +
+                "to a simmer. Cook, stirring occasionally, until sauce is slightly thickened, " +
+                "about 5 minutes. Add pasta, remaining 1/4 cup oil, and 3/4 cup pasta " +
+                "cooking liquid to pan. Cook over medium heat, stirring and adding remaining " +
+                "1/4 cup pasta cooking liquid to loosen if needed, until sauce is thickened " +
+                "and emulsified, about 2 minutes. Flake tuna into pasta and toss to combine.\n" +
+                "        Divide pasta among plates. Top with fried capers.\n";
     }
 
     /**
      * Overwritten method of Activity
+     *
      * @param savedInstanceState The saved state.
      */
     @Override
@@ -123,49 +152,12 @@ public class MainActivity extends AppCompatActivity {
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         showProgress();
 
-        //TODO: Update the following
-        //Should only start in response to PLUGIN_ACTION in production
-        //This means the else case should be omitted
-
-
-        String inputText = "";
-        /*
-         * Handle Aurora starting the Plugin.
-         */
-        Intent intentThatStartedThisActivity = getIntent();
-        if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-            /*BasicPluginObject basicPluginObject = null;
-             * TODO remove this if statement probably. Is currently used to handle cases where a
-             * plain String is sent instead of an ExtractedText
-             */
-            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
-                inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
-            }
-
-            // TODO Souschef should probably take an ExtracttedText as input instead of just a String
-            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
-                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
-                        Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
-                ExtractedText extractedText = ExtractedText.fromJson(inputTextJSON);
-                inputText = extractedText.toString();
-
-            } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
-                // TODO handle a PluginObject that was cached
-                Log.d("NOT_IMPLEMENTED", "PLUGIN_INPUT_OBJECT needs to be implemented." +
-                        "Instead using getText.");
-                inputText = getText();
-            }
-
-        } else {
-            inputText = getText();
-        }
-
-
-//        (new SouschefInit(inputText)).execute();
+        // setup recipe data object (RecipeViewModel).
         recipe.getProgressStep().observe(this, integer -> {
                     ProgressBar pb = findViewById(R.id.pb_loading_screen);
                     pb.setProgress(recipe.getProgress());
                     // TODO: set textfield to visualize progress;
+
                 }
         );
         recipe.getInitialised().observe(this, o -> {
@@ -178,8 +170,54 @@ public class MainActivity extends AppCompatActivity {
             Log.d("TEST", "hiding");
             hideProgress();
         });
-        // TODO: handle when cached object is given.
-        recipe.initialise();
+
+        /*
+         * Handle Aurora starting the Plugin.
+         * Each if statement calls initialise (with different paraments)
+         * on the recipe data object.
+         */
+        Intent intentThatStartedThisActivity = getIntent();
+        if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+            /*BasicPluginObject basicPluginObject = null;
+             * TODO remove this if statement probably. Is currently used to handle cases where a
+             * plain String is sent instead of an ExtractedText
+             */
+            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
+                // Plain Text
+                String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
+                Log.d(TAG, "Loading plain text.");
+                recipe.initialiseWithPlainText(inputText);
+
+            } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
+                // Extracted Text
+                // TODO Souschef should probably take an ExtractedText as input instead of just a String
+                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
+                        Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
+                ExtractedText extractedText = ExtractedText.fromJson(inputTextJSON);
+                if (extractedText != null) {
+                    Log.d(TAG, "Loading extracted text.");
+                    recipe.initialiseWithExtractedText(extractedText);
+                } else {
+                    // Error in case ExtractedText was null.
+                    Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null. Did not extract anything.");
+                }
+
+            } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
+                // Cached Object.
+                // TODO handle a PluginObject that was cached
+                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
+                        Constants.PLUGIN_INPUT_OBJECT);
+                Recipe receivedObject = PluginObject.fromJson(inputTextJSON, Recipe.class);
+                // TODO catch if the receivedObject was not able to be de-JSONed.
+                // Waiting for auroralib update for this.
+                Log.d(TAG, "Loading cashed Object.");
+                recipe.initialiseWithRecipe(receivedObject);
+            }
+
+        } else {
+            Log.d(TAG, "Loading plain default text (getText())");
+            recipe.initialiseWithPlainText(getText());
+        }
     }
 
     /**
@@ -209,6 +247,7 @@ public class MainActivity extends AppCompatActivity {
         ViewPager mViewPager = findViewById(R.id.container);
         TabLayout tabLayout = findViewById(R.id.tabs);
         ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+
 
         // Load recipe in the user interface
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -278,4 +317,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
+
+
+
 

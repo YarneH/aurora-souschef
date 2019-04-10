@@ -81,8 +81,7 @@ public class LiveDataTimer {
     }
 
     /**
-     * This function is in fact used, in contrast with what Android Studio says.
-     * See {@link UITimer#setOnClickListeners(View)}, where the onClickListeners are set.
+     * Toggles playing paused state of the timer.
      */
     public void toggleTimer() {
 

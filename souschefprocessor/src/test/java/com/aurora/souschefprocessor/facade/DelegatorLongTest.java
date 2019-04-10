@@ -2,6 +2,7 @@ package com.aurora.souschefprocessor.facade;
 
 import android.util.Log;
 
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 import org.junit.After;
@@ -18,20 +19,44 @@ import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 
 public class DelegatorLongTest {
-    private static List<String> validRecipes;
-    private static List<String> invalidRecipes;
+    private static List<String> validRecipesFromPlainText;
+    private static List<String> invalidRecipesFromPlainText;
+
+    private static List<ExtractedText> validRecipesJSON;
+    private static List<ExtractedText> invalidRecipesJSON;
     private static Delegator delegator;
     private static CRFClassifier<CoreLabel> crfClassifier;
 
+    private static List<ExtractedText> initializeRecipesJSON() {
+        String filename = "src/test/java/com/aurora/souschefprocessor/facade/json-recipes.txt";
+        List<ExtractedText> list = new ArrayList<>();
+        try {
+            FileReader fReader = new FileReader(filename);
+            BufferedReader reader = new BufferedReader(fReader);
+            String line = reader.readLine();
+
+            while (line != null) {
+                list.add(ExtractedText.fromJson(line));
+                line = reader.readLine();
+            }
+        } catch (IOException io) {
+            System.out.println(io);
+        }
+        return list;
+    }
 
     @BeforeClass
     public static void initialize() {
         // load in the recipes
-        List<String> recipes = initializeRecipes();
+        List<String> recipesFromPlainText = initializeRecipes();
         // split into valid and invalid
         // the first 5 recipes are valid recipes
-        validRecipes = recipes.subList(0, 5);
-        invalidRecipes = recipes.subList(5, 8);
+        validRecipesFromPlainText = recipesFromPlainText.subList(0, 5);
+        invalidRecipesFromPlainText = recipesFromPlainText.subList(5, 8);
+
+        List<ExtractedText> jsonRecipes = initializeRecipesJSON();
+        validRecipesJSON = jsonRecipes.subList(0,6);
+        invalidRecipesJSON = jsonRecipes.subList(6, jsonRecipes.size());
 
         // load in the model
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
@@ -81,7 +106,7 @@ public class DelegatorLongTest {
 
 
     @Test
-    public void Delegator_processText_NoExceptionsInDelegatorForValidRecipes() {
+    public void Delegator_processText_NoExceptionsInDelegatorForValidRecipesTXT() {
         /**
          * Check that no exceptions are thrown when these recipes are read in
          */
@@ -93,9 +118,9 @@ public class DelegatorLongTest {
         // Act
         try {
 
-            for (String text : validRecipes) {
-               Recipe recipe =  delegator.processText(text);
-               System.out.println(recipe+ "\n--------------------------------");
+            for (String text : validRecipesFromPlainText) {
+                Recipe recipe = delegator.processText(text);
+                System.out.println(recipe + "\n--------------------------------");
 
             }
         } catch (Exception e) {
@@ -111,13 +136,69 @@ public class DelegatorLongTest {
     }
 
     @Test
-    public void Delegator_processText_ExceptionsInDelegatorForInvalidRecipes() {
+    public void Delegator_processText_NoExceptionsInDelegatorForValidRecipesJSON() {
+        /**
+         * Check that no exceptions are thrown when these recipes are read in
+         */
+        // Arrange
+        // initialize on false
+        boolean thrown = false;
+
+
+        // Act
+        try {
+
+            for (ExtractedText text : validRecipesJSON) {
+                Recipe recipe = delegator.processText(text);
+                System.out.println(recipe + "\n--------------------------------");
+
+            }
+        } catch (Exception e) {
+            // set thrown to true, this should not happen
+
+            thrown = true;
+            System.out.println(e);
+        }
+
+        // Assert
+        // assert that no errors were thrown
+        assert (!thrown);
+    }
+
+    @Test
+    public void Delegator_processText_ExceptionsInDelegatorForInvalidRecipesTXT() {
         /**
          * Check that no exceptions are thrown when these recipes are read in
          */
 
         // the 6th and 7th recipes are invalid
-        for (String text : invalidRecipes) {
+        for (String text : invalidRecipesFromPlainText) {
+            // Arrange
+            // initialize on false
+            boolean thrown = false;
+            // Act
+            try {
+                delegator.processText(text);
+            } catch (Exception e) {
+                // set thrown to true, this should happen
+                Log.e("Woop", "Error was thrown", e);
+                thrown = true;
+            }
+            // Assert
+            // assert that an error was thrown
+            assert (thrown);
+        }
+
+
+    }
+
+    @Test
+    public void Delegator_processText_ExceptionsInDelegatorForInvalidRecipesJSON() {
+        /**
+         * Check that no exceptions are thrown when these recipes are read in
+         */
+
+        for (ExtractedText text : invalidRecipesJSON) {
             // Arrange
             // initialize on false
             boolean thrown = false;
@@ -147,7 +228,7 @@ public class DelegatorLongTest {
         int average_non = 0;
 
         // Act
-        for (String recipeText : validRecipes) {
+        for (String recipeText : validRecipesFromPlainText) {
             // do the processing and add the time this processing costed
             long start = System.currentTimeMillis();
             delegator.processText(recipeText);
@@ -157,7 +238,7 @@ public class DelegatorLongTest {
 
         }
         // divide by the amount of recipes processed to get the average
-        average_non = average_non / validRecipes.size();
+        average_non = average_non / validRecipesFromPlainText.size();
 
         // Assert
         System.out.println(average_non + "  NON PARALLEL TIME");
@@ -174,14 +255,14 @@ public class DelegatorLongTest {
         delegator = new Delegator(crfClassifier, true);
 
         // Act
-        for (String text : validRecipes) {
+        for (String text : validRecipesFromPlainText) {
             long start = System.currentTimeMillis();
             Recipe recipe = delegator.processText(text);
             long finish = System.currentTimeMillis();
             long time = finish - start;
             average_para += time;
         }
-        average_para = average_para / validRecipes.size();
+        average_para = average_para / validRecipesFromPlainText.size();
 
 
         // Assert

@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,8 +50,6 @@ public class Tab3Steps extends Fragment {
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.tab_3_steps, container, false);
-
-        Log.d("Test", "onCreateView " + this);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mStepsPagerAdapter = new StepsPagerAdapter(getChildFragmentManager());
@@ -115,12 +112,6 @@ public class Tab3Steps extends Fragment {
 
             // Set the TextViews
             titleTextView.setText(getString(R.string.section_format, index + 1));
-
-            // Add Text and Timer
-            int timer_margin = Math.round(getResources().getDimension(R.dimen.timer_margin));
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            layoutParams.setMargins(0, timer_margin, 0, timer_margin);
             ViewGroup insertPoint = rootView.findViewById(R.id.ll_step);
 
             RecipeViewModel recipeViewModel = ViewModelProviders
@@ -215,7 +206,6 @@ public class Tab3Steps extends Fragment {
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            Log.d(StepsPagerAdapter.class.getSimpleName(), "fragment position & count: " + position + ", " + getCount());
             return PlaceholderFragment.newInstance(position, getCount());
         }
 
@@ -223,7 +213,6 @@ public class Tab3Steps extends Fragment {
         public int getCount() {
             // Return total pages.
             if (mDescriptionSteps == null) {
-                Log.d(Tab3Steps.class.getSimpleName(), "GetCount called");
                 return 0;
             }
             return mDescriptionSteps.length;

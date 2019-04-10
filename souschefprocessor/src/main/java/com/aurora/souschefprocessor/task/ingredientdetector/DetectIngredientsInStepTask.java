@@ -102,7 +102,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
-    private static boolean startedCreatingPipeline = false;
+    private static boolean sStartedCreatingPipeline = false;
     /**
      * The pipeline for annotating the sentences
      */
@@ -146,12 +146,12 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     public static void initializeAnnotationPipeline() {
         Thread initialize = new Thread(() -> {
             synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
-                if (startedCreatingPipeline) {
+                if (sStartedCreatingPipeline) {
                     // creating already started or finished  so do not start again
                     return;
                 }
                 // ensure no other thread can initialize
-                startedCreatingPipeline = true;
+                sStartedCreatingPipeline = true;
             }
             sAnnotationPipeline = createIngredientAnnotationPipeline();
             synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {

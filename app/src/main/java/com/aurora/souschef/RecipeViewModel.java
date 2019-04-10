@@ -10,6 +10,8 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.facade.Communicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
@@ -69,6 +71,7 @@ public class RecipeViewModel extends AndroidViewModel {
 
     /**
      * Constructor that initialises the pipeline and LiveData.
+     *
      * @param application
      */
     public RecipeViewModel(@NonNull Application application) {
@@ -85,6 +88,7 @@ public class RecipeViewModel extends AndroidViewModel {
 
     /**
      * Get the progress LiveData object
+     *
      * @return live progress
      */
     public LiveData<Integer> getProgressStep() {
@@ -93,24 +97,49 @@ public class RecipeViewModel extends AndroidViewModel {
 
     /**
      * Get the actual progress, in percentages.
+     *
      * @return progress-percentage
      */
     public int getProgress() {
-        if(progressStep == null || progressStep.getValue() == null) {
+        if (progressStep == null || progressStep.getValue() == null) {
             return 0;
         }
         return (int) (100.0 / DETECTION_STEPS * progressStep.getValue());
     }
 
     /**
-     * Initialise the ViewModel. This starts the progressbar, but also the extraction of text.
+     * Initialise the data from plain text.
+     * @param plainText where to extract recipe from.
      */
-    public void initialise() {
+    public void initialiseWithPlainText(String plainText) {
         if (initialised != null && initialised.getValue() != null && initialised.getValue()) {
             return;
         }
         (new ProgressUpdate()).execute();
-        (new SouschefInit(getText())).execute();
+        (new SouschefInit(plainText)).execute();
+    }
+
+    /**
+     * Initialise the data with {@link ExtractedText}.
+     * @param extractedText where to get recipe from.
+     */
+    public void initialiseWithExtractedText(ExtractedText extractedText) {
+        if (initialised != null && initialised.getValue() != null && initialised.getValue()) {
+            return;
+        }
+        (new ProgressUpdate()).execute();
+        (new SouschefInit(extractedText)).execute();
+
+    }
+
+    /**
+     * Initialise data directly with a recipe.
+     * @param recipe the recipe for data extraction.
+     */
+    public void initialiseWithRecipe(Recipe recipe) {
+        RecipeViewModel.this.mRecipe.setValue(recipe);
+        RecipeViewModel.this.mCurrentPeople.setValue(recipe.getNumberOfPeople());
+        initialised.setValue(true);
     }
 
     /**
@@ -162,9 +191,16 @@ public class RecipeViewModel extends AndroidViewModel {
     class SouschefInit extends AsyncTask<Void, String, Recipe> {
 
         private String mText;
+        private ExtractedText mExtractedText;
+        private boolean mWithExtractedText = false;
 
-        protected SouschefInit(String text) {
-            mText = text;
+        public SouschefInit(String text) {
+            this.mText = text;
+        }
+
+        public SouschefInit(ExtractedText extractedText) {
+            this.mExtractedText = extractedText;
+            mWithExtractedText = true;
         }
 
         @Override
@@ -173,19 +209,22 @@ public class RecipeViewModel extends AndroidViewModel {
 
             Communicator comm = Communicator.createCommunicator(mContext);
             if (comm != null) {
-                return comm.process(mText);
+                // Pick the correct type of text.
+                if (mWithExtractedText) {
+                    return comm.process(mExtractedText);
+                } else {
+                    return comm.process(mText);
+                }
             }
             return null;
         }
 
         @Override
         protected void onPostExecute(Recipe recipe) {
-            RecipeViewModel.this.mRecipe.setValue(recipe);
-            Log.d(RecipeViewModel.class.getSimpleName(), "Recipe set");
-            RecipeViewModel.this.mCurrentPeople.setValue(recipe.getNumberOfPeople());
-            initialised.setValue(true);
+            initialiseWithRecipe(recipe);
         }
     }
+
     public LiveData<Boolean> getInitialised() {
         return initialised;
     }
@@ -203,7 +242,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * A maximum of {@value MAX_PEOPLE} people can be cooked for.
      */
     public void incrementPeople() {
-        if(mCurrentPeople == null || mCurrentPeople.getValue() == null) {
+        if (mCurrentPeople == null || mCurrentPeople.getValue() == null) {
             return;
         }
         if (mCurrentPeople.getValue() < MAX_PEOPLE) {
@@ -216,43 +255,11 @@ public class RecipeViewModel extends AndroidViewModel {
      * Decrementing cannot go below 1.
      */
     public void decrementPeople() {
-        if(mCurrentPeople == null || mCurrentPeople.getValue() == null) {
+        if (mCurrentPeople == null || mCurrentPeople.getValue() == null) {
             return;
         }
         if (mCurrentPeople.getValue() > 1) {
             mCurrentPeople.setValue(mCurrentPeople.getValue() - 1);
         }
     }
-
-    /**
-     * Dummy for this demo
-     *
-     * @return a recipe text
-     */
-    private static String getText() {
-        return "4 people\n" +
-                "\n" +
-                "Ingredients\n" +
-                "\n" +
-                "    150 g pure chocolade 78%\n" +
-                "    2 large eggs\n" +
-                "    50 g witte basterdsuiker\n" +
-                "    200 ml verse slagroom\n" +
-                "\n" +
-                "Directions\n" +
-                "\n" +
-                "\n" +
-                "    Hak de chocolade fijn. Laat de chocolade in ca. 5 min. au bain-marie smelten in " +
-                "een kom boven een pan kokend water. Roer af en toe. Neem de kom van de pan.\n" +
-                "    Splits de eieren. Klop het eiwit met de helft van de suiker met een mixer ca. " +
-                "5 min. totdat het glanzende stijve pieken vormt. Doe de slagroom in een ruime kom en " +
-                "klop in ca. 3 min. stijf.\n" +
-                "    Klop de eidooiers los met een garde. Roer de rest van de suiker erdoor.\n" +
-                "    Roer de gesmolten chocolade door het eidooier-suikermengsel. Spatel het door de " +
-                "slagroom. Spatel het eiwit snel en luchtig in delen door het chocolademengsel.\n" +
-                "    Schep de chocolademousse in glazen, potjes of coupes, dek af met vershoudfolie " +
-                "en laat minimaal 2 uur opstijven in de koelkast.\n";
-    }
-
-
 }

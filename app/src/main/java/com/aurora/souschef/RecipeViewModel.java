@@ -1,5 +1,6 @@
 package com.aurora.souschef;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
@@ -10,24 +11,66 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aurora.souschefprocessor.facade.Communicator;
-import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Recipe;
-import com.aurora.souschefprocessor.recipe.RecipeStep;
 
-import java.util.List;
-
+/**
+ * Holds the data of a recipe. Is responsible for keeping that data up to date,
+ * and updating the UI when necessary.
+ */
 public class RecipeViewModel extends AndroidViewModel {
+    /**
+     * When initialising Souschef, poll every MILLIS_BETWEEN_UPDATES milliseconds
+     * for updates on the progressbar. This could also be done with an observable.
+     */
     private static final int MILLIS_BETWEEN_UPDATES = 500;
+    /**
+     * The amount of steps it takes to detect a recipe.
+     * This is used to pick the interval updates of the progress bar.
+     * These steps are hard-coded-counted. This means that when the implementation
+     * of the Souschef-processor takes longer or shorter, this value must be changed.
+     */
     private static final int DETECTION_STEPS = 10;
+    /**
+     * The maximum amount of people you can cook for.
+     */
+    private static final int MAX_PEOPLE = 80;
+    /**
+     * Stop actively updating the progressbar after MAX_WAIT_TIME.
+     */
     private static final int MAX_WAIT_TIME = 15000;
 
+    /**
+     * LiveData of the current amount of people. Used for changing the amount of people,
+     * especially tab 2.
+     */
     private MutableLiveData<Integer> mCurrentPeople;
+    /**
+     * LiveData of the progress. Used to update the UI according to the progress.
+     */
     private MutableLiveData<Integer> progressStep;
+    /**
+     * This LiveData value updates when the initialisation is finished.
+     */
     private MutableLiveData<Boolean> initialised;
+    /**
+     * When the recipe is set, this value changes -> all observers act.
+     * Proficiat! Je hebt deze hidden comment gevonden! Tof.
+     */
     private MutableLiveData<Recipe> mRecipe = new MutableLiveData<>();
-    private Context mContext;
-    private String[] mDescriptionSteps = null;
 
+    /**
+     * The context of the application.
+     * <p>
+     * The only use of context is to get the Souschef NLP model loaded.
+     * This leak is not an issue.
+     */
+    @SuppressLint("StaticFieldLeak")
+    private Context mContext;
+
+    /**
+     * Constructor that initialises the pipeline and LiveData.
+     * @param application
+     */
     public RecipeViewModel(@NonNull Application application) {
         super(application);
         this.mContext = application;
@@ -40,26 +83,41 @@ public class RecipeViewModel extends AndroidViewModel {
         Communicator.createAnnotationPipelines();
     }
 
+    /**
+     * Get the progress LiveData object
+     * @return live progress
+     */
     public LiveData<Integer> getProgressStep() {
         return progressStep;
     }
 
+    /**
+     * Get the actual progress, in percentages.
+     * @return progress-percentage
+     */
     public int getProgress() {
+        if(progressStep == null || progressStep.getValue() == null) {
+            return 0;
+        }
         return (int) (100.0 / DETECTION_STEPS * progressStep.getValue());
     }
 
+    /**
+     * Initialise the ViewModel. This starts the progressbar, but also the extraction of text.
+     */
     public void initialise() {
-        if (initialised != null && initialised.getValue()) {
+        if (initialised != null && initialised.getValue() != null && initialised.getValue()) {
             return;
         }
         (new ProgressUpdate()).execute();
         (new SouschefInit(getText())).execute();
     }
 
-    public List<RecipeStep> getRecipeSteps() {
-        return mRecipe.getValue().getRecipeSteps();
-    }
-
+    /**
+     * Async task executing the logic for the progress bar.
+     * If leaked, it will stop after {@value MAX_WAIT_TIME} milliseconds.
+     */
+    @SuppressLint("StaticFieldLeak")
     class ProgressUpdate extends AsyncTask<Void, Integer, Void> {
 
         @Override
@@ -97,6 +155,10 @@ public class RecipeViewModel extends AndroidViewModel {
         }
     }
 
+    /**
+     * Async taks executing the Souschef initialisation.
+     */
+    @SuppressLint("StaticFieldLeak")
     class SouschefInit extends AsyncTask<Void, String, Recipe> {
 
         private String mText;
@@ -110,7 +172,10 @@ public class RecipeViewModel extends AndroidViewModel {
             // Progressupdates are in demostate
 
             Communicator comm = Communicator.createCommunicator(mContext);
-            return comm.process(mText);
+            if (comm != null) {
+                return comm.process(mText);
+            }
+            return null;
         }
 
         @Override
@@ -121,20 +186,8 @@ public class RecipeViewModel extends AndroidViewModel {
             initialised.setValue(true);
         }
     }
-
     public LiveData<Boolean> getInitialised() {
         return initialised;
-    }
-
-    public String[] getDescriptionSteps() {
-        return mDescriptionSteps;
-    }
-
-    public List<ListIngredient> getIngredients() {
-        if (mRecipe == null) {
-            return null;
-        }
-        return mRecipe.getValue().getIngredients();
     }
 
     public LiveData<Integer> getNumberOfPeople() {
@@ -145,18 +198,28 @@ public class RecipeViewModel extends AndroidViewModel {
         return mRecipe;
     }
 
+    /**
+     * Increment the amount of people.
+     * A maximum of {@value MAX_PEOPLE} people can be cooked for.
+     */
     public void incrementPeople() {
-        if (mCurrentPeople.getValue() == 80) {
+        if(mCurrentPeople == null || mCurrentPeople.getValue() == null) {
             return;
-        } else {
+        }
+        if (mCurrentPeople.getValue() < MAX_PEOPLE) {
             mCurrentPeople.setValue(mCurrentPeople.getValue() + 1);
         }
     }
 
+    /**
+     * Decrement the amount of people.
+     * Decrementing cannot go below 1.
+     */
     public void decrementPeople() {
-        if (mCurrentPeople.getValue() == 1) {
+        if(mCurrentPeople == null || mCurrentPeople.getValue() == null) {
             return;
-        } else {
+        }
+        if (mCurrentPeople.getValue() > 1) {
             mCurrentPeople.setValue(mCurrentPeople.getValue() - 1);
         }
     }

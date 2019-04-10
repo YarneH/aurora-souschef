@@ -65,8 +65,6 @@ public class Tab2Ingredients extends Fragment {
                     mAmountTextView.setText(String.valueOf(mActualNumberOfPeople));
                     mIngredientAdapter.setChoseAmountOfServings(integer);
                     mIngredientAdapter.notifyDataSetChanged();
-//                    mIngredientAdapter = new IngredientAdapter(mRecipe.getIngredients(), mActualNumberOfPeople);
-//                    mIngredientList.setAdapter(mIngredientAdapter);
                 }
         );
         return rootView;

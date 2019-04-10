@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
@@ -16,6 +17,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -211,16 +213,9 @@ public class MainActivity extends AppCompatActivity {
      * one of the sections/tabs/pages.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
-        private Tab1Overview mTab1Overview = null;
-        private Tab2Ingredients mTab2Ingredients = null;
-        private Tab3Steps mTab3Steps = null;
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
-
-            mTab1Overview = new Tab1Overview();
-            mTab2Ingredients = new Tab2Ingredients();
-            mTab3Steps = new Tab3Steps();
         }
 
         @Override
@@ -228,13 +223,13 @@ public class MainActivity extends AppCompatActivity {
             Fragment tempFrag;
             switch (position) {
                 case TAB_OVERVIEW:
-                    tempFrag = mTab1Overview;
+                    tempFrag = new Tab1Overview();
                     break;
                 case TAB_INGREDIENTS:
-                    tempFrag = mTab2Ingredients;
+                    tempFrag = new Tab2Ingredients();
                     break;
                 case TAB_STEPS:
-                    tempFrag = mTab3Steps;
+                    tempFrag = new Tab3Steps();
                     break;
                 default:
                     tempFrag = null;
@@ -249,7 +244,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-
         public CharSequence getPageTitle(int position) {
             String tabName;
             switch (position) {

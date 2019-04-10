@@ -159,10 +159,10 @@ public class RecipeViewModel extends AndroidViewModel {
 
                     publishProgress(Communicator.getProgressAnnotationPipelines());
                     if (Communicator.getProgressAnnotationPipelines() >= DETECTION_STEPS) {
-                        return null;
+                        break;
                     }
                     if (upTime > MAX_WAIT_TIME) {
-                        return null;
+                        break;
                     }
                 }
             } catch (InterruptedException e) {

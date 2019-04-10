@@ -10,26 +10,58 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 /**
- * A UI class representing a RecipeTimer. It adds a CountDownTimer to a already existing TextView
- * mRunning: a boolean, representing whether the timer is running
- * mTimeSetByUser: an int, representing a value between the upper and lower bound, chosen by the user
- * mMillisLeft: a long, representing the amount of milliseconds left on the CountDownTimer
- * mTextViewTimer: the TextView of the timer
- * mCountDownTimer: a CountDownTimer that counts down the seconds of the timer
+ * A UI class responsible for filling in the UI with timer data.
  */
 public class UITimer {
+    /**
+     * Time constant: seconds in an hour.
+     */
     private static final int AMOUNT_SEC_IN_HOUR = 3600;
+    /**
+     * Time constant: seconds in half an hour.
+     */
     private static final int AMOUNT_SEC_IN_HALF_HOUR = 1800;
+    /**
+     * Time constant: seconds in a quarter hour.
+     */
     private static final int AMOUNT_SEC_IN_QUARTER = 900;
+    /**
+     * Time constant: seconds in a minute.
+     */
     private static final int MINUTE_STEP = 60;
+    /**
+     * Time constant: seconds in half a minute.
+     */
     private static final int HALF_MINUTE_STEP = 30;
+    /**
+     * Time constant: seconds in 15 seconds (?!?).
+     */
     private static final int QUARTER_MINUTE_STEP = 15;
+    /**
+     * Time constant: the amount of seconds in exactly one second.
+     */
     private static final int SECOND_STEP = 1;
+    /**
+     * Maximum percentage. Preventing magic numbers.
+     */
     private static final int PERCENT = 100;
 
+    /**
+     * Data container for timers.
+     */
     private final LiveDataTimer mLiveDataTimer;
+    /**
+     * View where the timer is displayed.
+     */
     private View mTimerCard;
 
+    /**
+     * Sets up text and timer views.
+     * @param liveDataTimer timer data container
+     * @param timerCard view where to put the timer. Should be a timer_card.xml
+     * @param owner LifeCycleOwner responsible for the LiveData objects.
+     *              Normally the activity.
+     */
     public UITimer(LiveDataTimer liveDataTimer, View timerCard, LifecycleOwner owner) {
         this.mLiveDataTimer = liveDataTimer;
         this.mTimerCard = timerCard;
@@ -46,6 +78,9 @@ public class UITimer {
         this.mLiveDataTimer.getIsFinished().observe(owner, aBoolean -> onTimerFinished());
     }
 
+    /**
+     * TODO: What happens on timer completion?
+     */
     private void onTimerFinished() {
         // TODO: implement what happens when timer finishes.
     }

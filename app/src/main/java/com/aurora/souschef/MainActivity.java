@@ -29,6 +29,23 @@ import com.aurora.souschefprocessor.recipe.Recipe;
 public class MainActivity extends AppCompatActivity {
 
     /**
+     * ID of the overview tab.
+     */
+    private static final int TAB_OVERVIEW = 0;
+    /**
+     * ID of the ingredients tab.
+     */
+    private static final int TAB_INGREDIENTS = 1;
+    /**
+     * ID of the steps tab.
+     */
+    private static final int TAB_STEPS = 2;
+    /**
+     * Total number of tabs.
+     */
+    private static final int NUMBER_OF_TABS = 3;
+
+    /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
      * {@link FragmentPagerAdapter} derivative, which will keep every
@@ -36,25 +53,10 @@ public class MainActivity extends AppCompatActivity {
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
-    private static final int TAB_OVERVIEW = 0;
-    private static final int TAB_INGREDIENTS = 1;
-    private static final int TAB_STEPS = 2;
-    private static final int NUMBER_OF_TABS = 3;
-    private static final int PROGRESS_PER_STEP = 14;
-    private static final int MILLIS_BETWEEN_UPDATES = 500;
-    private static final int MAX_WAIT_TIME = 15000;
-    private static final int DETECTION_STEPS = 20;
-    private static final String[] STEPS = {
-            "Initializing...",
-            "Creating new pipeline...",
-            "Doing smart stuff to understand words...",
-            "Understanding sentences...",
-            "Revising some stuff",
-            "Searching for timers...",
-            "Finishing up..."};
-
     private SectionsPagerAdapter mSectionsPagerAdapter = null;
-    private Context mContext = this;
+    /**
+     * Holds the data of a recipe in a LifeCycle-friendly way.
+     */
     private RecipeViewModel recipe;
 
     public MainActivity() {
@@ -91,6 +93,10 @@ public class MainActivity extends AppCompatActivity {
                 "en laat minimaal 2 uur opstijven in de koelkast.\n";
     }
 
+    /**
+     * Overwritten method of Activity
+     * @param savedInstanceState The saved state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // The first thing we do is Souschef specific:
@@ -172,9 +178,13 @@ public class MainActivity extends AppCompatActivity {
             Log.d("TEST", "hiding");
             hideProgress();
         });
+        // TODO: handle when cached object is given.
         recipe.initialise();
     }
 
+    /**
+     * Show the progress-screen.
+     */
     private void showProgress() {
         ViewPager mViewPager;
         // Set up the ViewPager with the sections adapter.
@@ -190,6 +200,9 @@ public class MainActivity extends AppCompatActivity {
         cl.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Hide the progress-screen.
+     */
     private void hideProgress() {
         // get fields to update visibility
         AppBarLayout appBarLayout = findViewById(R.id.appbar);

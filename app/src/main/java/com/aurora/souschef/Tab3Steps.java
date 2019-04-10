@@ -26,10 +26,22 @@ import java.util.regex.Pattern;
  * Class defining the functionality of the recipe steps tab.
  */
 public class Tab3Steps extends Fragment {
+    /**
+     * Array with the text in every step.
+     */
     private String[] mDescriptionSteps = null;
+    /**
+     * Adapter for filling the different step cards.
+     */
     private StepsPagerAdapter mStepsPagerAdapter;
+    /**
+     * Viewpager for swiping and navigating through the different cards.
+     */
     private ViewPager mViewPager;
 
+    /**
+     * Default constructor. Is empty.
+     */
     public Tab3Steps() {
         // Default constructor
     }
@@ -124,26 +136,34 @@ public class Tab3Steps extends Fragment {
                 RecipeTimerViewModel recipeTimerViewModel = ViewModelProviders.of(getActivity()).get(RecipeTimerViewModel.class);
                 recipeTimerViewModel.init(recipe);
 
+                // Keep index of the beginning of a text block to know where to cut the text.
                 int beginOfTextBlock = 0;
+                // Run over all timers to place them correctly.
                 for (int i = 0; i < recipe.getRecipeSteps().get(index).getRecipeTimers().size(); i++) {
+                    // New card for the timer.
                     View timerCard = inflater.inflate(R.layout.timer_card, container, false);
+                    // New TextView for the recipe description.
                     TextView textView = (TextView) inflater.inflate(R.layout.step_textview, container, false);
 
-                    // Set Timers correctly.
+                    // Get timer data in this step of the i'th timer.
                     LiveDataTimer liveDataTimer = recipeTimerViewModel.getTimerInStep(index, i);
+                    // Make new timer-object. Is actually never used after this.
                     new UITimer(liveDataTimer, timerCard, this);
 
                     // Set TextViews
+                    // search for the next place to cut.
                     int endOfTextBlock = recipe.getRecipeSteps()
                             .get(index).getRecipeTimers()
                             .get(i).getPosition()
                             .getEndIndex();
+                    // get the substring and place it in the TextView
                     String currentSubstring = mDescriptionStep[index].substring(beginOfTextBlock, endOfTextBlock);
                     Pattern p = Pattern.compile("\\p{Alpha}");
                     Matcher m = p.matcher(currentSubstring);
                     if (m.find()) {
                         textView.setText(currentSubstring.substring(m.start()));
                     }
+                    // Update the text-block start to be at the beginning of the next piece.
                     beginOfTextBlock = endOfTextBlock;
 
                     // Add text and timers to the parent.
@@ -151,6 +171,7 @@ public class Tab3Steps extends Fragment {
                     insertPoint.addView(timerCard);
                 }
                 // Check if there is still some text coming after the last timer
+                // Repeat.
                 if (beginOfTextBlock != mDescriptionStep[index].length()) {
                     TextView textView = (TextView) inflater.inflate(R.layout.step_textview, container, false);
                     String currentSubstring = mDescriptionStep[index].substring(beginOfTextBlock);
@@ -209,6 +230,12 @@ public class Tab3Steps extends Fragment {
         }
     }
 
+    /**
+     * Extracts the descriptions of the different steps.
+     *
+     * @param recipe where to extract the steps from.
+     * @return Array with extracted descriptions. Holds as much elements as there are steps.
+     */
     public static String[] extractDescriptionSteps(Recipe recipe) {
         int stepsCount = recipe.getRecipeSteps().size();
         String[] steps = new String[stepsCount];

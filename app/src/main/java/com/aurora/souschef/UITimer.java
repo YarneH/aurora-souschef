@@ -5,6 +5,7 @@ import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -35,6 +36,7 @@ public class UITimer extends RecipeTimer {
     private long mMillisLeft;
     private CountDownTimer mCountDownTimer;
     private TextView mTextViewTimer;
+    private ImageView mImageViewIcon;
 
     public UITimer(int lowerBound, int upperBound, TextView textView) {
         super(upperBound, lowerBound, null);
@@ -50,6 +52,7 @@ public class UITimer extends RecipeTimer {
         // Use getLowerBound so the lower and upper bound are switched if needed (implemented in RecipeTimer)
         mTimeSetByUser = getLowerBound();
         mTextViewTimer = textView;
+        mImageViewIcon = ((View) textView.getParent()).findViewById(R.id.iv_timer_icon);
 
         resetTimer();
     }
@@ -75,6 +78,7 @@ public class UITimer extends RecipeTimer {
         }.start();
 
         mRunning = true;
+        mImageViewIcon.setImageResource(R.drawable.ic_pause_white);
     }
 
     /**
@@ -97,6 +101,7 @@ public class UITimer extends RecipeTimer {
         if (mCountDownTimer != null) {
             mRunning = false;
             mCountDownTimer.cancel();
+            mImageViewIcon.setImageResource(R.drawable.ic_play_white);
         }
     }
 
@@ -107,6 +112,7 @@ public class UITimer extends RecipeTimer {
         // Subtract one to make sure the timer shows the correct value when started
         mMillisLeft = (long) mTimeSetByUser * AMOUNT_MILLISEC_IN_SEC - 1;
         mTextViewTimer.setText(convertTimeToString(mTimeSetByUser));
+        mImageViewIcon.setImageResource(R.drawable.ic_timer_white);
     }
 
     /**
@@ -233,5 +239,4 @@ public class UITimer extends RecipeTimer {
 
         return timerText;
     }
-
 }

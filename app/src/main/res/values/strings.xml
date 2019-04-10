@@ -11,4 +11,7 @@
     <string name="amount_people">Amount of people:</string>
     <string name="btn_plus">+</string>
     <string name="btn_minus">-</string>
+
+    <!-- String for timer -->
+    <string name="timer_icon_description">This is the icon for a timer card</string>
 </resources>

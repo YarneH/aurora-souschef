@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
                 "        6 oz. oil-packed tuna\n" +
                 "\n" +
                 "\n" +
-                "\n" +
+                "Cooking steps\n" +
                 "        Cook pasta in a large pot of boiling salted water, stirring " +
                 "occasionally, until al dente. Drain pasta, reserving 1 cup pasta cooking " +
                 "liquid; return pasta to pot.\n" +

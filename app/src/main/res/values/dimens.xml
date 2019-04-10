@@ -10,4 +10,7 @@
     <dimen name="dot_indicator">10dp</dimen>
     <dimen name="dots_margin">3dp</dimen>
     <dimen name="timer_margin">10dp</dimen>
+
+    <!-- Text sizes -->
+    <dimen name="text_description">20sp</dimen>
 </resources>

@@ -24,7 +24,7 @@ public class Tab1Overview extends Fragment {
         View rootView = inflater.inflate(R.layout.tab_1_overview, container, false);
         descriptionTextView = rootView.findViewById(R.id.tv_recipe_description);
         mRecipe = ViewModelProviders.of(getActivity()).get(RecipeViewModel.class);
-        mRecipe.getRecipe().observe(this, recipe -> {
+        mRecipe.getRecipe().observe(this, (Recipe recipe) -> {
             if (recipe == null) {
                 return;
             }

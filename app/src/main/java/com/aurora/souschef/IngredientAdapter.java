@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.aurora.souschefprocessor.recipe.ListIngredient;
@@ -61,6 +62,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
     /**
      * Change the amount of people that is being cooked for.
      * Updates all ingredient amounts.
+     *
      * @param chosenAmount new amount of people.
      */
     public void setChoseAmountOfServings(int chosenAmount) {
@@ -78,7 +80,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
 
     @Override
     public void onBindViewHolder(@NonNull CardIngredientViewHolder cardIngredientViewHolder, int i) {
-        cardIngredientViewHolder.bind(i);
+        cardIngredientViewHolder.bind();
     }
 
     @Override
@@ -132,17 +134,14 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
             mCheckbox = itemView.findViewById(R.id.cb_ingredient_checked);
 
             mIngredientCard.setOnClickListener(this);
-            mCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                mChecked[getAdapterPosition()] = isChecked;
-            });
+            mCheckbox.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) ->
+                    mChecked[getAdapterPosition()] = isChecked);
         }
 
         /**
          * populate individual views with the correct data
-         *
-         * @param i what value in the list of ingredients to bind to this card.
          */
-        private void bind(int i) {
+        private void bind() {
             ListIngredient ingredient = ingredients.get(getAdapterPosition());
 
             String nameWithoutQuantityAndUnit = ingredient.getOriginalLineWithoutUnitAndQuantity();
@@ -171,7 +170,9 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
          */
         @Override
         public void onClick(View v) {
-            Snackbar.make(this.itemView, ingredients.get(getAdapterPosition()).getOriginalLine(), Snackbar.LENGTH_LONG).show();
+            Snackbar.make(this.itemView,
+                    ingredients.get(getAdapterPosition()).getOriginalLine(),
+                    Snackbar.LENGTH_LONG).show();
         }
 
         /**

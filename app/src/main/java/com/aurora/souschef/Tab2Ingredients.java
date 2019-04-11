@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.aurora.souschefprocessor.recipe.Recipe;
+
 /**
  * Class defining the functionality of the ingredients tab.
  */
@@ -54,20 +56,20 @@ public class Tab2Ingredients extends Fragment {
         minusButton.setOnClickListener(view -> mRecipe.decrementPeople());
 
         mRecipe = ViewModelProviders.of(getActivity()).get(RecipeViewModel.class);
-        mRecipe.getRecipe().observe(this, recipe1 -> {
-            if (recipe1 == null) {
+        mRecipe.getRecipe().observe(this, (Recipe recipe) -> {
+            if (recipe == null) {
                 return;
             }
             // Feed Adapter
-            mIngredientAdapter = new IngredientAdapter(recipe1.getIngredients(), recipe1.getNumberOfPeople());
+            mIngredientAdapter = new IngredientAdapter(recipe.getIngredients(), recipe.getNumberOfPeople());
             mIngredientList.setAdapter(mIngredientAdapter);
         });
-        mRecipe.getNumberOfPeople().observe(this, integer -> {
-                    if (integer == null) {
+        mRecipe.getNumberOfPeople().observe(this, (Integer numberOfPeople) -> {
+                    if (numberOfPeople == null) {
                         return;
                     }
-                    mAmountTextView.setText(String.valueOf(integer));
-                    mIngredientAdapter.setChoseAmountOfServings(integer);
+                    mAmountTextView.setText(String.valueOf(numberOfPeople));
+                    mIngredientAdapter.setChoseAmountOfServings(numberOfPeople);
                     mIngredientAdapter.notifyDataSetChanged();
                 }
         );

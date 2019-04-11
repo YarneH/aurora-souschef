@@ -3,7 +3,6 @@ package com.aurora.souschef;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.os.CountDownTimer;
-import android.view.View;
 
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 
@@ -58,7 +57,9 @@ public class LiveDataTimer {
         mRecipeTimer = new RecipeTimer(recipeTimer.getUpperBound(), recipeTimer.getLowerBound(), null);
         mTimeSetByUser = recipeTimer.getLowerBound();
         mFinished.setValue(false);
-        resetTimer();
+        mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));
+        mRunning = false;
+
     }
 
     /**
@@ -72,7 +73,8 @@ public class LiveDataTimer {
         mRecipeTimer = new RecipeTimer(upperBound, lowerBound, null);
         mTimeSetByUser = mRecipeTimer.getLowerBound();
         mFinished.setValue(false);
-        resetTimer();
+        mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));
+        mRunning = false;
     }
 
     public void resetTimer() {
@@ -90,7 +92,7 @@ public class LiveDataTimer {
             mCountDownTimer.cancel();
             return;
         }
-        this.mCountDownTimer = new CountDownTimer(mMillisLeft.getValue(), MILLIS) {
+        this.mCountDownTimer = new CountDownTimer(mMillisLeft.getValue()-1, MILLIS) {
             @Override
             public void onTick(long millisUntilFinished) {
                 mMillisLeft.setValue(millisUntilFinished);
@@ -99,7 +101,7 @@ public class LiveDataTimer {
             @Override
             public void onFinish() {
                 mFinished.setValue(true);
-                //TODO: check if running needs to be set to false;
+                //TODO: check if running needs to be set to false
                 mRunning = false;
             }
         };
@@ -115,6 +117,7 @@ public class LiveDataTimer {
      * The user can change the time by long-pressing.
      * This can only be done when upperbound != lowerbound.
      * This seems weird, but okay.
+     *
      * @param timeInSeconds set time.
      */
     public void setTimeSetByUser(int timeInSeconds) {
@@ -150,6 +153,7 @@ public class LiveDataTimer {
 
     /**
      * Returns whether or not the timer can be changed.
+     *
      * @return
      */
     public boolean canChangeTimer() {

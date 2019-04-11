@@ -2,11 +2,8 @@ package com.aurora.souschef;
 
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
@@ -17,16 +14,11 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
-import com.aurora.souschefprocessor.facade.Communicator;
-import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 public class MainActivity extends AppCompatActivity {
@@ -153,18 +145,17 @@ public class MainActivity extends AppCompatActivity {
         showProgress();
 
         // setup recipe data object (RecipeViewModel).
-        recipe.getProgressStep().observe(this, integer -> {
+        recipe.getProgressStep().observe(this, (Integer step) -> {
                     ProgressBar pb = findViewById(R.id.pb_loading_screen);
                     pb.setProgress(recipe.getProgress());
-                    // TODO: set textfield to visualize progress;
-
+                    // TODO: set TextView to visualize progress
                 }
         );
-        recipe.getInitialised().observe(this, o -> {
-            if (o == null) {
+        recipe.getInitialised().observe(this, (Boolean isInitialised) -> {
+            if (isInitialised == null) {
                 return;
             }
-            if (!o) {
+            if (!isInitialised) {
                 return;
             }
             Log.d("TEST", "hiding");
@@ -178,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
          */
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-            /*BasicPluginObject basicPluginObject = null;
+            /*BasicPluginObject basicPluginObject = null
              * TODO remove this if statement probably. Is currently used to handle cases where a
              * plain String is sent instead of an ExtractedText
              */
@@ -199,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
                     recipe.initialiseWithExtractedText(extractedText);
                 } else {
                     // Error in case ExtractedText was null.
-                    Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null. Did not extract anything.");
+                    Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
                 }
 
             } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {

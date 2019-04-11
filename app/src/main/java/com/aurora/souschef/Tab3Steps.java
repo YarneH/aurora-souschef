@@ -1,6 +1,7 @@
 package com.aurora.souschef;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -55,8 +56,10 @@ public class Tab3Steps extends Fragment {
         mStepsPagerAdapter = new StepsPagerAdapter(getChildFragmentManager());
         mViewPager = rootView.findViewById(R.id.vp_steps);
 
-        RecipeViewModel mRecipe = ViewModelProviders.of(Objects.requireNonNull(this.getActivity())).get(RecipeViewModel.class);
-        mRecipe.getRecipe().observe(this, recipe -> {
+        RecipeViewModel mRecipe = ViewModelProviders
+                .of(Objects.requireNonNull(this.getActivity()))
+                .get(RecipeViewModel.class);
+        mRecipe.getRecipe().observe(this, (Recipe recipe) -> {
             if (recipe == null) {
                 return;
             }
@@ -64,12 +67,6 @@ public class Tab3Steps extends Fragment {
             mViewPager.setAdapter(mStepsPagerAdapter);
 
         });
-
-        // Set up the ViewPager with the sections adapter.
-
-        // Prevent ViewPager from resetting timers
-        // TODO: remove this when viewmodel is ready
-//        mViewPager.setOffscreenPageLimit(mStepsPagerAdapter.getCount());
 
         return rootView;
     }
@@ -83,7 +80,7 @@ public class Tab3Steps extends Fragment {
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
-        private static final String ARG_NUMBER_OF_SECTIONS = "number_of_sections";
+        private View mRootView;
         private String[] mDescriptionStep;
 
         public PlaceholderFragment() {
@@ -94,7 +91,7 @@ public class Tab3Steps extends Fragment {
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(int sectionNumber, int amountSteps) {
+        public static PlaceholderFragment newInstance(int sectionNumber) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
@@ -107,88 +104,111 @@ public class Tab3Steps extends Fragment {
             int index = Objects.requireNonNull(getArguments()).getInt(ARG_SECTION_NUMBER);
 
             // Inflate a CardView with a step and get the View
-            View rootView = inflater.inflate(R.layout.fragment_steps, container, false);
-            TextView titleTextView = rootView.findViewById(R.id.tv_title);
+            mRootView = inflater.inflate(R.layout.fragment_steps, container, false);
+            TextView titleTextView = mRootView.findViewById(R.id.tv_title);
 
             // Set the TextViews
             titleTextView.setText(getString(R.string.section_format, index + 1));
-            ViewGroup insertPoint = rootView.findViewById(R.id.ll_step);
 
             RecipeViewModel recipeViewModel = ViewModelProviders
                     .of(Objects.requireNonNull(getActivity()))
                     .get(RecipeViewModel.class);
-            recipeViewModel.getRecipe().observe(this, recipe -> {
-                if (recipe == null) {
-                    return;
-                }
-
-                mDescriptionStep = extractDescriptionSteps(recipe);
-
-                RecipeTimerViewModel recipeTimerViewModel = ViewModelProviders.of(getActivity()).get(RecipeTimerViewModel.class);
-                recipeTimerViewModel.init(recipe);
-
-                // Keep index of the beginning of a text block to know where to cut the text.
-                int beginOfTextBlock = 0;
-                // Run over all timers to place them correctly.
-                for (int i = 0; i < recipe.getRecipeSteps().get(index).getRecipeTimers().size(); i++) {
-                    // New card for the timer.
-                    View timerCard = inflater.inflate(R.layout.timer_card, container, false);
-                    // New TextView for the recipe description.
-                    TextView textView = (TextView) inflater.inflate(R.layout.step_textview, container, false);
-
-                    // Get timer data in this step of the i'th timer.
-                    LiveDataTimer liveDataTimer = recipeTimerViewModel.getTimerInStep(index, i);
-                    // Make new timer-object. Is actually never used after this.
-                    new UITimer(liveDataTimer, timerCard, this);
-
-                    // Set TextViews
-                    // search for the next place to cut.
-                    int endOfTextBlock = recipe.getRecipeSteps()
-                            .get(index).getRecipeTimers()
-                            .get(i).getPosition()
-                            .getEndIndex();
-                    // get the substring and place it in the TextView
-                    String currentSubstring = mDescriptionStep[index].substring(beginOfTextBlock, endOfTextBlock);
-                    Pattern p = Pattern.compile("\\p{Alpha}");
-                    Matcher m = p.matcher(currentSubstring);
-                    if (m.find()) {
-                        textView.setText(currentSubstring.substring(m.start()));
-                    }
-                    // Update the text-block start to be at the beginning of the next piece.
-                    beginOfTextBlock = endOfTextBlock;
-
-                    // Add text and timers to the parent.
-                    insertPoint.addView(textView);
-                    insertPoint.addView(timerCard);
-                }
-                // Check if there is still some text coming after the last timer
-                // Repeat.
-                if (beginOfTextBlock != mDescriptionStep[index].length()) {
-                    TextView textView = (TextView) inflater.inflate(R.layout.step_textview, container, false);
-                    String currentSubstring = mDescriptionStep[index].substring(beginOfTextBlock);
-                    Pattern p = Pattern.compile("\\p{Alpha}");
-                    Matcher m = p.matcher(mDescriptionStep[index].substring(beginOfTextBlock));
-                    if (m.find()) {
-                        textView.setText(currentSubstring.substring(m.start()));
-                    }
-                    insertPoint.addView(textView);
-                }
-                // Add the ImageViews to the LinearLayout for the indicator dots
-                LinearLayout linearLayout = rootView.findViewById(R.id.ll_dots);
-                ImageView tempView;
-
-                // For every step, add a dot and make sur the right one is selected 
-                for (int i = 0; i < recipe.getRecipeSteps().size(); i++) {
-                    tempView = (ImageView) inflater.inflate(R.layout.dot_image_view, linearLayout, false);
-                    if (i == index) {
-                        tempView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.selected_dot));
-                    } else {
-                        tempView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.not_selected_dot));
-                    }
-                    linearLayout.addView(tempView);
-                }
+            recipeViewModel.getRecipe().observe(this, (Recipe recipe) -> {
+                this.onNewRecipeObserved(inflater, container, recipe, index);
             });
-            return rootView;
+            return mRootView;
+        }
+
+        /**
+         * Helper class called when a new recipe is observed
+         *
+         * @param inflater  Layout inflater to inflate necessary layouts
+         * @param container ViewGroup to inflate in.
+         * @param recipe    The observed recipe
+         * @param index     The index of the step.
+         */
+        private void onNewRecipeObserved(LayoutInflater inflater, ViewGroup container, Recipe recipe, int index) {
+            if (recipe == null) {
+                return;
+            }
+            mDescriptionStep = extractDescriptionSteps(recipe);
+
+            ViewGroup insertPoint = mRootView.findViewById(R.id.ll_step);
+
+            RecipeTimerViewModel recipeTimerViewModel = ViewModelProviders
+                    .of(getActivity())
+                    .get(RecipeTimerViewModel.class);
+            recipeTimerViewModel.init(recipe);
+
+            // Keep index of the beginning of a text block to know where to cut the text.
+            int beginOfTextBlock = 0;
+            // Run over all timers to place them correctly.
+            for (int i = 0; i < recipe.getRecipeSteps().get(index).getRecipeTimers().size(); i++) {
+                // New card for the timer.
+                View timerCard = inflater.inflate(R.layout.timer_card, container, false);
+                // New TextView for the recipe description.
+                TextView textView = (TextView) inflater.inflate(R.layout.step_textview, container, false);
+
+                // Get timer data in this step of the i'th timer.
+                LiveDataTimer liveDataTimer = recipeTimerViewModel.getTimerInStep(index, i);
+                // Make new timer-object. Is actually never used after this.
+                new UITimer(liveDataTimer, timerCard, this);
+
+                // Set TextViews
+                // search for the next place to cut.
+                int endOfTextBlock = recipe.getRecipeSteps()
+                        .get(index).getRecipeTimers()
+                        .get(i).getPosition()
+                        .getEndIndex();
+                // get the substring and place it in the TextView
+                String currentSubstring = mDescriptionStep[index].substring(beginOfTextBlock, endOfTextBlock);
+                Pattern p = Pattern.compile("\\p{Alpha}");
+                Matcher m = p.matcher(currentSubstring);
+                if (m.find()) {
+                    textView.setText(currentSubstring.substring(m.start()));
+                }
+                // Update the text-block start to be at the beginning of the next piece.
+                beginOfTextBlock = endOfTextBlock;
+
+                // Add text and timers to the parent.
+                insertPoint.addView(textView);
+                insertPoint.addView(timerCard);
+            }
+            // Check if there is still some text coming after the last timer
+            // Repeat.
+            if (beginOfTextBlock != mDescriptionStep[index].length()) {
+                TextView textView = (TextView) inflater.inflate(R.layout.step_textview, container, false);
+                String currentSubstring = mDescriptionStep[index].substring(beginOfTextBlock);
+                Pattern p = Pattern.compile("\\p{Alpha}");
+                Matcher m = p.matcher(mDescriptionStep[index].substring(beginOfTextBlock));
+                if (m.find()) {
+                    textView.setText(currentSubstring.substring(m.start()));
+                }
+                insertPoint.addView(textView);
+            }
+
+            // Add dots
+            this.addDots(inflater, recipe, index);
+
+        }
+
+        /**
+         * Helper-class to add the navigation dots.
+         *
+         * @param inflater Layout inflater to inflate dot-views
+         * @param recipe   used to get the amount of steps.
+         * @param index    Index of the step, to see which dots to color.
+         */
+        private void addDots(LayoutInflater inflater, Recipe recipe, int index) {
+            // Add the ImageViews to the LinearLayout for the indicator dots
+            LinearLayout linearLayout = mRootView.findViewById(R.id.ll_dots);
+            ImageView tempView;
+            for (int i = 0; i < recipe.getRecipeSteps().size(); i++) {
+                tempView = (ImageView) inflater.inflate(R.layout.dot_image_view, linearLayout, false);
+                Drawable dot = ContextCompat.getDrawable(getContext(), i == index ? R.drawable.selected_dot : R.drawable.not_selected_dot);
+                tempView.setImageDrawable(dot);
+                linearLayout.addView(tempView);
+            }
         }
     }
 
@@ -206,7 +226,7 @@ public class Tab3Steps extends Fragment {
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position, getCount());
+            return PlaceholderFragment.newInstance(position);
         }
 
         @Override

@@ -2,8 +2,8 @@ package com.aurora.souschef;
 
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.LifecycleOwner;
+import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.SeekBar;
@@ -57,10 +57,11 @@ public class UITimer {
 
     /**
      * Sets up text and timer views.
+     *
      * @param liveDataTimer timer data container
-     * @param timerCard view where to put the timer. Should be a timer_card.xml
-     * @param owner LifeCycleOwner responsible for the LiveData objects.
-     *              Normally the activity.
+     * @param timerCard     view where to put the timer. Should be a timer_card.xml
+     * @param owner         LifeCycleOwner responsible for the LiveData objects.
+     *                      Normally the activity.
      */
     public UITimer(LiveDataTimer liveDataTimer, View timerCard, LifecycleOwner owner) {
         this.mLiveDataTimer = liveDataTimer;
@@ -68,9 +69,9 @@ public class UITimer {
 
         // set timer observer to update text field.
         TextView timerText = timerCard.findViewById(R.id.tv_timer);
-        liveDataTimer.getMillisLeft().observe(owner, aLong -> {
-            if (aLong != null) {
-                timerText.setText(LiveDataTimer.convertTimeToString(aLong));
+        liveDataTimer.getMillisLeft().observe(owner, (Long millisLeft) -> {
+            if (millisLeft != null) {
+                timerText.setText(LiveDataTimer.convertTimeToString(millisLeft));
             }
         });
 
@@ -80,8 +81,11 @@ public class UITimer {
 
     /**
      * TODO: What happens on timer completion?
+     * This method is STATIC because of sonar!
+     * It should just be non-static!
+     * Change this when implementing.
      */
-    private void onTimerFinished() {
+    private static void onTimerFinished() {
         // TODO: implement what happens when timer finishes.
     }
 
@@ -92,10 +96,8 @@ public class UITimer {
      */
     private void setOnClickListeners(View clickableView) {
 
-        clickableView.setOnClickListener(v -> {
-            mLiveDataTimer.toggleTimer();
-        });
-        clickableView.setOnLongClickListener(v -> {
+        clickableView.setOnClickListener((View v) -> mLiveDataTimer.toggleTimer());
+        clickableView.setOnLongClickListener((View v) -> {
             if (mLiveDataTimer.canChangeTimer()) {
                 setTimerPopup();
             }
@@ -156,7 +158,7 @@ public class UITimer {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mTimerCard.getContext());
         alertDialogBuilder.setView(promptView);
         alertDialogBuilder.setCancelable(false)
-                .setPositiveButton("Ok", (dialogInterface, i) -> {
+                .setPositiveButton("Ok", (DialogInterface dialogInterface, int id) -> {
                     int timeSetByUser = convertProgressToSeconds(seekBar.getProgress(), step);
                     mLiveDataTimer.setTimeSetByUser(timeSetByUser);
                 });

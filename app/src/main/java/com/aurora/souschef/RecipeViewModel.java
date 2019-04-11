@@ -10,7 +10,6 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.facade.Communicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
@@ -40,6 +39,10 @@ public class RecipeViewModel extends AndroidViewModel {
      * Stop actively updating the progressbar after MAX_WAIT_TIME.
      */
     private static final int MAX_WAIT_TIME = 15000;
+    /**
+     * Percentages in 100%
+     */
+    private static final double MAX_PERCENTAGE = 100.0;
 
     /**
      * LiveData of the current amount of people. Used for changing the amount of people,
@@ -104,11 +107,12 @@ public class RecipeViewModel extends AndroidViewModel {
         if (progressStep == null || progressStep.getValue() == null) {
             return 0;
         }
-        return (int) (100.0 / DETECTION_STEPS * progressStep.getValue());
+        return (int) (MAX_PERCENTAGE / DETECTION_STEPS * progressStep.getValue());
     }
 
     /**
      * Initialise the data from plain text.
+     *
      * @param plainText where to extract recipe from.
      */
     public void initialiseWithPlainText(String plainText) {
@@ -121,6 +125,7 @@ public class RecipeViewModel extends AndroidViewModel {
 
     /**
      * Initialise the data with {@link ExtractedText}.
+     *
      * @param extractedText where to get recipe from.
      */
     public void initialiseWithExtractedText(ExtractedText extractedText) {
@@ -134,6 +139,7 @@ public class RecipeViewModel extends AndroidViewModel {
 
     /**
      * Initialise data directly with a recipe.
+     *
      * @param recipe the recipe for data extraction.
      */
     public void initialiseWithRecipe(Recipe recipe) {
@@ -158,10 +164,7 @@ public class RecipeViewModel extends AndroidViewModel {
                     upTime += MILLIS_BETWEEN_UPDATES;
 
                     publishProgress(Communicator.getProgressAnnotationPipelines());
-                    if (Communicator.getProgressAnnotationPipelines() >= DETECTION_STEPS) {
-                        break;
-                    }
-                    if (upTime > MAX_WAIT_TIME) {
+                    if (Communicator.getProgressAnnotationPipelines() >= DETECTION_STEPS || upTime > MAX_WAIT_TIME) {
                         break;
                     }
                 }
@@ -176,11 +179,6 @@ public class RecipeViewModel extends AndroidViewModel {
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
             progressStep.setValue(values[0]);
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
         }
     }
 

@@ -17,13 +17,14 @@ public class RecipeTimerViewModel extends ViewModel {
     /**
      * List with all LiveDataTimers.
      */
-    private ArrayList<ArrayList<LiveDataTimer>> allTimers;
+    private ArrayList<ArrayList<LiveDataTimer>> allTimers = null;
 
     /**
      * Initialize the timers in a recipe.
      * Put all timers in a LiveDataTimer, and store them in an array.
      * <p>
      * Always call init before doing anything else with this class!
+     *
      * @param recipe The recipe to extract the timers from.
      */
     public void init(Recipe recipe) {
@@ -44,7 +45,8 @@ public class RecipeTimerViewModel extends ViewModel {
 
     /**
      * Get the timer at a specific index at a specific step.
-     * @param stepIndex the step to get the timer from
+     *
+     * @param stepIndex  the step to get the timer from
      * @param timerIndex the index of the requested timer in the step
      * @return The requested timer.
      */

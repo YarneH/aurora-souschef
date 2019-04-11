@@ -17,7 +17,7 @@ public class RecipeTimerViewModel extends ViewModel {
     /**
      * List with all LiveDataTimers.
      */
-    private ArrayList<ArrayList<LiveDataTimer>> allTimers = null;
+    private ArrayList<ArrayList<LiveDataTimer>> mAllTimers = null;
 
     /**
      * Initialize the timers in a recipe.
@@ -28,18 +28,18 @@ public class RecipeTimerViewModel extends ViewModel {
      * @param recipe The recipe to extract the timers from.
      */
     public void init(Recipe recipe) {
-        if (allTimers != null) {
+        if (mAllTimers != null) {
             // init was already called.
             return;
         }
         // Put timers in nested ArrayList.
-        allTimers = new ArrayList<>();
+        mAllTimers = new ArrayList<>();
         for (RecipeStep step : recipe.getRecipeSteps()) {
             ArrayList<LiveDataTimer> stepTimers = new ArrayList<>();
             for (RecipeTimer timer : step.getRecipeTimers()) {
                 stepTimers.add(new LiveDataTimer(timer));
             }
-            allTimers.add(stepTimers);
+            mAllTimers.add(stepTimers);
         }
     }
 
@@ -51,6 +51,6 @@ public class RecipeTimerViewModel extends ViewModel {
      * @return The requested timer.
      */
     public LiveDataTimer getTimerInStep(int stepIndex, int timerIndex) {
-        return allTimers.get(stepIndex).get(timerIndex);
+        return mAllTimers.get(stepIndex).get(timerIndex);
     }
 }

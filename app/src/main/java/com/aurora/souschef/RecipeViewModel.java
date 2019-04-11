@@ -52,11 +52,11 @@ public class RecipeViewModel extends AndroidViewModel {
     /**
      * LiveData of the progress. Used to update the UI according to the progress.
      */
-    private MutableLiveData<Integer> progressStep;
+    private MutableLiveData<Integer> mProgressStep;
     /**
      * This LiveData value updates when the initialisation is finished.
      */
-    private MutableLiveData<Boolean> initialised;
+    private MutableLiveData<Boolean> mInitialised;
     /**
      * When the recipe is set, this value changes -> all observers act.
      * Proficiat! Je hebt deze hidden comment gevonden! Tof.
@@ -80,10 +80,10 @@ public class RecipeViewModel extends AndroidViewModel {
     public RecipeViewModel(@NonNull Application application) {
         super(application);
         this.mContext = application;
-        progressStep = new MutableLiveData<>();
-        progressStep.setValue(0);
-        initialised = new MutableLiveData<>();
-        initialised.setValue(false);
+        mProgressStep = new MutableLiveData<>();
+        mProgressStep.setValue(0);
+        mInitialised = new MutableLiveData<>();
+        mInitialised.setValue(false);
         mCurrentPeople = new MutableLiveData<>();
         mCurrentPeople.setValue(0);
         Communicator.createAnnotationPipelines();
@@ -95,7 +95,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * @return live progress
      */
     public LiveData<Integer> getProgressStep() {
-        return progressStep;
+        return mProgressStep;
     }
 
     /**
@@ -104,10 +104,10 @@ public class RecipeViewModel extends AndroidViewModel {
      * @return progress-percentage
      */
     public int getProgress() {
-        if (progressStep == null || progressStep.getValue() == null) {
+        if (mProgressStep == null || mProgressStep.getValue() == null) {
             return 0;
         }
-        return (int) (MAX_PERCENTAGE / DETECTION_STEPS * progressStep.getValue());
+        return (int) (MAX_PERCENTAGE / DETECTION_STEPS * mProgressStep.getValue());
     }
 
     /**
@@ -116,7 +116,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * @param plainText where to extract recipe from.
      */
     public void initialiseWithPlainText(String plainText) {
-        if (initialised != null && initialised.getValue() != null && initialised.getValue()) {
+        if (mInitialised != null && mInitialised.getValue() != null && mInitialised.getValue()) {
             return;
         }
         (new ProgressUpdate()).execute();
@@ -129,7 +129,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * @param extractedText where to get recipe from.
      */
     public void initialiseWithExtractedText(ExtractedText extractedText) {
-        if (initialised != null && initialised.getValue() != null && initialised.getValue()) {
+        if (mInitialised != null && mInitialised.getValue() != null && mInitialised.getValue()) {
             return;
         }
         (new ProgressUpdate()).execute();
@@ -145,7 +145,7 @@ public class RecipeViewModel extends AndroidViewModel {
     public void initialiseWithRecipe(Recipe recipe) {
         RecipeViewModel.this.mRecipe.setValue(recipe);
         RecipeViewModel.this.mCurrentPeople.setValue(recipe.getNumberOfPeople());
-        initialised.setValue(true);
+        mInitialised.setValue(true);
     }
 
     /**
@@ -159,7 +159,7 @@ public class RecipeViewModel extends AndroidViewModel {
         protected Void doInBackground(Void... voids) {
             int upTime = 0;
             try {
-                while (!initialised.getValue()) {
+                while (!mInitialised.getValue()) {
                     Thread.sleep(MILLIS_BETWEEN_UPDATES);
                     upTime += MILLIS_BETWEEN_UPDATES;
 
@@ -178,7 +178,7 @@ public class RecipeViewModel extends AndroidViewModel {
         @Override
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
-            progressStep.setValue(values[0]);
+            mProgressStep.setValue(values[0]);
         }
     }
 
@@ -224,7 +224,7 @@ public class RecipeViewModel extends AndroidViewModel {
     }
 
     public LiveData<Boolean> getInitialised() {
-        return initialised;
+        return mInitialised;
     }
 
     public LiveData<Integer> getNumberOfPeople() {

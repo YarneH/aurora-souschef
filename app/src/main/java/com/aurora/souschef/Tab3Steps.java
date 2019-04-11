@@ -119,7 +119,7 @@ public class Tab3Steps extends Fragment {
         }
 
         /**
-         * Helper class called when a new recipe is observed
+         * Helper method called when a new recipe is observed
          *
          * @param inflater  Layout inflater to inflate necessary layouts
          * @param container ViewGroup to inflate in.

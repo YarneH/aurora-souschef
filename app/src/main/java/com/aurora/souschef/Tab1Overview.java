@@ -16,19 +16,19 @@ import com.aurora.souschefprocessor.recipe.Recipe;
  */
 public class Tab1Overview extends Fragment {
     private RecipeViewModel mRecipe = null;
-    private TextView descriptionTextView = null;
+    private TextView mDescriptionTextView = null;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.tab_1_overview, container, false);
-        descriptionTextView = rootView.findViewById(R.id.tv_recipe_description);
+        mDescriptionTextView = rootView.findViewById(R.id.tv_recipe_description);
         mRecipe = ViewModelProviders.of(getActivity()).get(RecipeViewModel.class);
         mRecipe.getRecipe().observe(this, (Recipe recipe) -> {
             if (recipe == null) {
                 return;
             }
-            descriptionTextView.setText(recipe.getDescription());
+            mDescriptionTextView.setText(recipe.getDescription());
         });
         return rootView;
     }

@@ -116,6 +116,7 @@ public class LiveDataTimer {
     /**
      * The user can change the time by long-pressing.
      * This can only be done when upperbound != lowerbound.
+     * See {@link #canChangeTimer()}.
      * This seems weird, but okay.
      *
      * @param timeInSeconds set time.
@@ -154,7 +155,7 @@ public class LiveDataTimer {
     /**
      * Returns whether or not the timer can be changed.
      *
-     * @return
+     * @return true if timer is changeable.
      */
     public boolean canChangeTimer() {
         return mRunning && (mRecipeTimer.getLowerBound() != mRecipeTimer.getUpperBound());

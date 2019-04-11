@@ -32,7 +32,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
     /**
      * List with ingredients.
      */
-    private final List<ListIngredient> ingredients;
+    private final List<ListIngredient> mIngredients;
     /**
      * Holds the original amount of servings (directly from the recipe)
      */
@@ -54,7 +54,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
      */
     public IngredientAdapter(List<ListIngredient> ingredients, int originalAmountOfServings) {
         mChecked = new boolean[ingredients.size()];
-        this.ingredients = ingredients;
+        this.mIngredients = ingredients;
         mChosenAmountOfServings = originalAmountOfServings;
         mOriginalAmountOfServings = originalAmountOfServings;
     }
@@ -85,7 +85,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
 
     @Override
     public int getItemCount() {
-        return ingredients.size();
+        return mIngredients.size();
     }
 
     /**
@@ -142,7 +142,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
          * populate individual views with the correct data
          */
         private void bind() {
-            ListIngredient ingredient = ingredients.get(getAdapterPosition());
+            ListIngredient ingredient = mIngredients.get(getAdapterPosition());
 
             String nameWithoutQuantityAndUnit = ingredient.getOriginalLineWithoutUnitAndQuantity();
             // if it is possible to capitalize the first letter, capitalize.
@@ -171,7 +171,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
         @Override
         public void onClick(View v) {
             Snackbar.make(this.itemView,
-                    ingredients.get(getAdapterPosition()).getOriginalLine(),
+                    mIngredients.get(getAdapterPosition()).getOriginalLine(),
                     Snackbar.LENGTH_LONG).show();
         }
 

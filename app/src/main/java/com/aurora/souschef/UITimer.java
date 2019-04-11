@@ -81,11 +81,9 @@ public class UITimer {
 
     /**
      * TODO: What happens on timer completion?
-     * This method is STATIC because of sonar!
-     * It should just be non-static!
-     * Change this when implementing.
      */
-    private static void onTimerFinished() {
+    // NOSONAR
+    private void onTimerFinished() {
         // TODO: implement what happens when timer finishes.
     }
 

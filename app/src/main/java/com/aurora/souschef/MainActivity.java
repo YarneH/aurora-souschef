@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Holds the data of a recipe in a LifeCycle-friendly way.
      */
-    private RecipeViewModel recipe;
+    private RecipeViewModel mRecipe;
 
     public MainActivity() {
         // Default constructor
@@ -120,19 +120,7 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // The first thing we do is Souschef specific:
-        // generate pipeline for creating annotations in separate thread.
-
-        recipe = ViewModelProviders.of(this).get(RecipeViewModel.class);
-
-        /*
-         * The {@link ViewPager} that will host the section contents.
-         * This variable is located here to minimize scope.
-         * In case it is needed outside onCreate,
-         * it is no problem to move it outside (private)
-         *
-         * Same for mSectionsPagerAdapter
-         */
+        mRecipe = ViewModelProviders.of(this).get(RecipeViewModel.class);
 
         super.onCreate(savedInstanceState);
         // TODO: Change back to the correct view
@@ -145,20 +133,19 @@ public class MainActivity extends AppCompatActivity {
         showProgress();
 
         // setup recipe data object (RecipeViewModel).
-        recipe.getProgressStep().observe(this, (Integer step) -> {
+        mRecipe.getProgressStep().observe(this, (Integer step) -> {
                     ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                    pb.setProgress(recipe.getProgress());
+                    pb.setProgress(mRecipe.getProgress());
                     // TODO: set TextView to visualize progress
                 }
         );
-        recipe.getInitialised().observe(this, (Boolean isInitialised) -> {
+        mRecipe.getInitialised().observe(this, (Boolean isInitialised) -> {
             if (isInitialised == null) {
                 return;
             }
             if (!isInitialised) {
                 return;
             }
-            Log.d("TEST", "hiding");
             hideProgress();
         });
 
@@ -177,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                 // Plain Text
                 String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
                 Log.d(TAG, "Loading plain text.");
-                recipe.initialiseWithPlainText(inputText);
+                mRecipe.initialiseWithPlainText(inputText);
 
             } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
                 // Extracted Text
@@ -187,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
                 ExtractedText extractedText = ExtractedText.fromJson(inputTextJSON);
                 if (extractedText != null) {
                     Log.d(TAG, "Loading extracted text.");
-                    recipe.initialiseWithExtractedText(extractedText);
+                    mRecipe.initialiseWithExtractedText(extractedText);
                 } else {
                     // Error in case ExtractedText was null.
                     Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
@@ -202,12 +189,12 @@ public class MainActivity extends AppCompatActivity {
                 // TODO catch if the receivedObject was not able to be de-JSONed.
                 // Waiting for auroralib update for this.
                 Log.d(TAG, "Loading cashed Object.");
-                recipe.initialiseWithRecipe(receivedObject);
+                mRecipe.initialiseWithRecipe(receivedObject);
             }
 
         } else {
             Log.d(TAG, "Loading plain default text (getText())");
-            recipe.initialiseWithPlainText(getText());
+            mRecipe.initialiseWithPlainText(getText());
         }
     }
 

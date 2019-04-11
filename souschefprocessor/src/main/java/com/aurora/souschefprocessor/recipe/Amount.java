@@ -11,20 +11,20 @@ import java.util.Objects;
  */
 class Amount {
 
-    private final static int CUP_TO_MILLILITER = 240;
-    private final static double KG_TO_POUND = 2.205;
-    private final static double FLOZ_TO_MILLILITER = 29.5735;
-    private final static double OUNCE_TO_GRAM = 28.3495;
-    private final static double TEASPOON_TO_MILLILITER = 4.92892;
-    private final static double TABLESPOON_TO_MILLILITER = 14.7868;
+    private static final int CUP_TO_MILLILITER = 240;
+    private static final double KG_TO_POUND = 2.205;
+    private static final double FLOZ_TO_MILLILITER = 29.5735;
+    private static final double OUNCE_TO_GRAM = 28.3495;
+    private static final double TEASPOON_TO_MILLILITER = 4.92892;
+    private static final double TABLESPOON_TO_MILLILITER = 14.7868;
 
-    private final static double QUART_TO_LITER = 0.946353;
-    private final static double PINT_TO_MILLILITER = 473.176;
-    private final static int METRIC_CONSTANT = 10;
+    private static final double QUART_TO_LITER = 0.946353;
+    private static final double PINT_TO_MILLILITER = 473.176;
+    private static final int METRIC_CONSTANT = 10;
 
-    private final static String MILLI = "milliliter";
+    private static final String MILLI = "milliliter";
 
-    private final static double EQUALITY_THRESHOLD_DOUBLE = 2e-3;
+    private static final double EQUALITY_THRESHOLD_DOUBLE = 2e-3;
     /**
      * The value of this amount
      */

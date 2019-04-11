@@ -1,7 +1,6 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
-
 import com.aurora.souschefprocessor.recipe.BaseUnits;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
@@ -109,7 +108,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         // add the last character
         bld.append(chars[chars.length - 1]);
 
-        String ret = bld.toString();
 
         // return the builder
         return bld.toString();
@@ -296,7 +294,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
             int endPosition = beginPosition + name.length();
             String newLine = line.substring(0, beginPosition) + name;
-            if(endPosition < line.length()){
+            if (endPosition < line.length()) {
                 newLine += line.substring(endPosition);
             }
             line = newLine;
@@ -323,7 +321,8 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             }
 
 
-        } if (positions.get(Ingredient.PositionKeysForIngredients.QUANTITY) == null) {
+        }
+        if (positions.get(Ingredient.PositionKeysForIngredients.QUANTITY) == null) {
             // if no quantity detected make the position the whole string
             // if no quantity detected then the position is still null so make the position the
             // whole string to signal that no quantity is detected

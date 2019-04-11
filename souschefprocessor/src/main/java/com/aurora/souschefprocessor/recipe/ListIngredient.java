@@ -128,7 +128,8 @@ public class ListIngredient extends Ingredient {
 
             if (!key.equals(PositionKeysForIngredients.NAME)) {
 
-                mOriginalLine =  mOriginalLine.substring(0, newBegin) + converted.get(key) + mOriginalLine.substring(newEnd);
+                mOriginalLine =  mOriginalLine.substring(0, newBegin) +
+                        converted.get(key) + mOriginalLine.substring(newEnd);
 
                 newEnd = newBegin + converted.get(key).length();
                 offset = newEnd - originalPos.getEndIndex();

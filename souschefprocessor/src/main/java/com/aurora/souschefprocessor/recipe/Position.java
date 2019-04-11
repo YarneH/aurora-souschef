@@ -10,7 +10,8 @@ import java.util.Objects;
  */
 public class Position {
 
-    /** The beginIndex of this position. This is the index of the first character of the detected
+    /**
+     * The beginIndex of this position. This is the index of the first character of the detected
      * element.
      */
     private int mBeginIndex;
@@ -18,20 +19,6 @@ public class Position {
      * The endindex. This is (as usual in Java) the offset of the char after this detected element.
      */
     private int mEndIndex;
-
-    public void setIndexes(int beginIndex, int endIndex){
-        // check if the arguments are legal
-        checkLegality(beginIndex, endIndex);
-
-        // make sure beginindex is smaller than endindex
-        if (!beginSmallerThanEnd(beginIndex, endIndex)) {
-            mBeginIndex = endIndex;
-            mEndIndex = beginIndex;
-        } else {
-            mBeginIndex = beginIndex;
-            mEndIndex = endIndex;
-        }
-    }
 
     public Position(int beginIndex, int endIndex) {
         // check if the arguments are legal
@@ -73,6 +60,20 @@ public class Position {
      */
     private static boolean beginSmallerThanEnd(int beginIndex, int endIndex) {
         return beginIndex < endIndex;
+    }
+
+    public void setIndexes(int beginIndex, int endIndex) {
+        // check if the arguments are legal
+        checkLegality(beginIndex, endIndex);
+
+        // make sure beginindex is smaller than endindex
+        if (!beginSmallerThanEnd(beginIndex, endIndex)) {
+            mBeginIndex = endIndex;
+            mEndIndex = beginIndex;
+        } else {
+            mBeginIndex = beginIndex;
+            mEndIndex = endIndex;
+        }
     }
 
     public int getBeginIndex() {
@@ -148,22 +149,22 @@ public class Position {
         return false;
     }
 
-    public void trimToLengthOfString(String s){
-        int length = s.length();
-        if(mBeginIndex >= length){
-            throw new IllegalArgumentException("This string is shorter than the beginIndex of " +
-                    "this position, trimming is impossible");
-        }
-        if( mEndIndex > length){
-            mEndIndex = length;
-        }
-    }
-
     @Override
     public String toString() {
         return "Position{" +
                 "mBeginIndex=" + mBeginIndex +
                 ", mEndIndex=" + mEndIndex +
                 '}';
+    }
+
+    public void trimToLengthOfString(String s) {
+        int length = s.length();
+        if (mBeginIndex >= length) {
+            throw new IllegalArgumentException("This string is shorter than the beginIndex of " +
+                    "this position, trimming is impossible");
+        }
+        if (mEndIndex > length) {
+            mEndIndex = length;
+        }
     }
 }

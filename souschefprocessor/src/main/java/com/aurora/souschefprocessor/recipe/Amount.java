@@ -11,16 +11,18 @@ import java.util.Objects;
  */
 class Amount {
 
-    private static int CUP_TO_MILLILITER = 240;
-    private static double KG_TO_POUND = 2.205;
-    private static double FLOZ_TO_MILLILITER = 29.5735;
-    private static double OUNCE_TO_GRAM = 28.3495;
-    private static double TEASPOON_TO_MILLILITER = 4.92892;
-    private static double TABLESPOON_TO_MILLILITER = 14.7868;
+    private final static  int CUP_TO_MILLILITER = 240;
+    private final static double KG_TO_POUND = 2.205;
+    private final static double FLOZ_TO_MILLILITER = 29.5735;
+    private final static double OUNCE_TO_GRAM = 28.3495;
+    private final static double TEASPOON_TO_MILLILITER = 4.92892;
+    private final static double TABLESPOON_TO_MILLILITER = 14.7868;
 
-    private static double QUART_TO_LITER = 0.946353;
-    private static double PINT_TO_MILLILITER = 473.176;
-    private static int METRIC_CONSTANT = 10;
+    private final static double QUART_TO_LITER = 0.946353;
+    private final static double PINT_TO_MILLILITER = 473.176;
+    private final static int METRIC_CONSTANT = 10;
+
+    private final static double EQUALITY_THRESHOLD_DOUBLE = 2e-3;
     /**
      * The value of this amount
      */
@@ -67,7 +69,8 @@ class Amount {
     public boolean equals(Object o) {
         if (o instanceof Amount) {
             Amount a = (Amount) o;
-            return (a.getUnit().equalsIgnoreCase(mUnit) && Math.abs(a.getValue() - mValue) < 2e-3);
+            return (a.getUnit().equalsIgnoreCase(mUnit) &&
+                    Math.abs(a.getValue() - mValue) < EQUALITY_THRESHOLD_DOUBLE);
 
         }
         return false;
@@ -145,19 +148,8 @@ class Amount {
                 mUnit = "quart";
                 break;
             case "milliliter":
-                if (mValue >= CUP_TO_MILLILITER) {
-                    mValue /= CUP_TO_MILLILITER;
-                    mUnit = "cup";
-                } else if (mValue >= FLOZ_TO_MILLILITER) {
-                    mValue /= FLOZ_TO_MILLILITER;
-                    mUnit = "fluid ounce";
-                } else if (mValue >= TABLESPOON_TO_MILLILITER) {
-                    mValue /= TABLESPOON_TO_MILLILITER;
-                    mUnit = "tablespoon";
-                }
+                changeMilliliter();
 
-                mValue /= TEASPOON_TO_MILLILITER;
-                mUnit = "teaspoon";
                 break;
             case "deciliter":
                 mValue /= TABLESPOON_TO_MILLILITER * METRIC_CONSTANT;
@@ -166,6 +158,22 @@ class Amount {
             default:
                 break;
         }
+    }
+
+    private void changeMilliliter(){
+        if (mValue >= CUP_TO_MILLILITER) {
+            mValue /= CUP_TO_MILLILITER;
+            mUnit = "cup";
+        } else if (mValue >= FLOZ_TO_MILLILITER) {
+            mValue /= FLOZ_TO_MILLILITER;
+            mUnit = "fluid ounce";
+        } else if (mValue >= TABLESPOON_TO_MILLILITER) {
+            mValue /= TABLESPOON_TO_MILLILITER;
+            mUnit = "tablespoon";
+        }
+
+        mValue /= TEASPOON_TO_MILLILITER;
+        mUnit = "teaspoon";
     }
 
 

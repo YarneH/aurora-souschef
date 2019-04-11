@@ -177,7 +177,7 @@ public class Tab3Steps extends Fragment {
                 LinearLayout linearLayout = rootView.findViewById(R.id.ll_dots);
                 ImageView tempView;
 
-                // For every step, add a dot and make sur the right one is selected
+                // For every step, add a dot and make sur the right one is selected 
                 for (int i = 0; i < recipe.getRecipeSteps().size(); i++) {
                     tempView = (ImageView) inflater.inflate(R.layout.dot_image_view, linearLayout, false);
                     if (i == index) {

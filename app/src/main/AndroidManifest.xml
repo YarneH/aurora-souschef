@@ -9,14 +9,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <!-- configChanges makes sure the onCreate function is not called again when screen is turned -->
-        <activity android:name=".MainActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize">
-           <!-- In release this module is not launchable
-           <intent-filter>
+        <activity android:name=".MainActivity">
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter> -->
+            </intent-filter>
             <intent-filter>
                 <action android:name="com.aurora.auroralib.AURORA_PLUGIN"/>
                 <category android:name="android.intent.category.DEFAULT"/>

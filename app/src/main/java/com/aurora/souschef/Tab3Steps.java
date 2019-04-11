@@ -113,9 +113,8 @@ public class Tab3Steps extends Fragment {
             RecipeViewModel recipeViewModel = ViewModelProviders
                     .of(Objects.requireNonNull(getActivity()))
                     .get(RecipeViewModel.class);
-            recipeViewModel.getRecipe().observe(this, (Recipe recipe) -> {
-                this.onNewRecipeObserved(inflater, container, recipe, index);
-            });
+            recipeViewModel.getRecipe().observe(this, (Recipe recipe) ->
+                    this.onNewRecipeObserved(inflater, container, recipe, index));
             return mRootView;
         }
 
@@ -205,7 +204,14 @@ public class Tab3Steps extends Fragment {
             ImageView tempView;
             for (int i = 0; i < recipe.getRecipeSteps().size(); i++) {
                 tempView = (ImageView) inflater.inflate(R.layout.dot_image_view, linearLayout, false);
-                Drawable dot = ContextCompat.getDrawable(getContext(), i == index ? R.drawable.selected_dot : R.drawable.not_selected_dot);
+                Drawable dot;
+                if (i == index) {
+                    dot = ContextCompat.getDrawable(getContext(),
+                            R.drawable.selected_dot);
+                } else {
+                    dot = ContextCompat.getDrawable(getContext(),
+                            R.drawable.not_selected_dot);
+                }
                 tempView.setImageDrawable(dot);
                 linearLayout.addView(tempView);
             }

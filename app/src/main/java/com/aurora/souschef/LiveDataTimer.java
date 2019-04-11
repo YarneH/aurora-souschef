@@ -92,7 +92,7 @@ public class LiveDataTimer {
             mCountDownTimer.cancel();
             return;
         }
-        this.mCountDownTimer = new CountDownTimer(mMillisLeft.getValue()-1, MILLIS) {
+        this.mCountDownTimer = new CountDownTimer(mMillisLeft.getValue() - 1, MILLIS) {
             @Override
             public void onTick(long millisUntilFinished) {
                 mMillisLeft.setValue(millisUntilFinished);

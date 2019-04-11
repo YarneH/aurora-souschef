@@ -16,9 +16,10 @@ public class BaseUnits {
             {"tbsp", "c", "lb", "fl oz", "oz", "qt", "pt", "tsp"};
 
 
-    public BaseUnits() {
-
+    private BaseUnits() {
+        throw new IllegalStateException("Utility class");
     }
+
 
     public static String getBase(String original) {
 

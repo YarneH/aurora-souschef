@@ -229,6 +229,14 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         return returnList;
     }
 
+    private static String makeNewLine(String line, int beginPosition, int endPosition, String name){
+        String newLine = line.substring(0, beginPosition) + name;
+        if (endPosition < line.length()) {
+            newLine += line.substring(endPosition);
+        }
+        return newLine;
+    }
+
     /**
      * Detects the ingredient described in the line and constructs an Ingredient object with this information
      *
@@ -293,11 +301,8 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             int beginPosition = line.indexOf(nameList.get(0).word());
 
             int endPosition = beginPosition + name.length();
-            String newLine = line.substring(0, beginPosition) + name;
-            if (endPosition < line.length()) {
-                newLine += line.substring(endPosition);
-            }
-            line = newLine;
+            line = makeNewLine(line, beginPosition, endPosition, name);
+
             positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(beginPosition, endPosition));
         } else {
             // if no name detected make the position the whole string

@@ -11,7 +11,7 @@ import java.util.Objects;
  */
 class Amount {
 
-    private final static  int CUP_TO_MILLILITER = 240;
+    private final static int CUP_TO_MILLILITER = 240;
     private final static double KG_TO_POUND = 2.205;
     private final static double FLOZ_TO_MILLILITER = 29.5735;
     private final static double OUNCE_TO_GRAM = 28.3495;
@@ -21,6 +21,8 @@ class Amount {
     private final static double QUART_TO_LITER = 0.946353;
     private final static double PINT_TO_MILLILITER = 473.176;
     private final static int METRIC_CONSTANT = 10;
+
+    private final static String MILLI = "milliliter";
 
     private final static double EQUALITY_THRESHOLD_DOUBLE = 2e-3;
     /**
@@ -86,7 +88,7 @@ class Amount {
 
             case "cup":
                 mValue *= CUP_TO_MILLILITER;
-                mUnit = "milliliter";
+                mUnit = MILLI;
                 break;
             case "pound":
                 mValue /= KG_TO_POUND;
@@ -94,7 +96,7 @@ class Amount {
                 break;
             case "fluid ounce":
                 mValue *= FLOZ_TO_MILLILITER;
-                mUnit = "milliliter";
+                mUnit = MILLI;
                 break;
             case "ounce":
                 mValue *= OUNCE_TO_GRAM;
@@ -106,15 +108,15 @@ class Amount {
                 break;
             case "pint":
                 mValue *= PINT_TO_MILLILITER;
-                mUnit = "milliliter";
+                mUnit = MILLI;
                 break;
             case "teaspoon":
                 mValue *= TEASPOON_TO_MILLILITER;
-                mUnit = "milliliter";
+                mUnit = MILLI;
                 break;
             case "tablespoon":
                 mValue *= TABLESPOON_TO_MILLILITER;
-                mUnit = "milliliter";
+                mUnit = MILLI;
                 break;
             default:
                 break;
@@ -130,7 +132,7 @@ class Amount {
             convertToUS();
         }
         // round to three decimals
-        mValue = Math.round(1e3 * mValue)/1e3;
+        mValue = Math.round(1e3 * mValue) / 1e3;
     }
 
     private void convertToUS() {
@@ -147,7 +149,7 @@ class Amount {
                 mValue /= QUART_TO_LITER;
                 mUnit = "quart";
                 break;
-            case "milliliter":
+            case MILLI:
                 changeMilliliter();
 
                 break;
@@ -160,7 +162,7 @@ class Amount {
         }
     }
 
-    private void changeMilliliter(){
+    private void changeMilliliter() {
         if (mValue >= CUP_TO_MILLILITER) {
             mValue /= CUP_TO_MILLILITER;
             mUnit = "cup";

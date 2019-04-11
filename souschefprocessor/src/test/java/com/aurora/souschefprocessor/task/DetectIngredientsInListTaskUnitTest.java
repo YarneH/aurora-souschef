@@ -12,7 +12,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -58,7 +57,7 @@ public class DetectIngredientsInListTaskUnitTest {
          * After doing the detectingredientinlisttask the ingredients of the recipe cannot be null
          */
         //Arrange put all the ingredients as the string
-        String[] ingredientList = {"1 1/2 kg minced meat", "½ cup cashews" ,
+        String[] ingredientList = {"1 1/2 kg minced meat", "½ cup cashews",
                 "2 1/2 cups tequila (such as 1800® Premium Reposado)", "1½ tablespoons tomato paste"};
 
         StringBuilder bld = new StringBuilder();
@@ -79,7 +78,7 @@ public class DetectIngredientsInListTaskUnitTest {
          * After doing the detectingredientinlisttask the number of detected ingredients is correct
          */
         //Arrange put all the ingredients as the string
-        String[] ingredientList = {"1 1/2 kg minced meat", "½ cup cashews" ,
+        String[] ingredientList = {"1 1/2 kg minced meat", "½ cup cashews",
                 "2 1/2 cups tequila (such as 1800® Premium Reposado)", "1½ tablespoons tomato paste"};
 
         StringBuilder bld = new StringBuilder();
@@ -139,6 +138,7 @@ public class DetectIngredientsInListTaskUnitTest {
         assert (list.contains(meatIngredient));
         assert (list.contains(cashewIngredient));
         assert (list.contains(tequillaIngredient));
+
         assert (list.contains(pasteIngredient));
 
     }
@@ -260,13 +260,19 @@ public class DetectIngredientsInListTaskUnitTest {
     public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForClutteredIngredientWithDash() {
 
         //  ingredientList[10] =  "750–900ml/1⅓–1⅔ pint readymade chicken gravy"; //10 cluttered with a dash
-        recipe.setIngredientsString("750–900ml/1⅓–1⅔ pint readymade chicken gravy");
+
+        recipe.setIngredientsString("750–900ml/1⅓–1⅔ pint readymade chicken gravy\n" +
+                "3-4 cups of rice");
+
         Ingredient gravyIngredient = new Ingredient("readymade chicken gravy", "milliliter", 750, irrelevantPositions);
+        Ingredient riceIngredient = new Ingredient("rice", "cup", 3, irrelevantPositions);
+
         // Act
         detector.doTask();
         // Assert
         System.out.println(recipe.getIngredients());
         assert (recipe.getIngredients().contains(gravyIngredient));
+        assert (recipe.getIngredients().contains(riceIngredient));
 
     }
 
@@ -310,6 +316,7 @@ public class DetectIngredientsInListTaskUnitTest {
         assert (water);
         assert (fromage);
         assert (raisins);
+        assert (cheese);
 
 
     }
@@ -406,11 +413,42 @@ public class DetectIngredientsInListTaskUnitTest {
         try {
             detector.doTask();
         } catch (Exception e) {
+            System.out.println(e);
             thrown = true;
         }
         assert (!thrown);
     }
 
 
+    @Test
+    public void DetectIngredientsInListTask_doTask_IngredientsWithWeirdBackslashForFraction() {
+        // Arrange
+        String ingredients = "1⁄2 c. chopped onion\n" +
+                "1⁄4 c. chopped bell pepper\n" +
+                "1⁄4 tsp. salt\n" +
+                "1⁄4 tsp. garlic salt\n" +
+                "1⁄2 tsp. ground black pepper";
+        Ingredient onion = new Ingredient("chopped onion", "cup", 0.5, irrelevantPositions);
+        Ingredient bellPepper = new Ingredient("chopped bell pepper", "cup", 0.25, irrelevantPositions);
+        Ingredient salt = new Ingredient("salt", "teaspoon", 0.25, irrelevantPositions);
+        Ingredient garlicSalt = new Ingredient("garlic salt", "teaspoon", 0.25, irrelevantPositions);
+        Ingredient pepper = new Ingredient("black pepper", "teaspoon", 0.5, irrelevantPositions);
+
+
+        RecipeInProgress rip = new RecipeInProgress("");
+        rip.setIngredientsString(ingredients);
+        DetectIngredientsInListTask task = new DetectIngredientsInListTask(rip, crfClassifier);
+
+        //Act
+        task.doTask();
+
+        //Assert
+        System.out.println(rip.getIngredients());
+        assert (rip.getIngredients().contains(salt));
+        assert (rip.getIngredients().contains(garlicSalt));
+        assert (rip.getIngredients().contains(pepper));
+        assert (rip.getIngredients().contains(bellPepper));
+        assert (rip.getIngredients().contains(onion));
+    }
 
 }

@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.Section;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask;
 
 import org.junit.After;
@@ -12,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -275,10 +277,9 @@ public class SplitToMainSectionsTaskUnitTest {
         // Act
         task.doTask();
         System.out.println(rip.getStepsString());
-        assert(rip.getDescription().equals(description));
-        assert(rip.getIngredientsString().equals(ingredients));
-        assert(rip.getStepsString().equals(steps));
-
+        assert (rip.getDescription().equals(description));
+        assert (rip.getIngredientsString().equals(ingredients));
+        assert (rip.getStepsString().equals(steps));
 
 
         // test that needs the parser
@@ -294,10 +295,213 @@ public class SplitToMainSectionsTaskUnitTest {
         task.doTask();
 
         // Assert
-        assert(rip.getDescription().equals(description));
-        assert(rip.getIngredientsString().equals(ingredients));
-        assert(rip.getStepsString().equals(steps));
+        assert (rip.getDescription().equals(description));
+        assert (rip.getIngredientsString().equals(ingredients));
+        assert (rip.getStepsString().equals(steps));
 
 
+    }
+
+    @Test
+    public void SplitToMainSectionsTask_doTask_correctWithExtractedTextWithTitlesForIngredientsAndSteps() {
+
+
+        String title = "BEEF AND RICE CASSEROLE";
+        String firstBody = "Yield: 4 servings\n" +
+                "Total Preparation Time: 60 minutes";
+        String secondBody = "Size of bake ware: 8” x 8” baking dish\n" +
+                "Cooking temperature: 350F";
+        String titleSteps = "Cooking steps";
+        String steps = "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.";
+        List<String> images = new ArrayList<>();
+
+        String titleIngredients = "Ingredients";
+        String bodyIngredients = "1 lb. lean ground beef\n" +
+                "1⁄2 c. chopped onion\n" +
+                "1⁄4 c. chopped bell pepper\n" +
+                "1⁄4 tsp. salt\n" +
+                "1⁄4 tsp. garlic salt\n" +
+                "1⁄2 tsp. ground black pepper\n" +
+                "1 c. rice\n" +
+                "1 tsp. salt\n" +
+                "1 Tbsp. of dry onion soup mix\n" +
+                "2 c. water\n" +
+                "1 10 oz. can cream of mushroom soup\n" +
+                "1⁄2 c. low-fat milk\n" +
+                "1 c. crushed potato chips";
+        Section section1 = new Section(firstBody);
+        Section section2 = new Section(secondBody);
+        Section ingredients = new Section(titleIngredients, bodyIngredients, images);
+        Section stepsSection = new Section(titleSteps, steps, images);
+
+        ExtractedText text = new ExtractedText("", new Date(System.currentTimeMillis()));
+        text.setTitle(title);
+        text.addSection(section1);
+        text.addSection(section2);
+        text.addSection(ingredients);
+        text.addSection(stepsSection);
+
+        RecipeInProgress rip = new RecipeInProgress(text);
+        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+        task.doTask();
+
+
+        assert (rip.getIngredientsString().equals(bodyIngredients));
+
+        assert (rip.getStepsString().equals(steps));
+        assert (rip.getDescription().equals(title + "\n" + firstBody + "\n" + secondBody));
+    }
+
+    @Test
+    public void SplitToMainSectionsTask_doTask_correctWithExtractedTextWithTitlesOnlyForSteps() {
+
+
+        String title = "BEEF AND RICE CASSEROLE";
+        String firstBody = "Yield: 4 servings\n" +
+                "Total Preparation Time: 60 minutes";
+        String secondBody = "Size of bake ware: 8” x 8” baking dish\n" +
+                "Cooking temperature: 350F";
+        String titleSteps = "Cooking steps";
+        String steps = "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.";
+        List<String> images = new ArrayList<>();
+
+
+        String bodyIngredients = "1 lb. lean ground beef\n" +
+                "1⁄2 c. chopped onion\n" +
+                "1⁄4 c. chopped bell pepper\n" +
+                "1⁄4 tsp. salt\n" +
+                "1⁄4 tsp. garlic salt\n" +
+                "1⁄2 tsp. ground black pepper\n" +
+                "1 c. rice\n" +
+                "1 tsp. salt\n" +
+                "1 Tbsp. of dry onion soup mix\n" +
+                "2 c. water\n" +
+                "1 10 oz. can cream of mushroom soup\n" +
+                "1⁄2 c. low-fat milk\n" +
+                "1 c. crushed potato chips";
+        Section section1 = new Section(firstBody);
+        Section section2 = new Section(secondBody);
+        Section ingredients = new Section(bodyIngredients);
+        Section stepsSection = new Section(titleSteps, steps, images);
+
+        ExtractedText text = new ExtractedText("", new Date(System.currentTimeMillis()));
+        text.setTitle(title);
+        text.addSection(section1);
+        text.addSection(section2);
+        text.addSection(ingredients);
+        text.addSection(stepsSection);
+
+        RecipeInProgress rip = new RecipeInProgress(text);
+        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+        task.doTask();
+
+
+        assert (rip.getIngredientsString().equals(bodyIngredients));
+
+        assert (rip.getStepsString().equals(steps));
+        assert (rip.getDescription().equals(title + "\n" + firstBody + "\n" + secondBody));
+    }
+
+    @Test
+    public void SplitToMainSectionsTask_doTask_correctWithExtractedTextWithTitlesOnlyForIngredients() {
+
+
+        String title = "BEEF AND RICE CASSEROLE";
+        String firstBody = "Yield: 4 servings\n" +
+                "Total Preparation Time: 60 minutes";
+        String secondBody = "Size of bake ware: 8” x 8” baking dish\n" +
+                "Cooking temperature: 350F";
+        String titleIngredients = "Ingredients";
+        String steps = "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.";
+        List<String> images = new ArrayList<>();
+
+
+        String bodyIngredients = "1 lb. lean ground beef\n" +
+                "1⁄2 c. chopped onion\n" +
+                "1⁄4 c. chopped bell pepper\n" +
+                "1⁄4 tsp. salt\n" +
+                "1⁄4 tsp. garlic salt\n" +
+                "1⁄2 tsp. ground black pepper\n" +
+                "1 c. rice\n" +
+                "1 tsp. salt\n" +
+                "1 Tbsp. of dry onion soup mix\n" +
+                "2 c. water\n" +
+                "1 10 oz. can cream of mushroom soup\n" +
+                "1⁄2 c. low-fat milk\n" +
+                "1 c. crushed potato chips";
+        Section section1 = new Section(firstBody);
+        Section section2 = new Section(secondBody);
+        Section step = new Section(steps);
+        Section ingredients = new Section(titleIngredients, bodyIngredients, images);
+
+        ExtractedText text = new ExtractedText("", new Date(System.currentTimeMillis()));
+        text.setTitle(title);
+        text.addSection(section1);
+        text.addSection(section2);
+        text.addSection(ingredients);
+        text.addSection(step);
+
+        RecipeInProgress rip = new RecipeInProgress(text);
+        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+        task.doTask();
+
+
+        assert (rip.getIngredientsString().equals(bodyIngredients));
+
+        assert (rip.getStepsString().equals(steps));
+        assert (rip.getDescription().equals(title + "\n" + firstBody + "\n" + secondBody));
+    }
+
+    @Test
+    public void SplitToMainSectionsTask_doTask_correctWithExtractedTextWithTitlesOnlyForDescriptionBodies() {
+
+
+        String title = "BEEF AND RICE CASSEROLE";
+        String titleFirstBody = "Yield: 4 servings";
+        String firstBody = "" +
+                "Total Preparation Time: 60 minutes";
+        String titleSecondBody = "Utensils:";
+        String secondBody = "Size of bake ware: 8” x 8” baking dish\n" +
+                "Cooking temperature: 350F";
+        String titleIngredients = "Ingredients";
+        String steps = "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.";
+        List<String> images = new ArrayList<>();
+
+
+        String bodyIngredients = "1 lb. lean ground beef\n" +
+                "1⁄2 c. chopped onion\n" +
+                "1⁄4 c. chopped bell pepper\n" +
+                "1⁄4 tsp. salt\n" +
+                "1⁄4 tsp. garlic salt\n" +
+                "1⁄2 tsp. ground black pepper\n" +
+                "1 c. rice\n" +
+                "1 tsp. salt\n" +
+                "1 Tbsp. of dry onion soup mix\n" +
+                "2 c. water\n" +
+                "1 10 oz. can cream of mushroom soup\n" +
+                "1⁄2 c. low-fat milk\n" +
+                "1 c. crushed potato chips";
+        Section section1 = new Section(titleFirstBody, firstBody, images);
+        Section section2 = new Section(titleSecondBody,secondBody, images);
+        Section step = new Section(steps);
+        Section ingredients = new Section(titleIngredients, bodyIngredients, images);
+
+        ExtractedText text = new ExtractedText("", new Date(System.currentTimeMillis()));
+        text.setTitle(title);
+        text.addSection(section1);
+        text.addSection(section2);
+        text.addSection(ingredients);
+        text.addSection(step);
+
+        RecipeInProgress rip = new RecipeInProgress(text);
+        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+        task.doTask();
+
+
+        assert (rip.getIngredientsString().equals(bodyIngredients));
+
+        assert (rip.getStepsString().equals(steps));
+        assert (rip.getDescription().equals(title + "\n" + titleFirstBody+ "\n" + firstBody +
+                "\n" +titleSecondBody +"\n" + secondBody));
     }
 }

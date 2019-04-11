@@ -150,7 +150,7 @@ public class DelegatorLongTest {
 
             for (ExtractedText text : validRecipesJSON) {
                 Recipe recipe = delegator.processText(text);
-                System.out.println(recipe + "\n--------------------------------");
+                System.out.println("--------------------------------");
 
             }
         } catch (Exception e) {

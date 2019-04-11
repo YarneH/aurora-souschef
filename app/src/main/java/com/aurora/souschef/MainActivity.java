@@ -298,6 +298,7 @@ public class MainActivity extends AppCompatActivity implements Tab2Ingredients.O
                 runOnUiThread(() ->
                         Toast.makeText(mContext, "Representation failed because " + e.getMessage(),
                                 Toast.LENGTH_SHORT).show());
+
             }
             return null;
 

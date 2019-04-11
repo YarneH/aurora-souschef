@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A dataclass representing a step. It has  fields
@@ -216,6 +217,21 @@ public class RecipeStep {
 
         }
         return bld.toString();
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(o instanceof RecipeStep){
+            RecipeStep rs = (RecipeStep) o;
+            return rs.getIngredients().equals(mIngredients) && rs.getRecipeTimers().equals(mRecipeTimers)
+                    && rs.mDescription.equals(mDescription);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode(){
+        return Objects.hash(mIngredients, mRecipeTimers, mDescription);
     }
 
 

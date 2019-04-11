@@ -226,7 +226,6 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = findViewById(R.id.tabs);
         ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
 
-
         // Load recipe in the user interface
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(mSectionsPagerAdapter);

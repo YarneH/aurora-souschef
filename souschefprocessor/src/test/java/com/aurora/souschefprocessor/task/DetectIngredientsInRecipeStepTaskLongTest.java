@@ -138,7 +138,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         for (Ingredient detectedIngr : detectedIngredients) {
             for (Ingredient correctIngr : correctIngredients) {
                 if (correctIngr.getName().equals(detectedIngr.getName())) {
-                    if (correctIngr.getAmount().getValue() == detectedIngr.getAmount().getValue()) {
+                    if (correctIngr.getQuantity() == detectedIngr.getQuantity()) {
                         equalQuantities += 1;
                     }
                 }

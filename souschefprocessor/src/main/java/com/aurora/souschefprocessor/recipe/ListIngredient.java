@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.recipe;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -101,5 +103,41 @@ public class ListIngredient extends Ingredient {
         return !(getQuantityPosition().getBeginIndex() == 0 &&
                 getQuantityPosition().getEndIndex() == mOriginalLine.length());
     }
+
+    public void convertUnit(boolean toMetric) {
+        Map<PositionKeysForIngredients, String> originals = new HashMap<>();
+        originals.put(PositionKeysForIngredients.UNIT, mAmount.getUnit());
+        originals.put(PositionKeysForIngredients.QUANTITY, "" + mAmount.getValue());
+
+        if (!unitDetected() || !quantityDetected()) {
+            return;
+        }
+        mAmount.convert(toMetric);
+        Map<PositionKeysForIngredients, String> converted = new HashMap<>();
+        converted.put(PositionKeysForIngredients.UNIT, mAmount.getUnit());
+        converted.put(PositionKeysForIngredients.QUANTITY, "" + mAmount.getValue());
+        List<PositionKeysForIngredients> order = getOrderOfPositions();
+        int offset = 0;
+
+        for (int i = 0; i < order.size(); i++) {
+            PositionKeysForIngredients key = order.get(i);
+
+            Position originalPos = mPositions.get(key);
+            int newBegin = originalPos.getBeginIndex() + offset;
+            int newEnd = originalPos.getEndIndex() + offset;
+
+            if (!key.equals(PositionKeysForIngredients.NAME)) {
+
+                mOriginalLine =  mOriginalLine.substring(0, newBegin) + converted.get(key) + mOriginalLine.substring(newEnd);
+
+                newEnd = newBegin + converted.get(key).length();
+                offset = newEnd - originalPos.getEndIndex();
+
+
+            }
+            originalPos.setIndexes(newBegin, newEnd);
+        }
+    }
+
 
 }

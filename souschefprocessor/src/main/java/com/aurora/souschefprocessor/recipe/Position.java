@@ -19,6 +19,20 @@ public class Position {
      */
     private int mEndIndex;
 
+    public void setIndexes(int beginIndex, int endIndex){
+        // check if the arguments are legal
+        checkLegality(beginIndex, endIndex);
+
+        // make sure beginindex is smaller than endindex
+        if (!beginSmallerThanEnd(beginIndex, endIndex)) {
+            mBeginIndex = endIndex;
+            mEndIndex = beginIndex;
+        } else {
+            mBeginIndex = beginIndex;
+            mEndIndex = endIndex;
+        }
+    }
+
     public Position(int beginIndex, int endIndex) {
         // check if the arguments are legal
         checkLegality(beginIndex, endIndex);

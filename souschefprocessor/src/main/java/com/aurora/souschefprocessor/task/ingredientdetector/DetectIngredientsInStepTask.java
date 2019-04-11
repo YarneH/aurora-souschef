@@ -4,7 +4,6 @@ import android.support.v4.util.Pair;
 import android.util.Log;
 
 import com.aurora.souschefprocessor.facade.Delegator;
-import com.aurora.souschefprocessor.recipe.Amount;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
@@ -473,8 +472,10 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             return stepIngredient;
         }
 
-        // Default amount
-        Amount stepAmount = new Amount(DEFAULT_QUANTITY, DEFAULT_UNIT);
+        // set default for quantity and unit
+        stepIngredient.setQuantity(DEFAULT_QUANTITY);
+        stepIngredient.setUnit(DEFAULT_UNIT);
+        //Amount stepAmount = new Amount(DEFAULT_QUANTITY, DEFAULT_UNIT);
 
         // Check if a quantity or unit can be found for this ingredient in the step
         int unitLength = listIngredient.getUnit().split(" ").length;
@@ -484,17 +485,17 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             Position unitPos = findUnitPosition(precedingTokens, listIngredient.getUnit());
             if (unitPos != null) {
                 stepIngredient.setUnitPosition(unitPos);
-                stepAmount.setUnit(mRecipeStep.getDescription().substring(unitPos.getBeginIndex(),
+                stepIngredient.setUnit(mRecipeStep.getDescription().substring(unitPos.getBeginIndex(),
                         unitPos.getEndIndex()));
 
             }
-            double listQuantity = listIngredient.getAmount().getValue();
+            double listQuantity = listIngredient.getQuantity();
             Pair<Position, Double> quantityPair = findQuantityPositionAndValue(precedingTokens, listQuantity);
             if (quantityPair != null) {
                 stepIngredient.setQuantityPosition(quantityPair.first);
-                stepAmount.setValue(quantityPair.second);
+                stepIngredient.setQuantity(quantityPair.second);
             }
-            stepIngredient.setmAmount(stepAmount);
+
         }
         return stepIngredient;
     }

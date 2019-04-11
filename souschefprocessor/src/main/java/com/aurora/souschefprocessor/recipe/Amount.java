@@ -9,14 +9,28 @@ import java.util.Objects;
  * value: a double that is the value
  * unit: a string that is the unit
  */
-public class Amount {
+class Amount {
 
-    /** The value of this amount*/
+    private static int CUP_TO_MILLILITER = 240;
+    private static double KG_TO_POUND = 2.205;
+    private static double FLOZ_TO_MILLILITER = 29.5735;
+    private static double OUNCE_TO_GRAM = 28.3495;
+    private static double TEASPOON_TO_MILLILITER = 4.92892;
+    private static double TABLESPOON_TO_MILLILITER = 14.7868;
+
+    private static double QUART_TO_LITER = 0.946353;
+    private static double PINT_TO_MILLILITER = 473.176;
+    private static int METRIC_CONSTANT = 10;
+    /**
+     * The value of this amount
+     */
     private double mValue;
-    /** The unit of this amount*/
+    /**
+     * The unit of this amount
+     */
     private String mUnit;
 
-    public Amount(double mValue, String unit) {
+    Amount(double mValue, String unit) {
         if (mValue < 0.0) {
             throw new IllegalArgumentException("Value is negative");
         }
@@ -24,16 +38,24 @@ public class Amount {
         this.mUnit = unit;
     }
 
-    public void setValue(double value) {
-        this.mValue = value;
+    static String getBaseUnit(String original) {
+        return BaseUnits.getBase(original);
     }
 
-    public double getValue() {
+    double getValue() {
         return mValue;
     }
 
-    public String getUnit() {
+    void setValue(double value) {
+        this.mValue = value;
+    }
+
+    String getUnit() {
         return mUnit;
+    }
+
+    void setUnit(String unit) {
+        this.mUnit = unit;
     }
 
     @Override
@@ -45,7 +67,7 @@ public class Amount {
     public boolean equals(Object o) {
         if (o instanceof Amount) {
             Amount a = (Amount) o;
-            return (a.getUnit().equalsIgnoreCase(mUnit) && a.getValue() == mValue);
+            return (a.getUnit().equalsIgnoreCase(mUnit) && Math.abs(a.getValue() - mValue) < 2e-3);
 
         }
         return false;
@@ -56,7 +78,95 @@ public class Amount {
         return "QUANTITY " + mValue + " UNIT " + mUnit;
     }
 
-    public void setUnit(String unit) {
-        this.mUnit = unit;
+    private void convertToMetric() {
+        switch (mUnit) {
+
+            case "cup":
+                mValue *= CUP_TO_MILLILITER;
+                mUnit = "milliliter";
+                break;
+            case "pound":
+                mValue /= KG_TO_POUND;
+                mUnit = "kilogram";
+                break;
+            case "fluid ounce":
+                mValue *= FLOZ_TO_MILLILITER;
+                mUnit = "milliliter";
+                break;
+            case "ounce":
+                mValue *= OUNCE_TO_GRAM;
+                mUnit = "gram";
+                break;
+            case "quart":
+                mValue *= QUART_TO_LITER;
+                mUnit = "liter";
+                break;
+            case "pint":
+                mValue *= PINT_TO_MILLILITER;
+                mUnit = "milliliter";
+                break;
+            case "teaspoon":
+                mValue *= TEASPOON_TO_MILLILITER;
+                mUnit = "milliliter";
+                break;
+            case "tablespoon":
+                mValue *= TABLESPOON_TO_MILLILITER;
+                mUnit = "milliliter";
+                break;
+            default:
+                break;
+        }
     }
+
+    void convert(boolean toMetric) {
+        // source https://en.wikipedia.org/wiki/Cup_(unit)#Metric_cup
+        if (toMetric) {
+            convertToMetric();
+
+        } else {
+            convertToUS();
+        }
+        // round to three decimals
+        mValue = Math.round(1e3 * mValue)/1e3;
+    }
+
+    private void convertToUS() {
+        switch (mUnit) {
+            case "kilogram":
+                mValue *= KG_TO_POUND;
+                mUnit = "pound";
+                break;
+            case "gram":
+                mValue /= OUNCE_TO_GRAM;
+                mUnit = "ounce";
+                break;
+            case "liter":
+                mValue /= QUART_TO_LITER;
+                mUnit = "quart";
+                break;
+            case "milliliter":
+                if (mValue >= CUP_TO_MILLILITER) {
+                    mValue /= CUP_TO_MILLILITER;
+                    mUnit = "cup";
+                } else if (mValue >= FLOZ_TO_MILLILITER) {
+                    mValue /= FLOZ_TO_MILLILITER;
+                    mUnit = "fluid ounce";
+                } else if (mValue >= TABLESPOON_TO_MILLILITER) {
+                    mValue /= TABLESPOON_TO_MILLILITER;
+                    mUnit = "tablespoon";
+                }
+
+                mValue /= TEASPOON_TO_MILLILITER;
+                mUnit = "teaspoon";
+                break;
+            case "deciliter":
+                mValue /= TABLESPOON_TO_MILLILITER * METRIC_CONSTANT;
+                mUnit = "tablespoon";
+                break;
+            default:
+                break;
+        }
+    }
+
+
 }

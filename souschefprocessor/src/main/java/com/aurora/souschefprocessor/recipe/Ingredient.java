@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.recipe;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -81,7 +83,11 @@ public class Ingredient {
         return mAmount.getUnit();
     }
 
-    public double getValue() {
+    public void setUnit(String u) {
+        mAmount.setUnit(u);
+    }
+
+    public double getQuantity() {
         return mAmount.getValue();
     }
 
@@ -89,9 +95,10 @@ public class Ingredient {
         return mAmount;
     }
 
-    public void setmAmount(Amount amount) {
-        this.mAmount = amount;
+    public void setQuantity(double q) {
+        mAmount.setValue(q);
     }
+
 
     @Override
     public int hashCode() {
@@ -123,7 +130,7 @@ public class Ingredient {
      * @return a boolean indicating if the positions are legal
      */
 
-     boolean arePositionsLegalInString(String string) {
+    boolean arePositionsLegalInString(String string) {
         for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
             if (!mPositions.get(key).isLegalInString(string)) {
                 return false;
@@ -132,6 +139,51 @@ public class Ingredient {
         return true;
     }
 
+    public void trimPositionsToString(String s) {
+        for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
+            mPositions.get(key).trimToLengthOfString(s);
+        }
+    }
+
+    protected List<PositionKeysForIngredients> getOrderOfPositions() {
+
+        int qEnd = getQuantityPosition().getEndIndex();
+
+        int uEnd = getUnitPosition().getEndIndex();
+
+        int nEnd = getNamePosition().getEndIndex();
+        List<PositionKeysForIngredients> list = new ArrayList<>();
+        if (qEnd < nEnd && qEnd < uEnd) {
+            list.add(PositionKeysForIngredients.QUANTITY);
+            if (uEnd < nEnd) {
+                list.add(PositionKeysForIngredients.UNIT);
+                list.add(PositionKeysForIngredients.NAME);
+            } else {
+                list.add(PositionKeysForIngredients.NAME);
+                list.add(PositionKeysForIngredients.UNIT);
+
+            }
+        } else if (uEnd < qEnd && uEnd < nEnd) {
+            list.add(PositionKeysForIngredients.UNIT);
+            if (qEnd < nEnd) {
+                list.add(PositionKeysForIngredients.QUANTITY);
+                list.add(PositionKeysForIngredients.NAME);
+            } else {
+                list.add(PositionKeysForIngredients.NAME);
+                list.add(PositionKeysForIngredients.QUANTITY);
+            }
+        } else {
+            list.add(PositionKeysForIngredients.NAME);
+            if (qEnd < uEnd) {
+                list.add(PositionKeysForIngredients.QUANTITY);
+                list.add(PositionKeysForIngredients.UNIT);
+            } else {
+                list.add(PositionKeysForIngredients.NAME);
+                list.add(PositionKeysForIngredients.UNIT);
+            }
+        }
+        return list;
+    }
 
     /**
      * Keys for a map storing positions for ingredients
@@ -140,10 +192,5 @@ public class Ingredient {
         NAME, QUANTITY, UNIT
     }
 
-    public void trimPositionsToString(String s){
-        for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
-            mPositions.get(key).trimToLengthOfString(s);
-        }
-    }
 
 }

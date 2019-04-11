@@ -1,6 +1,8 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
+
+import com.aurora.souschefprocessor.recipe.BaseUnits;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
@@ -62,7 +64,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         mCRFClassifier = crfClassifier;
     }
 
-
     /**
      * This calls the removeClutter method, this makes sure that the following sort of conversion
      * happens: 500ml/3fl oz -> 500 ml
@@ -75,7 +76,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
      * @param line The line on which to add spaces, remove clutter and delete "."
      * @return The line with the spaces added and the points deleted
      */
-    private static String removeClutterAddSpacesAndRemovePoint(String line) {
+    private static String removeClutterAddSpacesAndGetBaseUnit(String line) {
         line = line.trim();
         line = removeClutter(line);
         StringBuilder bld = new StringBuilder();
@@ -107,6 +108,9 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         // add the last character
         bld.append(chars[chars.length - 1]);
+
+        String ret = bld.toString();
+
         // return the builder
         return bld.toString();
 
@@ -185,7 +189,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         }
     }
 
-
     /**
      * Detects the ListIngredients presented in the ingredientsString and sets the mIngredients field
      * in the recipe to this set of ListIngredients.
@@ -218,7 +221,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         for (String ingredient : list) {
             if (ingredient != null && ingredient.length() > 0) {
-                ListIngredient ing = (detectIngredient(removeClutterAddSpacesAndRemovePoint(ingredient)));
+                ListIngredient ing = (detectIngredient(removeClutterAddSpacesAndGetBaseUnit(ingredient)));
 
                 returnList.add(ing);
 
@@ -272,6 +275,8 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             // beginPosition of the first element and endPosition of the last element
             int beginPosition = succeedingUnits.get(0).beginPosition();
             int endPosition = succeedingUnits.get(succeedingUnits.size() - 1).endPosition();
+            line = line.substring(0, beginPosition) + unit + line.substring(endPosition);
+            endPosition = beginPosition + unit.length();
             positions.put(Ingredient.PositionKeysForIngredients.UNIT, new Position(beginPosition, endPosition));
         } else {
             // if no unit detected make the position the whole string
@@ -285,8 +290,9 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
             // Calculate the position and add it to the map
             // beginPosition of the first element and endPosition of the last element
-            int beginPosition = nameList.get(0).beginPosition();
-            int endPosition = nameList.get(nameList.size() - 1).endPosition();
+            int beginPosition = line.indexOf(nameList.get(0).word());
+
+            int endPosition = beginPosition + name.length();
             positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(beginPosition, endPosition));
         } else {
             // if no name detected make the position the whole string
@@ -310,8 +316,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             }
 
 
-        }
-        if (positions.get(Ingredient.PositionKeysForIngredients.QUANTITY) == null) {
+        } if (positions.get(Ingredient.PositionKeysForIngredients.QUANTITY) == null) {
             // if no quantity detected make the position the whole string
             // if no quantity detected then the position is still null so make the position the
             // whole string to signal that no quantity is detected
@@ -353,14 +358,13 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : succeedingUnitList) {
-            bld.append(cl.word());
+            bld.append(BaseUnits.getBase(cl.word()));
             bld.append(" ");
         }
         // delete last added space
         bld.deleteCharAt(bld.length() - 1);
         return bld.toString();
     }
-
 
     /**
      * Gets the first sequence of succeeding elements of a class in a list of labels.
@@ -413,4 +417,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         }
         return tokenQuantities;
     }
+
+
 }

@@ -11,4 +11,5 @@
     <string name="amount_people">Amount of people:</string>
     <string name="btn_plus">+</string>
     <string name="btn_minus">-</string>
+    <string name="indicator_dot_description">Contains indicator dot to provide navigation through the steps.</string>
 </resources>

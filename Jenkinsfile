@@ -164,12 +164,14 @@ pipeline {
                 // Generate javadoc
                 sh """
                 javadoc -d /var/www/javadoc/souschef/app/${env.BRANCH_NAME} -sourcepath ${WORKSPACE}/app/src/main/java -subpackages com -private \
-                -classpath ${WORKSPACE}/app/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes
+                -classpath ${WORKSPACE}/app/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes \
+                -bootclasspath /opt/android-sdk-linux/platforms/android-28/android.jar
                 """
 
                 sh """
                 javadoc -d /var/www/javadoc/souschef/souschefprocessor/${env.BRANCH_NAME} -sourcepath ${WORKSPACE}/souschefprocessor/src/main/java -subpackages com -private \
-                -classpath ${WORKSPACE}/app/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes
+                -classpath ${WORKSPACE}/app/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes \
+                -bootclasspath /opt/android-sdk-linux/platforms/android-28/android.jar
                 """
             }
             post {

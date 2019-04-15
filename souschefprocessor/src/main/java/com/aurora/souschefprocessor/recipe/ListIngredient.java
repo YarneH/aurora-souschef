@@ -86,10 +86,7 @@ public class ListIngredient extends Ingredient {
      * @return a boolean that indicates if a unit was detected
      */
     private boolean unitDetected() {
-        boolean stringSet = !("").equals(mAmount.getUnit());
-        boolean positionSpansEntireLine = getUnitPosition().getBeginIndex() == 0 &&
-                getUnitPosition().getEndIndex() == mOriginalLine.length();
-        return stringSet && !positionSpansEntireLine;
+        return unitDetected(mOriginalLine);
     }
 
     /**
@@ -98,8 +95,18 @@ public class ListIngredient extends Ingredient {
      * @return a boolean that indicates if a quantity was detected
      */
     private boolean quantityDetected() {
-        return !(getQuantityPosition().getBeginIndex() == 0 &&
-                getQuantityPosition().getEndIndex() == mOriginalLine.length());
+        return quantityDetected(mOriginalLine);
     }
+
+    /**
+     * Converts this ingredient to metric or US. This also changes the {@link #mOriginalLine}
+     * field and the positions so that the converted ingredient can be shown to the UI
+     *
+     * @param toMetric a boolean to indicate wheter to convert to metric or to US
+     */
+    public void convertUnit(boolean toMetric) {
+        mOriginalLine = super.convertUnit(toMetric, mOriginalLine);
+    }
+
 
 }

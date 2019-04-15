@@ -107,4 +107,13 @@ public class Recipe extends PluginObject {
                 '}';
     }
 
+    public void convertUnit(boolean toMetric){
+        for(ListIngredient listIngredient: mIngredients){
+            listIngredient.convertUnit(toMetric);
+        }
+        for(RecipeStep step: mRecipeSteps){
+            step.convertUnit(toMetric);
+        }
+    }
+
 }

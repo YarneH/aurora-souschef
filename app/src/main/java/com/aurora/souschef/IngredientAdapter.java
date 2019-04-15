@@ -152,12 +152,12 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
             }
 
             // Calculate the amount of the ingredient
-            double amount = ingredient.getAmount().getValue() / mOriginalAmountOfServings * mChosenAmountOfServings;
+            double amount = ingredient.getQuantity() / mOriginalAmountOfServings * mChosenAmountOfServings;
 
             // Set Textviews
             mIngredientAmount.setText(toDisplayQuantity(amount));
             mIngredientName.setText(nameWithoutQuantityAndUnit);
-            mIngredientUnit.setText(ingredient.getAmount().getUnit());
+            mIngredientUnit.setText(ingredient.getUnit());
 
             // Set checkboxes correctly
             mCheckbox.setChecked(mChecked[getAdapterPosition()]);

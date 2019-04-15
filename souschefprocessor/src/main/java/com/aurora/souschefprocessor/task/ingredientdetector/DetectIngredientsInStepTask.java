@@ -4,15 +4,16 @@ import android.support.v4.util.Pair;
 import android.util.Log;
 
 import com.aurora.souschefprocessor.facade.Delegator;
-import com.aurora.souschefprocessor.recipe.Amount;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
+import com.aurora.souschefprocessor.recipe.UnitConversionUtils;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -112,6 +113,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * their numerical values
      */
     private static Map<String, Double> sFractionMultipliers = new HashMap<>();
+
 
     /* populate the map and try to create the pipeline */
     static {
@@ -473,8 +475,10 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             return stepIngredient;
         }
 
-        // Default amount
-        Amount stepAmount = new Amount(DEFAULT_QUANTITY, DEFAULT_UNIT);
+        // set default for quantity and unit
+        stepIngredient.setQuantity(DEFAULT_QUANTITY);
+        stepIngredient.setUnit(DEFAULT_UNIT);
+
 
         // Check if a quantity or unit can be found for this ingredient in the step
         int unitLength = listIngredient.getUnit().split(" ").length;
@@ -484,17 +488,32 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             Position unitPos = findUnitPosition(precedingTokens, listIngredient.getUnit());
             if (unitPos != null) {
                 stepIngredient.setUnitPosition(unitPos);
-                stepAmount.setUnit(mRecipeStep.getDescription().substring(unitPos.getBeginIndex(),
-                        unitPos.getEndIndex()));
+                String foundUnit = mRecipeStep.getDescription().substring(unitPos.getBeginIndex(),
+                        unitPos.getEndIndex());
+                String baseUnit = UnitConversionUtils.getBase(foundUnit);
+                //update the description
+                mRecipeStep.setDescription(mRecipeStep.getDescription().replace(foundUnit, baseUnit));
+                // update the unit position
+                int oldEndIndex = unitPos.getEndIndex();
+                int newEndIndex = unitPos.getBeginIndex() + baseUnit.length();
+                unitPos.setEndIndex(newEndIndex);
+                stepIngredient.setUnit(baseUnit);
+
+                // check if an update of the name position is necessary
+                if(namePos.getEndIndex() >= oldEndIndex){
+                    int offset = newEndIndex - oldEndIndex;
+                    namePos.setIndices(namePos.getBeginIndex() + offset, namePos.getEndIndex() + offset);
+                }
+
 
             }
-            double listQuantity = listIngredient.getAmount().getValue();
+            double listQuantity = listIngredient.getQuantity();
             Pair<Position, Double> quantityPair = findQuantityPositionAndValue(precedingTokens, listQuantity);
             if (quantityPair != null) {
                 stepIngredient.setQuantityPosition(quantityPair.first);
-                stepAmount.setValue(quantityPair.second);
+                stepIngredient.setQuantity(quantityPair.second);
             }
-            stepIngredient.setmAmount(stepAmount);
+
         }
         return stepIngredient;
     }
@@ -505,18 +524,16 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @return Default ingredient
      */
     private Ingredient defaultStepIngredient() {
-        HashMap<Ingredient.PositionKeysForIngredients, Position> map = new HashMap<>();
-
+        Map<Ingredient.PositionKeysForIngredients, Position> map
+                = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
         // Initialize position on Position(0, length)
         int stepSentenceLength = mRecipeStep.getDescription().length();
         Position defaultPos = new Position(0, stepSentenceLength);
         String name = "";
         map.put(Ingredient.PositionKeysForIngredients.NAME, defaultPos);
-        String unit = DEFAULT_UNIT;
         map.put(Ingredient.PositionKeysForIngredients.UNIT, defaultPos);
-        double quantity = DEFAULT_QUANTITY;
         map.put(Ingredient.PositionKeysForIngredients.QUANTITY, defaultPos);
-        return new Ingredient(name, unit, quantity, map);
+        return new Ingredient(name, DEFAULT_UNIT, DEFAULT_QUANTITY, map);
     }
 
     /**

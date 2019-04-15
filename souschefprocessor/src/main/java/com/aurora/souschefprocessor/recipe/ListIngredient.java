@@ -104,39 +104,53 @@ public class ListIngredient extends Ingredient {
                 getQuantityPosition().getEndIndex() == mOriginalLine.length());
     }
 
+    /**
+     * Converts this ingredient to metric or US. This also changes the {@link #mOriginalLine}
+     * field and the positions so that the converted ingredient can be shown to the UI
+     * @param toMetric a boolean to indicate wheter to convert to metric or to US
+     */
     public void convertUnit(boolean toMetric) {
-        Map<PositionKeysForIngredients, String> originals = new HashMap<>();
-        originals.put(PositionKeysForIngredients.UNIT, mAmount.getUnit());
-        originals.put(PositionKeysForIngredients.QUANTITY, "" + mAmount.getValue());
 
+        // only convert if the unit and quantity are detected
         if (!unitDetected() || !quantityDetected()) {
             return;
         }
+        // convert the amount
         mAmount.convert(toMetric);
+
+        // a map that matches the UNIT and QUANTITY to their converted value
         Map<PositionKeysForIngredients, String> converted = new HashMap<>();
         converted.put(PositionKeysForIngredients.UNIT, mAmount.getUnit());
         converted.put(PositionKeysForIngredients.QUANTITY, "" + mAmount.getValue());
+
+        // get the order of the NAME UNIT and QUANTITY
         List<PositionKeysForIngredients> order = getOrderOfPositions();
+
+        // the offset for changing the positions
         int offset = 0;
 
         for (int i = 0; i < order.size(); i++) {
             PositionKeysForIngredients key = order.get(i);
 
             Position originalPos = mPositions.get(key);
+            // change the indices so that the positions will be correct
             int newBegin = originalPos.getBeginIndex() + offset;
             int newEnd = originalPos.getEndIndex() + offset;
 
             if (!key.equals(PositionKeysForIngredients.NAME)) {
 
+                // change the line
                 mOriginalLine =  mOriginalLine.substring(0, newBegin) +
                         converted.get(key) + mOriginalLine.substring(newEnd);
 
+                // calculate the new end
                 newEnd = newBegin + converted.get(key).length();
+                // update the offset
                 offset = newEnd - originalPos.getEndIndex();
 
 
             }
-            originalPos.setIndexes(newBegin, newEnd);
+            originalPos.setIndices(newBegin, newEnd);
         }
     }
 

@@ -475,7 +475,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         // set default for quantity and unit
         stepIngredient.setQuantity(DEFAULT_QUANTITY);
         stepIngredient.setUnit(DEFAULT_UNIT);
-        //Amount stepAmount = new Amount(DEFAULT_QUANTITY, DEFAULT_UNIT);
+
 
         // Check if a quantity or unit can be found for this ingredient in the step
         int unitLength = listIngredient.getUnit().split(" ").length;

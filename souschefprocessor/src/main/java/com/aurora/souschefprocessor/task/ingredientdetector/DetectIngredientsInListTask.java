@@ -1,7 +1,7 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
-import com.aurora.souschefprocessor.recipe.BaseUnits;
+import com.aurora.souschefprocessor.recipe.UnitConversionUtilityClass;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
@@ -75,7 +75,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
      * @param line The line on which to add spaces, remove clutter and delete "."
      * @return The line with the spaces added and the points deleted
      */
-    private static String removeClutterAddSpacesAndGetBaseUnit(String line) {
+    private static String standardizeLine(String line) {
         line = line.trim();
         line = removeClutter(line);
         StringBuilder bld = new StringBuilder();
@@ -221,8 +221,8 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         for (String ingredient : list) {
             if (ingredient != null && ingredient.length() > 0) {
 
-                ListIngredient ing = (detectIngredient(removeClutterAddSpacesAndGetBaseUnit(ingredient)));
-                returnList.add(ing);
+                ListIngredient listIngredient = (detectIngredient(standardizeLine(ingredient)));
+                returnList.add(listIngredient);
 
             }
         }
@@ -369,7 +369,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : succeedingUnitList) {
-            bld.append(BaseUnits.getBase(cl.word()));
+            bld.append(UnitConversionUtilityClass.getBase(cl.word()));
             bld.append(" ");
         }
         // delete last added space
@@ -428,6 +428,4 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         }
         return tokenQuantities;
     }
-
-
 }

@@ -62,7 +62,7 @@ public class Position {
         return beginIndex < endIndex;
     }
 
-    public void setIndexes(int beginIndex, int endIndex) {
+    public void setIndices(int beginIndex, int endIndex) {
         // check if the arguments are legal
         checkLegality(beginIndex, endIndex);
 

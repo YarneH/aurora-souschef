@@ -91,14 +91,13 @@ public class Ingredient {
         return mAmount.getValue();
     }
 
-    public Amount getAmount() {
-        return mAmount;
-    }
-
     public void setQuantity(double q) {
         mAmount.setValue(q);
     }
 
+    public Amount getAmount() {
+        return mAmount;
+    }
 
     @Override
     public int hashCode() {
@@ -129,7 +128,6 @@ public class Ingredient {
      * @param string The string in which to check that the positions are legal
      * @return a boolean indicating if the positions are legal
      */
-
     boolean arePositionsLegalInString(String string) {
         for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
             if (!mPositions.get(key).isLegalInString(string)) {
@@ -139,12 +137,24 @@ public class Ingredient {
         return true;
     }
 
+    /**
+     * This trims the positions of this ingredient to the passed string. It uses the {@link Position#trimToLengthOfString(String)}
+     * method. This ensures that the endindex of the positions is never bigger than the length of the passed string
+     *
+     * @param s the string to trim the positions to
+     */
     public void trimPositionsToString(String s) {
         for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
             mPositions.get(key).trimToLengthOfString(s);
         }
     }
 
+    /**
+     * Gets the order of the positions, it checks in which order the QUANTIYT UNIT and name are mentione
+     *
+     * @return a list, where the first element is the element that is stated first in the sentence, in case of
+     * ex aeqo the list is ordered with the following priority: 1 QUANTITY, 2 UNIT, 3 NAME
+     */
     protected List<PositionKeysForIngredients> getOrderOfPositions() {
 
         int qEnd = getQuantityPosition().getEndIndex();

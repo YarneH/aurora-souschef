@@ -410,13 +410,8 @@ public class DetectIngredientsInListTaskUnitTest {
         boolean thrown = false;
 
         recipe.setIngredientsString("20 pound xxx \n jqkfdksqfjkd// \n 45055 450 47d dkjq4 kdj  4 dqfd/n \n kjfqkf 450 ounce lfqj \n 20 pound xxx\"\n");
-        try {
-            detector.doTask();
-        } catch (Exception e) {
-            System.out.println(e);
-            thrown = true;
-        }
-        assert (!thrown);
+        // test will fail if this throws an exception
+        detector.doTask();
     }
 
 

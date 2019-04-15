@@ -11,19 +11,17 @@ import java.util.Objects;
  */
 class Amount {
 
-    private static final int CUP_TO_MILLILITER = 240;
-    private static final double KG_TO_POUND = 2.205;
-    private static final double FLOZ_TO_MILLILITER = 29.5735;
-    private static final double OUNCE_TO_GRAM = 28.3495;
-    private static final double TEASPOON_TO_MILLILITER = 4.92892;
-    private static final double TABLESPOON_TO_MILLILITER = 14.7868;
 
-    private static final double QUART_TO_LITER = 0.946353;
-    private static final double PINT_TO_MILLILITER = 473.176;
+    /**
+     * The metric constant for going from milli to deci
+     */
     private static final int METRIC_CONSTANT = 10;
 
-    private static final String MILLI = "milliliter";
 
+    /**
+     * The threshold for the equality of the {@link #mValue} field needed in the {@link #equals(Object)}
+     * method
+     */
     private static final double EQUALITY_THRESHOLD_DOUBLE = 2e-3;
     /**
      * The value of this amount
@@ -43,7 +41,7 @@ class Amount {
     }
 
     static String getBaseUnit(String original) {
-        return BaseUnits.getBase(original);
+        return UnitConversionUtilityClass.getBase(original);
     }
 
     double getValue() {
@@ -83,48 +81,56 @@ class Amount {
         return "QUANTITY " + mValue + " UNIT " + mUnit;
     }
 
+    /**
+     * A helper private helper method for the {@link #convert(boolean)} it converts the unit to a metric
+     * unit, using the conversion factors from {@link UnitConversionUtilityClass} utility class
+     */
     private void convertToMetric() {
         switch (mUnit) {
 
-            case "cup":
-                mValue *= CUP_TO_MILLILITER;
-                mUnit = MILLI;
+            case UnitConversionUtilityClass.CUP:
+                mValue *= UnitConversionUtilityClass.CUP_TO_MILLILITER;
+                mUnit = UnitConversionUtilityClass.MILLI;
                 break;
-            case "pound":
-                mValue /= KG_TO_POUND;
-                mUnit = "kilogram";
+            case UnitConversionUtilityClass.POUND:
+                mValue /= UnitConversionUtilityClass.KG_TO_POUND;
+                mUnit = UnitConversionUtilityClass.KILO;
                 break;
-            case "fluid ounce":
-                mValue *= FLOZ_TO_MILLILITER;
-                mUnit = MILLI;
+            case UnitConversionUtilityClass.FLOZ:
+                mValue *= UnitConversionUtilityClass.FLOZ_TO_MILLILITER;
+                mUnit = UnitConversionUtilityClass.MILLI;
                 break;
-            case "ounce":
-                mValue *= OUNCE_TO_GRAM;
-                mUnit = "gram";
+            case UnitConversionUtilityClass.OUNCE:
+                mValue *= UnitConversionUtilityClass.OUNCE_TO_GRAM;
+                mUnit = UnitConversionUtilityClass.GRAM;
                 break;
-            case "quart":
-                mValue *= QUART_TO_LITER;
-                mUnit = "liter";
+            case UnitConversionUtilityClass.QUART:
+                mValue *= UnitConversionUtilityClass.QUART_TO_LITER;
+                mUnit = UnitConversionUtilityClass.LITER;
                 break;
-            case "pint":
-                mValue *= PINT_TO_MILLILITER;
-                mUnit = MILLI;
+            case UnitConversionUtilityClass.PINT:
+                mValue *= UnitConversionUtilityClass.PINT_TO_MILLILITER;
+                mUnit = UnitConversionUtilityClass.MILLI;
                 break;
-            case "teaspoon":
-                mValue *= TEASPOON_TO_MILLILITER;
-                mUnit = MILLI;
+            case UnitConversionUtilityClass.TSP:
+                mValue *= UnitConversionUtilityClass.TEASPOON_TO_MILLILITER;
+                mUnit = UnitConversionUtilityClass.MILLI;
                 break;
-            case "tablespoon":
-                mValue *= TABLESPOON_TO_MILLILITER;
-                mUnit = MILLI;
+            case UnitConversionUtilityClass.TBSP:
+                mValue *= UnitConversionUtilityClass.TABLESPOON_TO_MILLILITER;
+                mUnit = UnitConversionUtilityClass.MILLI;
                 break;
             default:
                 break;
         }
     }
 
+    /**
+     * Converts the amount to either metric or US
+     * @param toMetric a boolean that indicates if it should be converted to metric or to US
+     */
     void convert(boolean toMetric) {
-        // source https://en.wikipedia.org/wiki/Cup_(unit)#Metric_cup
+
         if (toMetric) {
             convertToMetric();
 
@@ -135,27 +141,31 @@ class Amount {
         mValue = Math.round(1e3 * mValue) / 1e3;
     }
 
+    /**
+     * A helper private helper method for the {@link #convert(boolean)} it converts the unit to a US
+     * unit, using the conversion factors from {@link UnitConversionUtilityClass} utility class
+     */
     private void convertToUS() {
         switch (mUnit) {
-            case "kilogram":
-                mValue *= KG_TO_POUND;
-                mUnit = "pound";
+            case UnitConversionUtilityClass.KILO:
+                mValue *= UnitConversionUtilityClass.KG_TO_POUND;
+                mUnit = UnitConversionUtilityClass.POUND;
                 break;
-            case "gram":
-                mValue /= OUNCE_TO_GRAM;
-                mUnit = "ounce";
+            case UnitConversionUtilityClass.GRAM:
+                mValue /= UnitConversionUtilityClass.OUNCE_TO_GRAM;
+                mUnit = UnitConversionUtilityClass.OUNCE;
                 break;
-            case "liter":
-                mValue /= QUART_TO_LITER;
-                mUnit = "quart";
+            case UnitConversionUtilityClass.LITER:
+                mValue /= UnitConversionUtilityClass.QUART_TO_LITER;
+                mUnit = UnitConversionUtilityClass.QUART;
                 break;
-            case MILLI:
+            case UnitConversionUtilityClass.MILLI:
                 changeMilliliter();
 
                 break;
-            case "deciliter":
-                mValue /= TABLESPOON_TO_MILLILITER * METRIC_CONSTANT;
-                mUnit = "tablespoon";
+            case UnitConversionUtilityClass.DECI:
+                mValue /= UnitConversionUtilityClass.TABLESPOON_TO_MILLILITER * METRIC_CONSTANT;
+                mUnit = UnitConversionUtilityClass.TBSP;
                 break;
             default:
                 break;
@@ -163,19 +173,21 @@ class Amount {
     }
 
     private void changeMilliliter() {
-        if (mValue >= CUP_TO_MILLILITER) {
-            mValue /= CUP_TO_MILLILITER;
-            mUnit = "cup";
-        } else if (mValue >= FLOZ_TO_MILLILITER) {
-            mValue /= FLOZ_TO_MILLILITER;
-            mUnit = "fluid ounce";
-        } else if (mValue >= TABLESPOON_TO_MILLILITER) {
-            mValue /= TABLESPOON_TO_MILLILITER;
-            mUnit = "tablespoon";
+        if (mValue >= UnitConversionUtilityClass.CUP_TO_MILLILITER) {
+            mValue /= UnitConversionUtilityClass.CUP_TO_MILLILITER;
+            mUnit = UnitConversionUtilityClass.CUP;
+
+        } else if (mValue >= UnitConversionUtilityClass.FLOZ_TO_MILLILITER) {
+            mValue /= UnitConversionUtilityClass.FLOZ_TO_MILLILITER;
+            mUnit = UnitConversionUtilityClass.FLOZ;
+
+        } else if (mValue >= UnitConversionUtilityClass.TABLESPOON_TO_MILLILITER) {
+            mValue /= UnitConversionUtilityClass.TABLESPOON_TO_MILLILITER;
+            mUnit = UnitConversionUtilityClass.TBSP;
         }
 
-        mValue /= TEASPOON_TO_MILLILITER;
-        mUnit = "teaspoon";
+        mValue /= UnitConversionUtilityClass.TEASPOON_TO_MILLILITER;
+        mUnit = UnitConversionUtilityClass.TSP;
     }
 
 

@@ -10,38 +10,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 
 
 public class DetectIngredientsInListTaskLongTest {
-    static class BaseUnits {
-        private static String[] baseUnits = {"cup", "pound", "kilogram", "gram", "milliliter", "liter",
-                "deciliter", "fluid ounce", "ounce", "quart", "pint", "teaspoon", "tablespoon"};
-        private static String[] plurals = {"cups", "pounds", "kilograms", "grams", "milliliters", "liters",
-                "deciliters", "fluid ounces", "ounces", "quarts", "pints", "teaspoons", "tablespoons"};
-        private static String[] abbreviations = {"c", "lb", "kg", "g", "ml", "l", "dl", "fl oz", "oz",
-                "qt", "pt", "tsp", "tbsp"};
 
-        static String getBase(String original) {
-            int number = baseUnits.length;
-            String lowerCase = original.toLowerCase(Locale.ENGLISH);
-            // first plurals
-            for (int i = 0; i < number; i++) {
-                if (plurals[i].equals(lowerCase)) {
-                    return baseUnits[i];
-                }
-                if (abbreviations[i].equals(lowerCase)) {
-                    return baseUnits[i];
-                }
-            }
-            // nothing found -> return the original
-            return original;
-        }
-
-    }
     private static RecipeInProgress testRecipe;
     private static DetectIngredientsInListTask testDetector;
     private static String originalText = "irrelevant";
@@ -59,7 +34,6 @@ public class DetectIngredientsInListTaskLongTest {
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
         crfClassifier = CRFClassifier.getClassifier(modelName);
     }
-
 
 
     /**
@@ -332,7 +306,7 @@ public class DetectIngredientsInListTaskLongTest {
             }
         }
         // Assert
-        System.out.println("Correct: "+ correct*100.0/testIngredientsQuantities.length + "%");
+        System.out.println("Correct: " + correct * 100.0 / testIngredientsQuantities.length + "%");
         assert (correct * 100.0 / testIngredientsUnits.length >= 95);
     }
 
@@ -371,15 +345,8 @@ public class DetectIngredientsInListTaskLongTest {
         double multiplier = 100.0 / testIngredientsUnits.length;
         assert ((correct + correctButOneCharOff) * multiplier >= 85);
         assert (correctButOneCharOff * multiplier < 5);
-        System.out.println(correct + " units were correctly set and " + correctButOneCharOff + " were correct with one char off out of "+ testIngredientsQuantities.length+" examples");
+        System.out.println(correct + " units were correctly set and " + correctButOneCharOff + " were correct with one char off out of " + testIngredientsQuantities.length + " examples");
     }
-
-
-
-
-
-
-
 
 
 }

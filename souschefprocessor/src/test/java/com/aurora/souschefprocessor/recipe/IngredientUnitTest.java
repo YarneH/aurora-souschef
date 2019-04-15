@@ -267,9 +267,9 @@ public class IngredientUnitTest {
         map.put(Ingredient.PositionKeysForIngredients.QUANTITY, quantityPos);
         map.put(Ingredient.PositionKeysForIngredients.UNIT, unitPos);
         map.put(Ingredient.PositionKeysForIngredients.NAME, namePos);
-        ListIngredient ing = new ListIngredient("spaghetti", "gram", 500, original, map);
+        ListIngredient listIngredient = new ListIngredient("spaghetti", "gram", 500, original, map);
 
-        ing.convertUnit(false);
+        listIngredient.convertUnit(false);
 
         Position quantityPosN = new Position(0, 6);
         Position unitPosN = new Position(7, 12);
@@ -279,7 +279,7 @@ public class IngredientUnitTest {
         mapN.put(Ingredient.PositionKeysForIngredients.UNIT, unitPosN);
         mapN.put(Ingredient.PositionKeysForIngredients.NAME, namePosN);
         ListIngredient n = new ListIngredient("spaghetti", "ounce", 17.637, "17.637 ounce spaghetti", mapN);
-        assert(n.equals(ing));
+        assert(n.equals(listIngredient));
         // check positions
         assert(quantityPosN.equals(quantityPos));
         assert(namePosN.equals(namePos));

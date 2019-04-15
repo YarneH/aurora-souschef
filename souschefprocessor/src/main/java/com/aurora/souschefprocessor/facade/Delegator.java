@@ -1,7 +1,6 @@
 package com.aurora.souschefprocessor.facade;
 
 
-
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
@@ -31,29 +30,28 @@ import edu.stanford.nlp.ling.CoreLabel;
  * described in the architecture.
  */
 public class Delegator {
-
     /**
      * A constant describing 1/2
      */
     private static final double HALF = 0.5;
+
     /**
      * An object that serves as a lock to ensure that the pipelines are only created once
      */
     private static final Object LOCK = new Object();
+
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
     private static boolean sStartedCreatingPipelines = false;
 
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
-
-
     /**
      * A threadPoolExecutor to execute steps in parallel
      */
     private static ThreadPoolExecutor sThreadPoolExecutor;
 
-    /*
+    /**
      * Makes sure that the {@link #createAnnotationPipelines()} method is always called if a delegator is
      * used, to ensure that the pipelines have been created
      */
@@ -61,11 +59,11 @@ public class Delegator {
         createAnnotationPipelines();
     }
 
-
     /**
      * The classifier to classify ingredients
      */
     private CRFClassifier<CoreLabel> mIngredientClassifier;
+
     /**
      * A boolean that indicates whether the processing should be parallelized
      */
@@ -79,10 +77,8 @@ public class Delegator {
      * @param parallelize          boolean to indicate wheter to parallelize or not
      */
     Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
-
         mIngredientClassifier = ingredientClassifier;
         mParallelize = parallelize;
-
     }
 
     /**
@@ -103,8 +99,6 @@ public class Delegator {
 
         DetectTimersInStepTask.initializeAnnotationPipeline();
         DetectIngredientsInStepTask.initializeAnnotationPipeline();
-
-
     }
 
     /**
@@ -145,6 +139,12 @@ public class Delegator {
                 decodeWorkQueue);
     }
 
+    public static ThreadPoolExecutor getThreadPoolExecutor() {
+        if (sThreadPoolExecutor == null) {
+            setUpThreadPool();
+        }
+        return sThreadPoolExecutor;
+    }
 
     /**
      * This is the core function of the delegator, where the text is processed by applying the filters
@@ -158,6 +158,7 @@ public class Delegator {
         if (sThreadPoolExecutor == null) {
             setUpThreadPool();
         }
+
         RecipeInProgress recipeInProgress = new RecipeInProgress(text);
         List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
         if (pipeline != null) {
@@ -165,7 +166,6 @@ public class Delegator {
                 task.doTask();
             }
         }
-
 
         return recipeInProgress.convertToRecipe();
     }
@@ -182,6 +182,7 @@ public class Delegator {
         if (sThreadPoolExecutor == null) {
             setUpThreadPool();
         }
+
         RecipeInProgress recipeInProgress = new RecipeInProgress(text);
         List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
         if (pipeline != null) {
@@ -190,7 +191,6 @@ public class Delegator {
             }
         }
 
-
         return recipeInProgress.convertToRecipe();
     }
 
@@ -198,7 +198,7 @@ public class Delegator {
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
      */
-    private List<AbstractProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
+    public List<AbstractProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
         ArrayList<AbstractProcessingTask> pipeline = new ArrayList<>();
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
         pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));
@@ -207,10 +207,11 @@ public class Delegator {
         StepTaskNames[] taskNames = {StepTaskNames.INGR, StepTaskNames.TIMER};
         if (mParallelize) {
             pipeline.add(new ParallelizeStepsTask(recipeInProgress, sThreadPoolExecutor, taskNames));
+
         } else {
             pipeline.add(new NonParallelizeStepTask(recipeInProgress, taskNames));
         }
+
         return pipeline;
     }
 }
-

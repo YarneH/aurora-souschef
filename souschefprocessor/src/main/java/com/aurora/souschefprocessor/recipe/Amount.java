@@ -10,23 +10,22 @@ import java.util.Objects;
  * unit: a string that is the unit
  */
 class Amount {
-
-
     /**
      * The metric constant for going from milli to deci
      */
     private static final int METRIC_CONSTANT = 10;
-
 
     /**
      * The threshold for the equality of the {@link #mValue} field needed in the {@link #equals(Object)}
      * method
      */
     private static final double EQUALITY_THRESHOLD_DOUBLE = 2e-3;
+
     /**
      * The value of this amount
      */
     private double mValue;
+
     /**
      * The unit of this amount
      */
@@ -38,10 +37,6 @@ class Amount {
         }
         this.mValue = mValue;
         this.mUnit = unit;
-    }
-
-    static String getBaseUnit(String original) {
-        return UnitConversionUtils.getBase(original);
     }
 
     double getValue() {
@@ -87,7 +82,6 @@ class Amount {
      */
     private void convertToMetric() {
         switch (mUnit) {
-
             case UnitConversionUtils.CUP:
                 mValue *= UnitConversionUtils.CUP_TO_MILLILITER;
                 mUnit = UnitConversionUtils.MILLI;
@@ -127,6 +121,7 @@ class Amount {
 
     /**
      * Converts the amount to either metric or US
+     *
      * @param toMetric a boolean that indicates if it should be converted to metric or to US
      */
     void convert(boolean toMetric) {
@@ -161,7 +156,6 @@ class Amount {
                 break;
             case UnitConversionUtils.MILLI:
                 changeMilliliter();
-
                 break;
             case UnitConversionUtils.DECI:
                 mValue /= UnitConversionUtils.TABLESPOON_TO_MILLILITER * METRIC_CONSTANT;
@@ -189,6 +183,4 @@ class Amount {
         mValue /= UnitConversionUtils.TEASPOON_TO_MILLILITER;
         mUnit = UnitConversionUtils.TSP;
     }
-
-
 }

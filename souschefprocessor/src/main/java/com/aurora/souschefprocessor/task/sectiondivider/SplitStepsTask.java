@@ -17,7 +17,6 @@ public class SplitStepsTask extends AbstractProcessingTask {
         super(recipeInProgress);
     }
 
-
     /**
      * This will split the stepsString in the RecipeInProgress Object into mRecipeSteps and modifies the
      * recipe object so that the mRecipeSteps are set
@@ -29,6 +28,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
         if (recipeStepList == null || recipeStepList.isEmpty()) {
             throw new RecipeDetectionException("No steps were detected, this is probably not a recipe");
         }
+
         this.mRecipeInProgress.setRecipeSteps(recipeStepList);
     }
 
@@ -42,7 +42,6 @@ public class SplitStepsTask extends AbstractProcessingTask {
         List<RecipeStep> list = new ArrayList<>();
 
         // TODO based on numeric
-
         //split based on sections (punctuation followed by newline indicates block of text)
         String[] pointAndNewLine = steps.split("\\p{Punct}\n");
         if (pointAndNewLine.length > 1) {
@@ -56,8 +55,8 @@ public class SplitStepsTask extends AbstractProcessingTask {
         } else {
             // No other detection method yielded result, so just split on the sentences
             list = splitStepsBySplittingOnPunctuation(steps);
-
         }
+
         return list;
     }
 
@@ -76,7 +75,6 @@ public class SplitStepsTask extends AbstractProcessingTask {
         List<RecipeStep> list = new ArrayList<>();
         for (char c : characters) {
             // if this is not the first character while also being a whitespace
-
             if ((!firstChar || !Character.isWhitespace(c))) {
                 if (c != '\n') {
                     bld.append(c);
@@ -97,8 +95,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
                 firstChar = true;
             }
         }
+
         return list;
     }
-
-
 }

@@ -28,7 +28,7 @@ public class UnitConversionUtils {
     /**
      * Conversion constant: x milliliter in 1 teaspoon
      */
-    public final double TEASPOON_TO_MILLILITER = 4.92892;
+    public static final double TEASPOON_TO_MILLILITER = 4.92892;
     /**
      * Conversion constant: x milliliter in 1 tablespoon
      */

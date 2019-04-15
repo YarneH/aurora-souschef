@@ -260,4 +260,17 @@ public class RecipeViewModel extends AndroidViewModel {
             mCurrentPeople.setValue(mCurrentPeople.getValue() - 1);
         }
     }
+
+    /**
+     * Converts all the units in the recipe
+     * @param toMetric boolean that indicates if the units should be converted to metric or to US
+     */
+    public void convertRecipeUnits(boolean toMetric){
+        // TODO call this function after user has chosen/changed preference and/or when first
+        // creating the recipe
+        Recipe recipe = mRecipe.getValue();
+        if(recipe != null){
+            recipe.convertUnit(toMetric);
+        }
+    }
 }

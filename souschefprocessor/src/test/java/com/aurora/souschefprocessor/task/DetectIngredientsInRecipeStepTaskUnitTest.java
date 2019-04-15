@@ -46,9 +46,9 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
         recipe.setIngredientsString("irrelevant");
         List<ListIngredient> set = new ArrayList<>();
-        ListIngredient spaghettiIngredient = new ListIngredient("spaghetti", "g", 500, "irrelevant", irrelevantPositions);
-        ListIngredient sauceIngredient = new ListIngredient("sauce", "ounces", 500, "irrelevant", irrelevantPositions);
-        ListIngredient meatIngredient = new ListIngredient("minced meat", "pounds", 1.5, "irrelevant", irrelevantPositions);
+        ListIngredient spaghettiIngredient = new ListIngredient("spaghetti", "gram", 500, "irrelevant", irrelevantPositions);
+        ListIngredient sauceIngredient = new ListIngredient("sauce", "ounce", 500, "irrelevant", irrelevantPositions);
+        ListIngredient meatIngredient = new ListIngredient("minced meat", "pound", 1.5, "irrelevant", irrelevantPositions);
         ListIngredient garlicIngredient = new ListIngredient("garlic", "clove", DEFAULT_QUANTITY, "irrelevant", irrelevantPositions);
         ListIngredient basilIngredient = new ListIngredient("basil leaves", DEFAULT_UNIT, 20.0, "irrelevant", irrelevantPositions);
         ListIngredient saltIngredient = new ListIngredient("salt", "cup", DEFAULT_QUANTITY, "irrelevant", irrelevantPositions);
@@ -182,12 +182,13 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndNumericalQuantity() {
         // Arrange
-        Ingredient stepIngredient = new Ingredient("sauce", "ounces", 250.0, irrelevantPositions);
+        Ingredient stepIngredient = new Ingredient("sauce", "ounce", 250.0, irrelevantPositions);
 
         // Act
         detector2.doTask();
 
         List<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
+
 
         // Assert
         assert (stepIngredients.contains(stepIngredient));
@@ -197,16 +198,17 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndQuantityAndPosition(){
         // Arrange
         HashMap<Ingredient.PositionKeysForIngredients, Position> positions = new HashMap<>();
-        positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(26, 31));
-        positions.put(Ingredient.PositionKeysForIngredients.UNIT, new Position(12, 18));
+        positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(25, 30));
+        positions.put(Ingredient.PositionKeysForIngredients.UNIT, new Position(12, 17));
         positions.put(Ingredient.PositionKeysForIngredients.QUANTITY, new Position(8, 11));
-        Ingredient stepIngredient = new Ingredient("sauce", "ounces", 250.0, positions);
+        Ingredient stepIngredient = new Ingredient("sauce", "ounce", 250.0, positions);
 
         // Act
         detector2.doTask();
 
         // Retrieve the sauce ingredient detected in the recipe step
         Collection<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
+
         Ingredient detectedIngredient = null;
         for (Ingredient ingr : stepIngredients) {
             if (ingr.equals(stepIngredient)) {
@@ -214,10 +216,12 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
             }
         }
 
+
         // Assert
-        assert(detectedIngredient.getNamePosition().equals(stepIngredient.getNamePosition()));
+
         assert(detectedIngredient.getUnitPosition().equals(stepIngredient.getUnitPosition()));
         assert(detectedIngredient.getQuantityPosition().equals(stepIngredient.getQuantityPosition()));
+        assert(detectedIngredient.getNamePosition().equals(stepIngredient.getNamePosition()));
     }
 
 

@@ -88,10 +88,7 @@ public class ListIngredient extends Ingredient {
      * @return a boolean that indicates if a unit was detected
      */
     private boolean unitDetected() {
-        boolean stringSet = !("").equals(mAmount.getUnit());
-        boolean positionSpansEntireLine = getUnitPosition().getBeginIndex() == 0 &&
-                getUnitPosition().getEndIndex() == mOriginalLine.length();
-        return stringSet && !positionSpansEntireLine;
+        return unitDetected(mOriginalLine);
     }
 
     /**
@@ -100,8 +97,7 @@ public class ListIngredient extends Ingredient {
      * @return a boolean that indicates if a quantity was detected
      */
     private boolean quantityDetected() {
-        return !(getQuantityPosition().getBeginIndex() == 0 &&
-                getQuantityPosition().getEndIndex() == mOriginalLine.length());
+        return quantityDetected(mOriginalLine);
     }
 
     /**
@@ -111,47 +107,8 @@ public class ListIngredient extends Ingredient {
      */
     public void convertUnit(boolean toMetric) {
 
-        // only convert if the unit and quantity are detected
-        if (!unitDetected() || !quantityDetected()) {
-            return;
-        }
-        // convert the amount
-        mAmount.convert(toMetric);
 
-        // a map that matches the UNIT and QUANTITY to their converted value
-        Map<PositionKeysForIngredients, String> converted = new HashMap<>();
-        converted.put(PositionKeysForIngredients.UNIT, mAmount.getUnit());
-        converted.put(PositionKeysForIngredients.QUANTITY, "" + mAmount.getValue());
-
-        // get the order of the NAME UNIT and QUANTITY
-        List<PositionKeysForIngredients> order = getOrderOfPositions();
-
-        // the offset for changing the positions
-        int offset = 0;
-
-        for (int i = 0; i < order.size(); i++) {
-            PositionKeysForIngredients key = order.get(i);
-
-            Position originalPos = mPositions.get(key);
-            // change the indices so that the positions will be correct
-            int newBegin = originalPos.getBeginIndex() + offset;
-            int newEnd = originalPos.getEndIndex() + offset;
-
-            if (!key.equals(PositionKeysForIngredients.NAME)) {
-
-                // change the line
-                mOriginalLine =  mOriginalLine.substring(0, newBegin) +
-                        converted.get(key) + mOriginalLine.substring(newEnd);
-
-                // calculate the new end
-                newEnd = newBegin + converted.get(key).length();
-                // update the offset
-                offset = newEnd - originalPos.getEndIndex();
-
-
-            }
-            originalPos.setIndices(newBegin, newEnd);
-        }
+        mOriginalLine = super.convertUnit(toMetric, mOriginalLine);
     }
 
 

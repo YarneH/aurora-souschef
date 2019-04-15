@@ -8,6 +8,7 @@ import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
+import com.aurora.souschefprocessor.recipe.UnitConversionUtils;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
 import java.util.ArrayList;
@@ -485,8 +486,23 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             Position unitPos = findUnitPosition(precedingTokens, listIngredient.getUnit());
             if (unitPos != null) {
                 stepIngredient.setUnitPosition(unitPos);
-                stepIngredient.setUnit(mRecipeStep.getDescription().substring(unitPos.getBeginIndex(),
-                        unitPos.getEndIndex()));
+                String foundUnit = mRecipeStep.getDescription().substring(unitPos.getBeginIndex(),
+                        unitPos.getEndIndex());
+                String baseUnit = UnitConversionUtils.getBase(foundUnit);
+                //update the description
+                mRecipeStep.setDescription(mRecipeStep.getDescription().replace(foundUnit, baseUnit));
+                // update the unit position
+                int oldEndIndex = unitPos.getEndIndex();
+                int newEndIndex = unitPos.getBeginIndex() + baseUnit.length();
+                unitPos.setEndIndex(newEndIndex);
+                stepIngredient.setUnit(baseUnit);
+
+                // check if an update of the name position is necessary
+                if(namePos.getEndIndex() >= oldEndIndex){
+                    int offset = newEndIndex - oldEndIndex;
+                    namePos.setIndices(namePos.getBeginIndex() + offset, namePos.getEndIndex() + offset);
+                }
+
 
             }
             double listQuantity = listIngredient.getQuantity();

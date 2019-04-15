@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.recipe;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -200,6 +201,78 @@ public class Ingredient {
      */
     public enum PositionKeysForIngredients {
         NAME, QUANTITY, UNIT
+    }
+
+    public String convertUnit(boolean toMetric, String description){
+
+        // only convert if the unit and quantity are detected
+        if (!unitDetected(description) || !quantityDetected(description)) {
+            return description;
+        }
+        // convert the amount
+        mAmount.convert(toMetric);
+
+        // a map that matches the UNIT and QUANTITY to their converted value
+        Map<PositionKeysForIngredients, String> converted = new HashMap<>();
+        converted.put(PositionKeysForIngredients.UNIT, mAmount.getUnit());
+        converted.put(PositionKeysForIngredients.QUANTITY, "" + mAmount.getValue());
+
+        // get the order of the NAME UNIT and QUANTITY
+        List<PositionKeysForIngredients> order = getOrderOfPositions();
+
+        // the offset for changing the positions
+        int offset = 0;
+
+        for (int i = 0; i < order.size(); i++) {
+            PositionKeysForIngredients key = order.get(i);
+
+            Position originalPos = mPositions.get(key);
+            // change the indices so that the positions will be correct
+            int newBegin = originalPos.getBeginIndex() + offset;
+            int newEnd = originalPos.getEndIndex() + offset;
+
+            if (!key.equals(PositionKeysForIngredients.NAME)) {
+
+                // change the line
+                description =  description.substring(0, newBegin) +
+                        converted.get(key) + description.substring(newEnd);
+
+                // calculate the new end
+                newEnd = newBegin + converted.get(key).length();
+                // update the offset
+                offset = newEnd - originalPos.getEndIndex();
+
+
+            }
+            originalPos.setIndices(newBegin, newEnd);
+        }
+        return description;
+
+    }
+
+
+    /**
+     * A function that indicates whether this step contains a unit detected in the string
+     *
+     * @param description the description in which this ingredient was detected
+     * @return a boolean that indicates if a unit was detected
+     */
+    protected boolean unitDetected(String description) {
+        boolean stringSet = !("").equals(mAmount.getUnit());
+        boolean positionSpansEntireLine = getUnitPosition().getBeginIndex() == 0 &&
+                getUnitPosition().getEndIndex() == description.length();
+        return stringSet && !positionSpansEntireLine;
+    }
+
+    /**
+     * A function that indicates whether this listingredient contains a quantity detected in the string
+     *
+     * @param description the description in which this ingredient was detected
+     * @return a boolean that indicates if a quantity was detected
+     */
+    protected boolean quantityDetected(String description) {
+        return !(getQuantityPosition().getBeginIndex() == 0 &&
+                getQuantityPosition().getEndIndex() == description.length());
     }
 
 

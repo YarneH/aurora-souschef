@@ -13,6 +13,7 @@ import com.aurora.souschefprocessor.task.RecipeInProgress;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -112,6 +113,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * their numerical values
      */
     private static Map<String, Double> sFractionMultipliers = new HashMap<>();
+
 
     /* populate the map and try to create the pipeline */
     static {
@@ -522,18 +524,16 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @return Default ingredient
      */
     private Ingredient defaultStepIngredient() {
-        HashMap<Ingredient.PositionKeysForIngredients, Position> map = new HashMap<>();
-
+        Map<Ingredient.PositionKeysForIngredients, Position> map
+                = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
         // Initialize position on Position(0, length)
         int stepSentenceLength = mRecipeStep.getDescription().length();
         Position defaultPos = new Position(0, stepSentenceLength);
         String name = "";
         map.put(Ingredient.PositionKeysForIngredients.NAME, defaultPos);
-        String unit = DEFAULT_UNIT;
         map.put(Ingredient.PositionKeysForIngredients.UNIT, defaultPos);
-        double quantity = DEFAULT_QUANTITY;
         map.put(Ingredient.PositionKeysForIngredients.QUANTITY, defaultPos);
-        return new Ingredient(name, unit, quantity, map);
+        return new Ingredient(name, DEFAULT_UNIT, DEFAULT_QUANTITY, map);
     }
 
     /**

@@ -8,6 +8,7 @@ import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -266,7 +267,8 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             }
         }
         // the map for the positions of the detected ingredients
-        Map<Ingredient.PositionKeysForIngredients, Position> positions = new HashMap<>();
+        Map<Ingredient.PositionKeysForIngredients, Position> positions
+                = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
         // if no value present, default to 1.0 'one'
         double quantity = 1.0;
         // if no value present, default to empty string

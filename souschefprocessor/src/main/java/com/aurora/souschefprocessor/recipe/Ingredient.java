@@ -1,7 +1,7 @@
 package com.aurora.souschefprocessor.recipe;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -196,14 +196,7 @@ public class Ingredient {
         return list;
     }
 
-    /**
-     * Keys for a map storing positions for ingredients
-     */
-    public enum PositionKeysForIngredients {
-        NAME, QUANTITY, UNIT
-    }
-
-    public String convertUnit(boolean toMetric, String description){
+    public String convertUnit(boolean toMetric, String description) {
 
         // only convert if the unit and quantity are detected
         if (!unitDetected(description) || !quantityDetected(description)) {
@@ -213,7 +206,8 @@ public class Ingredient {
         mAmount.convert(toMetric);
 
         // a map that matches the UNIT and QUANTITY to their converted value
-        Map<PositionKeysForIngredients, String> converted = new HashMap<>();
+        Map<PositionKeysForIngredients, String> converted =
+                new EnumMap<>(PositionKeysForIngredients.class);
         converted.put(PositionKeysForIngredients.UNIT, mAmount.getUnit());
         converted.put(PositionKeysForIngredients.QUANTITY, "" + mAmount.getValue());
 
@@ -231,10 +225,10 @@ public class Ingredient {
             int newBegin = originalPos.getBeginIndex() + offset;
             int newEnd = originalPos.getEndIndex() + offset;
 
-            if (!key.equals(PositionKeysForIngredients.NAME)) {
+            if (key != PositionKeysForIngredients.NAME) {
 
                 // change the line
-                description =  description.substring(0, newBegin) +
+                description = description.substring(0, newBegin) +
                         converted.get(key) + description.substring(newEnd);
 
                 // calculate the new end
@@ -249,7 +243,6 @@ public class Ingredient {
         return description;
 
     }
-
 
     /**
      * A function that indicates whether this step contains a unit detected in the string
@@ -273,6 +266,13 @@ public class Ingredient {
     protected boolean quantityDetected(String description) {
         return !(getQuantityPosition().getBeginIndex() == 0 &&
                 getQuantityPosition().getEndIndex() == description.length());
+    }
+
+    /**
+     * Keys for a map storing positions for ingredients
+     */
+    public enum PositionKeysForIngredients {
+        NAME, QUANTITY, UNIT
     }
 
 

@@ -128,7 +128,7 @@ public class UnitConversionUtils {
             {"tbsp", "c", "lb", "fl oz", "oz", "qt", "pt", "tsp"};
 
 
-    public UnitConversionUtils() {
+    private UnitConversionUtils() {
         throw new IllegalStateException("Utility class");
     }
 

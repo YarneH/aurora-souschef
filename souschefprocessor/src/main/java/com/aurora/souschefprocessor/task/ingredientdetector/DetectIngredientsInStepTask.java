@@ -582,17 +582,9 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             Pair<Boolean, Double> quantityVerbose = detectVerboseFractions(i, precedingTokens, listQuantity);
             // Detect cardinal numbers: fractions, numbers and verbose numbers
             Pair<Boolean, Double> quantityCardinal = detectCardinalFractions(i, precedingTokens);
-            if (quantityVerbose.second != null) {
-                stepQuantity *= quantityVerbose.second;
-            }
+            stepQuantity *= quantityVerbose.second * quantityCardinal.second;
 
-            if (quantityCardinal.second != null) {
-                stepQuantity *= quantityCardinal.second;
-            }
-            boolean quantityVerboseBoolean = quantityVerbose.first != null && quantityVerbose.first;
-            boolean quantityCardinalBoolean = quantityCardinal.first != null && quantityCardinal.first;
-
-            if (quantityVerboseBoolean || quantityCardinalBoolean) {
+            if (quantityVerbose.first || quantityCardinal.first) {
                 if (precedingTokens.get(i).beginPosition() < beginPos) {
                     beginPos = precedingTokens.get(i).beginPosition();
                 }

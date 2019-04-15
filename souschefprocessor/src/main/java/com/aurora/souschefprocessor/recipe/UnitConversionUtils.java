@@ -10,7 +10,7 @@ import java.util.Locale;
  * matched to their base
  * It also contains the conversion constants between the base units from metric and US
  */
-public class UnitConversionUtils {
+public final class UnitConversionUtils {
     /**
      * Conversion constant: x milliliter in 1 cup
      */

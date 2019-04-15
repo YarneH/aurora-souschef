@@ -6,7 +6,7 @@ import java.util.Locale;
  * A utility class for conversion of units. The plurals and abreviations of metric and US units are matched to their base
  * It also contains the conversion constants between the base units from metric and US
  */
-public class UnitConversionUtilityClass {
+public class UnitConversionUtils {
 
     /**
      * Conversion constant: x milliliter in 1 cup
@@ -127,7 +127,7 @@ public class UnitConversionUtilityClass {
             {"tbsp", "c", "lb", "fl oz", "oz", "qt", "pt", "tsp"};
 
 
-    private UnitConversionUtilityClass() {
+    private UnitConversionUtils() {
         throw new IllegalStateException("Utility class");
     }
 

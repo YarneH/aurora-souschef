@@ -41,7 +41,7 @@ class Amount {
     }
 
     static String getBaseUnit(String original) {
-        return UnitConversionUtilityClass.getBase(original);
+        return UnitConversionUtils.getBase(original);
     }
 
     double getValue() {
@@ -83,42 +83,42 @@ class Amount {
 
     /**
      * A helper private helper method for the {@link #convert(boolean)} it converts the unit to a metric
-     * unit, using the conversion factors from {@link UnitConversionUtilityClass} utility class
+     * unit, using the conversion factors from {@link UnitConversionUtils} utility class
      */
     private void convertToMetric() {
         switch (mUnit) {
 
-            case UnitConversionUtilityClass.CUP:
-                mValue *= UnitConversionUtilityClass.CUP_TO_MILLILITER;
-                mUnit = UnitConversionUtilityClass.MILLI;
+            case UnitConversionUtils.CUP:
+                mValue *= UnitConversionUtils.CUP_TO_MILLILITER;
+                mUnit = UnitConversionUtils.MILLI;
                 break;
-            case UnitConversionUtilityClass.POUND:
-                mValue /= UnitConversionUtilityClass.KG_TO_POUND;
-                mUnit = UnitConversionUtilityClass.KILO;
+            case UnitConversionUtils.POUND:
+                mValue /= UnitConversionUtils.KG_TO_POUND;
+                mUnit = UnitConversionUtils.KILO;
                 break;
-            case UnitConversionUtilityClass.FLOZ:
-                mValue *= UnitConversionUtilityClass.FLOZ_TO_MILLILITER;
-                mUnit = UnitConversionUtilityClass.MILLI;
+            case UnitConversionUtils.FLOZ:
+                mValue *= UnitConversionUtils.FLOZ_TO_MILLILITER;
+                mUnit = UnitConversionUtils.MILLI;
                 break;
-            case UnitConversionUtilityClass.OUNCE:
-                mValue *= UnitConversionUtilityClass.OUNCE_TO_GRAM;
-                mUnit = UnitConversionUtilityClass.GRAM;
+            case UnitConversionUtils.OUNCE:
+                mValue *= UnitConversionUtils.OUNCE_TO_GRAM;
+                mUnit = UnitConversionUtils.GRAM;
                 break;
-            case UnitConversionUtilityClass.QUART:
-                mValue *= UnitConversionUtilityClass.QUART_TO_LITER;
-                mUnit = UnitConversionUtilityClass.LITER;
+            case UnitConversionUtils.QUART:
+                mValue *= UnitConversionUtils.QUART_TO_LITER;
+                mUnit = UnitConversionUtils.LITER;
                 break;
-            case UnitConversionUtilityClass.PINT:
-                mValue *= UnitConversionUtilityClass.PINT_TO_MILLILITER;
-                mUnit = UnitConversionUtilityClass.MILLI;
+            case UnitConversionUtils.PINT:
+                mValue *= UnitConversionUtils.PINT_TO_MILLILITER;
+                mUnit = UnitConversionUtils.MILLI;
                 break;
-            case UnitConversionUtilityClass.TSP:
-                mValue *= UnitConversionUtilityClass.TEASPOON_TO_MILLILITER;
-                mUnit = UnitConversionUtilityClass.MILLI;
+            case UnitConversionUtils.TSP:
+                mValue *= UnitConversionUtils.TEASPOON_TO_MILLILITER;
+                mUnit = UnitConversionUtils.MILLI;
                 break;
-            case UnitConversionUtilityClass.TBSP:
-                mValue *= UnitConversionUtilityClass.TABLESPOON_TO_MILLILITER;
-                mUnit = UnitConversionUtilityClass.MILLI;
+            case UnitConversionUtils.TBSP:
+                mValue *= UnitConversionUtils.TABLESPOON_TO_MILLILITER;
+                mUnit = UnitConversionUtils.MILLI;
                 break;
             default:
                 break;
@@ -143,29 +143,29 @@ class Amount {
 
     /**
      * A helper private helper method for the {@link #convert(boolean)} it converts the unit to a US
-     * unit, using the conversion factors from {@link UnitConversionUtilityClass} utility class
+     * unit, using the conversion factors from {@link UnitConversionUtils} utility class
      */
     private void convertToUS() {
         switch (mUnit) {
-            case UnitConversionUtilityClass.KILO:
-                mValue *= UnitConversionUtilityClass.KG_TO_POUND;
-                mUnit = UnitConversionUtilityClass.POUND;
+            case UnitConversionUtils.KILO:
+                mValue *= UnitConversionUtils.KG_TO_POUND;
+                mUnit = UnitConversionUtils.POUND;
                 break;
-            case UnitConversionUtilityClass.GRAM:
-                mValue /= UnitConversionUtilityClass.OUNCE_TO_GRAM;
-                mUnit = UnitConversionUtilityClass.OUNCE;
+            case UnitConversionUtils.GRAM:
+                mValue /= UnitConversionUtils.OUNCE_TO_GRAM;
+                mUnit = UnitConversionUtils.OUNCE;
                 break;
-            case UnitConversionUtilityClass.LITER:
-                mValue /= UnitConversionUtilityClass.QUART_TO_LITER;
-                mUnit = UnitConversionUtilityClass.QUART;
+            case UnitConversionUtils.LITER:
+                mValue /= UnitConversionUtils.QUART_TO_LITER;
+                mUnit = UnitConversionUtils.QUART;
                 break;
-            case UnitConversionUtilityClass.MILLI:
+            case UnitConversionUtils.MILLI:
                 changeMilliliter();
 
                 break;
-            case UnitConversionUtilityClass.DECI:
-                mValue /= UnitConversionUtilityClass.TABLESPOON_TO_MILLILITER * METRIC_CONSTANT;
-                mUnit = UnitConversionUtilityClass.TBSP;
+            case UnitConversionUtils.DECI:
+                mValue /= UnitConversionUtils.TABLESPOON_TO_MILLILITER * METRIC_CONSTANT;
+                mUnit = UnitConversionUtils.TBSP;
                 break;
             default:
                 break;
@@ -173,21 +173,21 @@ class Amount {
     }
 
     private void changeMilliliter() {
-        if (mValue >= UnitConversionUtilityClass.CUP_TO_MILLILITER) {
-            mValue /= UnitConversionUtilityClass.CUP_TO_MILLILITER;
-            mUnit = UnitConversionUtilityClass.CUP;
+        if (mValue >= UnitConversionUtils.CUP_TO_MILLILITER) {
+            mValue /= UnitConversionUtils.CUP_TO_MILLILITER;
+            mUnit = UnitConversionUtils.CUP;
 
-        } else if (mValue >= UnitConversionUtilityClass.FLOZ_TO_MILLILITER) {
-            mValue /= UnitConversionUtilityClass.FLOZ_TO_MILLILITER;
-            mUnit = UnitConversionUtilityClass.FLOZ;
+        } else if (mValue >= UnitConversionUtils.FLOZ_TO_MILLILITER) {
+            mValue /= UnitConversionUtils.FLOZ_TO_MILLILITER;
+            mUnit = UnitConversionUtils.FLOZ;
 
-        } else if (mValue >= UnitConversionUtilityClass.TABLESPOON_TO_MILLILITER) {
-            mValue /= UnitConversionUtilityClass.TABLESPOON_TO_MILLILITER;
-            mUnit = UnitConversionUtilityClass.TBSP;
+        } else if (mValue >= UnitConversionUtils.TABLESPOON_TO_MILLILITER) {
+            mValue /= UnitConversionUtils.TABLESPOON_TO_MILLILITER;
+            mUnit = UnitConversionUtils.TBSP;
         }
 
-        mValue /= UnitConversionUtilityClass.TEASPOON_TO_MILLILITER;
-        mUnit = UnitConversionUtilityClass.TSP;
+        mValue /= UnitConversionUtils.TEASPOON_TO_MILLILITER;
+        mUnit = UnitConversionUtils.TSP;
     }
 
 

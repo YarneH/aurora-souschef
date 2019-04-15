@@ -1,7 +1,7 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
-import com.aurora.souschefprocessor.recipe.UnitConversionUtilityClass;
+import com.aurora.souschefprocessor.recipe.UnitConversionUtils;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
@@ -369,7 +369,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : succeedingUnitList) {
-            bld.append(UnitConversionUtilityClass.getBase(cl.word()));
+            bld.append(UnitConversionUtils.getBase(cl.word()));
             bld.append(" ");
         }
         // delete last added space

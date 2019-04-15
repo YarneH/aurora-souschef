@@ -3,7 +3,8 @@ package com.aurora.souschefprocessor.recipe;
 import java.util.Locale;
 
 /**
- * A utility class for conversion of units. The plurals and abreviations of metric and US units are matched to their base
+ * A utility class for conversion of units. The plurals and abreviations of metric and US units are
+ * matched to their base
  * It also contains the conversion constants between the base units from metric and US
  */
 public class UnitConversionUtils {
@@ -11,90 +12,90 @@ public class UnitConversionUtils {
     /**
      * Conversion constant: x milliliter in 1 cup
      */
-    static final int CUP_TO_MILLILITER = 240;
+    public static final int CUP_TO_MILLILITER = 240;
     /**
      * Conversion constant: x pound in 1 kilogram
      */
-    static final double KG_TO_POUND = 2.205;
+    public static final double KG_TO_POUND = 2.205;
     /**
      * Conversion constant: x milliliter in 1 fluid ounce
      */
-    static final double FLOZ_TO_MILLILITER = 29.5735;
+    public static final double FLOZ_TO_MILLILITER = 29.5735;
     /**
      * Conversion constant: x gram in 1 ounce
      */
-    static final double OUNCE_TO_GRAM = 28.3495;
+    public static final double OUNCE_TO_GRAM = 28.3495;
     /**
      * Conversion constant: x milliliter in 1 teaspoon
      */
-    static final double TEASPOON_TO_MILLILITER = 4.92892;
+    public final double TEASPOON_TO_MILLILITER = 4.92892;
     /**
      * Conversion constant: x milliliter in 1 tablespoon
      */
-    static final double TABLESPOON_TO_MILLILITER = 14.7868;
+    public static final double TABLESPOON_TO_MILLILITER = 14.7868;
     /**
      * Conversion constant: x liter in 1 quart
      */
-    static final double QUART_TO_LITER = 0.946353;
+    public static final double QUART_TO_LITER = 0.946353;
     /**
      * Conversion constant: x milliliter in 1 pint
      */
-    static final double PINT_TO_MILLILITER = 473.176;
+    public static final double PINT_TO_MILLILITER = 473.176;
 
 
     /**
      * The milliliter baseUnit
      */
-    static final String MILLI = "milliliter";
+    public static final String MILLI = "milliliter";
     /**
      * The deciliter baseUnit
      */
-    static final String DECI = "deciliter";
+    public static final String DECI = "deciliter";
     /**
      * The gram baseUnit
      */
-    static final String GRAM = "gram";
+    public static final String GRAM = "gram";
     /**
      * The kilogram baseUnit
      */
-    static final String KILO = "kilogram";
+    public static final String KILO = "kilogram";
     /**
      * The liter baseUnit
      */
-    static final String LITER = "liter";
+    public static final String LITER = "liter";
 
     /**
      * The tablespoon baseUnit
      */
-    static final String TBSP = "tablespoon";
+    public static final String TBSP = "tablespoon";
     /**
      * The cup baseUnit
      */
-    static final String CUP = "cup";
+    public static final String CUP = "cup";
     /**
      * The pound baseUnit
      */
-    static final String POUND = "pound";
+    public static final String POUND = "pound";
     /**
      * The fluid ounce baseUnit
      */
-    static final String FLOZ = "fluid ounce";
+    public static final String FLOZ = "fluid ounce";
     /**
      * The ounce baseUnit
      */
-    static final String OUNCE = "ounce";
+    public static final String OUNCE = "ounce";
     /**
      * The quart baseUnit
      */
-    static final String QUART = "quart";
+    public static final String QUART = "quart";
     /**
      * The pint baseUnit
      */
-    static final String PINT = "pint";
+    public static final String PINT = "pint";
     /**
      * The teaspoon baseUnit
      */
-    static final String TSP = "teaspoon";
+    public static final String TSP = "teaspoon";
 
 
     /**
@@ -127,7 +128,7 @@ public class UnitConversionUtils {
             {"tbsp", "c", "lb", "fl oz", "oz", "qt", "pt", "tsp"};
 
 
-    private UnitConversionUtils() {
+    public UnitConversionUtils() {
         throw new IllegalStateException("Utility class");
     }
 

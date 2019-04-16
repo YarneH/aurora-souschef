@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A dataclass representing a step. It has  fields
@@ -189,6 +190,21 @@ public class RecipeStep {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(mIngredients, mRecipeTimers, mDescription);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof RecipeStep) {
+            RecipeStep rs = (RecipeStep) o;
+            return rs.getIngredients().equals(mIngredients) && rs.getRecipeTimers().equals(mRecipeTimers)
+                    && rs.mDescription.equals(mDescription);
+        }
+        return false;
+    }
+
+    @Override
     public String toString() {
         StringBuilder bld = new StringBuilder();
         bld.append("RecipeStep:\n ");
@@ -218,5 +234,12 @@ public class RecipeStep {
         return bld.toString();
     }
 
+    public void convertUnit(boolean toMetric) {
+        if (mIngredientDetectionDone) {
+            for (Ingredient ingredient : mIngredients) {
+                ingredient.convertUnit(toMetric, mDescription);
+            }
+        }
 
+    }
 }

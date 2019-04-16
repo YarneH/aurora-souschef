@@ -37,7 +37,8 @@ public class Communicator {
      * Create a communicator using a CRFClassifier that was loaded in and is used to classify the
      * ingredients
      *
-     * @param ingredientsClassifier
+     * @param ingredientsClassifier the classifier for the
+     * {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask} task
      */
     public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
         mDelegator = new Delegator(ingredientsClassifier, false);
@@ -75,7 +76,7 @@ public class Communicator {
     /**
      * Get the progress of the creation of the pipelines
      *
-     * @return
+     * @return an int that shows the status of the progress of the annotation pipelines
      */
     public static int getProgressAnnotationPipelines() {
         return mProgressAnnotationPipelines.get();

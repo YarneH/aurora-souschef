@@ -13,4 +13,7 @@
 
     <!-- Text sizes -->
     <dimen name="text_description">20sp</dimen>
+
+    <!-- Tab dimensions -->
+    <dimen name="tab1_text_margin">15dp</dimen>
 </resources>

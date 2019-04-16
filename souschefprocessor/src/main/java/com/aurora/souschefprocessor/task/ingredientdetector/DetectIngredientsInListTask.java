@@ -1,12 +1,14 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
+import com.aurora.souschefprocessor.recipe.UnitConversionUtils;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +64,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         mCRFClassifier = crfClassifier;
     }
 
-
     /**
      * This calls the removeClutter method, this makes sure that the following sort of conversion
      * happens: 500ml/3fl oz -> 500 ml
@@ -75,7 +76,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
      * @param line The line on which to add spaces, remove clutter and delete "."
      * @return The line with the spaces added and the points deleted
      */
-    private static String removeClutterAddSpacesAndRemovePoint(String line) {
+    private static String standardizeLine(String line) {
         line = line.trim();
         line = removeClutter(line);
         StringBuilder bld = new StringBuilder();
@@ -107,6 +108,8 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         // add the last character
         bld.append(chars[chars.length - 1]);
+
+
         // return the builder
         return bld.toString();
 
@@ -185,7 +188,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         }
     }
 
-
     /**
      * Detects the ListIngredients presented in the ingredientsString and sets the mIngredients field
      * in the recipe to this set of ListIngredients.
@@ -196,6 +198,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             throw new RecipeDetectionException("No ingredients were detected, this is probably not a recipe");
         }
         this.mRecipeInProgress.setIngredients(list);
+
     }
 
     /**
@@ -218,13 +221,21 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         for (String ingredient : list) {
             if (ingredient != null && ingredient.length() > 0) {
-                ListIngredient ing = (detectIngredient(removeClutterAddSpacesAndRemovePoint(ingredient)));
 
-                returnList.add(ing);
+                ListIngredient listIngredient = (detectIngredient(standardizeLine(ingredient)));
+                returnList.add(listIngredient);
 
             }
         }
         return returnList;
+    }
+
+    private static String makeNewLine(String line, int beginPosition, int endPosition, String name){
+        String newLine = line.substring(0, beginPosition) + name;
+        if (endPosition < line.length()) {
+            newLine += line.substring(endPosition);
+        }
+        return newLine;
     }
 
     /**
@@ -239,6 +250,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         List<List<CoreLabel>> classifiedList = mCRFClassifier.classify(line);
         // map to put classes and labeled tokens
         Map<String, List<CoreLabel>> map = new HashMap<>();
+
 
         for (List<CoreLabel> l : classifiedList) {
             for (CoreLabel cl : l) {
@@ -255,7 +267,8 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             }
         }
         // the map for the positions of the detected ingredients
-        Map<Ingredient.PositionKeysForIngredients, Position> positions = new HashMap<>();
+        Map<Ingredient.PositionKeysForIngredients, Position> positions
+                = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
         // if no value present, default to 1.0 'one'
         double quantity = 1.0;
         // if no value present, default to empty string
@@ -272,6 +285,8 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             // beginPosition of the first element and endPosition of the last element
             int beginPosition = succeedingUnits.get(0).beginPosition();
             int endPosition = succeedingUnits.get(succeedingUnits.size() - 1).endPosition();
+            line = line.substring(0, beginPosition) + unit + line.substring(endPosition);
+            endPosition = beginPosition + unit.length();
             positions.put(Ingredient.PositionKeysForIngredients.UNIT, new Position(beginPosition, endPosition));
         } else {
             // if no unit detected make the position the whole string
@@ -285,8 +300,11 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
             // Calculate the position and add it to the map
             // beginPosition of the first element and endPosition of the last element
-            int beginPosition = nameList.get(0).beginPosition();
-            int endPosition = nameList.get(nameList.size() - 1).endPosition();
+            int beginPosition = line.indexOf(nameList.get(0).word());
+
+            int endPosition = beginPosition + name.length();
+            line = makeNewLine(line, beginPosition, endPosition, name);
+
             positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(beginPosition, endPosition));
         } else {
             // if no name detected make the position the whole string
@@ -353,14 +371,13 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : succeedingUnitList) {
-            bld.append(cl.word());
+            bld.append(UnitConversionUtils.getBase(cl.word()));
             bld.append(" ");
         }
         // delete last added space
         bld.deleteCharAt(bld.length() - 1);
         return bld.toString();
     }
-
 
     /**
      * Gets the first sequence of succeeding elements of a class in a list of labels.

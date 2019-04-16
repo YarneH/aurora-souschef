@@ -76,7 +76,7 @@ public class UITimer {
             }
         });
 
-        setOnClickListeners(timerText);
+        setOnClickListeners(mTimerCard);
         this.mLiveDataTimer.getIsFinished().observe(owner, aBoolean -> onTimerFinished());
 
         this.mLiveDataTimer.getTimerState().observe(owner, aInt -> setIcon(aInt));

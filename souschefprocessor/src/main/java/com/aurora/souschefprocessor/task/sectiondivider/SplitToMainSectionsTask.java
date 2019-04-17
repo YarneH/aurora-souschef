@@ -31,40 +31,40 @@ import edu.stanford.nlp.util.CoreMap;
  * A AbstractProcessingTask that divides the original text into usable sections
  */
 public class SplitToMainSectionsTask extends AbstractProcessingTask {
-
     /**
      * A regex that covers most commonly used words that indicate the instructions of the recipe are
      * following
      */
     private static final String STEP_STARTER_REGEX = ".*((prep(aration)?[s]?)|instruction[s]?|method|description|" +
             "make it|step[s]?|direction[s])[: ]?$";
+
     /**
      * A regex that covers most commonly used words that indicate the ingredients of the recipe are
      * following
      */
     private static final String INGREDIENT_STARTER_REGEX = "([iI]ngredient[s]?)[: ]?$";
+
     /**
      * A constant needed for the creation of the parser (should be moved to Aurora)
      */
     private static final int MAX_SENTENCES_FOR_PARSER = 100;
+
     /**
      * An array of strings that are clutter in the description of a recipe. These lines would confuse
      * a user and must thus be removed
      */
     private static final String[] CLUTTER_STRINGS = {"print recipe", "shopping list"};
+
     /**
      * An annotation pipeline specific for parsing of sentences
      */
     private static AnnotationPipeline sAnnotationPipeline;
+
     /**
      * The list of bodies from the list of sections that was included in the {@link ExtractedText}
      * received from Aurora
      */
     private List<String> mSectionsBodies = new ArrayList<>();
-    /**
-     * The original text of this recipe
-     */
-    private String mOriginalText;
 
     public SplitToMainSectionsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
@@ -86,7 +86,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         for (String line : lines) {
             bld.append(line.trim());
             bld.append("\n");
-
         }
         // Remove last new line
         if (bld.length() == 0) {
@@ -138,6 +137,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -160,20 +160,48 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 }
                 alreadyFound = verbDetected;
             }
+
             if (alreadyFound) {
                 // remove this section
                 sectionsToRemove.add(section);
                 // append it to the builder
                 bld.append(section);
                 bld.append("\n\n");
-
             }
         }
 
         mSectionsBodies.removeAll(sectionsToRemove);
+
         return bld.toString();
     }
 
+    /**
+     * Find the steps or ingredients based on their regex using {@link Section#mTitle} field.
+     * If steps are searched the {@link #STEP_STARTER_REGEX} is used, if ingredients are searched
+     * the {@link #INGREDIENT_STARTER_REGEX} is used
+     *
+     * @param steps a boolean that indiciates to look for steps or not (= ingredients)
+     * @return the found steps, if nothing is found the empty string is returned
+     */
+    private String findStepsOrIngredientsRegexBasedTitles(boolean steps) {
+        String regex = INGREDIENT_STARTER_REGEX;
+        if (steps) {
+            regex = STEP_STARTER_REGEX;
+        }
+
+        ExtractedText extractedText = mRecipeInProgress.getExtractedText();
+        if (extractedText != null) {
+            for (Section s : extractedText.getSections()) {
+                String title = s.getTitle();
+                if (title != null && Pattern.compile(regex).matcher(
+                        title.toLowerCase(Locale.ENGLISH)).find()) {
+                    return s.getBody();
+                }
+            }
+        }
+
+        return "";
+    }
 
     /**
      * Finds the steps based on a regex. It checks whether some common names that start
@@ -184,9 +212,17 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return A string representing the steps of this recipe
      */
     private String findStepsRegexBased() {
+        // first try with the titles
+        String result = findStepsOrIngredientsRegexBasedTitles(true);
+        if (result.length() > 0) {
+            mSectionsBodies.remove(result);
+            return result;
+        }
+
         boolean found = false;
-        StringBuilder bld = new StringBuilder();
         int sectionIndex = -1;
+        StringBuilder bld = new StringBuilder();
+
         for (String section : mSectionsBodies) {
             String[] lines = section.split("\n");
 
@@ -210,15 +246,14 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             }
             // make sure the bodies (steps) are split up by \n\n
             bld.append("\n\n");
-
         }
+
         if (sectionIndex >= 0) {
             // remove the section containing steps from the list, only remove if some steps were found
             mSectionsBodies = mSectionsBodies.subList(0, sectionIndex + 1);
         }
 
         return bld.toString().trim();
-
     }
 
     /**
@@ -239,12 +274,12 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             return new ResultAndAlteredTextPair("", text);
 
         }
+
         text = text.substring(0, text.indexOf(steps));
 
         // remove the last line because that one matched the STEP_STARTER_REGEX
         String[] lines = text.split("\n");
         text = text.replace(lines[lines.length - 1], "");
-
 
         return new ResultAndAlteredTextPair(steps, text);
     }
@@ -275,12 +310,11 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                         found = Character.isDigit(c);
                         // if found  this is set to the correct section
                         ingredientsSection = section;
-
                     }
-
                 }
             }
         }
+
         if (found) {
             return mSectionsBodies.indexOf(ingredientsSection);
         }
@@ -302,7 +336,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         mSectionsBodies.clear();
         mSectionsBodies.addAll(Arrays.asList(sections));
 
-
         int indexOfSection = findIngredientsDigit();
         if (indexOfSection < 0) {
             return new ResultAndAlteredTextPair("", text);
@@ -310,6 +343,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         String ingredientsSection = sections[indexOfSection];
         text = text.replace(ingredientsSection, "");
+
         return new ResultAndAlteredTextPair(ingredientsSection, text);
     }
 
@@ -320,18 +354,17 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * with these fields
      */
     public void doTask() {
-
         String ingredients;
         String steps;
         String description;
         if (mRecipeInProgress.getExtractedText() == null) {
-            mOriginalText = this.mRecipeInProgress.getOriginalText();
+            String originalText = this.mRecipeInProgress.getOriginalText();
 
-            if (("").equals(mOriginalText)) {
+            if (("").equals(originalText)) {
                 throw new RecipeDetectionException("No original text found, this is probably not a recipe");
             }
 
-            ResultAndAlteredTextPair ingredientsAndText = findIngredients(mOriginalText);
+            ResultAndAlteredTextPair ingredientsAndText = findIngredients(originalText);
             ingredients = ingredientsAndText.getResult();
 
 
@@ -347,17 +380,13 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                     mSectionsBodies.add(sec.getBody());
                 }
             }
+
             ingredients = findIngredients();
             steps = findSteps();
             description = findDescription();
-
-
         }
 
-        modifyRecipe(trimNewLines(ingredients), trimNewLines(steps),
-                trimNewLines(description));
-
-
+        modifyRecipe(trimNewLines(ingredients), trimNewLines(steps), trimNewLines(description));
     }
 
     /**
@@ -371,12 +400,21 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         // append the title
         bld.append(mRecipeInProgress.getExtractedText().getTitle());
         bld.append("\n");
-        for (String section : mSectionsBodies) {
-            bld.append(section.trim());
-            // append a new line between the sections for readability
-            bld.append("\n");
+        for (Section s : mRecipeInProgress.getExtractedText().getSections()) {
+            String body = s.getBody();
+            if (mSectionsBodies.contains(body)) {
+                String title = s.getTitle();
+                if (title != null) {
+                    bld.append(title);
+                    bld.append("\n");
+                }
 
+                bld.append(body.trim());
+                // append a new line between the sections for readability
+                bld.append("\n");
+            }
         }
+
         return bld.toString();
     }
 
@@ -390,6 +428,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         if (steps.length() == 0) {
             steps = findStepsNLP();
         }
+
         return steps;
     }
 
@@ -411,10 +450,11 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 return "";
             }
         }
+
         String ingredients = mSectionsBodies.get(indexOfIngredients);
         mSectionsBodies.remove(ingredients);
-        return ingredients;
 
+        return ingredients;
     }
 
     /**
@@ -427,6 +467,13 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * if no ingredients are found -1 is returned.
      */
     private int findIngredientsRegexBased() {
+        // first try with titles
+        String result = findStepsOrIngredientsRegexBasedTitles(false);
+        if (result.length() > 0) {
+            // found using titles so return the appropriate index
+            return mSectionsBodies.indexOf(result);
+        }
+
         boolean found = false;
         boolean sectionAdded = false;
         String ingredientsSection = "";
@@ -434,7 +481,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         for (String line : mSectionsBodies) {
             if (!found) {
                 Matcher match = Pattern.compile(INGREDIENT_STARTER_REGEX).matcher(line);
-
                 if (match.find()) {
                     found = true;
                 }
@@ -446,10 +492,12 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 }
             }
         }
+
         if (ingredientsSection.length() == 0) {
             // nothing found return negative value
             return -1;
         }
+
         return mSectionsBodies.indexOf(ingredientsSection);
     }
 
@@ -478,7 +526,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * ingredientlist is not in the text anymore
      */
     private ResultAndAlteredTextPair findIngredients(String text) {
-        // dummy
         ResultAndAlteredTextPair ingredientsAndText = findIngredientsRegexBased(text);
         if ("".equals(ingredientsAndText.getResult())) {
             ingredientsAndText = findIngredientsDigit(text);
@@ -486,7 +533,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         return ingredientsAndText;
     }
-
 
     /**
      * Finds the ingredients based on a regex. It checks whether some common names that start
@@ -506,13 +552,12 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             // nothing found
             return new ResultAndAlteredTextPair("", text);
         }
+
         // remove both the section that indicated the ingredients as the ingredients
         text = text.replace(mSectionsBodies.get(indexOfIngredients - 1), "")
                 .replace(mSectionsBodies.get(indexOfIngredients), "");
 
-
         return new ResultAndAlteredTextPair(mSectionsBodies.get(indexOfIngredients), text);
-
     }
 
     /**
@@ -528,9 +573,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             pair = findStepsNLP(text);
         }
 
-
         return pair;
-
     }
 
     /**
@@ -547,7 +590,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         List<CoreMap> sentences = annotatedTextLowerCase.get(CoreAnnotations.SentencesAnnotation.class);
 
         for (CoreMap sentence : sentences) {
-
             List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
             if (tokens.size() > 1) {
                 CoreLabel startToken = tokens.get(0);
@@ -557,6 +599,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 }
             }
         }
+
         return false;
     }
 
@@ -576,6 +619,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         if (steps.length() == 0) {
             // nothing found return empty string and unaltered text
             return new ResultAndAlteredTextPair("", text);
+
         } else {
             return new ResultAndAlteredTextPair(steps, text.replace(steps, ""));
         }
@@ -601,8 +645,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         }
 
         sAnnotationPipeline.annotate(annotation);
-        return annotation;
 
+        return annotation;
     }
 
     /**

@@ -91,8 +91,8 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
             }
 
             mIngredientName.setText(nameWithoutQuantityAndUnit);
-            mIngredientAmount.setText(StringUtilities.toDisplayQuantity(ingredient.getAmount().getValue()));
-            mIngredientUnit.setText(ingredient.getAmount().getUnit());
+            mIngredientAmount.setText(StringUtilities.toDisplayQuantity(ingredient.getQuantity()));
+            mIngredientUnit.setText(ingredient.getUnit());
         }
     }
 }

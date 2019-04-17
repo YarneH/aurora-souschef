@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A dataclass representing a step. It has  fields
@@ -15,15 +16,16 @@ import java.util.List;
  * mTimerDetectionDone: a boolean that indicates if the DetectTimersInStepTask task has been done on this step
  */
 public class RecipeStep {
-
     /**
      * A set of {@link Ingredient}s that were detected in this step
      */
     private List<Ingredient> mIngredients;
+
     /**
      * A list of {@link RecipeTimer}s that were detected in this step (in order)
      */
     private List<RecipeTimer> mRecipeTimers;
+
     /**
      * The original description of this step. This is the string where timers and ingredients have been
      * detected in
@@ -36,6 +38,7 @@ public class RecipeStep {
      * has been executed on this step
      */
     private boolean mIngredientDetectionDone;
+
     /**
      * A boolean indicating whether the
      * {@link com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask} task
@@ -75,6 +78,7 @@ public class RecipeStep {
                 add(ingredient);
             }
         }
+
         mIngredientDetectionDone = true;
     }
 
@@ -94,16 +98,17 @@ public class RecipeStep {
                     if (this.mIngredients == null) {
                         this.mIngredients = new ArrayList<>();
                     }
-                    this.mIngredients.add(ingredient);
-                } else {
 
+                    this.mIngredients.add(ingredient);
+
+                } else {
                     throw new IllegalArgumentException("Positions of ingredient are not legal!\n" +
                             "Ingredient: " + ingredient + "\n" +
                             "Positions: " + ingredient.getQuantityPosition() + ", " +
                             ingredient.getUnitPosition() + ", " + ingredient.getNamePosition() +
                             "\nDescription: " + mDescription + " ( " + mDescription.length() + " length)");
-
                 }
+
             } catch (IllegalArgumentException iae) {
                 Log.e("RECIPESTEP", "Add ingredient failed: ", iae);
             }
@@ -129,6 +134,7 @@ public class RecipeStep {
                 add(timer);
             }
         }
+
         mTimerDetectionDone = true;
     }
 
@@ -144,9 +150,12 @@ public class RecipeStep {
         // do nothing if ingredient is null
         if (recipeTimer != null && recipeTimer.getPosition().isLegalInString(mDescription)) {
             if (this.mRecipeTimers == null) {
+                // if the list was null create it first
                 this.mRecipeTimers = new ArrayList<>();
             }
+
             this.mRecipeTimers.add(recipeTimer);
+
         } else {
             throw new IllegalArgumentException("recipeTimer is null or Position of timer is not " +
                     "legal in description\n");
@@ -189,6 +198,21 @@ public class RecipeStep {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(mIngredients, mRecipeTimers, mDescription);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof RecipeStep) {
+            RecipeStep rs = (RecipeStep) o;
+            return rs.getIngredients().equals(mIngredients) && rs.getRecipeTimers().equals(mRecipeTimers)
+                    && rs.mDescription.equals(mDescription);
+        }
+        return false;
+    }
+
+    @Override
     public String toString() {
         StringBuilder bld = new StringBuilder();
         bld.append("RecipeStep:\n ");
@@ -204,6 +228,7 @@ public class RecipeStep {
                 bld.append("\n");
             }
         }
+
         bld.append("TimerDetectionDone: ");
         bld.append(mTimerDetectionDone);
         if (mTimerDetectionDone) {
@@ -213,10 +238,16 @@ public class RecipeStep {
                 bld.append(t);
                 bld.append("\n");
             }
-
         }
+
         return bld.toString();
     }
 
-
+     void convertUnit(boolean toMetric) {
+        if (mIngredientDetectionDone) {
+            for (Ingredient ingredient : mIngredients) {
+                ingredient.convertUnit(toMetric, mDescription);
+            }
+        }
+    }
 }

@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class IngredientUnitTest {
     private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
@@ -252,6 +253,39 @@ public class IngredientUnitTest {
                 assert ((equal && hash) || (!equal && !hash));
             }
         }
+
+
+    }
+
+    @Test
+    public void ListIngredient_convert_ConversionIsCorrectInIngredientAndPosition(){
+        String original = "500 gram spaghetti";
+        Position quantityPos = new Position(0, 3);
+        Position unitPos = new Position(4, 8);
+        Position namePos = new Position(9, 18);
+        Map<Ingredient.PositionKeysForIngredients, Position> map = new HashMap<>();
+        map.put(Ingredient.PositionKeysForIngredients.QUANTITY, quantityPos);
+        map.put(Ingredient.PositionKeysForIngredients.UNIT, unitPos);
+        map.put(Ingredient.PositionKeysForIngredients.NAME, namePos);
+        ListIngredient listIngredient = new ListIngredient("spaghetti", "gram", 500, original, map);
+
+        listIngredient.convertUnit(false);
+
+        Position quantityPosN = new Position(0, 6);
+        Position unitPosN = new Position(7, 12);
+        Position namePosN = new Position(13, 22);
+        Map<Ingredient.PositionKeysForIngredients, Position> mapN = new HashMap<>();
+        mapN.put(Ingredient.PositionKeysForIngredients.QUANTITY, quantityPosN);
+        mapN.put(Ingredient.PositionKeysForIngredients.UNIT, unitPosN);
+        mapN.put(Ingredient.PositionKeysForIngredients.NAME, namePosN);
+        ListIngredient n = new ListIngredient("spaghetti", "ounce", 17.637, "17.637 ounce spaghetti", mapN);
+        assert(n.equals(listIngredient));
+        // check positions
+        assert(quantityPosN.equals(quantityPos));
+        assert(namePosN.equals(namePos));
+        assert(unitPosN.equals(unitPos));
+
+
 
 
     }

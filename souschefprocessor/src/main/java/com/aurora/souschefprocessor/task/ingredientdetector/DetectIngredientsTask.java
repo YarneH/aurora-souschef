@@ -13,13 +13,13 @@ import edu.stanford.nlp.ling.CoreLabel;
  * provides constants and methods for calculating quantities when they have been detected
  */
 abstract class DetectIngredientsTask extends AbstractProcessingTask {
-
     /**
      * An array of spelled out numbers, generally numbers greater than twelve are not spelled out so
      * these are numbers zero to twelve
      */
     private static final String[] NUMBERS_TO_TWELVE = {"zero", "one", "two", "three", "four", "five",
             "six", "seven", "eight", "nine", "ten", "eleven", "twelve"};
+
     /**
      * An array of spelled out numbers since multiples of ten are also spelled out
      */
@@ -36,42 +36,13 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
      */
     private static final double TEN = 10;
 
-
-     DetectIngredientsTask(RecipeInProgress recipeInProgress) {
+    DetectIngredientsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
     }
 
     /**
-     * Calculates the quantity based on list with tokens labeled quantity
-     *
-     * @param list The list on which to calculate the quantity
-     * @return a double representing the calculated value, if no value could be calculated -1.0 is
-     * returned
-     */
-     double calculateQuantity(List<CoreLabel> list) {
-
-        StringBuilder bld = new StringBuilder();
-        for (CoreLabel cl : list) {
-            bld.append(cl.word());
-            bld.append(" ");
-        }
-
-        String representation = bld.toString();
-
-        // split on all whitespace characters
-        String[] array = representation.split("[\\s\\xA0]+");
-        double result = calculateQuantity(array);
-
-        if (result == 0.0) {
-            // if no quantity value was detected return -1.0 to signal that detected quantity is
-            // not a quantity
-            return -1;
-        }
-        return result;
-    }
-
-    /**
      * Calculates the quantity based on an array of Strings that were tagged as quantity
+     *
      * @param array the array of strings
      * @return the calculated value
      */
@@ -79,8 +50,9 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
         boolean multiply = false;
         double result = 0.0;
         for (String s : array) {
-            String[] fraction = s.split("/");
+            String[] fraction = s.split("[/⁄]");
             try {
+
                 // if the string was splitted in to two parts it was a fraction
                 if (fraction.length == FRACTION_LENGTH) {
                     result = calculateFraction(fraction, result, multiply);
@@ -88,40 +60,45 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
                     // it was true
                     multiply = false;
                     // after this not a fraction
+
                 } else if (multiply) {
-
-
                     // if previous was multiplication, multiply
                     result *= Double.parseDouble(s);
                     multiply = false;
+
                 } else if ("x".equalsIgnoreCase(s)) {
                     // if this is a multiplication sign set multiply to two
                     multiply = true;
+
                 } else {
                     // just add the result
                     result += Double.parseDouble(s);
-
                 }
+
             } catch (NumberFormatException iae) {
                 // String identified as quantity is not parsable...
+
                 double nonParsableQuantity = calculateNonParsableQuantity(s);
                 if (multiply) {
                     result *= nonParsableQuantity;
                     multiply = false;
+
                 } else {
                     result += nonParsableQuantity;
                 }
             }
         }
+
         return result;
     }
 
     /**
      * Calculates and adds or multiplies a fraction from a string to an intermediateresult
-     * @param fraction a string with length 2 representing a fraction where the first element is the
-     *                 numerator and the second element is the denominator
+     *
+     * @param fraction           a string with length 2 representing a fraction where the first element is the
+     *                           numerator and the second element is the denominator
      * @param intermediateResult the intermediate result to add or multiply the new value with
-     * @param multiply a boolean to indicate wheter it should be multiplied or added
+     * @param multiply           a boolean to indicate wheter it should be multiplied or added
      * @return the new result
      */
     private static double calculateFraction(String[] fraction, double intermediateResult, boolean multiply) {
@@ -132,8 +109,8 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
         } else {
             intermediateResult *= numerator / denominator;
         }
-        return intermediateResult;
 
+        return intermediateResult;
     }
 
     /**
@@ -157,10 +134,36 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
                 return i * TEN;
             }
         }
-
         // if not one of the previous cases consider wrongly labeled
         return 0.0;
     }
 
+    /**
+     * Calculates the quantity based on list with tokens labeled quantity
+     *
+     * @param list The list on which to calculate the quantity
+     * @return a double representing the calculated value, if no value could be calculated -1.0 is
+     * returned
+     */
+    double calculateQuantity(List<CoreLabel> list) {
 
+        StringBuilder bld = new StringBuilder();
+        for (CoreLabel cl : list) {
+            bld.append(cl.word());
+            bld.append(" ");
+        }
+
+        String representation = bld.toString();
+
+        // split on all whitespace characters
+        String[] array = representation.split("[\\s\\xA0]+");
+        double result = calculateQuantity(array);
+
+        if (result == 0.0) {
+            // if no quantity value was detected return -1.0 to signal that detected quantity is
+            // not a quantity
+            return -1;
+        }
+        return result;
+    }
 }

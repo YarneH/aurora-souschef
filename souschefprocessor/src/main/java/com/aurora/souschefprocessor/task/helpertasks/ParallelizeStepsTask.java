@@ -23,16 +23,17 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
      * A {@link ThreadPoolExecutor} for executing the tasks in different threads
      */
     private ThreadPoolExecutor mThreadPoolExecutor;
+
     /**
      * The names of the tasks that will be done by this task on steps {@link StepTaskNames}
      */
     private StepTaskNames[] mStepTaskNames;
 
-
     /**
      * Constructs the ParallelizeStepsTask
-     * @param recipeInProgress The recipe on which to do the task
-     * @param stepTaskNames The names of the tasks to do on the steps
+     *
+     * @param recipeInProgress   The recipe on which to do the task
+     * @param stepTaskNames      The names of the tasks to do on the steps
      * @param threadPoolExecutor The threadpoolexecutor for executing the tasks in different threads
      */
     public ParallelizeStepsTask(RecipeInProgress recipeInProgress,
@@ -50,7 +51,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
     public void doTask() {
 
         List<RecipeStep> recipeSteps = mRecipeInProgress.getRecipeSteps();
-        if(recipeSteps.isEmpty()){
+        if (recipeSteps.isEmpty()) {
             throw new RecipeDetectionException("No steps were detected in this recipe. This is probably not" +
                     "a recipe!");
         }
@@ -71,9 +72,10 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
 
     /**
      * Creates a StepTaskThread for a step and task
-     * @param latch The latch to count down after finishing the thread
+     *
+     * @param latch     The latch to count down after finishing the thread
      * @param stepIndex the index of the step of this thread
-     * @param taskName the name of the task of this thread
+     * @param taskName  the name of the task of this thread
      * @return A thread that executes the task on the step with index stepindex of the recipe
      */
     private StepTaskThread createStepTaskThread(CountDownLatch latch, int stepIndex,
@@ -84,6 +86,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
             // Ingredient
             stepTaskThread = new StepTaskThread(new DetectIngredientsInStepTask(
                     this.mRecipeInProgress, stepIndex), latch);
+
         } else {
             // Timer
             stepTaskThread = new StepTaskThread(new DetectTimersInStepTask(
@@ -95,6 +98,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
 
     /**
      * Waits untill all the threads of this latch are finished
+     *
      * @param latch The latch to wait on
      */
     private void waitForThreads(CountDownLatch latch) {
@@ -106,7 +110,6 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
         }
     }
 
-
     /**
      * A thread that executes a task on a step
      */
@@ -116,11 +119,11 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
          * The task to be executed
          */
         private AbstractProcessingTask task;
+
         /**
          * The latch to count down after finishing the task
          */
         private CountDownLatch latch;
-
 
         StepTaskThread(AbstractProcessingTask task, CountDownLatch latch) {
             this.task = task;
@@ -137,6 +140,4 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
             latch.countDown();
         }
     }
-
-
 }

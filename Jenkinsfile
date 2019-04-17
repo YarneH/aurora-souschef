@@ -181,7 +181,7 @@ pipeline {
             }
         } // Javadoc stage
 
-                stage('Deployment') {
+        stage('Deployment') {
             when {
                 anyOf {
                     branch 'master';

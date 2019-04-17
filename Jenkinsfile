@@ -203,8 +203,8 @@ pipeline {
 
                     // Move to right directory
                     sh """
-                    if [ ! -d /var/www/javadoc/aurora/deploy/ ]; then
-                        mkdir -p /var/www/javadoc/aurora/deploy;
+                    if [ ! -d /var/www/javadoc/deploy/ ]; then
+                        mkdir -p /var/www/javadoc/deploy;
                     fi
 
                     mv app/build/outputs/apk/release/app-release.apk /var/www/javadoc/deploy/souschef.apk

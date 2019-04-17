@@ -180,6 +180,46 @@ pipeline {
                 }
             }
         } // Javadoc stage
+
+                stage('Deployment') {
+            when {
+                anyOf {
+                    branch 'master';
+                    branch 'ci-automatic-deployment' // testing purposes
+                } 
+            }
+            steps {
+                script {
+                    // Create unsigned apk
+                    sh './gradlew assembleRelease'
+
+
+                    // Sign the apk
+                    signAndroidApks (
+                        keyStoreId: "key0aurora",
+                        keyAlias: "key0",
+                        apksToSign: "app/build/outputs/apk/release/app-release-unsigned.apk"
+                    )
+
+                    // Move to right directory
+                    sh """
+                    if [ ! -d /var/www/javadoc/aurora/deploy/ ]; then
+                        mkdir -p /var/www/javadoc/aurora/deploy;
+                    fi
+
+                    mv app/build/outputs/apk/release/app-release.apk /var/www/javadoc/deploy/souschef.apk
+                    """
+                }
+            }
+            post {
+                failure {
+                    slack_error_deploy()
+                }
+                success {
+                    slack_deployed()
+                }
+            }
+        } // Deployment stage
     } // Stages
 
     post {
@@ -244,7 +284,11 @@ def slack_success_part1() {
  * Gets called when generating javadoc failed
  */
 def slack_error_doc() {
-    slack_report(true, ':x: Javadoc generation failed', null, '')
+    slack_report(false, ':x: Javadoc generation failed', null, 'Javadoc')
+}
+
+def slack_error_deploy() {
+    slack_report(false, ':x: Automatic Deployment failed', null, 'Deployment')
 }
 
 

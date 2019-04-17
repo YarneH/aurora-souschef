@@ -45,6 +45,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.5'
 
     testImplementation 'junit:junit:4.12'
+    testImplementation 'androidx.test:core:1.1.0'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     // to solve issue for now with stanford-corenlp using old version of slf4j logging

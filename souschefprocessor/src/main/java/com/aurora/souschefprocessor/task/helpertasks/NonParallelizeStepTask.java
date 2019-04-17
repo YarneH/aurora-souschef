@@ -13,7 +13,6 @@ import java.util.List;
  * A wrapper class for doing the steptasks but not in parallel as opposed to {@link ParallelizeStepsTask}
  */
 public class NonParallelizeStepTask extends AbstractProcessingTask {
-
     /**
      * The names of the tasks that will be done by this task on steps {@link StepTaskNames}
      */
@@ -21,8 +20,9 @@ public class NonParallelizeStepTask extends AbstractProcessingTask {
 
     /**
      * Constructs the NonParrallelizeStepTaks
+     *
      * @param recipeInProgress The recipe on which to do the task
-     * @param stepTaskNames The names of the tasks to do on the steps
+     * @param stepTaskNames    The names of the tasks to do on the steps
      */
     public NonParallelizeStepTask(RecipeInProgress recipeInProgress,
                                   StepTaskNames[] stepTaskNames) {
@@ -36,16 +36,16 @@ public class NonParallelizeStepTask extends AbstractProcessingTask {
     public void doTask() {
         List<RecipeStep> recipeSteps = mRecipeInProgress.getRecipeSteps();
 
-        if(recipeSteps.isEmpty()){
+        if (recipeSteps.isEmpty()) {
             throw new RecipeDetectionException("No steps were detected in this recipe. This is probably not" +
                     "a recipe!");
         }
+
         for (int i = 0; i < recipeSteps.size(); i++) {
             for (StepTaskNames taskName : mStepTaskNames) {
                 doTask(i, taskName);
             }
         }
-
     }
 
     /**
@@ -59,6 +59,7 @@ public class NonParallelizeStepTask extends AbstractProcessingTask {
         if (taskname.equals(StepTaskNames.TIMER)) {
             new DetectTimersInStepTask(
                     this.mRecipeInProgress, stepIndex).doTask();
+
         } else {
             new DetectIngredientsInStepTask(
                     this.mRecipeInProgress, stepIndex).doTask();

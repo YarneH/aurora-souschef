@@ -19,7 +19,6 @@ import edu.stanford.nlp.ling.CoreLabel;
  * Communicates with the kernel
  */
 public class Communicator {
-
     /**
      * An atomicInteger to showcase the update of the creating of the pipelines
      */
@@ -31,14 +30,12 @@ public class Communicator {
     private Delegator mDelegator;
     // TODO add attribute kernelCommunicator to communicate with Aurora
 
-    // Caution! this class heavily depends on the Aurora API
-
     /**
      * Create a communicator using a CRFClassifier that was loaded in and is used to classify the
      * ingredients
      *
      * @param ingredientsClassifier the classifier for the
-     * {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask} task
+     *                              {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask} task
      */
     public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
         mDelegator = new Delegator(ingredientsClassifier, false);
@@ -151,5 +148,6 @@ public class Communicator {
     public void sendObjectToAuroraKernel(PluginObject o) {
         // TODO either this method is inherited from a class that does not exist yet or implement here,
         // should I think be a function of PluginCommunicator a class defined by Aurora
+
     }
 }

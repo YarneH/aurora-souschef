@@ -18,7 +18,7 @@ public class DetectTimersInStepTaskLongTest {
 
     @BeforeClass
     public static void initialize(){
-        DetectTimersInStepTask.initializeAnnotationPipeline();
+        DetectTimersInStepTask.initializeAnnotationPipeline(new ArrayList<>());
     }
 
  private RecipeTimer getTimer(String label) {

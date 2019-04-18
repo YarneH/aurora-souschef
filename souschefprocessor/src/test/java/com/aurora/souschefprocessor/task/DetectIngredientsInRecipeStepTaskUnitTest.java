@@ -35,7 +35,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         // Initialize recipe in progress
         String originalText = "irrelevant";
         recipe = new RecipeInProgress(originalText);
-        DetectIngredientsInStepTask.initializeAnnotationPipeline();
+        DetectIngredientsInStepTask.initializeAnnotationPipeline(new ArrayList<>());
 
         // Initialize positions with dummy values
         irrelevantPositions = new HashMap<>();

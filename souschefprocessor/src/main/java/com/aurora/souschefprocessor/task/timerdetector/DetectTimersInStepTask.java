@@ -19,6 +19,7 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
@@ -110,7 +111,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         // overnight should not be a timer
         // this might be expanded to other tokens that do not require a timer
         TIME_WORDS_NOT_TO_INCLUDE.add("overnight");
-        initializeAnnotationPipeline();
+        initializeAnnotationPipeline(new ArrayList<>());
     }
 
     /**
@@ -142,7 +143,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * Initializes the AnnotationPipeline, should be called before using the first detector. It also
      * checks if no other thread has already started to create the pipeline
      */
-    public static void initializeAnnotationPipeline() {
+    public static void initializeAnnotationPipeline(List<Annotator> basicAnnotators) {
         Thread initialize = new Thread(() -> {
             synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
                 if (sStartedCreatingPipeline) {
@@ -152,7 +153,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                 // ensure no other thread can initialize
                 sStartedCreatingPipeline = true;
             }
-            sAnnotationPipeline = createTimerAnnotationPipeline();
+            sAnnotationPipeline = createTimerAnnotationPipeline(basicAnnotators);
             synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
                 // get the lock again to notify that the pipeline has been created
                 LOCK_DETECT_TIMERS_IN_STEP_PIPELINE.notifyAll();
@@ -258,30 +259,31 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      *
      * @return Annotation pipeline
      */
-    private static AnnotationPipeline createTimerAnnotationPipeline() {
+    private static AnnotationPipeline createTimerAnnotationPipeline(List<Annotator> basicAnnotators) {
         Properties props = new Properties();
-
         // Do not use binders, these are necessary for Hollidays but those are not needed for
         // recipesteps
         // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
         props.setProperty("sutime.binders", "0");
-        Log.d(PIPELINE, "0");
-        Delegator.incrementProgressAnnotationPipelines();
+
         AnnotationPipeline pipeline = new AnnotationPipeline();
-        Log.d(PIPELINE, "1");
-        Delegator.incrementProgressAnnotationPipelines();
-        pipeline.addAnnotator(new TokenizerAnnotator(false));
-        Log.d(PIPELINE, "2");
-        Delegator.incrementProgressAnnotationPipelines();
-        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-        Log.d(PIPELINE, "3");
-        Delegator.incrementProgressAnnotationPipelines();
-        pipeline.addAnnotator(new POSTaggerAnnotator(false));
-        Log.d(PIPELINE, "4");
-        Delegator.incrementProgressAnnotationPipelines();
+        if(basicAnnotators.isEmpty()){
+
+            pipeline.addAnnotator(new TokenizerAnnotator(false));
+
+            pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
+
+            pipeline.addAnnotator(new POSTaggerAnnotator(false));
+
+        }else{
+            for(Annotator a: basicAnnotators){
+                pipeline.addAnnotator(a);
+            }
+        }
+
+
         pipeline.addAnnotator(new TimeAnnotator("sutime", props));
-        Log.d(PIPELINE, "5");
-        Delegator.incrementProgressAnnotationPipelines();
+        Delegator.incrementProgressAnnotationPipelines(); //4
         return pipeline;
     }
 
@@ -421,7 +423,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     }
 
     private double calculateMultiplierAfter(Map.Entry<Integer, String> fractionPosition, Position originalPosition,
-                                             int relPosition) {
+                                            int relPosition) {
 
         double multiplier = 1.0;
         String description = mRecipeStep.getDescription();

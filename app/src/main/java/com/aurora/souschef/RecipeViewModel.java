@@ -31,7 +31,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * These steps are hard-coded-counted. This means that when the implementation
      * of the Souschef-processor takes longer or shorter, this value must be changed.
      */
-    private static final int DETECTION_STEPS = 10;
+    private static final int DETECTION_STEPS = 6;
     /**
      * The maximum amount of people you can cook for.
      */
@@ -64,7 +64,14 @@ public class RecipeViewModel extends AndroidViewModel {
      */
     private MutableLiveData<Recipe> mRecipe = new MutableLiveData<>();
 
+    /**
+     * This LiveData value updates when the processing has failed
+     */
     private MutableLiveData<Boolean> mProcessingFailed = new MutableLiveData<>();
+
+    /**
+     * This LiveData value updates when the processing has failed and sets the failing message
+     */
     private MutableLiveData<String> mFailureMessage = new MutableLiveData<>();
 
     /**
@@ -280,6 +287,7 @@ public class RecipeViewModel extends AndroidViewModel {
                         return comm.process(mText);
                     }
                 } catch (RecipeDetectionException rde) {
+                    Log.d("FAILURE", rde.getMessage());
                     mProcessingFailed.postValue(true);
                     mFailureMessage.postValue(rde.getMessage());
                 }
@@ -290,7 +298,10 @@ public class RecipeViewModel extends AndroidViewModel {
 
         @Override
         protected void onPostExecute(Recipe recipe) {
-            initialiseWithRecipe(recipe);
+            // only initialize if the processing has not failed
+            if (!mProcessingFailed.getValue()) {
+                initialiseWithRecipe(recipe);
+            }
         }
     }
 }

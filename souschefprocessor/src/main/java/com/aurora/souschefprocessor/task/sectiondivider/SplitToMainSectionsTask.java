@@ -1,8 +1,6 @@
 package com.aurora.souschefprocessor.task.sectiondivider;
 
 
-import android.util.Log;
-
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
@@ -21,6 +19,7 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
@@ -66,8 +65,14 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private String mOriginalText;
 
-    public SplitToMainSectionsTask(RecipeInProgress recipeInProgress) {
+    /**
+     * A list of basicAnnotators that were given by {@link com.aurora.souschefprocessor.facade.Delegator}
+     */
+    private List<Annotator> basicAnnotators;
+
+    public SplitToMainSectionsTask(RecipeInProgress recipeInProgress, List<Annotator> basicAnnotators) {
         super(recipeInProgress);
+        this.basicAnnotators = basicAnnotators;
     }
 
 
@@ -126,11 +131,20 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     /**
      * Creates the {@link #sAnnotationPipeline}
      */
-    private static  void createAnnotationPipeline() {
+    private void createAnnotationPipeline() {
         AnnotationPipeline pipeline = new AnnotationPipeline();
-        pipeline.addAnnotator(new TokenizerAnnotator(false, "en"));
-        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-        pipeline.addAnnotator(new POSTaggerAnnotator(false));
+        if (basicAnnotators.isEmpty()) {
+            pipeline.addAnnotator(new TokenizerAnnotator(false));
+
+            pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
+
+            pipeline.addAnnotator(new POSTaggerAnnotator(false));
+
+        } else {
+            for (Annotator a : basicAnnotators) {
+                pipeline.addAnnotator(a);
+            }
+        }
 
         sAnnotationPipeline = pipeline;
     }

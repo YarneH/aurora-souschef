@@ -121,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
         mRecipe.getProgressStep().observe(this, (Integer step) -> {
                     ProgressBar pb = findViewById(R.id.pb_loading_screen);
                     pb.setProgress(mRecipe.getProgress());
+
                     // TODO: set TextView to visualize progress
                 }
         );

@@ -25,6 +25,7 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
@@ -119,7 +120,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     static {
         sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
         sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
-        initializeAnnotationPipeline();
+        initializeAnnotationPipeline(new ArrayList<>());
     }
 
     /**
@@ -145,7 +146,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * Initializes the AnnotationPipeline for ingredients, should be called before using the first detector.
      * It also checks if no other thread has already started to create the pipeline
      */
-    public static void initializeAnnotationPipeline() {
+    public static void initializeAnnotationPipeline(List<Annotator> basicAnnotators) {
         Thread initialize = new Thread(() -> {
             synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
                 if (sStartedCreatingPipeline) {
@@ -155,7 +156,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 // ensure no other thread can initialize
                 sStartedCreatingPipeline = true;
             }
-            sAnnotationPipeline = createIngredientAnnotationPipeline();
+            sAnnotationPipeline = createIngredientAnnotationPipeline(basicAnnotators);
             synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
                 // get the lock again to notify that the pipeline has been created
                 LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.notifyAll();
@@ -169,20 +170,22 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      *
      * @return Annotation pipeline
      */
-    private static AnnotationPipeline createIngredientAnnotationPipeline() {
+    private static AnnotationPipeline createIngredientAnnotationPipeline(List<Annotator> basicAnnotators) {
         AnnotationPipeline pipeline = new AnnotationPipeline();
 
-        Log.d("INGREDIENTS:", "0");
+
         Delegator.incrementProgressAnnotationPipelines();
-        pipeline.addAnnotator(new TokenizerAnnotator(false));
-        Delegator.incrementProgressAnnotationPipelines();
-        Log.d("INGREDIENTS:", "1");
-        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-        Delegator.incrementProgressAnnotationPipelines();
-        Log.d("INGREDIENTS:", "2");
-        pipeline.addAnnotator(new POSTaggerAnnotator(false));
-        Delegator.incrementProgressAnnotationPipelines();
-        Log.d("INGREDIENTS:", "3");
+        if (basicAnnotators.isEmpty()) {
+            Log.d("INGREDIENTS:", "0");
+            pipeline.addAnnotator(new TokenizerAnnotator(false));
+            pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
+            pipeline.addAnnotator(new POSTaggerAnnotator(false));
+
+        } else {
+            for (Annotator a : basicAnnotators) {
+                pipeline.addAnnotator(a);
+            }
+        }
         return pipeline;
     }
 
@@ -500,7 +503,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 stepIngredient.setUnit(baseUnit);
 
                 // check if an update of the name position is necessary
-                if(namePos.getEndIndex() >= oldEndIndex){
+                if (namePos.getEndIndex() >= oldEndIndex) {
                     int offset = newEndIndex - oldEndIndex;
                     namePos.setIndices(namePos.getBeginIndex() + offset, namePos.getEndIndex() + offset);
                 }

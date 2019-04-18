@@ -9,7 +9,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.facade.Communicator;
@@ -95,7 +94,7 @@ public class RecipeViewModel extends AndroidViewModel {
         Communicator.createAnnotationPipelines();
     }
 
-    public LiveData<String> getFailureMessage(){
+    public LiveData<String> getFailureMessage() {
         return mFailureMessage;
     }
 
@@ -169,6 +168,7 @@ public class RecipeViewModel extends AndroidViewModel {
     public LiveData<Recipe> getRecipe() {
         return mRecipe;
     }
+
     public LiveData<Boolean> getProcessFailed() {
         return mProcessingFailed;
     }
@@ -286,7 +286,6 @@ public class RecipeViewModel extends AndroidViewModel {
             }
             return null;
         }
-
 
 
         @Override

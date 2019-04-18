@@ -115,25 +115,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Overwritten method of Activity
-     *
-     * @param savedInstanceState The saved state.
+     * Sets up the observation of the recipeviewmodel
      */
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        mRecipe = ViewModelProviders.of(this).get(RecipeViewModel.class);
-
-        super.onCreate(savedInstanceState);
-        // TODO: Change back to the correct view
-        setContentView(R.layout.activity_main);
-
-
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        showProgress();
-
-        // setup recipe data object (RecipeViewModel).
+    private  void setUpRecipeDataObject(){
         mRecipe.getProgressStep().observe(this, (Integer step) -> {
                     ProgressBar pb = findViewById(R.id.pb_loading_screen);
                     pb.setProgress(mRecipe.getProgress());
@@ -156,6 +140,29 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
             }
         });
+
+    }
+    /**
+     * Overwritten method of Activity
+     *
+     * @param savedInstanceState The saved state.
+     */
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        mRecipe = ViewModelProviders.of(this).get(RecipeViewModel.class);
+
+        super.onCreate(savedInstanceState);
+        // TODO: Change back to the correct view
+        setContentView(R.layout.activity_main);
+
+
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        showProgress();
+
+        // setup recipe data object (RecipeViewModel).
+        setUpRecipeDataObject();
 
         /*
          * Handle Aurora starting the Plugin.

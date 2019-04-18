@@ -1,12 +1,10 @@
 package com.aurora.souschefprocessor.task.sectiondivider;
 
 
-import android.content.Context;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
-import com.aurora.souschefprocessor.R;
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
@@ -15,7 +13,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,7 +21,6 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.parser.lexparser.BinaryGrammar;
@@ -37,9 +33,7 @@ import edu.stanford.nlp.parser.lexparser.UnaryGrammar;
 import edu.stanford.nlp.parser.lexparser.UnknownWordModel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
-import edu.stanford.nlp.pipeline.MorphaAnnotator;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
-import edu.stanford.nlp.pipeline.ParserAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.util.CoreMap;
@@ -130,9 +124,25 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     }
 
     /**
+     * Checks if a section contains one of the {@link #CLUTTER_STRINGS}
+     *
+     * @param section the section to check
+     * @return a boolean indicating whether the section is clutter
+     */
+    private static boolean sectionIsClutter(String section) {
+        for (String s : CLUTTER_STRINGS) {
+            if (section.toLowerCase(Locale.ENGLISH).contains(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
      * Creates the {@link #sAnnotationPipeline}
      */
-    private  void createAnnotationPipeline() {
+    private void createAnnotationPipeline() {
         AnnotationPipeline pipeline = new AnnotationPipeline();
         pipeline.addAnnotator(new TokenizerAnnotator(false, "en"));
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
@@ -148,21 +158,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
 
         sAnnotationPipeline = pipeline;
-    }
-
-    /**
-     * Checks if a section contains one of the {@link #CLUTTER_STRINGS}
-     *
-     * @param section the section to check
-     * @return a boolean indicating whether the section is clutter
-     */
-    private static boolean sectionIsClutter(String section) {
-        for (String s : CLUTTER_STRINGS) {
-            if (section.toLowerCase(Locale.ENGLISH).contains(s)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -300,8 +295,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         Collections.reverse(linesList);
         String toReplace = "";
         boolean found = false;
-        for(String line: linesList){
-            if(!found && !line.trim().isEmpty()){
+        for (String line : linesList) {
+            if (!found && !line.trim().isEmpty()) {
                 toReplace = line;
                 found = true;
             }
@@ -702,68 +697,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         String getAlteredText() {
             return mAlteredText;
-        }
-    }
-
-    protected static LexicalizedParser getParserFromInputStream(InputStream stream, String textFileOrUrl, Options op) {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(stream))) {
-            Timing tim = new Timing();
-            Timing.startTime();
-
-            String line = in.readLine();
-            confirmBeginBlock(textFileOrUrl, line);
-            op.readData(in);
-
-            line = in.readLine();
-            confirmBeginBlock(textFileOrUrl, line);
-            Index<String> stateIndex = HashIndex.loadFromReader(in);
-
-            line = in.readLine();
-            confirmBeginBlock(textFileOrUrl, line);
-            Index<String> wordIndex = HashIndex.loadFromReader(in);
-
-            line = in.readLine();
-            confirmBeginBlock(textFileOrUrl, line);
-            Index<String> tagIndex = HashIndex.loadFromReader(in);
-
-            line = in.readLine();
-            confirmBeginBlock(textFileOrUrl, line);
-            Lexicon lex = op.tlpParams.lex(op, wordIndex, tagIndex);
-            String uwmClazz = line.split(" +")[2];
-            if (!uwmClazz.equals("null")) {
-                UnknownWordModel model = ReflectionLoading.loadByReflection(uwmClazz, op, lex, wordIndex, tagIndex);
-                lex.setUnknownWordModel(model);
-            }
-            lex.readData(in);
-
-            line = in.readLine();
-            confirmBeginBlock(textFileOrUrl, line);
-            UnaryGrammar ug = new UnaryGrammar(stateIndex);
-            ug.readData(in);
-
-            line = in.readLine();
-            confirmBeginBlock(textFileOrUrl, line);
-            BinaryGrammar bg = new BinaryGrammar(stateIndex);
-            bg.readData(in);
-
-            line = in.readLine();
-            confirmBeginBlock(textFileOrUrl, line);
-            DependencyGrammar dg = new MLEDependencyGrammar(op.tlpParams, op.directional, op.distance, op.coarseDistance, op.trainOptions.basicCategoryTagsInDependencyGrammar, op, wordIndex, tagIndex);
-            dg.readData(in);
-
-            Log.d("Parse","Loading parser from text file " + textFileOrUrl + " ... done [" + tim.toSecondsString() + " sec].");
-            return new LexicalizedParser(lex, bg, ug, dg, stateIndex, wordIndex, tagIndex, op);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private static void confirmBeginBlock(String file, String line) {
-        if (line == null) {
-            throw new RuntimeException(file + ": expecting BEGIN block; got end of file.");
-        } else if (! line.startsWith("BEGIN")) {
-            throw new RuntimeException(file + ": expecting BEGIN block; got " + line);
         }
     }
 

@@ -19,6 +19,7 @@ public class RecipeTimerUnitTest {
         // Act
         RecipeTimer recipeTimer = new RecipeTimer(upperbound, lowerbound, irrelevant);
         // Assert
+
         assert (recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
 
         //case 2 upperbound argument same as lowerbound

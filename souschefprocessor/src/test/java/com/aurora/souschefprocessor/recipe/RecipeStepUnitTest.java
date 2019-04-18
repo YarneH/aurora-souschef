@@ -1,6 +1,14 @@
 package com.aurora.souschefprocessor.recipe;
 
+import com.aurora.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
+
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import static org.junit.Assert.*;
 
 public class RecipeStepUnitTest {
 
@@ -48,5 +56,37 @@ public class RecipeStepUnitTest {
         }
         // Assert
         assert (case2Thrown);
+    }
+
+    @Test
+    public void RecipeStep_convertUnit_correctConversion() {
+
+        // Add the ingredient to the recipe
+        RecipeInProgress rip = new RecipeInProgress("");
+        EnumMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
+        Position pos = new Position(0, 1);
+        for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
+            irrelevantPositions.put(key, pos);
+        }
+        ListIngredient ingredient = new ListIngredient("olive oil", "cup", 1 / 2.0, "1/2 cup extra-virgin olive oil, divided", irrelevantPositions);
+        rip.setIngredients(new ArrayList<>(Arrays.asList(ingredient)));
+
+        // construct the step and add it to the recipe
+        String originalDescription = "Heat 0.25 cup oil in a large deep-sided skillet over medium-high";
+
+        RecipeStep step = new RecipeStep(originalDescription);
+        rip.setRecipeSteps(new ArrayList<RecipeStep>(Arrays.asList(step)));
+
+        // detect the ingredients in the step
+        DetectIngredientsInStepTask task = new DetectIngredientsInStepTask(rip, 0);
+        task.doTask();
+
+        // convert the step
+        step.convertUnit(true);
+        assertNotEquals("The description is not as expected after conversion", "Heat 60 milliliter oil in a large deep-sided skillet over medium-high", step.getDescription());
+
+        // convert back
+        step.convertUnit(false);
+        assertEquals("The description is not the same after converting twice",originalDescription, step.getDescription());
     }
 }

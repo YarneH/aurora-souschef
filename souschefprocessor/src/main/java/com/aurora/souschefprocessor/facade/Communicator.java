@@ -37,7 +37,7 @@ public class Communicator {
      * @param ingredientsClassifier the classifier for the
      *                              {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask} task
      */
-    public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
+    Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
         mDelegator = new Delegator(ingredientsClassifier, false);
 
     }

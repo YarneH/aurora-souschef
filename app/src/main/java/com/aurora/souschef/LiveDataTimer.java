@@ -24,6 +24,18 @@ public class LiveDataTimer {
      */
     private static final int TIME_BABIES = 60;
     /**
+     * One of the three states of the timer
+     */
+    protected static final int TIMER_INITIALISED = 0;
+    /**
+     * One of the three states of the timer
+     */
+    protected static final int TIMER_RUNNING = 1;
+    /**
+     * One of the three states of the timer
+     */
+    protected static final int TIMER_PAUSED = 2;
+    /**
      * The actual timer that can count down.
      */
     private CountDownTimer mCountDownTimer;
@@ -49,6 +61,12 @@ public class LiveDataTimer {
     private MutableLiveData<Long> mMillisLeft = new MutableLiveData<>();
 
     /**
+     * Indicates the current state of the timer
+     * (TIMER_RUNNING, TIMER_PAUSED, TIMER_INITIALISED)
+     */
+    private MutableLiveData<Integer> mTimerState = new MutableLiveData<>();
+
+    /**
      * Create a new timer based on a timer described in a recipe.
      *
      * @param recipeTimer the timer it is based on.
@@ -59,7 +77,7 @@ public class LiveDataTimer {
         mFinished.setValue(false);
         mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));
         mRunning = false;
-
+        mTimerState.setValue(TIMER_INITIALISED);
     }
 
     /**
@@ -89,6 +107,7 @@ public class LiveDataTimer {
 
         if (mRunning) {
             mRunning = false;
+            mTimerState.setValue(TIMER_PAUSED);
             mCountDownTimer.cancel();
             return;
         }
@@ -106,6 +125,7 @@ public class LiveDataTimer {
             }
         };
         this.mCountDownTimer.start();
+        mTimerState.setValue(TIMER_RUNNING);
         mRunning = true;
     }
 
@@ -171,5 +191,9 @@ public class LiveDataTimer {
 
     public LiveData<Boolean> getIsFinished() {
         return mFinished;
+    }
+
+    public LiveData<Integer> getTimerState() {
+        return mTimerState;
     }
 }

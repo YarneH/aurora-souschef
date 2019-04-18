@@ -58,15 +58,12 @@ public class Delegator {
     private static ThreadPoolExecutor sThreadPoolExecutor;
 
     /**
-     * <<<<<<< HEAD
      * A list of basic annotators needed for every step that has a pipeline (tokenizer, wordstosentence
      * and POS)
      */
     private static List<Annotator> basicAnnotators = new ArrayList<>();
 
     /*
-=======
->>>>>>> 3b87553460a1faf64263a599398e468ea33f89f6
      * Makes sure that the {@link #createAnnotationPipelines()} method is always called if a delegator is
      * used, to ensure that the pipelines have been created
      */

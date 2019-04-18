@@ -461,7 +461,7 @@ public class DetectIngredientsInListTaskUnitTest {
         assertEquals("The line for the UI is not as expected", "linguine or other long pasta", rip.getIngredients().get(0).getOriginalLineWithoutUnitAndQuantity());
 
         //convert and check if still the same
-        // rip.convertUnit(true);
+        rip.convertUnit(true);
         assertEquals("The line for the UI is not as expected after conversion", "linguine or other long pasta", rip.getIngredients().get(0).getOriginalLineWithoutUnitAndQuantity());
 
 

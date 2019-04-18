@@ -67,13 +67,13 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     private List<String> mSectionsBodies = new ArrayList<>();
 
     /**
-     * A list of basicAnnotators that were given by {@link com.aurora.souschefprocessor.facade.Delegator}
+     * A list of mBasicAnnotators that were given by {@link com.aurora.souschefprocessor.facade.Delegator}
      */
-    private List<Annotator> basicAnnotators;
+    private List<Annotator> mBasicAnnotators;
 
     public SplitToMainSectionsTask(RecipeInProgress recipeInProgress, List<Annotator> basicAnnotators) {
         super(recipeInProgress);
-        this.basicAnnotators = basicAnnotators;
+        this.mBasicAnnotators = basicAnnotators;
     }
 
 
@@ -134,7 +134,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private void createAnnotationPipeline() {
         AnnotationPipeline pipeline = new AnnotationPipeline();
-        if (basicAnnotators.isEmpty()) {
+        if (mBasicAnnotators.isEmpty()) {
             pipeline.addAnnotator(new TokenizerAnnotator(false));
 
             pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
@@ -142,7 +142,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             pipeline.addAnnotator(new POSTaggerAnnotator(false));
 
         } else {
-            for (Annotator a : basicAnnotators) {
+            for (Annotator a : mBasicAnnotators) {
                 pipeline.addAnnotator(a);
             }
         }

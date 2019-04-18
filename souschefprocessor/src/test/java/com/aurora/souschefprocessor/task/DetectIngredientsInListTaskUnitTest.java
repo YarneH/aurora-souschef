@@ -16,6 +16,8 @@ import java.util.List;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 
+import static org.junit.Assert.assertEquals;
+
 public class DetectIngredientsInListTaskUnitTest {
 
     private static RecipeInProgress recipe;
@@ -446,4 +448,22 @@ public class DetectIngredientsInListTaskUnitTest {
         assert (rip.getIngredients().contains(onion));
     }
 
+
+    @Test
+    public void DetectIngredientsInListTask_doTask_getOriginalLineWithoutUnitAndQuantityCorrect(){
+        String ingredient =" 1 lb. linguine or other long pasta";
+        RecipeInProgress rip = new RecipeInProgress("");
+        rip.setIngredientsString(ingredient);
+
+        // Do the detecting
+        DetectIngredientsInListTask task = new DetectIngredientsInListTask(rip, crfClassifier);
+        task.doTask();
+        assertEquals("The line for the UI is not as expected", "linguine or other long pasta", rip.getIngredients().get(0).getOriginalLineWithoutUnitAndQuantity());
+
+        //convert and check if still the same
+        rip.convertUnit(true);
+        assertEquals("The line for the UI is not as expected after conversion", "linguine or other long pasta", rip.getIngredients().get(0).getOriginalLineWithoutUnitAndQuantity());
+
+
+    }
 }

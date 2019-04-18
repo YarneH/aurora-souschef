@@ -1,6 +1,8 @@
 package com.aurora.souschefprocessor.facade;
 
 
+import android.util.Log;
+
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
@@ -24,6 +26,10 @@ import java.util.concurrent.TimeUnit;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotator;
+import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
+import edu.stanford.nlp.pipeline.TokenizerAnnotator;
+import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
@@ -52,6 +58,12 @@ public class Delegator {
     private static ThreadPoolExecutor sThreadPoolExecutor;
 
     /**
+     * A list of basic annotators needed for every step that has a pipeline (tokenizer, wordstosentence
+     * and POS)
+     */
+    private static List<Annotator> basicAnnotators = new ArrayList<>();
+
+    /*
      * Makes sure that the {@link #createAnnotationPipelines()} method is always called if a delegator is
      * used, to ensure that the pipelines have been created
      */
@@ -68,7 +80,6 @@ public class Delegator {
      * A boolean that indicates whether the processing should be parallelized
      */
     private boolean mParallelize;
-
 
     /**
      * Creating the delegator
@@ -96,9 +107,36 @@ public class Delegator {
             sStartedCreatingPipelines = true;
             LOCK.notifyAll();
         }
+        Thread t = new Thread(() -> {
+            createBasicAnnotators();
+            DetectTimersInStepTask.initializeAnnotationPipeline(basicAnnotators);
+            DetectIngredientsInStepTask.initializeAnnotationPipeline(basicAnnotators);
+        });
+        t.start();
+    }
 
-        DetectTimersInStepTask.initializeAnnotationPipeline();
-        DetectIngredientsInStepTask.initializeAnnotationPipeline();
+
+    /**
+     * Creates the basicannotators (tokenizer, words to sentence and POS)
+     *
+     * @return the list of basicAnnotators
+     */
+    private static List<Annotator> createBasicAnnotators() {
+        synchronized (basicAnnotators) {
+            if (basicAnnotators.isEmpty()) {
+
+                basicAnnotators.add(new TokenizerAnnotator(false, "en"));
+                incrementProgressAnnotationPipelines();
+                basicAnnotators.add(new WordsToSentencesAnnotator(false));
+                incrementProgressAnnotationPipelines();
+                basicAnnotators.add(new POSTaggerAnnotator(false));
+                incrementProgressAnnotationPipelines();
+
+            }
+            basicAnnotators.notifyAll();
+        }
+        return basicAnnotators;
+
     }
 
     /**
@@ -106,6 +144,7 @@ public class Delegator {
      */
     public static void incrementProgressAnnotationPipelines() {
         Communicator.incrementProgressAnnotationPipelines();
+
     }
 
     /**
@@ -164,6 +203,7 @@ public class Delegator {
         if (pipeline != null) {
             for (AbstractProcessingTask task : pipeline) {
                 task.doTask();
+                Log.d("DELEGATOR", task.getClass().toString());
             }
         }
 
@@ -198,9 +238,11 @@ public class Delegator {
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
      */
-    public List<AbstractProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
-        ArrayList<AbstractProcessingTask> pipeline = new ArrayList<>();
-        pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
+
+    private List<AbstractProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
+        List<AbstractProcessingTask> pipeline = new ArrayList<>();
+        pipeline.add(new SplitToMainSectionsTask(recipeInProgress, createBasicAnnotators()));
+
         pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));
         pipeline.add(new SplitStepsTask(recipeInProgress));
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));

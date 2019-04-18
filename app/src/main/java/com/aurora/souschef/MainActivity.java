@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
@@ -89,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 "        1/2 tsp. crushed red pepper flakes\n" +
                 "        6 oz. oil-packed tuna\n" +
                 "\n" +
-                "Preparation \n" +
+                " \n" +
                 "\n" +
                 "        Cook pasta in a large pot of boiling salted water, stirring " +
                 "occasionally, until al dente. Drain pasta, reserving 1 cup pasta cooking " +
@@ -114,6 +115,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Sets up the observation of the recipeviewmodel
+     */
+    private  void setUpRecipeDataObject(){
+        mRecipe.getProgressStep().observe(this, (Integer step) -> {
+                    ProgressBar pb = findViewById(R.id.pb_loading_screen);
+                    pb.setProgress(mRecipe.getProgress());
+
+                    // TODO: set TextView to visualize progress
+                }
+        );
+        mRecipe.getInitialised().observe(this, (Boolean isInitialised) -> {
+            if (isInitialised == null) {
+                return;
+            }
+            if (!isInitialised) {
+                return;
+            }
+            hideProgress();
+        });
+        mRecipe.getProcessFailed().observe(this, (Boolean failed) -> {
+            if (failed != null && failed) {
+                Toast.makeText(this, "Detection failed: " +
+                                mRecipe.getFailureMessage().getValue(),
+                        Toast.LENGTH_LONG).show();
+                ProgressBar pb = findViewById(R.id.pb_loading_screen);
+                pb.setProgress(0);
+            }
+        });
+
+    }
+    /**
      * Overwritten method of Activity
      *
      * @param savedInstanceState The saved state.
@@ -133,21 +165,7 @@ public class MainActivity extends AppCompatActivity {
         showProgress();
 
         // setup recipe data object (RecipeViewModel).
-        mRecipe.getProgressStep().observe(this, (Integer step) -> {
-                    ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                    pb.setProgress(mRecipe.getProgress());
-                    // TODO: set TextView to visualize progress
-                }
-        );
-        mRecipe.getInitialised().observe(this, (Boolean isInitialised) -> {
-            if (isInitialised == null) {
-                return;
-            }
-            if (!isInitialised) {
-                return;
-            }
-            hideProgress();
-        });
+        setUpRecipeDataObject();
 
         /*
          * Handle Aurora starting the Plugin.

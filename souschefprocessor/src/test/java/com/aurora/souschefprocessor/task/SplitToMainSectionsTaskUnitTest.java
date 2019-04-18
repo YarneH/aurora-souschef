@@ -64,7 +64,7 @@ public class SplitToMainSectionsTaskUnitTest {
         List<Map<String, String>> fieldsList = new ArrayList<>();
         //recipe 1
         Map<String, String> map = new HashMap<>();
-        map.put("STEPS", "Toast baguette slices lightly on one side.\n" +
+        /*map.put("STEPS", "Toast baguette slices lightly on one side.\n" +
                 "Layer each round with smoked salmon, top with a dollup of sour\n" +
                 "cream and sprinkle with a few capers and lots of freshly ground black\npepper.");
         map.put("INGR", "8 thin slices baguette\n" +
@@ -72,7 +72,7 @@ public class SplitToMainSectionsTaskUnitTest {
                 "sour cream\n" +
                 "capers\n" +
                 "lemon cheeks, to serve");
-        fieldsList.add(map);
+        fieldsList.add(map);*/
 
         // recipe 2
         map = new HashMap<>();
@@ -173,7 +173,7 @@ public class SplitToMainSectionsTaskUnitTest {
         for (String text : recipeTexts) {
             // Arrange
             RecipeInProgress rip = new RecipeInProgress(text);
-            SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+            SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip, new ArrayList<>());
             // Act
             task.doTask();
             // Assert
@@ -195,7 +195,7 @@ public class SplitToMainSectionsTaskUnitTest {
             // Arrange
             String text = recipeTexts.get(i);
             RecipeInProgress rip = new RecipeInProgress(text);
-            SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+            SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip, new ArrayList<>());
             // Act
             task.doTask();
 
@@ -213,7 +213,7 @@ public class SplitToMainSectionsTaskUnitTest {
         try {
             for (String text : array) {
                 RecipeInProgress rip = new RecipeInProgress(text);
-                SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+                SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip, new ArrayList<>());
                 task.doTask();
 
             }
@@ -234,7 +234,7 @@ public class SplitToMainSectionsTaskUnitTest {
         String json = "{\"mFilename\":\"\",\"mTitle\":\"How to make chocolate mousse\\n2 ratings\\nHow to make chocolate mousse\\nBy Lesley Waters\",\"mSections\":[{\"mBody\":\"Shopping list\"},{\"mBody\":\"Print recipe\"},{\"mBody\":\"Preparation time\"},{\"mBody\":\"30 mins to 1 hour\"},{\"mBody\":\"Cooking time\"},{\"mBody\":\"10 to 30 mins\"},{\"mBody\":\"Serves\"},{\"mBody\":\"Serves 6-8\"},{\"mBody\":\"Dietary\\n \"},{\"mBody\":\"Vegetarian\"},{\"mBody\":\"\\n    225g/8oz dark chocolate\\n    5 medium free-range eggs\\n    100g/3½oz caster sugar\\n    170g/6oz unsalted butter\\n    200ml/7fl oz crème fraîche\\n    12-16 fresh cherries\\n    cocoa powder, for dusting\"},{\"mBody\":\"Method\"},{\"mBody\":\"    Place a bowl over a pan of simmering water (the water shouldn\\u0027t touch the bottom of the bowl) and gently melt the chocolate in the bowl. Remove from the heat once melted and let it cool slightly.\"},{\"mBody\":\"    Separate the egg yolks from the egg whites. Beat the egg yolks and most of the sugar together until creamy and pale in colour (keep two teaspoons of sugar to one side for the egg whites).\"},{\"mBody\":\"    When it has cooled slightly, whisk the chocolate into the egg yolk and sugar mixture.\"},{\"mBody\":\"    Melt the butter in a pan over a low heat.\"},{\"mBody\":\"    Whisk the melted butter into the chocolate mixture. If it gets too thick, add a couple of tablespoons of water.\"},{\"mBody\":\"    In a clean bowl, whisk the egg whites and the remaining two teaspoons of sugar with an electric whisk until they\\u0027re light and fluffy and hold a soft peak. Do not over-beat. The sugar will give them a gentle sheen.\"},{\"mBody\":\"    Carefully fold the egg whites into the chocolate mixture using a metal spoon.\"},{\"mBody\":\"    Spoon the chocolate mixture into small teacups or ramekins and refrigerate for about two hours.\"},{\"mBody\":\"    Just before serving, top each marquise with a dollop of crème fraîche and two fresh cherries, then sprinkle with cocoa powder.\\n\"}]}\n";
         ExtractedText text = ExtractedText.fromJson(json);
         RecipeInProgress rip = new RecipeInProgress(text);
-        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip, new ArrayList<>());
         String description = "How to make chocolate mousse\n" +
                 "2 ratings\n" +
                 "How to make chocolate mousse\n" +
@@ -288,7 +288,7 @@ public class SplitToMainSectionsTaskUnitTest {
         json = "{\"mFilename\":\"\",\"mTitle\":\"How to make chocolate mousse\\n2 ratings\\nHow to make chocolate mousse\\nBy Lesley Waters\",\"mSections\":[{\"mBody\":\"Shopping list\"},{\"mBody\":\"Print recipe\"},{\"mBody\":\"Preparation time\"},{\"mBody\":\"30 mins to 1 hour\"},{\"mBody\":\"Cooking time\"},{\"mBody\":\"10 to 30 mins\"},{\"mBody\":\"Serves\"},{\"mBody\":\"Serves 6-8\"},{\"mBody\":\"Dietary\\n \"},{\"mBody\":\"Vegetarian\"},{\"mBody\":\"\\n    225g/8oz dark chocolate\\n    5 medium free-range eggs\\n    100g/3½oz caster sugar\\n    170g/6oz unsalted butter\\n    200ml/7fl oz crème fraîche\\n    12-16 fresh cherries\\n    cocoa powder, for dusting\"},{\"mBody\":\"\"},{\"mBody\":\"    Place a bowl over a pan of simmering water (the water shouldn\\u0027t touch the bottom of the bowl) and gently melt the chocolate in the bowl. Remove from the heat once melted and let it cool slightly.\"},{\"mBody\":\"    Separate the egg yolks from the egg whites. Beat the egg yolks and most of the sugar together until creamy and pale in colour (keep two teaspoons of sugar to one side for the egg whites).\"},{\"mBody\":\"    When it has cooled slightly, whisk the chocolate into the egg yolk and sugar mixture.\"},{\"mBody\":\"    Melt the butter in a pan over a low heat.\"},{\"mBody\":\"    Whisk the melted butter into the chocolate mixture. If it gets too thick, add a couple of tablespoons of water.\"},{\"mBody\":\"    In a clean bowl, whisk the egg whites and the remaining two teaspoons of sugar with an electric whisk until they\\u0027re light and fluffy and hold a soft peak. Do not over-beat. The sugar will give them a gentle sheen.\"},{\"mBody\":\"    Carefully fold the egg whites into the chocolate mixture using a metal spoon.\"},{\"mBody\":\"    Spoon the chocolate mixture into small teacups or ramekins and refrigerate for about two hours.\"},{\"mBody\":\"    Just before serving, top each marquise with a dollop of crème fraîche and two fresh cherries, then sprinkle with cocoa powder.\\n\"}]}\n";
         text = ExtractedText.fromJson(json);
         rip = new RecipeInProgress(text);
-        task = new SplitToMainSectionsTask(rip);
+        task = new SplitToMainSectionsTask(rip, new ArrayList<>());
 
 
         // Act
@@ -342,7 +342,7 @@ public class SplitToMainSectionsTaskUnitTest {
         text.addSection(stepsSection);
 
         RecipeInProgress rip = new RecipeInProgress(text);
-        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip, new ArrayList<>());
         task.doTask();
 
 
@@ -392,7 +392,7 @@ public class SplitToMainSectionsTaskUnitTest {
         text.addSection(stepsSection);
 
         RecipeInProgress rip = new RecipeInProgress(text);
-        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip, new ArrayList<>());
         task.doTask();
 
 
@@ -442,7 +442,7 @@ public class SplitToMainSectionsTaskUnitTest {
         text.addSection(step);
 
         RecipeInProgress rip = new RecipeInProgress(text);
-        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip, new ArrayList<>());
         task.doTask();
 
 
@@ -494,7 +494,7 @@ public class SplitToMainSectionsTaskUnitTest {
         text.addSection(step);
 
         RecipeInProgress rip = new RecipeInProgress(text);
-        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
+        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip, new ArrayList<>());
         task.doTask();
 
 

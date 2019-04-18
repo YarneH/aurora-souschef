@@ -54,7 +54,9 @@ public class Communicator {
         createAnnotationPipelines();
         try (GZIPInputStream is = new GZIPInputStream(context.getResources().
                 openRawResource(R.raw.detect_ingr_list_model))) {
+            Log.d("MODEL", "start loading model");
             CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
+            incrementProgressAnnotationPipelines(); // 5
             return new Communicator(crf);
         } catch (IOException | ClassNotFoundException e) {
             Log.e("MODEL", "createCommunicator ", e);
@@ -84,6 +86,7 @@ public class Communicator {
      */
     static void incrementProgressAnnotationPipelines() {
         mProgressAnnotationPipelines.incrementAndGet();
+        Log.d("STEP", ""+mProgressAnnotationPipelines);
     }
 
     /**

@@ -51,12 +51,12 @@ public class DelegatorLongTest {
         List<String> recipesFromPlainText = initializeRecipes();
         // split into valid and invalid
         // the first 5 recipes are valid recipes
-        validRecipesFromPlainText = recipesFromPlainText.subList(0, 5);
-        invalidRecipesFromPlainText = recipesFromPlainText.subList(5, 8);
+        validRecipesFromPlainText = recipesFromPlainText.subList(0, 4);
+        invalidRecipesFromPlainText = recipesFromPlainText.subList(4, 8);
 
         List<ExtractedText> jsonRecipes = initializeRecipesJSON();
-        validRecipesJSON = jsonRecipes.subList(0,6);
-        invalidRecipesJSON = jsonRecipes.subList(6, jsonRecipes.size());
+        validRecipesJSON = jsonRecipes.subList(0,5);
+        invalidRecipesJSON = jsonRecipes.subList(5, jsonRecipes.size());
 
         // load in the model
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
@@ -150,7 +150,7 @@ public class DelegatorLongTest {
 
             for (ExtractedText text : validRecipesJSON) {
                 Recipe recipe = delegator.processText(text);
-                System.out.println("--------------------------------");
+                System.out.println(recipe+"\n--------------------------------");
 
             }
         } catch (Exception e) {

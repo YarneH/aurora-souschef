@@ -152,7 +152,7 @@ public class Ingredient {
         for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
             Position position = mPositions.get(key);
             if (position != null) {
-                mPositions.get(key).trimToLengthOfString(s);
+                position.trimToLengthOfString(s);
             }
         }
     }
@@ -163,7 +163,7 @@ public class Ingredient {
      * @return a list, where the first element is the element that is stated first in the sentence, in case of
      * ex aeqo the list is ordered with the following priority: 1 QUANTITY, 2 UNIT, 3 NAME
      */
-    protected List<PositionKeysForIngredients> getOrderOfPositions() {
+    private List<PositionKeysForIngredients> getOrderOfPositions() {
 
         int qEnd = getQuantityPosition().getEndIndex();
 

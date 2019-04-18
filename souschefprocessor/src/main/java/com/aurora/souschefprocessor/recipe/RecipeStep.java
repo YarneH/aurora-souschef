@@ -243,10 +243,15 @@ public class RecipeStep {
         return bld.toString();
     }
 
-     void convertUnit(boolean toMetric) {
+    /**
+     * Converts the units in this recipe
+     *
+     * @param toMetric a boolean that indicates wheter to convert to metric or to US
+     */
+    void convertUnit(boolean toMetric) {
         if (mIngredientDetectionDone) {
             for (Ingredient ingredient : mIngredients) {
-                ingredient.convertUnit(toMetric, mDescription);
+                mDescription = ingredient.convertUnit(toMetric, mDescription);
             }
         }
     }

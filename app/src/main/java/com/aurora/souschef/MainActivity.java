@@ -20,6 +20,7 @@ import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
 import com.aurora.souschefprocessor.recipe.Recipe;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,6 +44,10 @@ public class MainActivity extends AppCompatActivity {
      * Total number of tabs.
      */
     private static final int NUMBER_OF_TABS = 3;
+    /**
+     * FireBase analytics instance.
+     */
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -126,6 +131,10 @@ public class MainActivity extends AppCompatActivity {
         // TODO: Change back to the correct view
         setContentView(R.layout.activity_main);
 
+        // Obtain the FirebaseAnalytics instance.
+        // Most of firebase analytics is done automatically.
+        // Probably nothing more is needed.
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -249,6 +258,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
+
             Fragment tempFrag;
             switch (position) {
                 case TAB_OVERVIEW:

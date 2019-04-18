@@ -288,8 +288,9 @@ public class RecipeViewModel extends AndroidViewModel {
                     }
                 } catch (RecipeDetectionException rde) {
                     Log.d("FAILURE", rde.getMessage());
-                    mProcessingFailed.postValue(true);
                     mFailureMessage.postValue(rde.getMessage());
+                    mProcessingFailed.postValue(true);
+
                 }
             }
             return null;

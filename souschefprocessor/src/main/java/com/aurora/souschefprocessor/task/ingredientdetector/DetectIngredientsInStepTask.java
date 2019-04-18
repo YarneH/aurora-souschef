@@ -127,7 +127,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     static {
         sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
         sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
-        initializeAnnotationPipeline(new ArrayList<>());
+        //initializeAnnotationPipeline(new ArrayList<>());
     }
 
     /**
@@ -323,6 +323,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * Waits  until the sAnnotationPipeline is created
      */
     private void waitForPipeline() {
+        initializeAnnotationPipeline(new ArrayList<>());
         // wait as long as the pipeline object is null
         while (sAnnotationPipeline == null) {
             try {

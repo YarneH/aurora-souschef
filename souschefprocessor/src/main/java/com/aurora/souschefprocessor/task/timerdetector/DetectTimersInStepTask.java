@@ -547,7 +547,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     toIndex = allTokens.indexOf(lastTimexToken) + 1;
 
                     // The position of the detected timer = beginIndex of the first token, endIndex of the last token
-                    Position timerPosition = new Position(firstTimexToken.beginPosition(), lastTimexToken.endPosition());
+                    Position timerPosition = new Position(firstTimexToken.beginPosition(),
+                            lastTimexToken.endPosition());
 
                     // The detected annotation
                     SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();

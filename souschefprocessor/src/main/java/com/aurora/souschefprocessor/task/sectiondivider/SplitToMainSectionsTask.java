@@ -54,7 +54,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     /**
      * An annotation pipeline specific for parsing of sentences
      */
-    private static AnnotationPipeline sAnnotationPipeline;
+    private  AnnotationPipeline mAnnotationPipeline;
     /**
      * The list of bodies from the list of sections that was included in the {@link ExtractedText}
      * received from Aurora
@@ -129,7 +129,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
 
     /**
-     * Creates the {@link #sAnnotationPipeline}
+     * Creates the {@link #mAnnotationPipeline}
      */
     private void createAnnotationPipeline() {
         AnnotationPipeline pipeline = new AnnotationPipeline();
@@ -146,7 +146,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             }
         }
 
-        sAnnotationPipeline = pipeline;
+        mAnnotationPipeline = pipeline;
     }
 
     /**
@@ -649,7 +649,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return the annotated text
      */
     private Annotation createAnnotatedText(String text, boolean lowercase) {
-        if (sAnnotationPipeline == null) {
+        if (mAnnotationPipeline == null) {
             createAnnotationPipeline();
         }
         // The parser could perform better on imperative sentences (instructions) when the
@@ -661,7 +661,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             annotation = new Annotation(text);
         }
 
-        sAnnotationPipeline.annotate(annotation);
+        mAnnotationPipeline.annotate(annotation);
         return annotation;
 
     }

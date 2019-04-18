@@ -18,21 +18,21 @@ import java.util.Objects;
  * the description
  */
 public class Ingredient {
-
     /**
      * The name of this ingredient
      */
-    protected String mName;
+    private String mName;
+
     /**
      * The {@link Amount} that has as value quantity and as unit the unit of this ingredient
      */
-    protected Amount mAmount;
+    private Amount mAmount;
 
     /**
      * A map with the {@link Position}s of te name, unit and value of this ingredient in the string
      * they were classified. Each of these Positions cannot be null.
      */
-    protected Map<PositionKeysForIngredients, Position> mPositions;
+    private Map<PositionKeysForIngredients, Position> mPositions;
 
     public Ingredient(String name, String unit, double value, Map<PositionKeysForIngredients, Position> positions) {
         this.mName = name;
@@ -45,6 +45,7 @@ public class Ingredient {
                 throw new IllegalArgumentException("Position of " + key + " cannot be null");
             }
         }
+
         this.mPositions = positions;
     }
 
@@ -110,7 +111,6 @@ public class Ingredient {
         if (o instanceof Ingredient) {
             Ingredient ingredient = (Ingredient) o;
             return (ingredient.getAmount().equals(mAmount) && ingredient.getName().equalsIgnoreCase(mName));
-
         }
         return false;
     }
@@ -131,7 +131,11 @@ public class Ingredient {
      */
     boolean arePositionsLegalInString(String string) {
         for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
-            if (!mPositions.get(key).isLegalInString(string)) {
+            Position position = mPositions.get(key);
+            if (position == null) {
+                throw new IllegalArgumentException("Position of " + key + " is null!");
+            }
+            if (!position.isLegalInString(string)) {
                 return false;
             }
         }
@@ -146,7 +150,10 @@ public class Ingredient {
      */
     public void trimPositionsToString(String s) {
         for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
-            mPositions.get(key).trimToLengthOfString(s);
+            Position position = mPositions.get(key);
+            if (position != null) {
+                mPositions.get(key).trimToLengthOfString(s);
+            }
         }
     }
 
@@ -183,6 +190,7 @@ public class Ingredient {
                 list.add(PositionKeysForIngredients.NAME);
                 list.add(PositionKeysForIngredients.QUANTITY);
             }
+
         } else {
             list.add(PositionKeysForIngredients.NAME);
             if (qEnd < uEnd) {
@@ -196,7 +204,7 @@ public class Ingredient {
         return list;
     }
 
-    public String convertUnit(boolean toMetric, String description) {
+    String convertUnit(boolean toMetric, String description) {
 
         // only convert if the unit and quantity are detected
         if (!unitDetected(description) || !quantityDetected(description)) {
@@ -235,13 +243,11 @@ public class Ingredient {
                 newEnd = newBegin + converted.get(key).length();
                 // update the offset
                 offset = newEnd - originalPos.getEndIndex();
-
-
             }
             originalPos.setIndices(newBegin, newEnd);
         }
-        return description;
 
+        return description;
     }
 
     /**
@@ -250,7 +256,7 @@ public class Ingredient {
      * @param description the description in which this ingredient was detected
      * @return a boolean that indicates if a unit was detected
      */
-    protected boolean unitDetected(String description) {
+    boolean unitDetected(String description) {
         boolean stringSet = !("").equals(mAmount.getUnit());
         boolean positionSpansEntireLine = getUnitPosition().getBeginIndex() == 0 &&
                 getUnitPosition().getEndIndex() == description.length();
@@ -263,17 +269,13 @@ public class Ingredient {
      * @param description the description in which this ingredient was detected
      * @return a boolean that indicates if a quantity was detected
      */
-    protected boolean quantityDetected(String description) {
+    boolean quantityDetected(String description) {
         return !(getQuantityPosition().getBeginIndex() == 0 &&
                 getQuantityPosition().getEndIndex() == description.length());
     }
 
-    /**
-     * Keys for a map storing positions for ingredients
-     */
+
     public enum PositionKeysForIngredients {
         NAME, QUANTITY, UNIT
     }
-
-
 }

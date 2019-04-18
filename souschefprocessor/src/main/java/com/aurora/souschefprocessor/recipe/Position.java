@@ -62,20 +62,6 @@ public class Position {
         return beginIndex < endIndex;
     }
 
-    public void setIndices(int beginIndex, int endIndex) {
-        // check if the arguments are legal
-        checkLegality(beginIndex, endIndex);
-
-        // make sure beginindex is smaller than endindex
-        if (!beginSmallerThanEnd(beginIndex, endIndex)) {
-            mBeginIndex = endIndex;
-            mEndIndex = beginIndex;
-        } else {
-            mBeginIndex = beginIndex;
-            mEndIndex = endIndex;
-        }
-    }
-
     public int getBeginIndex() {
         return mBeginIndex;
     }
@@ -120,7 +106,7 @@ public class Position {
      * @param string the string to check the legality of the position in
      * @return A boolean that indicates whether this position is legal in the string
      */
-    public boolean isLegalInString(String string) {
+    boolean isLegalInString(String string) {
         if (string == null) {
             return false;
         }
@@ -157,7 +143,13 @@ public class Position {
                 '}';
     }
 
-    public void trimToLengthOfString(String s) {
+    /**
+     * Trims the position to the given string. This ensures that the endIndex is never bigger than
+     * the string
+     *
+     * @param s The string to trim to
+     */
+    void trimToLengthOfString(String s) {
         int length = s.length();
         if (mBeginIndex >= length) {
             throw new IllegalArgumentException("This string is shorter than the beginIndex of " +
@@ -167,4 +159,25 @@ public class Position {
             mEndIndex = length;
         }
     }
+
+    /**
+     * Sets both the beginIndex and endIndex
+     *
+     * @param beginIndex the beginindex
+     * @param endIndex   the endIndex
+     */
+    public void setIndices(int beginIndex, int endIndex) {
+        // check if the arguments are legal
+        checkLegality(beginIndex, endIndex);
+
+        // make sure beginindex is smaller than endindex
+        if (!beginSmallerThanEnd(beginIndex, endIndex)) {
+            mBeginIndex = endIndex;
+            mEndIndex = beginIndex;
+        } else {
+            mBeginIndex = beginIndex;
+            mEndIndex = endIndex;
+        }
+    }
+
 }

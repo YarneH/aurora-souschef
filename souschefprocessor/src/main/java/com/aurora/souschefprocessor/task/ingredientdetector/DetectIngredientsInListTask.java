@@ -1,10 +1,10 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
-import com.aurora.souschefprocessor.recipe.UnitConversionUtils;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
+import com.aurora.souschefprocessor.recipe.UnitConversionUtils;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
 import java.util.ArrayList;
@@ -26,16 +26,16 @@ import edu.stanford.nlp.ling.CoreLabel;
  */
 
 public class DetectIngredientsInListTask extends DetectIngredientsTask {
-
-
     /**
      * String representing the QUANTITY class of the classifier
      */
     private static final String QUANTITY = "QUANTITY";
+
     /**
      * String representing the UNIT class of the classifier
      */
     private static final String UNIT = "UNIT";
+
     /**
      * String representing the NAME class of the classifier
      */
@@ -47,12 +47,12 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
      */
     private static final String CLUTTER_REGEX = "[/][0-9\\p{No}]+(([–-][0-9\\p{No}]+)+( pint)?|" +
             "fl oz|[a-z]+([ ][0-9\\p{No}](oz))?)";
+
     /**
      * These regexes will remove clutter to pass the clutter test in DetectIngredientsInListTaskUnitTest
      * see {@link #removeClutter(String)}
      */
     private static final String CLUTTER_DASH_REGEX = "[–-][0-9\\p{No}]+";
-
 
     /**
      * The classifier to detect ingredients
@@ -92,13 +92,14 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
             // do not append automatically if it is a point
             if (current != '.') {
-
                 if (spaceNeededBetweenPreviousAndCurrent(previous, current)) {
                     bld.append(" ");
                     bld.append(current);
+
                 } else {
                     bld.append(current);
                 }
+
             } else {
                 if (pointNeededBetweenPreviousAndNext(previous, next)) {
                     bld.append(current);
@@ -109,10 +110,8 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         // add the last character
         bld.append(chars[chars.length - 1]);
 
-
         // return the builder
         return bld.toString();
-
     }
 
     /**
@@ -165,6 +164,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
                 line = line.replace(remove, "");
             }
         }
+
         return line;
     }
 
@@ -181,11 +181,20 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
                 && Character.isAlphabetic(second)) {
             // if a number is followed by a letter, add a space
             return true;
+
         } else {
             // if a letter is followed by a slash, add a space
             return Character.isAlphabetic(first) && second == '/';
-
         }
+    }
+
+    private static String makeNewLine(String line, int beginPosition, int endPosition, String name) {
+        String newLine = line.substring(0, beginPosition) + name;
+        if (endPosition < line.length()) {
+            newLine += line.substring(endPosition);
+        }
+
+        return newLine;
     }
 
     /**
@@ -197,8 +206,8 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         if (list == null || list.isEmpty()) {
             throw new RecipeDetectionException("No ingredients were detected, this is probably not a recipe");
         }
-        this.mRecipeInProgress.setIngredients(list);
 
+        this.mRecipeInProgress.setIngredients(list);
     }
 
     /**
@@ -224,18 +233,10 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
                 ListIngredient listIngredient = (detectIngredient(standardizeLine(ingredient)));
                 returnList.add(listIngredient);
-
             }
         }
-        return returnList;
-    }
 
-    private static String makeNewLine(String line, int beginPosition, int endPosition, String name){
-        String newLine = line.substring(0, beginPosition) + name;
-        if (endPosition < line.length()) {
-            newLine += line.substring(endPosition);
-        }
-        return newLine;
+        return returnList;
     }
 
     /**
@@ -251,7 +252,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         // map to put classes and labeled tokens
         Map<String, List<CoreLabel>> map = new HashMap<>();
 
-
         for (List<CoreLabel> l : classifiedList) {
             for (CoreLabel cl : l) {
                 String classifiedClass = (cl.get(CoreAnnotations.AnswerAnnotation.class)).trim();
@@ -263,9 +263,9 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
                 } else {
                     map.get(classifiedClass).add(cl);
                 }
-
             }
         }
+
         // the map for the positions of the detected ingredients
         Map<Ingredient.PositionKeysForIngredients, Position> positions
                 = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
@@ -274,7 +274,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         // if no value present, default to empty string
         String unit = "";
         String name = "";
-
 
         if (map.get(UNIT) != null) {
             // build the unit (gets the first succeeding elements labeled unit)
@@ -288,6 +287,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             line = line.substring(0, beginPosition) + unit + line.substring(endPosition);
             endPosition = beginPosition + unit.length();
             positions.put(Ingredient.PositionKeysForIngredients.UNIT, new Position(beginPosition, endPosition));
+
         } else {
             // if no unit detected make the position the whole string
             positions.put(Ingredient.PositionKeysForIngredients.UNIT, new Position(0, line.length()));
@@ -306,17 +306,18 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             line = makeNewLine(line, beginPosition, endPosition, name);
 
             positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(beginPosition, endPosition));
+
         } else {
             // if no name detected make the position the whole string
             positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(0, line.length()));
         }
+
         if (map.get(QUANTITY) != null) {
             // calculate the quantity using the list of tokens in labeled QUANTITY
             // for now first element labeled as quantity and the succeeding elements
             // (endposition + 1 = beginposition) or endposition = beginposition
             List<CoreLabel> succeedingQuantities = getSucceedingElements(map.get(QUANTITY), QUANTITY);
             quantity = super.calculateQuantity(succeedingQuantities);
-
 
             // if quantity is -1 then no quantity could be caluclated
             if (quantity != -1.0) {
@@ -326,9 +327,8 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
                 int endPosition = succeedingQuantities.get(succeedingQuantities.size() - 1).endPosition();
                 positions.put(Ingredient.PositionKeysForIngredients.QUANTITY, new Position(beginPosition, endPosition));
             }
-
-
         }
+
         if (positions.get(Ingredient.PositionKeysForIngredients.QUANTITY) == null) {
             // if no quantity detected make the position the whole string
             // if no quantity detected then the position is still null so make the position the
@@ -358,6 +358,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         }
         // delete last added space
         bld.deleteCharAt(bld.length() - 1);
+
         return bld.toString();
     }
 
@@ -376,6 +377,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         }
         // delete last added space
         bld.deleteCharAt(bld.length() - 1);
+
         return bld.toString();
     }
 
@@ -410,24 +412,26 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
                     firstFound = true;
                     //endIndex is the position of the first char not in the string of this element
                     endIndex = element.endPosition();
+
                 } else {
                     // the first element of the sequence has been found, check if this element is
                     // at most one char apart
                     if (element.beginPosition() == endIndex + 1 || element.beginPosition() == endIndex) {
                         tokenQuantities.add(element);
                         endIndex = element.endPosition();
+
                     } else {
                         listComplete = true;
                     }
                 }
+
             } else if (firstFound) {
                 // this element does not belong to the needed class, if an element of the class has
                 // already been found then set listComplete to true in order to break the for loop
                 listComplete = true;
             }
-
-
         }
+
         return tokenQuantities;
     }
 }

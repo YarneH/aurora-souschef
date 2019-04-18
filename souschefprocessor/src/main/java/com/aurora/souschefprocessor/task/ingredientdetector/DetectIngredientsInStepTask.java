@@ -37,35 +37,41 @@ import edu.stanford.nlp.util.CoreMap;
  * Detects the mIngredients in the list of mIngredients
  */
 public class DetectIngredientsInStepTask extends DetectIngredientsTask {
-
     /**
      * A string representing the word half
      */
     private static final String FRACTION_HALF = "half";
+
     /**
      * A double representing 1/2 to be used when the string "half" is detected
      */
     private static final double FRACTION_HALF_MUL = 0.5;
+
     /**
      * A string representing the word half
      */
     private static final String FRACTION_QUARTER = "quarter";
+
     /**
      * A double representing 1/4 to be used when the string "quarter" is detected
      */
     private static final double FRACTION_QUARTER_MUL = 0.25;
+
     /**
      * A string representing the word of
      */
     private static final String OF_PREPOSITION = "of";
+
     /**
      * TODO: @Piet
      */
     private static final int PREPOSITION_LENGTH = 1;
+
     /**
      * TODO: @Piet
      */
     private static final int FRACTIONS_LENGTH = 1;
+
     /**
      * TODO: @Piet
      */
@@ -75,6 +81,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * The default unit is set to the empty string
      */
     private static final String DEFAULT_UNIT = "";
+
     /**
      * Default quantity is 1.0
      */
@@ -99,16 +106,16 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private static final String[] TAGS_TO_IGNORE = {"TO", "IN", "JJ", "JJR", "JJS"};
 
-    private static final String[] COMMON_UNITS = {"cup", "cups", "tablespoon", "tablespoons", "gram", "ounce",
-            "ounces", "pound", "pounds", "teaspoon", "teaspoons", "kg", "ml", "kilogram", "gram"};
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
     private static boolean sStartedCreatingPipeline = false;
+
     /**
      * The pipeline for annotating the sentences
      */
     private static AnnotationPipeline sAnnotationPipeline;
+
     /**
      * A static map that matches the {@link #FRACTION_HALF} and {@link #FRACTION_QUARTER} strings to
      * their numerical values
@@ -127,6 +134,10 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * The step on which to do the detecting of ingredients
      */
     private RecipeStep mRecipeStep;
+
+    /**
+     * A set containing the names of the listingredients of the recipeInProgress
+     */
     private HashSet<String> mNamesOfListIngredients;
 
     public DetectIngredientsInStepTask(RecipeInProgress recipeInProgress, int stepIndex) {
@@ -134,12 +145,13 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         if (stepIndex < 0) {
             throw new IllegalArgumentException("Negative stepIndex passed");
         }
+
         if (stepIndex >= recipeInProgress.getRecipeSteps().size()) {
             throw new IllegalArgumentException("stepIndex passed too large, stepIndex: "
                     + stepIndex + " ,size of list: " + recipeInProgress.getRecipeSteps().size());
         }
-        this.mRecipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
 
+        this.mRecipeStep = recipeInProgress.getRecipeSteps().get(stepIndex);
     }
 
     /**
@@ -162,6 +174,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.notifyAll();
             }
         });
+
         initialize.start();
     }
 
@@ -172,7 +185,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private static AnnotationPipeline createIngredientAnnotationPipeline(List<Annotator> basicAnnotators) {
         AnnotationPipeline pipeline = new AnnotationPipeline();
-
 
         Delegator.incrementProgressAnnotationPipelines();
         if (basicAnnotators.isEmpty()) {
@@ -186,6 +198,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 pipeline.addAnnotator(a);
             }
         }
+
         return pipeline;
     }
 
@@ -204,6 +217,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -246,6 +260,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 }
             }
         }
+
         return true;
     }
 
@@ -277,6 +292,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             }
             return differenceIsOneErasedCharacter(shortest, longest);
         }
+
         return false;
     }
 
@@ -291,6 +307,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             // make sure all the positions are legal and not longer than the length of the description
             ing.trimPositionsToString(mRecipeStep.getDescription());
         }
+
         mRecipeStep.setIngredients(ingredientSet);
     }
 
@@ -312,6 +329,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
                     LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.wait();
                 }
+
             } catch (InterruptedException e) {
                 Log.d("Interrupted", "detecttimer", e);
                 Thread.currentThread().interrupt();
@@ -330,8 +348,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private List<Ingredient> detectIngredients(RecipeStep recipeStep, List<ListIngredient> ingredientListRecipe) {
         List<Ingredient> set = new ArrayList<>();
 
-        waitForPipeline();
-
         // Maps list ingredients to a an array of words in their name for matching the name in the step
         // Necessary in case only a certain word of the list ingredient is used to describe it in the step
         HashMap<ListIngredient, List<String>> ingredientListMap = new HashMap<>();
@@ -344,6 +360,10 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         // is mentioned multiple times in the recipe step
         List<Ingredient> foundIngredients = new ArrayList<>();
         Annotation recipeStepAnnotated = new Annotation(recipeStep.getDescription());
+
+        // wait for the construction of the pipeline
+        waitForPipeline();
+        // annotate the step
         sAnnotationPipeline.annotate(recipeStepAnnotated);
 
         List<CoreMap> stepSentences = recipeStepAnnotated.get(CoreAnnotations.SentencesAnnotation.class);
@@ -371,7 +391,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                         // Check if the mentioned ingredient is being described by multiple words in the step
                         // Skip these words for further analysis of the recipe step
                         tokenIndex += succeedingNameLength(tokenIndex, tokens, entry.getValue());
-
                     }
                 }
                 tokenIndex++;
@@ -396,14 +415,14 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             // so return false
             return false;
         }
+
         for (String tagToIgnore : TAGS_TO_IGNORE) {
             if (token.tag().equals(tagToIgnore)) {
                 return false;
             }
         }
+
         return true;
-
-
     }
 
     /**
@@ -418,7 +437,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private boolean tokenIsContainedInNameParts(CoreLabel token, List<String> nameParts) {
         String tokenText = token.originalText().toLowerCase(Locale.ENGLISH);
-
         if (doNotIgnoreToken((token))) {
             for (String part : nameParts) {
                 if (doNotIgnoreString(part) &&
@@ -427,9 +445,9 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 }
             }
         }
+
         return false;
     }
-
 
     /**
      * Checks if there are multiple words used to represent the ingredient
@@ -451,6 +469,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 }
             }
         }
+
         return succeedingLength;
     }
 
@@ -482,7 +501,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         stepIngredient.setQuantity(DEFAULT_QUANTITY);
         stepIngredient.setUnit(DEFAULT_UNIT);
 
-
         // Check if a quantity or unit can be found for this ingredient in the step
         int unitLength = listIngredient.getUnit().split(" ").length;
         int precedingLength = unitLength + PREPOSITION_LENGTH + FRACTIONS_LENGTH + MAX_QUANTITY_LENGTH;
@@ -507,17 +525,16 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                     int offset = newEndIndex - oldEndIndex;
                     namePos.setIndices(namePos.getBeginIndex() + offset, namePos.getEndIndex() + offset);
                 }
-
-
             }
+
             double listQuantity = listIngredient.getQuantity();
             Pair<Position, Double> quantityPair = findQuantityPositionAndValue(precedingTokens, listQuantity);
-            if (quantityPair != null) {
+            if (quantityPair != null && quantityPair.second != null) {
                 stepIngredient.setQuantityPosition(quantityPair.first);
                 stepIngredient.setQuantity(quantityPair.second);
             }
-
         }
+
         return stepIngredient;
     }
 
@@ -527,15 +544,20 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @return Default ingredient
      */
     private Ingredient defaultStepIngredient() {
+        // construct the map
         Map<Ingredient.PositionKeysForIngredients, Position> map
                 = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
+
+        // Initialize name on empty string
+        String name = "";
+
         // Initialize position on Position(0, length)
         int stepSentenceLength = mRecipeStep.getDescription().length();
         Position defaultPos = new Position(0, stepSentenceLength);
-        String name = "";
         map.put(Ingredient.PositionKeysForIngredients.NAME, defaultPos);
         map.put(Ingredient.PositionKeysForIngredients.UNIT, defaultPos);
         map.put(Ingredient.PositionKeysForIngredients.QUANTITY, defaultPos);
+
         return new Ingredient(name, DEFAULT_UNIT, DEFAULT_QUANTITY, map);
     }
 
@@ -562,11 +584,9 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 && !"CC".equals(precedingTokens.get(i).tag())) {
             // Detect verbose fractions
             Pair<Boolean, Double> quantityVerbose = detectVerboseFractions(i, precedingTokens, listQuantity);
-            stepQuantity *= quantityVerbose.second;
-
             // Detect cardinal numbers: fractions, numbers and verbose numbers
             Pair<Boolean, Double> quantityCardinal = detectCardinalFractions(i, precedingTokens);
-            stepQuantity *= quantityCardinal.second;
+            stepQuantity *= quantityVerbose.second * quantityCardinal.second;
 
             if (quantityVerbose.first || quantityCardinal.first) {
                 if (precedingTokens.get(i).beginPosition() < beginPos) {
@@ -583,6 +603,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         if (foundQuantities) {
             return new Pair<>(new Position(beginPos, endPos), stepQuantity);
         }
+
         return null;
     }
 
@@ -602,6 +623,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             quantityMultiplier *= calculateQuantity(Arrays.asList(precedingTokens.get(tokenIndex)));
             tokenIsQuantity = true;
         }
+
         return new Pair<>(tokenIsQuantity, quantityMultiplier);
     }
 
@@ -626,16 +648,23 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             }
             tokenIsQuantity = true;
         }
+
         return new Pair<>(tokenIsQuantity, quantityMultiplier);
     }
 
-
+    /**
+     * A function that indicates if a the search for a unit should stop. Currently this is when a comma
+     * is encountered
+     *
+     * @param token the current token, where the search is at
+     * @return a boolean that indicates if the search should be stopped
+     */
     private boolean stopSearchingForUnit(CoreLabel token) {
         if (token.originalText().contains(",")) {
             return true;
         }
-        return mNamesOfListIngredients.contains(token.originalText().replace(",", ""));
 
+        return mNamesOfListIngredients.contains(token.originalText().replace(",", ""));
     }
 
     /**
@@ -658,11 +687,10 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         for (String unitPart : unitParts) {
             unitPartsWithSingulars.add(unitPart);
             unitPartsWithSingulars.add(singularMorph.stem(unitPart));
-
         }
 
         // Add common units to the possible unit names
-        unitPartsWithSingulars.addAll(Arrays.asList(COMMON_UNITS));
+        unitPartsWithSingulars.addAll(UnitConversionUtils.getCommonUnits());
 
         // TODO add additional condition that it should stop when no more unit strings are found
         int i = precedingTokens.size() - 1;
@@ -670,10 +698,12 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             if (stopSearchingForUnit(precedingTokens.get(i))) {
                 i = 0;
             }
+
             if (doNotIgnoreToken(precedingTokens.get(i)) &&
                     unitPartsWithSingulars.contains(precedingTokens.get(i).originalText())) {
                 unitTokens.add(precedingTokens.get(i));
                 i--;
+
             } else if (!unitTokens.isEmpty()) {
                 // previous unit words were found and this is not a unit anymore, this means
                 // it is time to stop
@@ -682,15 +712,14 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             } else {
                 i--;
             }
-
         }
 
         if (!unitTokens.isEmpty()) {
-
             int unitStart = unitTokens.get(0).beginPosition();
             int unitEnd = unitTokens.get(unitTokens.size() - 1).endPosition();
             return new Position(unitStart, unitEnd);
         }
+
         return null;
     }
 
@@ -708,5 +737,4 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         // In case the ingredient name is the first word in the step
         return true;
     }
-
 }

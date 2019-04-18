@@ -9,10 +9,6 @@ import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,24 +19,12 @@ import java.util.regex.Pattern;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.parser.lexparser.BinaryGrammar;
-import edu.stanford.nlp.parser.lexparser.DependencyGrammar;
-import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
-import edu.stanford.nlp.parser.lexparser.Lexicon;
-import edu.stanford.nlp.parser.lexparser.MLEDependencyGrammar;
-import edu.stanford.nlp.parser.lexparser.Options;
-import edu.stanford.nlp.parser.lexparser.UnaryGrammar;
-import edu.stanford.nlp.parser.lexparser.UnknownWordModel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
 import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.HashIndex;
-import edu.stanford.nlp.util.Index;
-import edu.stanford.nlp.util.ReflectionLoading;
-import edu.stanford.nlp.util.Timing;
 
 
 /**
@@ -142,20 +126,11 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     /**
      * Creates the {@link #sAnnotationPipeline}
      */
-    private void createAnnotationPipeline() {
+    private static  void createAnnotationPipeline() {
         AnnotationPipeline pipeline = new AnnotationPipeline();
         pipeline.addAnnotator(new TokenizerAnnotator(false, "en"));
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
         pipeline.addAnnotator(new POSTaggerAnnotator(false));
-        // this fails on android but not in the tests
-        try {
-            //pipeline.addAnnotator(new ParserAnnotator(false, MAX_SENTENCES_FOR_PARSER));
-        } catch (Exception e) {
-            Log.e("PARSE", "loading parser failed", e);
-
-            // throw new RecipeDetectionException("This recipe needs parsing, which currently fails on android");
-        }
-
 
         sAnnotationPipeline = pipeline;
     }

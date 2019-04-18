@@ -138,6 +138,8 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Detection failed: " +
                                 mRecipe.getFailureMessage().getValue(),
                         Toast.LENGTH_LONG).show();
+                ProgressBar pb = findViewById(R.id.pb_loading_screen);
+                pb.setProgress(0);
             }
         });
 

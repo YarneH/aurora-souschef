@@ -1,30 +1,52 @@
 package com.aurora.souschefprocessor.task.sectiondivider;
 
 
+import android.content.Context;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
+import com.aurora.souschefprocessor.R;
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.parser.lexparser.BinaryGrammar;
+import edu.stanford.nlp.parser.lexparser.DependencyGrammar;
+import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
+import edu.stanford.nlp.parser.lexparser.Lexicon;
+import edu.stanford.nlp.parser.lexparser.MLEDependencyGrammar;
+import edu.stanford.nlp.parser.lexparser.Options;
+import edu.stanford.nlp.parser.lexparser.UnaryGrammar;
+import edu.stanford.nlp.parser.lexparser.UnknownWordModel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
 import edu.stanford.nlp.pipeline.MorphaAnnotator;
+import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.ParserAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.HashIndex;
+import edu.stanford.nlp.util.Index;
+import edu.stanford.nlp.util.ReflectionLoading;
+import edu.stanford.nlp.util.Timing;
 
 
 /**
@@ -70,6 +92,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         super(recipeInProgress);
     }
 
+
     /**
      * This trims each line (via split on new line character) of a block of text
      *
@@ -109,20 +132,21 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     /**
      * Creates the {@link #sAnnotationPipeline}
      */
-    private static void createAnnotationPipeline() {
+    private  void createAnnotationPipeline() {
         AnnotationPipeline pipeline = new AnnotationPipeline();
         pipeline.addAnnotator(new TokenizerAnnotator(false, "en"));
         pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-
+        pipeline.addAnnotator(new POSTaggerAnnotator(false));
         // this fails on android but not in the tests
         try {
-            pipeline.addAnnotator(new ParserAnnotator(false, MAX_SENTENCES_FOR_PARSER));
+            //pipeline.addAnnotator(new ParserAnnotator(false, MAX_SENTENCES_FOR_PARSER));
         } catch (Exception e) {
             Log.e("PARSE", "loading parser failed", e);
-            throw new RecipeDetectionException("This recipe needs parsing, which currently fails on android");
+
+            // throw new RecipeDetectionException("This recipe needs parsing, which currently fails on android");
         }
 
-        pipeline.addAnnotator(new MorphaAnnotator(false));
+
         sAnnotationPipeline = pipeline;
     }
 
@@ -272,7 +296,17 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         // remove the last line because that one matched the STEP_STARTER_REGEX
         String[] lines = text.split("\n");
-        text = text.replace(lines[lines.length - 1], "");
+        List<String> linesList = new ArrayList<>(Arrays.asList(lines));
+        Collections.reverse(linesList);
+        String toReplace = "";
+        boolean found = false;
+        for(String line: linesList){
+            if(!found && !line.trim().isEmpty()){
+                toReplace = line;
+                found = true;
+            }
+        }
+        text = text.replace(toReplace, "");
 
 
         return new ResultAndAlteredTextPair(steps, text);
@@ -670,4 +704,67 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             return mAlteredText;
         }
     }
+
+    protected static LexicalizedParser getParserFromInputStream(InputStream stream, String textFileOrUrl, Options op) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(stream))) {
+            Timing tim = new Timing();
+            Timing.startTime();
+
+            String line = in.readLine();
+            confirmBeginBlock(textFileOrUrl, line);
+            op.readData(in);
+
+            line = in.readLine();
+            confirmBeginBlock(textFileOrUrl, line);
+            Index<String> stateIndex = HashIndex.loadFromReader(in);
+
+            line = in.readLine();
+            confirmBeginBlock(textFileOrUrl, line);
+            Index<String> wordIndex = HashIndex.loadFromReader(in);
+
+            line = in.readLine();
+            confirmBeginBlock(textFileOrUrl, line);
+            Index<String> tagIndex = HashIndex.loadFromReader(in);
+
+            line = in.readLine();
+            confirmBeginBlock(textFileOrUrl, line);
+            Lexicon lex = op.tlpParams.lex(op, wordIndex, tagIndex);
+            String uwmClazz = line.split(" +")[2];
+            if (!uwmClazz.equals("null")) {
+                UnknownWordModel model = ReflectionLoading.loadByReflection(uwmClazz, op, lex, wordIndex, tagIndex);
+                lex.setUnknownWordModel(model);
+            }
+            lex.readData(in);
+
+            line = in.readLine();
+            confirmBeginBlock(textFileOrUrl, line);
+            UnaryGrammar ug = new UnaryGrammar(stateIndex);
+            ug.readData(in);
+
+            line = in.readLine();
+            confirmBeginBlock(textFileOrUrl, line);
+            BinaryGrammar bg = new BinaryGrammar(stateIndex);
+            bg.readData(in);
+
+            line = in.readLine();
+            confirmBeginBlock(textFileOrUrl, line);
+            DependencyGrammar dg = new MLEDependencyGrammar(op.tlpParams, op.directional, op.distance, op.coarseDistance, op.trainOptions.basicCategoryTagsInDependencyGrammar, op, wordIndex, tagIndex);
+            dg.readData(in);
+
+            Log.d("Parse","Loading parser from text file " + textFileOrUrl + " ... done [" + tim.toSecondsString() + " sec].");
+            return new LexicalizedParser(lex, bg, ug, dg, stateIndex, wordIndex, tagIndex, op);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static void confirmBeginBlock(String file, String line) {
+        if (line == null) {
+            throw new RuntimeException(file + ": expecting BEGIN block; got end of file.");
+        } else if (! line.startsWith("BEGIN")) {
+            throw new RuntimeException(file + ": expecting BEGIN block; got " + line);
+        }
+    }
+
 }

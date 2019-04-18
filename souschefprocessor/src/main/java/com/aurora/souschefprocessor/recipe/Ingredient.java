@@ -258,7 +258,7 @@ public class Ingredient {
     }
 
     /**
-     * A function that indicates whether this listingredient contains a quantity detected in the string
+     * A function that indicates whether this ingredient contains a quantity detected in the string
      *
      * @param description the description in which this ingredient was detected
      * @return a boolean that indicates if a quantity was detected

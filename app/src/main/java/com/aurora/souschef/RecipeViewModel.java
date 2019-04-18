@@ -9,9 +9,11 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.facade.Communicator;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 /**
@@ -63,6 +65,9 @@ public class RecipeViewModel extends AndroidViewModel {
      */
     private MutableLiveData<Recipe> mRecipe = new MutableLiveData<>();
 
+    private MutableLiveData<Boolean> mProcessingFailed = new MutableLiveData<>();
+    private MutableLiveData<String> mFailureMessage = new MutableLiveData<>();
+
     /**
      * The context of the application.
      * <p>
@@ -86,7 +91,12 @@ public class RecipeViewModel extends AndroidViewModel {
         mInitialised.setValue(false);
         mCurrentPeople = new MutableLiveData<>();
         mCurrentPeople.setValue(0);
+        mProcessingFailed.setValue(false);
         Communicator.createAnnotationPipelines();
+    }
+
+    public LiveData<String> getFailureMessage(){
+        return mFailureMessage;
     }
 
     /**
@@ -146,6 +156,61 @@ public class RecipeViewModel extends AndroidViewModel {
         RecipeViewModel.this.mRecipe.setValue(recipe);
         RecipeViewModel.this.mCurrentPeople.setValue(recipe.getNumberOfPeople());
         mInitialised.setValue(true);
+    }
+
+    public LiveData<Boolean> getInitialised() {
+        return mInitialised;
+    }
+
+    public LiveData<Integer> getNumberOfPeople() {
+        return mCurrentPeople;
+    }
+
+    public LiveData<Recipe> getRecipe() {
+        return mRecipe;
+    }
+    public LiveData<Boolean> getProcessFailed() {
+        return mProcessingFailed;
+    }
+
+    /**
+     * Increment the amount of people.
+     * A maximum of {@value MAX_PEOPLE} people can be cooked for.
+     */
+    public void incrementPeople() {
+        if (mCurrentPeople == null || mCurrentPeople.getValue() == null) {
+            return;
+        }
+        if (mCurrentPeople.getValue() < MAX_PEOPLE) {
+            mCurrentPeople.setValue(mCurrentPeople.getValue() + 1);
+        }
+    }
+
+    /**
+     * Decrement the amount of people.
+     * Decrementing cannot go below 1.
+     */
+    public void decrementPeople() {
+        if (mCurrentPeople == null || mCurrentPeople.getValue() == null) {
+            return;
+        }
+        if (mCurrentPeople.getValue() > 1) {
+            mCurrentPeople.setValue(mCurrentPeople.getValue() - 1);
+        }
+    }
+
+    /**
+     * Converts all the units in the recipe
+     *
+     * @param toMetric boolean that indicates if the units should be converted to metric or to US
+     */
+    public void convertRecipeUnits(boolean toMetric) {
+        // TODO call this function after user has chosen/changed preference and/or when first
+        // creating the recipe
+        Recipe recipe = mRecipe.getValue();
+        if (recipe != null) {
+            recipe.convertUnit(toMetric);
+        }
     }
 
     /**
@@ -208,69 +273,25 @@ public class RecipeViewModel extends AndroidViewModel {
             Communicator comm = Communicator.createCommunicator(mContext);
             if (comm != null) {
                 // Pick the correct type of text.
-                if (mWithExtractedText) {
-                    return comm.process(mExtractedText);
-                } else {
-                    return comm.process(mText);
+                try {
+                    if (mWithExtractedText) {
+                        return comm.process(mExtractedText);
+                    } else {
+                        return comm.process(mText);
+                    }
+                } catch (RecipeDetectionException rde) {
+                    mProcessingFailed.postValue(true);
+                    mFailureMessage.postValue(rde.getMessage());
                 }
             }
             return null;
         }
 
+
+
         @Override
         protected void onPostExecute(Recipe recipe) {
             initialiseWithRecipe(recipe);
-        }
-    }
-
-    public LiveData<Boolean> getInitialised() {
-        return mInitialised;
-    }
-
-    public LiveData<Integer> getNumberOfPeople() {
-        return mCurrentPeople;
-    }
-
-    public LiveData<Recipe> getRecipe() {
-        return mRecipe;
-    }
-
-    /**
-     * Increment the amount of people.
-     * A maximum of {@value MAX_PEOPLE} people can be cooked for.
-     */
-    public void incrementPeople() {
-        if (mCurrentPeople == null || mCurrentPeople.getValue() == null) {
-            return;
-        }
-        if (mCurrentPeople.getValue() < MAX_PEOPLE) {
-            mCurrentPeople.setValue(mCurrentPeople.getValue() + 1);
-        }
-    }
-
-    /**
-     * Decrement the amount of people.
-     * Decrementing cannot go below 1.
-     */
-    public void decrementPeople() {
-        if (mCurrentPeople == null || mCurrentPeople.getValue() == null) {
-            return;
-        }
-        if (mCurrentPeople.getValue() > 1) {
-            mCurrentPeople.setValue(mCurrentPeople.getValue() - 1);
-        }
-    }
-
-    /**
-     * Converts all the units in the recipe
-     * @param toMetric boolean that indicates if the units should be converted to metric or to US
-     */
-    public void convertRecipeUnits(boolean toMetric){
-        // TODO call this function after user has chosen/changed preference and/or when first
-        // creating the recipe
-        Recipe recipe = mRecipe.getValue();
-        if(recipe != null){
-            recipe.convertUnit(toMetric);
         }
     }
 }

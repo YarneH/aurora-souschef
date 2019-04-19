@@ -60,7 +60,6 @@ public class RecipeViewModel extends AndroidViewModel {
     private MutableLiveData<Boolean> mInitialised;
     /**
      * When the recipe is set, this value changes -> all observers act.
-     * Proficiat! Je hebt deze hidden comment gevonden! Tof.
      */
     private MutableLiveData<Recipe> mRecipe = new MutableLiveData<>();
 
@@ -73,6 +72,10 @@ public class RecipeViewModel extends AndroidViewModel {
      * This LiveData value updates when the processing has failed and sets the failing message
      */
     private MutableLiveData<String> mFailureMessage = new MutableLiveData<>();
+    /**
+     * Indicates whether or not this recipe is already being processed
+     */
+    private boolean isBeingProcessed = false;
 
     /**
      * The context of the application.
@@ -220,6 +223,10 @@ public class RecipeViewModel extends AndroidViewModel {
         }
     }
 
+    public void setBeingProcessed(boolean isBeingProcessed) {
+        this.isBeingProcessed = isBeingProcessed;
+    }
+
     /**
      * Async task executing the logic for the progress bar.
      * If leaked, it will stop after {@value MAX_WAIT_TIME} milliseconds.
@@ -282,7 +289,7 @@ public class RecipeViewModel extends AndroidViewModel {
                 // Pick the correct type of text.
                 try {
                     if (mWithExtractedText) {
-                        if(mExtractedText.getSections() ==  null){
+                        if (mExtractedText.getSections() == null) {
                             throw new RecipeDetectionException("The received text from Aurora did " +
                                     "not contain sections" +
                                     ", make sure you can open this type of file. If the problem" +
@@ -310,5 +317,9 @@ public class RecipeViewModel extends AndroidViewModel {
                 initialiseWithRecipe(recipe);
             }
         }
+    }
+
+    public boolean isBeingProcessed() {
+        return isBeingProcessed;
     }
 }

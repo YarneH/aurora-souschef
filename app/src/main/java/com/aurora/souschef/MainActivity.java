@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Sets up the observation of the recipeviewmodel
      */
-    private  void setUpRecipeDataObject(){
+    private void setUpRecipeDataObject() {
         mRecipe.getProgressStep().observe(this, (Integer step) -> {
                     ProgressBar pb = findViewById(R.id.pb_loading_screen);
                     pb.setProgress(mRecipe.getProgress());
@@ -135,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             if (!isInitialised) {
+                showProgress();
                 return;
             }
             hideProgress();
@@ -150,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
     /**
      * Overwritten method of Activity
      *
@@ -182,6 +184,11 @@ public class MainActivity extends AppCompatActivity {
          * on the recipe data object.
          */
         Intent intentThatStartedThisActivity = getIntent();
+        if (mRecipe.isBeingProcessed()) {
+            return;
+        }
+        mRecipe.setBeingProcessed(true);
+        Log.d(TAG, "setup");
         if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
             /*BasicPluginObject basicPluginObject = null
              * TODO remove this if statement probably. Is currently used to handle cases where a

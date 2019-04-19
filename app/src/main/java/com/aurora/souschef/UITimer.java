@@ -3,6 +3,9 @@ package com.aurora.souschef;
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.LifecycleOwner;
 import android.content.DialogInterface;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,6 +60,10 @@ public class UITimer {
      * View where the timer is displayed.
      */
     private View mTimerCard;
+    /**
+     * Ringtone for the alarm of the timer
+     */
+    private Ringtone mRingtone;
 
     /**
      * Sets up text and timer views.
@@ -82,6 +89,24 @@ public class UITimer {
         this.mLiveDataTimer.getIsFinished().observe(owner, aBoolean -> onTimerFinished());
 
         this.mLiveDataTimer.getTimerState().observe(owner, aInt -> setIcon(aInt));
+
+        // Preparing the ringtone for the alarm
+        Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        if (alert == null) {
+            // alert is null, using backup
+            alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+            // I can't see this ever being null (as always have a default notification)
+            // but just in case
+            if (alert == null) {
+                // alert backup is null, using 2nd backup
+                alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+            }
+        }
+        mRingtone = RingtoneManager.getRingtone(mTimerCard.getContext(), alert);
+
+        this.mLiveDataTimer.getIsAlarming().observe(owner, aBoolean -> setAlarm(aBoolean));
+
     }
 
     private void setIcon(int timerState) {
@@ -97,9 +122,8 @@ public class UITimer {
     /**
      * TODO: What happens on timer completion?
      */
-    // NOSONAR
     private void onTimerFinished() {
-        // TODO: implement what happens when timer finishes.
+        // mRingtone.play();
     }
 
     /**
@@ -175,6 +199,16 @@ public class UITimer {
                     mLiveDataTimer.setTimeSetByUser(timeSetByUser);
                 });
         alertDialogBuilder.create().show();
+    }
+
+    private void setAlarm(boolean status) {
+        if (status) {
+            mRingtone.play();
+        } else {
+            if (mRingtone.isPlaying()) {
+                mRingtone.stop();
+            }
+        }
     }
 
     /**

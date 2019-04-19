@@ -140,6 +140,13 @@ public class StepPlaceholderFragment extends Fragment {
 
             // Get timer data in this step of the i'th timer.
             LiveDataTimer liveDataTimer = recipeTimerViewModel.getTimerInStep(index, i);
+            // Set the margin of the timer
+            int timerMargin = Math.round(getResources().getDimension(R.dimen.timer_margin));
+            LinearLayout.LayoutParams layoutParamsTimer = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParamsTimer.gravity = Gravity.CENTER;
+            layoutParamsTimer.setMargins(0, timerMargin, 0, timerMargin);
+            timerCard.setLayoutParams(layoutParamsTimer);
             // Make new timer-object. Is actually never used after this.
             new UITimer(liveDataTimer, timerCard, this);
 

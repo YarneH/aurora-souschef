@@ -31,7 +31,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * These steps are hard-coded-counted. This means that when the implementation
      * of the Souschef-processor takes longer or shorter, this value must be changed.
      */
-    private static final int DETECTION_STEPS = 6;
+    private static final int DETECTION_STEPS = 5;
     /**
      * The maximum amount of people you can cook for.
      */
@@ -282,6 +282,12 @@ public class RecipeViewModel extends AndroidViewModel {
                 // Pick the correct type of text.
                 try {
                     if (mWithExtractedText) {
+                        if(mExtractedText.getSections() ==  null){
+                            throw new RecipeDetectionException("The received text from Aurora did " +
+                                    "not contain sections" +
+                                    ", make sure you can open this type of file. If the problem" +
+                                    " persists, please send feedback in Aurora");
+                        }
                         return comm.process(mExtractedText);
                     } else {
                         return comm.process(mText);

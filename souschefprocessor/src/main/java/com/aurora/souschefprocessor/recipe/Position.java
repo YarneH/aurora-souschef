@@ -149,7 +149,7 @@ public class Position {
      *
      * @param s The string to trim to
      */
-    void trimToLengthOfString(String s) {
+    public void trimToLengthOfString(String s) {
         int length = s.length();
         if (mBeginIndex >= length) {
             throw new IllegalArgumentException("This string is shorter than the beginIndex of " +

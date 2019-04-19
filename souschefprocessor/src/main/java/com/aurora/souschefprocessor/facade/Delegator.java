@@ -45,23 +45,25 @@ public class Delegator {
      * An object that serves as a lock to ensure that the pipelines are only created once
      */
     private static final Object LOCK = new Object();
-
-    /**
-     * A boolean that indicates if the pipelines have been created (or the creation has started)
-     */
-    private static boolean sStartedCreatingPipelines = false;
-
-    //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
-    /**
-     * A threadPoolExecutor to execute steps in parallel
-     */
-    private static ThreadPoolExecutor sThreadPoolExecutor;
-
     /**
      * A list of basic annotators needed for every step that has a pipeline (tokenizer, wordstosentence
      * and POS)
      */
-    private static List<Annotator> basicAnnotators = new ArrayList<>();
+    private  static final List<Annotator> sBasicAnnotators = new ArrayList<>();
+
+    //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
+    /**
+     * The number of basic annotator, for now 3 (tokenize, words to sentence and POS)
+     */
+    private static final int BASIC_ANNOTATOR_SIZE = 3;
+    /**
+     * A boolean that indicates if the pipelines have been created (or the creation has started)
+     */
+    private static boolean sStartedCreatingPipelines = false;
+    /**
+     * A threadPoolExecutor to execute steps in parallel
+     */
+    private static ThreadPoolExecutor sThreadPoolExecutor;
 
     /*
      * Makes sure that the {@link #createAnnotationPipelines()} method is always called if a delegator is
@@ -92,6 +94,10 @@ public class Delegator {
         mParallelize = parallelize;
     }
 
+    public static List<Annotator> getBasicAnnotators() {
+        return createBasicAnnotators();
+    }
+
     /**
      * Creates the annotation pipelines for the {@link DetectIngredientsInStepTask} and
      * {@link DetectTimersInStepTask} if the creation has not started yet
@@ -109,34 +115,39 @@ public class Delegator {
         }
         Thread t = new Thread(() -> {
             createBasicAnnotators();
-            DetectTimersInStepTask.initializeAnnotationPipeline(basicAnnotators);
-            DetectIngredientsInStepTask.initializeAnnotationPipeline(basicAnnotators);
+            DetectTimersInStepTask.initializeAnnotationPipeline();
+            DetectIngredientsInStepTask.initializeAnnotationPipeline();
         });
         t.start();
     }
 
-
     /**
-     * Creates the basicannotators (tokenizer, words to sentence and POS)
+     * Creates the basicannotators (tokenizer, words to sentence and POS), ensures that is only created
+     * once and notifies other threads if the creation is finished. If the
      *
-     * @return the list of basicAnnotators
+     * @return the list of sBasicAnnotators
      */
     private static List<Annotator> createBasicAnnotators() {
-        synchronized (basicAnnotators) {
-            if (basicAnnotators.isEmpty()) {
 
-                basicAnnotators.add(new TokenizerAnnotator(false, "en"));
-                incrementProgressAnnotationPipelines();
-                basicAnnotators.add(new WordsToSentencesAnnotator(false));
-                incrementProgressAnnotationPipelines();
-                basicAnnotators.add(new POSTaggerAnnotator(false));
-                incrementProgressAnnotationPipelines();
+        synchronized (sBasicAnnotators) {
 
+            if (sBasicAnnotators.isEmpty()) {
+
+                sBasicAnnotators.add(new TokenizerAnnotator(false, "en"));
+                incrementProgressAnnotationPipelines(); //1
             }
-            basicAnnotators.notifyAll();
+            if (sBasicAnnotators.size() == 1) {
+                sBasicAnnotators.add(new WordsToSentencesAnnotator(false));
+                incrementProgressAnnotationPipelines(); //2
+            }
+            if (sBasicAnnotators.size() < BASIC_ANNOTATOR_SIZE) {
+                sBasicAnnotators.add(new POSTaggerAnnotator(false));
+                incrementProgressAnnotationPipelines(); //3
+            }
+            sBasicAnnotators.notifyAll();
         }
-        return basicAnnotators;
 
+        return sBasicAnnotators;
     }
 
     /**
@@ -144,6 +155,7 @@ public class Delegator {
      */
     public static void incrementProgressAnnotationPipelines() {
         Communicator.incrementProgressAnnotationPipelines();
+        Log.d("DELEGATOR", "STEP");
 
     }
 
@@ -159,13 +171,13 @@ public class Delegator {
          */
         int numberOfCores = (int)
                 (Runtime.getRuntime().availableProcessors() * HALF);
-        // A queue of Runnables
+// A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue
         decodeWorkQueue = new LinkedBlockingQueue<>();
-        // Sets the amount of time an idle thread waits before terminating
+// Sets the amount of time an idle thread waits before terminating
         final int KEEP_ALIVE_TIME = 1;
-        // Sets the Time Unit to seconds
+// Sets the Time Unit to seconds
         final TimeUnit keepAliveTimeUnit = TimeUnit.SECONDS;
         // Creates a thread pool manager
         sThreadPoolExecutor = new ThreadPoolExecutor(
@@ -241,7 +253,7 @@ public class Delegator {
 
     private List<AbstractProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
         List<AbstractProcessingTask> pipeline = new ArrayList<>();
-        pipeline.add(new SplitToMainSectionsTask(recipeInProgress, createBasicAnnotators()));
+        pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
 
         pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));
         pipeline.add(new SplitStepsTask(recipeInProgress));

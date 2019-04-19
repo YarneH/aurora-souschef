@@ -188,7 +188,19 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         }
     }
 
+    /**
+     * A private helper function for updating the line after the name component has been identiefied
+     * @param line
+     * @param beginPosition
+     * @param endPosition
+     * @param name
+     * @return
+     */
     private static String makeNewLine(String line, int beginPosition, int endPosition, String name) {
+        if(beginPosition < 0 || endPosition < 0 || beginPosition >= line.length() || endPosition > line.length()){
+            // the positions are not in this line
+            return line;
+        }
         String newLine = line.substring(0, beginPosition) + name;
         if (endPosition < line.length()) {
             newLine += line.substring(endPosition);
@@ -240,18 +252,13 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
     }
 
     /**
-     * Detects the ingredient described in the line and constructs an Ingredient object with this information
-     *
-     * @param line The line in which the ingredient is to be detected
-     * @return a ListIngredient object constructed with the information from the line
+     * Helper function for {@link #detectIngredient(String)}. Populates the map with the data of the classified list, the map will have keys that are the
+     * labels of the classifiedlist, and as values every string that was classified in to one of the
+     * classes.
+     * @param classifiedList The data for populating the map
+     * @param map the map to populate
      */
-    private ListIngredient detectIngredient(String line) {
-
-        // classify the line
-        List<List<CoreLabel>> classifiedList = mCRFClassifier.classify(line);
-        // map to put classes and labeled tokens
-        Map<String, List<CoreLabel>> map = new HashMap<>();
-
+    private void populateMapWithClassifiedData(List<List<CoreLabel>> classifiedList,Map<String, List<CoreLabel>> map ){
         for (List<CoreLabel> l : classifiedList) {
             for (CoreLabel cl : l) {
                 String classifiedClass = (cl.get(CoreAnnotations.AnswerAnnotation.class)).trim();
@@ -265,6 +272,22 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
                 }
             }
         }
+    }
+    /**
+     * Detects the ingredient described in the line and constructs an Ingredient object with this information
+     *
+     * @param line The line in which the ingredient is to be detected
+     * @return a ListIngredient object constructed with the information from the line
+     */
+    private ListIngredient detectIngredient(String line) {
+
+        // classify the line
+        List<List<CoreLabel>> classifiedList = mCRFClassifier.classify(line);
+        // map to put classes and labeled tokens
+        Map<String, List<CoreLabel>> map = new HashMap<>();
+
+        populateMapWithClassifiedData(classifiedList, map);
+
 
         // the map for the positions of the detected ingredients
         Map<Ingredient.PositionKeysForIngredients, Position> positions
@@ -336,6 +359,9 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             // also set the quantity to 1 = "one"
             positions.put(Ingredient.PositionKeysForIngredients.QUANTITY, new Position(0, line.length()));
             quantity = 1.0;
+        }
+        for(Ingredient.PositionKeysForIngredients key: positions.keySet()){
+            positions.get(key).trimToLengthOfString(line);
         }
 
         return new ListIngredient(name, unit, quantity, line, positions);

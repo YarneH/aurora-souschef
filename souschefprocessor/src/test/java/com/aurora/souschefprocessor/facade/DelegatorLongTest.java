@@ -10,8 +10,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +33,10 @@ public class DelegatorLongTest {
         String filename = "src/test/java/com/aurora/souschefprocessor/facade/json-recipes.txt";
         List<ExtractedText> list = new ArrayList<>();
         try {
-            FileReader fReader = new FileReader(filename);
-            BufferedReader reader = new BufferedReader(fReader);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(filename), "UTF8"));
+
             String line = reader.readLine();
 
             while (line != null) {
@@ -81,8 +85,9 @@ public class DelegatorLongTest {
         String filename = "src/test/java/com/aurora/souschefprocessor/facade/recipes.txt";
         List<String> list = new ArrayList<>();
         try {
-            FileReader fReader = new FileReader(filename);
-            BufferedReader reader = new BufferedReader(fReader);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(filename), "UTF8"));
             StringBuilder bld = new StringBuilder();
             String line = reader.readLine();
 

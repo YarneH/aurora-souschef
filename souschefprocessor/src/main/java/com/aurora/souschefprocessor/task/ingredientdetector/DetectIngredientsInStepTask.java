@@ -156,23 +156,22 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * It also checks if no other thread has already started to create the pipeline
      */
     public static void initializeAnnotationPipeline() {
-        Thread initialize = new Thread(() -> {
-            synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
-                if (sStartedCreatingPipeline) {
-                    // creating already started or finished  so do not start again
-                    return;
-                }
-                // ensure no other thread can initialize
-                sStartedCreatingPipeline = true;
-            }
-            sAnnotationPipeline = createIngredientAnnotationPipeline();
-            synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
-                // get the lock again to notify that the pipeline has been created
-                LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.notifyAll();
-            }
-        });
 
-        initialize.start();
+        synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
+            if (sStartedCreatingPipeline) {
+                // creating already started or finished  so do not start again
+                return;
+            }
+            // ensure no other thread can initialize
+            sStartedCreatingPipeline = true;
+        }
+        sAnnotationPipeline = createIngredientAnnotationPipeline();
+        synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
+            // get the lock again to notify that the pipeline has been created
+            LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.notifyAll();
+        }
+
+
     }
 
     /**

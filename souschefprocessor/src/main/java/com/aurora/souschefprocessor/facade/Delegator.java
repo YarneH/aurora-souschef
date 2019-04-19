@@ -49,7 +49,7 @@ public class Delegator {
      * A list of basic annotators needed for every step that has a pipeline (tokenizer, wordstosentence
      * and POS)
      */
-    private  static final List<Annotator> sBasicAnnotators = new ArrayList<>();
+    private static final List<Annotator> sBasicAnnotators = new ArrayList<>();
 
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
     /**
@@ -123,7 +123,7 @@ public class Delegator {
 
     /**
      * Creates the basicannotators (tokenizer, words to sentence and POS), ensures that is only created
-     * once and notifies other threads if the creation is finished. If the
+     * once and notifies other threads if the creation is finished.
      *
      * @return the list of sBasicAnnotators
      */
@@ -171,13 +171,13 @@ public class Delegator {
          */
         int numberOfCores = (int)
                 (Runtime.getRuntime().availableProcessors() * HALF);
-// A queue of Runnables
+        // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue
         decodeWorkQueue = new LinkedBlockingQueue<>();
-// Sets the amount of time an idle thread waits before terminating
+        // Sets the amount of time an idle thread waits before terminating
         final int KEEP_ALIVE_TIME = 1;
-// Sets the Time Unit to seconds
+        // Sets the Time Unit to seconds
         final TimeUnit keepAliveTimeUnit = TimeUnit.SECONDS;
         // Creates a thread pool manager
         sThreadPoolExecutor = new ThreadPoolExecutor(

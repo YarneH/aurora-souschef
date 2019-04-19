@@ -146,23 +146,19 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * checks if no other thread has already started to create the pipeline
      */
     public static void initializeAnnotationPipeline() {
-        Thread initialize = new Thread(() -> {
-            synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
-                if (sStartedCreatingPipeline) {
-                    // creating already started or finished -> do not start again
-                    return;
-                }
-                // ensure no other thread can initialize
-                sStartedCreatingPipeline = true;
+        synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
+            if (sStartedCreatingPipeline) {
+                // creating already started or finished -> do not start again
+                return;
             }
-            sAnnotationPipeline = createTimerAnnotationPipeline();
-            synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
-                // get the lock again to notify that the pipeline has been created
-                LOCK_DETECT_TIMERS_IN_STEP_PIPELINE.notifyAll();
-            }
-        });
-
-        initialize.start();
+            // ensure no other thread can initialize
+            sStartedCreatingPipeline = true;
+        }
+        sAnnotationPipeline = createTimerAnnotationPipeline();
+        synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
+            // get the lock again to notify that the pipeline has been created
+            LOCK_DETECT_TIMERS_IN_STEP_PIPELINE.notifyAll();
+        }
     }
 
     /**

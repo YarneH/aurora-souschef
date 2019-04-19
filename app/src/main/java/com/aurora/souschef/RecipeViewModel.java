@@ -282,6 +282,12 @@ public class RecipeViewModel extends AndroidViewModel {
                 // Pick the correct type of text.
                 try {
                     if (mWithExtractedText) {
+                        if(mExtractedText.getSections() ==  null){
+                            throw new RecipeDetectionException("The received text from Aurora did " +
+                                    "not contain sections" +
+                                    ", make sure you can open this type of file. If the problem" +
+                                    " persists, please send feedback in Aurora");
+                        }
                         return comm.process(mExtractedText);
                     } else {
                         return comm.process(mText);

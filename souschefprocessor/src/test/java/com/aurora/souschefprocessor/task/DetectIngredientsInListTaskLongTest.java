@@ -347,6 +347,4 @@ public class DetectIngredientsInListTaskLongTest {
         assert (correctButOneCharOff * multiplier < 5);
         System.out.println(correct + " units were correctly set and " + correctButOneCharOff + " were correct with one char off out of " + testIngredientsQuantities.length + " examples");
     }
-
-
 }

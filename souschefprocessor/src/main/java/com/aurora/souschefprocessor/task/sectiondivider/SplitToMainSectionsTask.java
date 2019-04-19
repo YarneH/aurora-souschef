@@ -1,6 +1,8 @@
 package com.aurora.souschefprocessor.task.sectiondivider;
 
 
+import android.util.Log;
+
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
 import com.aurora.souschefprocessor.facade.Delegator;
@@ -376,6 +378,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         } else {
             ExtractedText text = mRecipeInProgress.getExtractedText();
+            Log.d("TEXT", text.toJSON());
             mSectionsBodies = new ArrayList<>();
             for (Section sec : text.getSections()) {
                 if (!sectionIsClutter(sec.getBody())) {

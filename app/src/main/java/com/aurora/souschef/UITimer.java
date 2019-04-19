@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -77,8 +78,20 @@ public class UITimer {
             }
         });
 
-        setOnClickListeners(timerText);
+        setOnClickListeners(mTimerCard);
         this.mLiveDataTimer.getIsFinished().observe(owner, aBoolean -> onTimerFinished());
+
+        this.mLiveDataTimer.getTimerState().observe(owner, aInt -> setIcon(aInt));
+    }
+
+    private void setIcon(int timerState) {
+        ImageView imageView = mTimerCard.findViewById(R.id.iv_timer_icon);
+
+        if (timerState == LiveDataTimer.TIMER_RUNNING) {
+            imageView.setImageResource(R.drawable.ic_pause_white);
+        } else if (timerState == LiveDataTimer.TIMER_PAUSED) {
+            imageView.setImageResource(R.drawable.ic_play_white);
+        }
     }
 
     /**

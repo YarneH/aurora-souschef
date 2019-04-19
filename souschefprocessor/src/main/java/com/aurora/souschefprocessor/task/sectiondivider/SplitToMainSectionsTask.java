@@ -5,12 +5,14 @@ import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
+import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -20,10 +22,7 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
-import edu.stanford.nlp.pipeline.MorphaAnnotator;
-import edu.stanford.nlp.pipeline.ParserAnnotator;
-import edu.stanford.nlp.pipeline.TokenizerAnnotator;
-import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
+import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.util.CoreMap;
 
 
@@ -58,7 +57,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     /**
      * An annotation pipeline specific for parsing of sentences
      */
-    private static AnnotationPipeline sAnnotationPipeline;
+
+    private AnnotationPipeline mAnnotationPipeline;
 
     /**
      * The list of bodies from the list of sections that was included in the {@link ExtractedText}
@@ -66,9 +66,11 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private List<String> mSectionsBodies = new ArrayList<>();
 
+
     public SplitToMainSectionsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
     }
+
 
     /**
      * This trims each line (via split on new line character) of a block of text
@@ -106,26 +108,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     }
 
     /**
-     * Creates the {@link #sAnnotationPipeline}
-     */
-    private static void createAnnotationPipeline() {
-        AnnotationPipeline pipeline = new AnnotationPipeline();
-        pipeline.addAnnotator(new TokenizerAnnotator(false, "en"));
-        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-
-        // this fails on android but not in the tests
-        try {
-            pipeline.addAnnotator(new ParserAnnotator(false, MAX_SENTENCES_FOR_PARSER));
-        } catch (Exception e) {
-            Log.e("PARSE", "loading parser failed", e);
-            throw new RecipeDetectionException("This recipe needs parsing, which currently fails on android");
-        }
-
-        pipeline.addAnnotator(new MorphaAnnotator(false));
-        sAnnotationPipeline = pipeline;
-    }
-
-    /**
      * Checks if a section contains one of the {@link #CLUTTER_STRINGS}
      *
      * @param section the section to check
@@ -139,6 +121,18 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         }
 
         return false;
+    }
+
+
+    /**
+     * Creates the {@link #mAnnotationPipeline}
+     */
+    private void createAnnotationPipeline() {
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+        for (Annotator a : Delegator.getBasicAnnotators()) {
+            pipeline.addAnnotator(a);
+        }
+        mAnnotationPipeline = pipeline;
     }
 
     /**
@@ -279,7 +273,17 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         // remove the last line because that one matched the STEP_STARTER_REGEX
         String[] lines = text.split("\n");
-        text = text.replace(lines[lines.length - 1], "");
+        List<String> linesList = new ArrayList<>(Arrays.asList(lines));
+        Collections.reverse(linesList);
+        String toReplace = "";
+        boolean found = false;
+        for (String line : linesList) {
+            if (!found && !line.trim().isEmpty()) {
+                toReplace = line;
+                found = true;
+            }
+        }
+        text = text.replace(toReplace, "");
 
         return new ResultAndAlteredTextPair(steps, text);
     }
@@ -374,6 +378,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         } else {
             ExtractedText text = mRecipeInProgress.getExtractedText();
+            Log.d("TEXT", text.toJSON());
             mSectionsBodies = new ArrayList<>();
             for (Section sec : text.getSections()) {
                 if (!sectionIsClutter(sec.getBody())) {
@@ -632,7 +637,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return the annotated text
      */
     private Annotation createAnnotatedText(String text, boolean lowercase) {
-        if (sAnnotationPipeline == null) {
+        if (mAnnotationPipeline == null) {
             createAnnotationPipeline();
         }
         // The parser could perform better on imperative sentences (instructions) when the
@@ -644,9 +649,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             annotation = new Annotation(text);
         }
 
-        sAnnotationPipeline.annotate(annotation);
-
+        mAnnotationPipeline.annotate(annotation);
         return annotation;
+
     }
 
     /**
@@ -671,4 +676,5 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             return mAlteredText;
         }
     }
+
 }

@@ -20,9 +20,7 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
-import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
-import edu.stanford.nlp.pipeline.TokenizerAnnotator;
-import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
+import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.time.SUTime;
 import edu.stanford.nlp.time.TimeAnnotations;
 import edu.stanford.nlp.time.TimeAnnotator;
@@ -148,23 +146,19 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * checks if no other thread has already started to create the pipeline
      */
     public static void initializeAnnotationPipeline() {
-        Thread initialize = new Thread(() -> {
-            synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
-                if (sStartedCreatingPipeline) {
-                    // creating already started or finished -> do not start again
-                    return;
-                }
-                // ensure no other thread can initialize
-                sStartedCreatingPipeline = true;
+        synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
+            if (sStartedCreatingPipeline) {
+                // creating already started or finished -> do not start again
+                return;
             }
-            sAnnotationPipeline = createTimerAnnotationPipeline();
-            synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
-                // get the lock again to notify that the pipeline has been created
-                LOCK_DETECT_TIMERS_IN_STEP_PIPELINE.notifyAll();
-            }
-        });
-
-        initialize.start();
+            // ensure no other thread can initialize
+            sStartedCreatingPipeline = true;
+        }
+        sAnnotationPipeline = createTimerAnnotationPipeline();
+        synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
+            // get the lock again to notify that the pipeline has been created
+            LOCK_DETECT_TIMERS_IN_STEP_PIPELINE.notifyAll();
+        }
     }
 
     /**
@@ -261,34 +255,26 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     }
 
     /**
-     * Creates custom annotation pipeline for timers
+     * Creates custom annotation pipeline for timers. It uses the {@link Delegator#sBasicAnnotators}
+     * and one extra {@link TimeAnnotator} using sutime.
      *
      * @return Annotation pipeline
      */
     private static AnnotationPipeline createTimerAnnotationPipeline() {
         Properties props = new Properties();
-
         // Do not use binders, these are necessary for Hollidays but those are not needed for
         // recipesteps
         // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
         props.setProperty("sutime.binders", "0");
-        Delegator.incrementProgressAnnotationPipelines();
 
         AnnotationPipeline pipeline = new AnnotationPipeline();
-        Delegator.incrementProgressAnnotationPipelines();
+        for (Annotator a : Delegator.getBasicAnnotators()) {
+            pipeline.addAnnotator(a);
+        }
 
-        pipeline.addAnnotator(new TokenizerAnnotator(false));
-        Delegator.incrementProgressAnnotationPipelines();
-
-        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-        Delegator.incrementProgressAnnotationPipelines();
-
-        pipeline.addAnnotator(new POSTaggerAnnotator(false));
-        Delegator.incrementProgressAnnotationPipelines();
 
         pipeline.addAnnotator(new TimeAnnotator("sutime", props));
-        Delegator.incrementProgressAnnotationPipelines();
-
+        Delegator.incrementProgressAnnotationPipelines(); //4
         return pipeline;
     }
 
@@ -427,6 +413,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
         double multiplier = 1.0;
         String description = mRecipeStep.getDescription();
+        // if there is a comma between 'half"/'quarter' and the found value, ignore this 'half'/'quarter'
         boolean containsComma = description.substring(
                 beginPositionFraction, originalPosition.getEndIndex()).contains(",");
 
@@ -443,6 +430,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
         return multiplier;
     }
+
 
     /**
      * Calculates the multiplier when one of fraction multipliers was detected after the timer
@@ -544,7 +532,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                 toIndex = allTokens.indexOf(lastTimexToken) + 1;
 
                 // The position of the detected timer = beginIndex of the first token, endIndex of the last token
-                Position timerPosition = new Position(firstTimexToken.beginPosition(), lastTimexToken.endPosition());
+                Position timerPosition = new Position(firstTimexToken.beginPosition(),
+                        lastTimexToken.endPosition());
 
                 // The detected annotation
                 SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();
@@ -624,7 +613,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * @return a new list with the necessary timers merged
      */
     private List<RecipeTimer> mergeTimers(List<RecipeTimer> list) {
-        // check if list is empyt
+        // check if list is empty
         if (list.isEmpty()) {
             return list;
         }

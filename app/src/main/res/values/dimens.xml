@@ -11,4 +11,10 @@
     <dimen name="dots_margin">3dp</dimen>
     <dimen name="timer_margin">10dp</dimen>
     <dimen name="content_step">16dp</dimen>
+
+    <!-- Text sizes -->
+    <dimen name="text_description">20sp</dimen>
+
+    <!-- Tab dimensions -->
+    <dimen name="tab1_text_margin">15dp</dimen>
 </resources>

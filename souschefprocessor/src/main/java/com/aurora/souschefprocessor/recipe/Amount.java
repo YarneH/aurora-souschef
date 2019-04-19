@@ -11,6 +11,16 @@ import java.util.Objects;
  */
 class Amount {
     /**
+     * A constant for half
+     */
+    private static final double HALF = 0.5;
+
+    /**
+     * A constant for 1 quarter
+     */
+    private static final double QUARTER = 0.25;
+
+    /**
      * The metric constant for going from milli to deci
      */
     private static final int METRIC_CONSTANT = 10;
@@ -39,6 +49,19 @@ class Amount {
         this.mUnit = unit;
     }
 
+    /**
+     * A private function that checks if two doubles are equal using the {@link #EQUALITY_THRESHOLD_DOUBLE}
+     * value
+     *
+     * @param a the first double
+     * @param b the second double
+     * @return a boolean that indicates if the absolute difference of the two doubles is smaller than
+     * the threshold
+     */
+    private static boolean doublesEqual(double a, double b) {
+        return Math.abs(a - b) < EQUALITY_THRESHOLD_DOUBLE;
+    }
+
     double getValue() {
         return mValue;
     }
@@ -65,7 +88,7 @@ class Amount {
         if (o instanceof Amount) {
             Amount a = (Amount) o;
             return (a.getUnit().equalsIgnoreCase(mUnit) &&
-                    Math.abs(a.getValue() - mValue) < EQUALITY_THRESHOLD_DOUBLE);
+                    doublesEqual(a.getValue(), mValue));
 
         }
         return false;
@@ -166,21 +189,48 @@ class Amount {
         }
     }
 
+    /**
+     * A helper function (for {@link #convertToUS()} for the conversion of milliliters,
+     * since this has many conversions in US
+     */
     private void changeMilliliter() {
-        if (mValue >= UnitConversionUtils.CUP_TO_MILLILITER) {
+        if (convertWithThisConversionFactor(UnitConversionUtils.CUP_TO_MILLILITER)) {
             mValue /= UnitConversionUtils.CUP_TO_MILLILITER;
             mUnit = UnitConversionUtils.CUP;
+            return;
 
-        } else if (mValue >= UnitConversionUtils.FLOZ_TO_MILLILITER) {
+        } else if (convertWithThisConversionFactor(UnitConversionUtils.FLOZ_TO_MILLILITER)) {
             mValue /= UnitConversionUtils.FLOZ_TO_MILLILITER;
             mUnit = UnitConversionUtils.FLOZ;
+            return;
 
-        } else if (mValue >= UnitConversionUtils.TABLESPOON_TO_MILLILITER) {
+        } else if (convertWithThisConversionFactor(UnitConversionUtils.TABLESPOON_TO_MILLILITER)) {
             mValue /= UnitConversionUtils.TABLESPOON_TO_MILLILITER;
             mUnit = UnitConversionUtils.TBSP;
+            return;
         }
 
         mValue /= UnitConversionUtils.TEASPOON_TO_MILLILITER;
         mUnit = UnitConversionUtils.TSP;
+    }
+
+    /**
+     * A private helperfunction for {@link #changeMilliliter()} that indicates if this factor could be used for the conversion.
+     * This is the case when the {@link #mValue} is bigger than the factor or is
+     * equal to the factor {@link #doublesEqual(double, double)}.
+     *
+     * @param conversionFactor the factor to check
+     * @return a boolean to indiciate wheter to convert with this factor
+     */
+    private boolean convertWithThisConversionFactor(double conversionFactor) {
+
+        if (mValue >= conversionFactor) {
+            return true;
+        }
+
+        if (doublesEqual(mValue, conversionFactor * QUARTER)) {
+            return true;
+        }
+        return doublesEqual(mValue, conversionFactor * HALF);
     }
 }

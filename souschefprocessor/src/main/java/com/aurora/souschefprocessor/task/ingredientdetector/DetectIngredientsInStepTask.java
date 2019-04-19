@@ -25,9 +25,7 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
-import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
-import edu.stanford.nlp.pipeline.TokenizerAnnotator;
-import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
+import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.process.Morphology;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -158,23 +156,22 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * It also checks if no other thread has already started to create the pipeline
      */
     public static void initializeAnnotationPipeline() {
-        Thread initialize = new Thread(() -> {
-            synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
-                if (sStartedCreatingPipeline) {
-                    // creating already started or finished  so do not start again
-                    return;
-                }
-                // ensure no other thread can initialize
-                sStartedCreatingPipeline = true;
-            }
-            sAnnotationPipeline = createIngredientAnnotationPipeline();
-            synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
-                // get the lock again to notify that the pipeline has been created
-                LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.notifyAll();
-            }
-        });
 
-        initialize.start();
+        synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
+            if (sStartedCreatingPipeline) {
+                // creating already started or finished  so do not start again
+                return;
+            }
+            // ensure no other thread can initialize
+            sStartedCreatingPipeline = true;
+        }
+        sAnnotationPipeline = createIngredientAnnotationPipeline();
+        synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
+            // get the lock again to notify that the pipeline has been created
+            LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.notifyAll();
+        }
+
+
     }
 
     /**
@@ -184,16 +181,10 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private static AnnotationPipeline createIngredientAnnotationPipeline() {
         AnnotationPipeline pipeline = new AnnotationPipeline();
-        Delegator.incrementProgressAnnotationPipelines();
 
-        pipeline.addAnnotator(new TokenizerAnnotator(false));
-        Delegator.incrementProgressAnnotationPipelines();
-
-        pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-        Delegator.incrementProgressAnnotationPipelines();
-
-        pipeline.addAnnotator(new POSTaggerAnnotator(false));
-        Delegator.incrementProgressAnnotationPipelines();
+        for (Annotator a : Delegator.getBasicAnnotators()) {
+            pipeline.addAnnotator(a);
+        }
 
         return pipeline;
     }
@@ -319,6 +310,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * Waits  until the sAnnotationPipeline is created
      */
     private void waitForPipeline() {
+        initializeAnnotationPipeline();
         // wait as long as the pipeline object is null
         while (sAnnotationPipeline == null) {
             try {

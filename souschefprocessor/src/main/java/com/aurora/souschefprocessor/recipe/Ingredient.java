@@ -152,18 +152,18 @@ public class Ingredient {
         for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
             Position position = mPositions.get(key);
             if (position != null) {
-                mPositions.get(key).trimToLengthOfString(s);
+                position.trimToLengthOfString(s);
             }
         }
     }
 
     /**
-     * Gets the order of the positions, it checks in which order the QUANTIYT UNIT and name are mentione
+     * Gets the order of the positions, it checks in which order the QUANTITY UNIT and name are mentioned
      *
      * @return a list, where the first element is the element that is stated first in the sentence, in case of
-     * ex aeqo the list is ordered with the following priority: 1 QUANTITY, 2 UNIT, 3 NAME
+     * ex aequo the list is ordered with the following priority: 1 QUANTITY, 2 UNIT, 3 NAME
      */
-    protected List<PositionKeysForIngredients> getOrderOfPositions() {
+    private List<PositionKeysForIngredients> getOrderOfPositions() {
 
         int qEnd = getQuantityPosition().getEndIndex();
 
@@ -264,7 +264,7 @@ public class Ingredient {
     }
 
     /**
-     * A function that indicates whether this listingredient contains a quantity detected in the string
+     * A function that indicates whether this ingredient contains a quantity detected in the string
      *
      * @param description the description in which this ingredient was detected
      * @return a boolean that indicates if a quantity was detected

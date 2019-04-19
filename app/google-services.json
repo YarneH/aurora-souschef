@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "788656140150",
+    "firebase_url": "https://souschef-2c473.firebaseio.com",
+    "project_id": "souschef-2c473",
+    "storage_bucket": "souschef-2c473.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:788656140150:android:f1555181e2913798",
+        "android_client_info": {
+          "package_name": "com.aurora.souschef"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "788656140150-ua34187lg5dnsg2qcsof9p5qe9mlmhr2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPL5ER4cI95yl9nvY0tquh5jwaDvU2A7U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "788656140150-ua34187lg5dnsg2qcsof9p5qe9mlmhr2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -16,7 +16,7 @@ import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 
 /**
- * Communicates with the kernel
+ * Communicates with the kernel and the UI of souschefprocessor
  */
 public class Communicator {
     /**
@@ -37,7 +37,7 @@ public class Communicator {
      * @param ingredientsClassifier the classifier for the
      *                              {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask} task
      */
-    public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
+    Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
         mDelegator = new Delegator(ingredientsClassifier, false);
 
     }
@@ -54,10 +54,12 @@ public class Communicator {
         createAnnotationPipelines();
         try (GZIPInputStream is = new GZIPInputStream(context.getResources().
                 openRawResource(R.raw.detect_ingr_list_model))) {
+            Log.d("COMMUNICATOR", "start loading model");
             CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
+            incrementProgressAnnotationPipelines(); // 5
             return new Communicator(crf);
         } catch (IOException | ClassNotFoundException e) {
-            Log.e("MODEL", "createCommunicator ", e);
+            Log.e("COMMUNICATOR", "createCommunicator ", e);
         }
         return null;
     }
@@ -67,7 +69,8 @@ public class Communicator {
      * your program
      */
     public static void createAnnotationPipelines() {
-        Delegator.createAnnotationPipelines();
+
+    Delegator.createAnnotationPipelines();
     }
 
     /**
@@ -84,6 +87,7 @@ public class Communicator {
      */
     static void incrementProgressAnnotationPipelines() {
         mProgressAnnotationPipelines.incrementAndGet();
+        Log.d("STEP", ""+mProgressAnnotationPipelines);
     }
 
     /**

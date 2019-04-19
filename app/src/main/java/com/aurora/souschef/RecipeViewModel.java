@@ -12,6 +12,7 @@ import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.facade.Communicator;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 /**
@@ -30,7 +31,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * These steps are hard-coded-counted. This means that when the implementation
      * of the Souschef-processor takes longer or shorter, this value must be changed.
      */
-    private static final int DETECTION_STEPS = 10;
+    private static final int DETECTION_STEPS = 5;
     /**
      * The maximum amount of people you can cook for.
      */
@@ -59,9 +60,22 @@ public class RecipeViewModel extends AndroidViewModel {
     private MutableLiveData<Boolean> mInitialised;
     /**
      * When the recipe is set, this value changes -> all observers act.
-     * Proficiat! Je hebt deze hidden comment gevonden! Tof.
      */
     private MutableLiveData<Recipe> mRecipe = new MutableLiveData<>();
+
+    /**
+     * This LiveData value updates when the processing has failed
+     */
+    private MutableLiveData<Boolean> mProcessingFailed = new MutableLiveData<>();
+
+    /**
+     * This LiveData value updates when the processing has failed and sets the failing message
+     */
+    private MutableLiveData<String> mFailureMessage = new MutableLiveData<>();
+    /**
+     * Indicates whether or not this recipe is already being processed
+     */
+    private boolean isBeingProcessed = false;
 
     /**
      * The context of the application.
@@ -86,7 +100,12 @@ public class RecipeViewModel extends AndroidViewModel {
         mInitialised.setValue(false);
         mCurrentPeople = new MutableLiveData<>();
         mCurrentPeople.setValue(0);
+        mProcessingFailed.setValue(false);
         Communicator.createAnnotationPipelines();
+    }
+
+    public LiveData<String> getFailureMessage() {
+        return mFailureMessage;
     }
 
     /**
@@ -146,6 +165,66 @@ public class RecipeViewModel extends AndroidViewModel {
         RecipeViewModel.this.mRecipe.setValue(recipe);
         RecipeViewModel.this.mCurrentPeople.setValue(recipe.getNumberOfPeople());
         mInitialised.setValue(true);
+    }
+
+    public LiveData<Boolean> getInitialised() {
+        return mInitialised;
+    }
+
+    public LiveData<Integer> getNumberOfPeople() {
+        return mCurrentPeople;
+    }
+
+    public LiveData<Recipe> getRecipe() {
+        return mRecipe;
+    }
+
+    public LiveData<Boolean> getProcessFailed() {
+        return mProcessingFailed;
+    }
+
+    /**
+     * Increment the amount of people.
+     * A maximum of {@value MAX_PEOPLE} people can be cooked for.
+     */
+    public void incrementPeople() {
+        if (mCurrentPeople == null || mCurrentPeople.getValue() == null) {
+            return;
+        }
+        if (mCurrentPeople.getValue() < MAX_PEOPLE) {
+            mCurrentPeople.setValue(mCurrentPeople.getValue() + 1);
+        }
+    }
+
+    /**
+     * Decrement the amount of people.
+     * Decrementing cannot go below 1.
+     */
+    public void decrementPeople() {
+        if (mCurrentPeople == null || mCurrentPeople.getValue() == null) {
+            return;
+        }
+        if (mCurrentPeople.getValue() > 1) {
+            mCurrentPeople.setValue(mCurrentPeople.getValue() - 1);
+        }
+    }
+
+    /**
+     * Converts all the units in the recipe
+     *
+     * @param toMetric boolean that indicates if the units should be converted to metric or to US
+     */
+    public void convertRecipeUnits(boolean toMetric) {
+        // TODO call this function after user has chosen/changed preference and/or when first
+        // creating the recipe
+        Recipe recipe = mRecipe.getValue();
+        if (recipe != null) {
+            recipe.convertUnit(toMetric);
+        }
+    }
+
+    public void setBeingProcessed(boolean isBeingProcessed) {
+        this.isBeingProcessed = isBeingProcessed;
     }
 
     /**
@@ -208,69 +287,39 @@ public class RecipeViewModel extends AndroidViewModel {
             Communicator comm = Communicator.createCommunicator(mContext);
             if (comm != null) {
                 // Pick the correct type of text.
-                if (mWithExtractedText) {
-                    return comm.process(mExtractedText);
-                } else {
-                    return comm.process(mText);
+                try {
+                    if (mWithExtractedText) {
+                        if (mExtractedText.getSections() == null) {
+                            throw new RecipeDetectionException("The received text from Aurora did " +
+                                    "not contain sections" +
+                                    ", make sure you can open this type of file. If the problem" +
+                                    " persists, please send feedback in Aurora");
+                        }
+                        return comm.process(mExtractedText);
+                    } else {
+                        return comm.process(mText);
+                    }
+                } catch (RecipeDetectionException rde) {
+                    Log.d("FAILURE", rde.getMessage());
+                    mFailureMessage.postValue(rde.getMessage());
+                    mProcessingFailed.postValue(true);
+
                 }
             }
             return null;
         }
 
+
         @Override
         protected void onPostExecute(Recipe recipe) {
-            initialiseWithRecipe(recipe);
+            // only initialize if the processing has not failed
+            if (!mProcessingFailed.getValue()) {
+                initialiseWithRecipe(recipe);
+            }
         }
     }
 
-    public LiveData<Boolean> getInitialised() {
-        return mInitialised;
-    }
-
-    public LiveData<Integer> getNumberOfPeople() {
-        return mCurrentPeople;
-    }
-
-    public LiveData<Recipe> getRecipe() {
-        return mRecipe;
-    }
-
-    /**
-     * Increment the amount of people.
-     * A maximum of {@value MAX_PEOPLE} people can be cooked for.
-     */
-    public void incrementPeople() {
-        if (mCurrentPeople == null || mCurrentPeople.getValue() == null) {
-            return;
-        }
-        if (mCurrentPeople.getValue() < MAX_PEOPLE) {
-            mCurrentPeople.setValue(mCurrentPeople.getValue() + 1);
-        }
-    }
-
-    /**
-     * Decrement the amount of people.
-     * Decrementing cannot go below 1.
-     */
-    public void decrementPeople() {
-        if (mCurrentPeople == null || mCurrentPeople.getValue() == null) {
-            return;
-        }
-        if (mCurrentPeople.getValue() > 1) {
-            mCurrentPeople.setValue(mCurrentPeople.getValue() - 1);
-        }
-    }
-
-    /**
-     * Converts all the units in the recipe
-     * @param toMetric boolean that indicates if the units should be converted to metric or to US
-     */
-    public void convertRecipeUnits(boolean toMetric){
-        // TODO call this function after user has chosen/changed preference and/or when first
-        // creating the recipe
-        Recipe recipe = mRecipe.getValue();
-        if(recipe != null){
-            recipe.convertUnit(toMetric);
-        }
+    public boolean isBeingProcessed() {
+        return isBeingProcessed;
     }
 }

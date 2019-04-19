@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 //apply plugin: 'com.google.firebase.firebase-perf'
+apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 28
@@ -7,8 +8,8 @@ android {
         applicationId "com.aurora.souschef"
         minSdkVersion 22
         targetSdkVersion 28
-        versionCode 5
-        versionName "0.4.1"
+        versionCode 7
+        versionName "0.4.1.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -71,6 +72,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:16.0.8'
     // For perfomance monitoring
     implementation 'com.google.firebase:firebase-perf:16.2.5'
+    // crashalytics
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.9'
     //gestures
     implementation 'com.github.nisrulz:sensey:1.8.0'
 }

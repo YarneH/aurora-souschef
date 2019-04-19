@@ -49,10 +49,13 @@ public class Delegator {
      * A list of basic annotators needed for every step that has a pipeline (tokenizer, wordstosentence
      * and POS)
      */
-    private final static List<Annotator> sBasicAnnotators = new ArrayList<>();
+    private  static final List<Annotator> sBasicAnnotators = new ArrayList<>();
 
     //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
-    private final static int BASIC_ANNOTATOR_SIZE = 3;
+    /**
+     * The number of basic annotator, for now 3 (tokenize, words to sentence and POS)
+     */
+    private static final int BASIC_ANNOTATOR_SIZE = 3;
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */

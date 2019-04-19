@@ -21,9 +21,6 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
 import edu.stanford.nlp.pipeline.Annotator;
-import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
-import edu.stanford.nlp.pipeline.TokenizerAnnotator;
-import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.util.CoreMap;
 
 
@@ -130,9 +127,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private void createAnnotationPipeline() {
         AnnotationPipeline pipeline = new AnnotationPipeline();
-            for (Annotator a : Delegator.getBasicAnnotators()) {
-                pipeline.addAnnotator(a);
-            }
+        for (Annotator a : Delegator.getBasicAnnotators()) {
+            pipeline.addAnnotator(a);
+        }
         mAnnotationPipeline = pipeline;
     }
 

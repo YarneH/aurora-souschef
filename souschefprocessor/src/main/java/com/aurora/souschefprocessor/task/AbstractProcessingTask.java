@@ -1,7 +1,7 @@
 package com.aurora.souschefprocessor.task;
 
 /**
- * An interface that has to be implemented by all tasks that do work on a {@link RecipeInProgress}
+ * An abstract class that has to be implemented by all tasks that do work on a {@link RecipeInProgress}
  * object.
  */
 public abstract class AbstractProcessingTask {

@@ -50,7 +50,7 @@ class Amount {
     }
 
     /**
-     * A private function that checks if to doubles are equal using the {@link #EQUALITY_THRESHOLD_DOUBLE}
+     * A private function that checks if two doubles are equal using the {@link #EQUALITY_THRESHOLD_DOUBLE}
      * value
      *
      * @param a the first double

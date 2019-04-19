@@ -158,10 +158,10 @@ public class Ingredient {
     }
 
     /**
-     * Gets the order of the positions, it checks in which order the QUANTIYT UNIT and name are mentione
+     * Gets the order of the positions, it checks in which order the QUANTITY UNIT and name are mentioned
      *
      * @return a list, where the first element is the element that is stated first in the sentence, in case of
-     * ex aeqo the list is ordered with the following priority: 1 QUANTITY, 2 UNIT, 3 NAME
+     * ex aequo the list is ordered with the following priority: 1 QUANTITY, 2 UNIT, 3 NAME
      */
     private List<PositionKeysForIngredients> getOrderOfPositions() {
 

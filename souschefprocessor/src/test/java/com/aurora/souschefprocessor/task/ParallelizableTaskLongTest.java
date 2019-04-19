@@ -34,7 +34,7 @@ public class ParallelizableTaskLongTest {
     @BeforeClass
     public static void initialize() {
         RecipeInProgress rip = new RecipeInProgress("irrelevant");
-        DetectTimersInStepTask.initializeAnnotationPipeline(new ArrayList<>());
+        DetectTimersInStepTask.initializeAnnotationPipeline();
         recipeSteps.add(new RecipeStep("Put 500 gram sauce in the microwave for 3 minutes")); //0 minutes
         recipeSteps.add(new RecipeStep("Heat the oil in a saucepan and gently fry the onion until softened, about 4-5 minutes.")); //1 upperbound and lowerbound with dash //"Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //1 (upperbound and lowerbound different)
         recipeSteps.add(new RecipeStep("Put in the oven for 30 minutes and let rest for 20 minutes.")); //2 (two timers)

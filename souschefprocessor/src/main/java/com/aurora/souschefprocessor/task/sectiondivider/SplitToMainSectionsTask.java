@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.task.sectiondivider;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
+import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
@@ -58,7 +59,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * An annotation pipeline specific for parsing of sentences
      */
 
-    private  AnnotationPipeline mAnnotationPipeline;
+    private AnnotationPipeline mAnnotationPipeline;
 
     /**
      * The list of bodies from the list of sections that was included in the {@link ExtractedText}
@@ -66,14 +67,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private List<String> mSectionsBodies = new ArrayList<>();
 
-    /**
-     * A list of mBasicAnnotators that were given by {@link com.aurora.souschefprocessor.facade.Delegator}
-     */
-    private List<Annotator> mBasicAnnotators;
 
-    public SplitToMainSectionsTask(RecipeInProgress recipeInProgress, List<Annotator> basicAnnotators) {
+    public SplitToMainSectionsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
-        this.mBasicAnnotators = basicAnnotators;
     }
 
 
@@ -134,19 +130,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private void createAnnotationPipeline() {
         AnnotationPipeline pipeline = new AnnotationPipeline();
-        if (mBasicAnnotators.isEmpty()) {
-            pipeline.addAnnotator(new TokenizerAnnotator(false));
-
-            pipeline.addAnnotator(new WordsToSentencesAnnotator(false));
-
-            pipeline.addAnnotator(new POSTaggerAnnotator(false));
-
-        } else {
-            for (Annotator a : mBasicAnnotators) {
+            for (Annotator a : Delegator.getBasicAnnotators()) {
                 pipeline.addAnnotator(a);
             }
-        }
-
         mAnnotationPipeline = pipeline;
     }
 

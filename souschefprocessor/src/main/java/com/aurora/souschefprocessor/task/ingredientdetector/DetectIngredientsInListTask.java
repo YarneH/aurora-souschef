@@ -188,7 +188,19 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         }
     }
 
+    /**
+     * A private helper function for updating the line after the name component has been identiefied
+     * @param line
+     * @param beginPosition
+     * @param endPosition
+     * @param name
+     * @return
+     */
     private static String makeNewLine(String line, int beginPosition, int endPosition, String name) {
+        if(beginPosition < 0 || endPosition < 0 || beginPosition >= line.length() || endPosition > line.length()){
+            // the positions are not in this line
+            return line;
+        }
         String newLine = line.substring(0, beginPosition) + name;
         if (endPosition < line.length()) {
             newLine += line.substring(endPosition);
@@ -338,6 +350,9 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             quantity = 1.0;
         }
 
+        for(Ingredient.PositionKeysForIngredients key: positions.keySet()){
+            positions.get(key).trimToLengthOfString(line);
+        }
         return new ListIngredient(name, unit, quantity, line, positions);
     }
 

@@ -52,7 +52,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         setRecipeSteps();
 
         // Perform the detection of ingredients in steps
-        DetectIngredientsInStepTask.initializeAnnotationPipeline(new ArrayList<>());
+        DetectIngredientsInStepTask.initializeAnnotationPipeline();
         for (int r = 0; r < rips.size(); r++) {
             for (int s = 0; s < rips.get(r).getRecipeSteps().size(); s++) {
                 // Execute the detection for each recipe step in this RecipeInProgress

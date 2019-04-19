@@ -16,7 +16,7 @@ import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 
 /**
- * Communicates with the kernel
+ * Communicates with the kernel and the UI of souschefprocessor
  */
 public class Communicator {
     /**

@@ -5,6 +5,12 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 
 public class IngredientUnitTest {
     private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
@@ -17,25 +23,13 @@ public class IngredientUnitTest {
         }
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void Ingredient_NegativeAmountThrowsIllegalArgumentException() {
         /**
          * An ingredient cannot have a negative amount, when constructing an object with a negative
          * amount an exception should be thrown
          */
-
-        // Arrange
-        boolean thrown = false;
-        // Act
-        try {
-
-            Ingredient ing = new Ingredient("spaghetti", "ounces", -500, irrelevantPositions);
-        } catch (IllegalArgumentException iae) {
-            thrown = true;
-        }
-        // Assert
-        assert (thrown);
-
+        Ingredient ing = new Ingredient("spaghetti", "ounces", -500, irrelevantPositions);
     }
 
     @Test
@@ -71,7 +65,7 @@ public class IngredientUnitTest {
             case1Thrown = true;
         }
         // Assert
-        assert (case1Thrown);
+        assertTrue("Only endIndex too big does not throw exception", case1Thrown);
 
         // case 2 both too big
         // Arrange
@@ -89,7 +83,7 @@ public class IngredientUnitTest {
             case2Thrown = true;
         }
         // Assert
-        assert (case2Thrown);
+        assertTrue("Both end- and beginIndex too big does not throw exception", case2Thrown);
 
 
     }
@@ -126,7 +120,7 @@ public class IngredientUnitTest {
             case1Thrown = true;
         }
         // Assert
-        assert (case1Thrown);
+        assertTrue("Only endIndex too big does not throw exception", case1Thrown);
 
         // case 2 both too big
         // Arrange
@@ -143,7 +137,7 @@ public class IngredientUnitTest {
             case2Thrown = true;
         }
         // Assert
-        assert (case2Thrown);
+        assertTrue("Both end- and beginIndex too big does not throw exception", case1Thrown);
 
     }
 
@@ -178,7 +172,8 @@ public class IngredientUnitTest {
             case1Thrown = true;
         }
         // Assert
-        assert (case1Thrown);
+        assertTrue("Only endIndex too big does not throw exception", case1Thrown);
+        ;
 
         // case 2 both too big
         // Arrange
@@ -194,7 +189,7 @@ public class IngredientUnitTest {
             case2Thrown = true;
         }
         // Assert
-        assert (case2Thrown);
+        assertTrue("Both begin- and endIndex too big does not throw exception", case1Thrown);
     }
 
 
@@ -220,13 +215,12 @@ public class IngredientUnitTest {
         Ingredient ing5 = new Ingredient("Spaghetti", "GRAM", 500, irrelevantPositions);
 
         // Act and Assert
-        assert (ing1.equals(ing2));
-        assert (ing2.equals(ing1));
-        assert (ing1.equals(ing4));
-        assert (!ing1.equals(ing3));
-        String randomObject = "3";
-        assert (!ing1.equals(randomObject));
-        assert(ing1.equals(ing5));
+        assertEquals("Same inputs is not equal", ing1, ing2);
+        assertEquals("Equal is not commutative", ing2, ing1);
+        assertEquals("Different positions do make a difference", ing1, ing4);
+        assertNotEquals("Different inputs are equal", ing3, ing1);
+        assertNotEquals("Random object is equal to Ingredient", ing1, "3");
+        assertEquals("Capitalization does make a difference", ing1, ing5);
     }
 
     @Test
@@ -249,10 +243,40 @@ public class IngredientUnitTest {
             for (int j = i + 1; j < iuas.size(); j++) {
                 boolean equal = iuas.get(i).equals(iuas.get(j));
                 boolean hash = (iuas.get(i).hashCode() == iuas.get(j).hashCode());
-                assert ((equal && hash) || (!equal && !hash));
+                assertTrue("hashcodes are different for equal objects, or are equal for unequal objects", equal == hash);
             }
         }
 
 
+    }
+
+    @Test
+    public void ListIngredient_convert_ConversionIsCorrectInIngredientAndPosition() {
+        String original = "500 gram spaghetti";
+        Position quantityPos = new Position(0, 3);
+        Position unitPos = new Position(4, 8);
+        Position namePos = new Position(9, 18);
+        Map<Ingredient.PositionKeysForIngredients, Position> map = new HashMap<>();
+        map.put(Ingredient.PositionKeysForIngredients.QUANTITY, quantityPos);
+        map.put(Ingredient.PositionKeysForIngredients.UNIT, unitPos);
+        map.put(Ingredient.PositionKeysForIngredients.NAME, namePos);
+        ListIngredient listIngredient = new ListIngredient("spaghetti", "gram", 500, original, map);
+
+        listIngredient.convertUnit(false);
+
+        Position quantityPosN = new Position(0, 6);
+        Position unitPosN = new Position(7, 12);
+        Position namePosN = new Position(13, 22);
+        Map<Ingredient.PositionKeysForIngredients, Position> mapN = new HashMap<>();
+        mapN.put(Ingredient.PositionKeysForIngredients.QUANTITY, quantityPosN);
+        mapN.put(Ingredient.PositionKeysForIngredients.UNIT, unitPosN);
+        mapN.put(Ingredient.PositionKeysForIngredients.NAME, namePosN);
+        ListIngredient n = new ListIngredient("spaghetti", "ounce", 17.637, "17.637 ounce spaghetti", mapN);
+        assertEquals("The ingredient is not the same after conversion", n, listIngredient);
+        // check positions
+
+        assertEquals("Quantity positions are not equal", quantityPos, quantityPosN);
+        assertEquals("NAME positions are not equal", namePos, namePosN);
+        assertEquals("Unit positions are not equal", unitPos, unitPosN);
     }
 }

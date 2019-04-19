@@ -2,6 +2,9 @@ package com.aurora.souschefprocessor.recipe;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
 public class PositionUnitTest {
 
     @Test
@@ -78,7 +81,7 @@ public class PositionUnitTest {
 
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void Position_Constructor_BeginEqualToEndIndexThrowsException() {
         /**
          * The beginIndex cannot be equal to the endIndex, because the endIndex is exclusive
@@ -87,15 +90,8 @@ public class PositionUnitTest {
         // Arrange
         int beginIndex = 5;
         int endIndex = beginIndex;
-        boolean thrown = false;
-        // Act
-        try {
-            Position pos = new Position(beginIndex, endIndex);
-        } catch (IllegalArgumentException iae) {
-            thrown = true;
-        }
-        // Assert
-        assert (thrown);
+        Position pos = new Position(beginIndex, endIndex);
+
     }
 
     @Test
@@ -107,14 +103,15 @@ public class PositionUnitTest {
         Position pos1 = new Position(6, 15);
         Position pos2 = new Position(6, 15);
         Position pos3 = new Position(6, 8);
-        Position pos4 = new Position(4, 15);
+        Position pos4 = new Position(7, 15);
 
         // Act and Assert
-        assert (!pos2.equals(pos3));
-        assert (!pos2.equals(pos4));
-        assert (!pos3.equals(pos4));
-        assert (pos1.equals(pos2));
-        assert (pos2.equals(pos1));
+        assertEquals("Same inputs do not render equality", pos1, pos2);
+        assertEquals("Equality is not commutative", pos2, pos1);
+        assertNotEquals("Different upperbound gives equality", pos1, pos3);
+        assertNotEquals("Differnt lowerbound gives equality", pos4, pos1);
+
+
 
 
     }

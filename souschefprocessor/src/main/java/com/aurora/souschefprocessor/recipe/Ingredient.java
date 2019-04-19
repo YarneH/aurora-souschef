@@ -1,5 +1,8 @@
 package com.aurora.souschefprocessor.recipe;
 
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -15,21 +18,21 @@ import java.util.Objects;
  * the description
  */
 public class Ingredient {
-
     /**
      * The name of this ingredient
      */
-    protected String mName;
+    private String mName;
+
     /**
      * The {@link Amount} that has as value quantity and as unit the unit of this ingredient
      */
-    protected Amount mAmount;
+    private Amount mAmount;
 
     /**
      * A map with the {@link Position}s of te name, unit and value of this ingredient in the string
      * they were classified. Each of these Positions cannot be null.
      */
-    protected Map<PositionKeysForIngredients, Position> mPositions;
+    private Map<PositionKeysForIngredients, Position> mPositions;
 
     public Ingredient(String name, String unit, double value, Map<PositionKeysForIngredients, Position> positions) {
         this.mName = name;
@@ -42,6 +45,7 @@ public class Ingredient {
                 throw new IllegalArgumentException("Position of " + key + " cannot be null");
             }
         }
+
         this.mPositions = positions;
     }
 
@@ -81,16 +85,20 @@ public class Ingredient {
         return mAmount.getUnit();
     }
 
-    public double getValue() {
+    public void setUnit(String u) {
+        mAmount.setUnit(u);
+    }
+
+    public double getQuantity() {
         return mAmount.getValue();
+    }
+
+    public void setQuantity(double q) {
+        mAmount.setValue(q);
     }
 
     public Amount getAmount() {
         return mAmount;
-    }
-
-    public void setmAmount(Amount amount) {
-        this.mAmount = amount;
     }
 
     @Override
@@ -103,7 +111,6 @@ public class Ingredient {
         if (o instanceof Ingredient) {
             Ingredient ingredient = (Ingredient) o;
             return (ingredient.getAmount().equals(mAmount) && ingredient.getName().equalsIgnoreCase(mName));
-
         }
         return false;
     }
@@ -122,28 +129,153 @@ public class Ingredient {
      * @param string The string in which to check that the positions are legal
      * @return a boolean indicating if the positions are legal
      */
-
-     boolean arePositionsLegalInString(String string) {
+    boolean arePositionsLegalInString(String string) {
         for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
-            if (!mPositions.get(key).isLegalInString(string)) {
+            Position position = mPositions.get(key);
+            if (position == null) {
+                throw new IllegalArgumentException("Position of " + key + " is null!");
+            }
+            if (!position.isLegalInString(string)) {
                 return false;
             }
         }
         return true;
     }
 
-
     /**
-     * Keys for a map storing positions for ingredients
+     * This trims the positions of this ingredient to the passed string. It uses the {@link Position#trimToLengthOfString(String)}
+     * method. This ensures that the endindex of the positions is never bigger than the length of the passed string
+     *
+     * @param s the string to trim the positions to
      */
-    public enum PositionKeysForIngredients {
-        NAME, QUANTITY, UNIT
-    }
-
-    public void trimPositionsToString(String s){
+    public void trimPositionsToString(String s) {
         for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
-            mPositions.get(key).trimToLengthOfString(s);
+            Position position = mPositions.get(key);
+            if (position != null) {
+                position.trimToLengthOfString(s);
+            }
         }
     }
 
+    /**
+     * Gets the order of the positions, it checks in which order the QUANTITY UNIT and name are mentioned
+     *
+     * @return a list, where the first element is the element that is stated first in the sentence, in case of
+     * ex aequo the list is ordered with the following priority: 1 QUANTITY, 2 UNIT, 3 NAME
+     */
+    private List<PositionKeysForIngredients> getOrderOfPositions() {
+
+        int qEnd = getQuantityPosition().getEndIndex();
+
+        int uEnd = getUnitPosition().getEndIndex();
+
+        int nEnd = getNamePosition().getEndIndex();
+        List<PositionKeysForIngredients> list = new ArrayList<>();
+        if (qEnd < nEnd && qEnd < uEnd) {
+            list.add(PositionKeysForIngredients.QUANTITY);
+            if (uEnd < nEnd) {
+                list.add(PositionKeysForIngredients.UNIT);
+                list.add(PositionKeysForIngredients.NAME);
+            } else {
+                list.add(PositionKeysForIngredients.NAME);
+                list.add(PositionKeysForIngredients.UNIT);
+
+            }
+        } else if (uEnd < qEnd && uEnd < nEnd) {
+            list.add(PositionKeysForIngredients.UNIT);
+            if (qEnd < nEnd) {
+                list.add(PositionKeysForIngredients.QUANTITY);
+                list.add(PositionKeysForIngredients.NAME);
+            } else {
+                list.add(PositionKeysForIngredients.NAME);
+                list.add(PositionKeysForIngredients.QUANTITY);
+            }
+
+        } else {
+            list.add(PositionKeysForIngredients.NAME);
+            if (qEnd < uEnd) {
+                list.add(PositionKeysForIngredients.QUANTITY);
+                list.add(PositionKeysForIngredients.UNIT);
+            } else {
+                list.add(PositionKeysForIngredients.NAME);
+                list.add(PositionKeysForIngredients.UNIT);
+            }
+        }
+        return list;
+    }
+
+    String convertUnit(boolean toMetric, String description) {
+
+        // only convert if the unit and quantity are detected
+        if (!unitDetected(description) || !quantityDetected(description)) {
+            return description;
+        }
+        // convert the amount
+        mAmount.convert(toMetric);
+
+        // a map that matches the UNIT and QUANTITY to their converted value
+        Map<PositionKeysForIngredients, String> converted =
+                new EnumMap<>(PositionKeysForIngredients.class);
+        converted.put(PositionKeysForIngredients.UNIT, mAmount.getUnit());
+        converted.put(PositionKeysForIngredients.QUANTITY, "" + mAmount.getValue());
+
+        // get the order of the NAME UNIT and QUANTITY
+        List<PositionKeysForIngredients> order = getOrderOfPositions();
+
+        // the offset for changing the positions
+        int offset = 0;
+
+        for (int i = 0; i < order.size(); i++) {
+            PositionKeysForIngredients key = order.get(i);
+
+            Position originalPos = mPositions.get(key);
+            // change the indices so that the positions will be correct
+            int newBegin = originalPos.getBeginIndex() + offset;
+            int newEnd = originalPos.getEndIndex() + offset;
+
+            if (key != PositionKeysForIngredients.NAME) {
+
+                // change the line
+                description = description.substring(0, newBegin) +
+                        converted.get(key) + description.substring(newEnd);
+
+                // calculate the new end
+                newEnd = newBegin + converted.get(key).length();
+                // update the offset
+                offset = newEnd - originalPos.getEndIndex();
+            }
+            originalPos.setIndices(newBegin, newEnd);
+        }
+
+        return description;
+    }
+
+    /**
+     * A function that indicates whether this step contains a unit detected in the string
+     *
+     * @param description the description in which this ingredient was detected
+     * @return a boolean that indicates if a unit was detected
+     */
+    boolean unitDetected(String description) {
+        boolean stringSet = !("").equals(mAmount.getUnit());
+        boolean positionSpansEntireLine = getUnitPosition().getBeginIndex() == 0 &&
+                getUnitPosition().getEndIndex() == description.length();
+        return stringSet && !positionSpansEntireLine;
+    }
+
+    /**
+     * A function that indicates whether this ingredient contains a quantity detected in the string
+     *
+     * @param description the description in which this ingredient was detected
+     * @return a boolean that indicates if a quantity was detected
+     */
+    boolean quantityDetected(String description) {
+        return !(getQuantityPosition().getBeginIndex() == 0 &&
+                getQuantityPosition().getEndIndex() == description.length());
+    }
+
+
+    public enum PositionKeysForIngredients {
+        NAME, QUANTITY, UNIT
+    }
 }

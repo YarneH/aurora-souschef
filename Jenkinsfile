@@ -164,12 +164,14 @@ pipeline {
                 // Generate javadoc
                 sh """
                 javadoc -d /var/www/javadoc/souschef/app/${env.BRANCH_NAME} -sourcepath ${WORKSPACE}/app/src/main/java -subpackages com -private \
-                -classpath ${WORKSPACE}/app/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes
+                -classpath ${WORKSPACE}/app/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes \
+                -bootclasspath /opt/android-sdk-linux/platforms/android-28/android.jar
                 """
 
                 sh """
                 javadoc -d /var/www/javadoc/souschef/souschefprocessor/${env.BRANCH_NAME} -sourcepath ${WORKSPACE}/souschefprocessor/src/main/java -subpackages com -private \
-                -classpath ${WORKSPACE}/app/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes
+                -classpath ${WORKSPACE}/app/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes \
+                -bootclasspath /opt/android-sdk-linux/platforms/android-28/android.jar
                 """
             }
             post {
@@ -178,6 +180,45 @@ pipeline {
                 }
             }
         } // Javadoc stage
+
+        stage('Deployment') {
+            when {
+                anyOf {
+                    branch 'master';
+                } 
+            }
+            steps {
+                script {
+                    // Create unsigned apk
+                    sh './gradlew assembleRelease'
+
+
+                    // Sign the apk
+                    signAndroidApks (
+                        keyStoreId: "key0aurora",
+                        keyAlias: "key0",
+                        apksToSign: "app/build/outputs/apk/release/app-release-unsigned.apk"
+                    )
+
+                    // Move to right directory
+                    sh """
+                    if [ ! -d /var/www/javadoc/deploy/ ]; then
+                        mkdir -p /var/www/javadoc/deploy;
+                    fi
+
+                    mv app/build/outputs/apk/release/app-release.apk /var/www/javadoc/deploy/souschef.apk
+                    """
+                }
+            }
+            post {
+                failure {
+                    slack_error_deploy()
+                }
+                success {
+                    slack_deployed()
+                }
+            }
+        } // Deployment stage
     } // Stages
 
     post {
@@ -242,7 +283,11 @@ def slack_success_part1() {
  * Gets called when generating javadoc failed
  */
 def slack_error_doc() {
-    slack_report(true, ':x: Javadoc generation failed', null, '')
+    slack_report(false, ':x: Javadoc generation failed', null, 'Javadoc')
+}
+
+def slack_error_deploy() {
+    slack_report(false, ':x: Automatic Deployment failed', null, 'Deployment')
 }
 
 
@@ -362,6 +407,48 @@ def slack_report(boolean successful, String text, JSONArray fields, failedStage=
     attachments.add(attachment)
 
     String token = successful ? 'TD60N85K8/BG960T35H/zH59dbicld2uw5Tfdaipg0oL' : 'TD60N85K8/BGABQ0CS3/xS539cEwbxr6cMPvk7LMu7Ve'
+
+    slackSend(channel: '#souschef-builds', attachments: attachments.toString(), teamDomain: 'aurora1819', baseUrl: 'https://hooks.slack.com/services/', token: token)
+}
+
+def slack_deployed() {
+    JSONArray attachments = new JSONArray()
+    JSONObject attachment = new JSONObject()
+
+    // Get commit info
+    String commit = env.GIT_COMMIT
+    String commit_branch = env.BRANCH_NAME
+    String commit_hash = "#" + commit.substring(0, 8)
+    String commit_message = sh(script: 'git show -s --pretty=%B | head -n1', returnStdout: true).trim()
+
+    attachment.put('color', 'good')
+    attachment.put('title', commit_message + ' @ branch ' + env.BRANCH_NAME)
+    attachment.put('title_link', 'https://github.ugent.be/Aurora/souschef/commit/' + commit)
+    attachment.put('text', ':heavy_check_mark: New version deployed!')
+
+    JSONArray actions = new JSONArray()
+
+    // Add actions to message
+    JSONObject actionViewBuild = new JSONObject()
+
+    // Add a button 'build log' to message that links to Jenkins
+    actionViewBuild.put('type', 'button')
+    actionViewBuild.put('text', 'Build log')
+    actionViewBuild.put('url', env.BUILD_URL)
+
+    actions.add(actionViewBuild)
+
+    attachment.put('actions', actions)
+
+    attachment.put('footer', commit)
+    // Add commit to message
+
+    // Add github logo to message
+    attachment.put('footer_icon', 'https://github.githubassets.com/images/modules/logos_page/Octocat.png')
+
+    attachments.add(attachment)
+
+    String token = 'TD60N85K8/BG960T35H/zH59dbicld2uw5Tfdaipg0oL'
 
     slackSend(channel: '#souschef-builds', attachments: attachments.toString(), teamDomain: 'aurora1819', baseUrl: 'https://hooks.slack.com/services/', token: token)
 }

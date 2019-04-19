@@ -1,5 +1,6 @@
 package com.aurora.souschef;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -17,13 +18,22 @@ import com.aurora.souschefprocessor.recipe.Recipe;
  * Class defining the functionality of the ingredients tab.
  */
 public class Tab2Ingredients extends Fragment {
-    private Recipe mRecipe = null;
+    /**
+     * Used to access recipe data.
+     */
+    private RecipeViewModel mRecipe = null;
+    /**
+     * Holds the amount of people the user is cooking for.
+     */
     private TextView mAmountTextView = null;
+    /**
+     * Adapter for the ingredient list.
+     */
     private IngredientAdapter mIngredientAdapter = null;
-    private OnAmountOfPeopleChangedListener mOnAmountOfPeopleChangedListener = null;
-
-    // The number of people the user picked.
-    private int mActualNumberOfPeople = 0;
+    /**
+     * Holds the ingredients.
+     */
+    private RecyclerView mIngredientList = null;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -33,56 +43,36 @@ public class Tab2Ingredients extends Fragment {
         View rootView = inflater.inflate(R.layout.tab_2_ingredients, container, false);
 
         // Setup recycler view.
-        RecyclerView mIngredientList = rootView.findViewById(R.id.rv_ingredient_list);
+        mIngredientList = rootView.findViewById(R.id.rv_ingredient_list);
         mIngredientList.setLayoutManager(new LinearLayoutManager(this.getContext()));
-
-        // Feed Adapter
-        mIngredientAdapter = new IngredientAdapter(mRecipe.getIngredients(), mActualNumberOfPeople);
-        mIngredientList.setAdapter(mIngredientAdapter);
 
         // Prepare parts for amount of people
         mAmountTextView = rootView.findViewById(R.id.tv_amount_people);
-        mAmountTextView.setText(String.valueOf(mActualNumberOfPeople));
 
         ImageButton addButton = rootView.findViewById(R.id.btn_add);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                changeAmountOfServings(+1);
-            }
-        });
+        addButton.setOnClickListener(view -> mRecipe.incrementPeople());
 
         ImageButton minusButton = rootView.findViewById(R.id.btn_minus);
-        minusButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                changeAmountOfServings(-1);
+        minusButton.setOnClickListener(view -> mRecipe.decrementPeople());
+
+        mRecipe = ViewModelProviders.of(getActivity()).get(RecipeViewModel.class);
+        mRecipe.getRecipe().observe(this, (Recipe recipe) -> {
+            if (recipe == null) {
+                return;
             }
+            // Feed Adapter
+            mIngredientAdapter = new IngredientAdapter(recipe.getIngredients(), recipe.getNumberOfPeople());
+            mIngredientList.setAdapter(mIngredientAdapter);
         });
-
+        mRecipe.getNumberOfPeople().observe(this, (Integer numberOfPeople) -> {
+                    if (numberOfPeople == null) {
+                        return;
+                    }
+                    mAmountTextView.setText(String.valueOf(numberOfPeople));
+                    mIngredientAdapter.setChoseAmountOfServings(numberOfPeople);
+                    mIngredientAdapter.notifyDataSetChanged();
+                }
+        );
         return rootView;
-    }
-
-    protected void setRecipe(Recipe recipe) {
-        mRecipe = recipe;
-        mActualNumberOfPeople = recipe.getNumberOfPeople();
-    }
-
-    private void changeAmountOfServings(int difference) {
-        if (mActualNumberOfPeople + difference > 0) {
-            mActualNumberOfPeople += difference;
-            mAmountTextView.setText(String.valueOf(mActualNumberOfPeople));
-            mIngredientAdapter.setChoseAmountOfServings(mActualNumberOfPeople);
-            mIngredientAdapter.notifyDataSetChanged();
-        }
-        mOnAmountOfPeopleChangedListener.onAmountOfPeopleChanged(mActualNumberOfPeople);
-    }
-
-    protected interface OnAmountOfPeopleChangedListener {
-        void onAmountOfPeopleChanged(int newAmount);
-    }
-
-    protected void setOnAmountOfPeopleChangedListener(OnAmountOfPeopleChangedListener listener) {
-        mOnAmountOfPeopleChangedListener = listener;
     }
 }

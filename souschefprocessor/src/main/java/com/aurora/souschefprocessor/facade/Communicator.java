@@ -16,10 +16,9 @@ import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 
 /**
- * Communicates with the kernel
+ * Communicates with the kernel and the UI of souschefprocessor
  */
 public class Communicator {
-
     /**
      * An atomicInteger to showcase the update of the creating of the pipelines
      */
@@ -31,15 +30,14 @@ public class Communicator {
     private Delegator mDelegator;
     // TODO add attribute kernelCommunicator to communicate with Aurora
 
-    // Caution! this class heavily depends on the Aurora API
-
     /**
      * Create a communicator using a CRFClassifier that was loaded in and is used to classify the
      * ingredients
      *
-     * @param ingredientsClassifier
+     * @param ingredientsClassifier the classifier for the
+     *                              {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask} task
      */
-    public Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
+    Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
         mDelegator = new Delegator(ingredientsClassifier, false);
 
     }
@@ -56,10 +54,12 @@ public class Communicator {
         createAnnotationPipelines();
         try (GZIPInputStream is = new GZIPInputStream(context.getResources().
                 openRawResource(R.raw.detect_ingr_list_model))) {
+            Log.d("COMMUNICATOR", "start loading model");
             CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
+            incrementProgressAnnotationPipelines(); // 5
             return new Communicator(crf);
         } catch (IOException | ClassNotFoundException e) {
-            Log.e("MODEL", "createCommunicator ", e);
+            Log.e("COMMUNICATOR", "createCommunicator ", e);
         }
         return null;
     }
@@ -69,13 +69,14 @@ public class Communicator {
      * your program
      */
     public static void createAnnotationPipelines() {
-        Delegator.createAnnotationPipelines();
+
+    Delegator.createAnnotationPipelines();
     }
 
     /**
      * Get the progress of the creation of the pipelines
      *
-     * @return
+     * @return an int that shows the status of the progress of the annotation pipelines
      */
     public static int getProgressAnnotationPipelines() {
         return mProgressAnnotationPipelines.get();
@@ -86,6 +87,7 @@ public class Communicator {
      */
     static void incrementProgressAnnotationPipelines() {
         mProgressAnnotationPipelines.incrementAndGet();
+        Log.d("STEP", ""+mProgressAnnotationPipelines);
     }
 
     /**
@@ -150,5 +152,6 @@ public class Communicator {
     public void sendObjectToAuroraKernel(PluginObject o) {
         // TODO either this method is inherited from a class that does not exist yet or implement here,
         // should I think be a function of PluginCommunicator a class defined by Aurora
+
     }
 }

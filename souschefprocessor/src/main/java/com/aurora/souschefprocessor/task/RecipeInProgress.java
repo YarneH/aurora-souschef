@@ -16,11 +16,13 @@ public class RecipeInProgress extends Recipe {
      * {@link com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask}
      */
     private String mIngredientsString;
+
     /**
      * The string representing the steps list that was detected using the
      * {@link com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask}
      */
     private String mStepsString;
+
     /**
      * The original text given by Aurora (could change to Annotation)
      */
@@ -30,7 +32,6 @@ public class RecipeInProgress extends Recipe {
      * An extractedtet object from Aurora
      */
     private ExtractedText mExtractedText;
-
 
     public RecipeInProgress(String originalText) {
         super();
@@ -50,7 +51,6 @@ public class RecipeInProgress extends Recipe {
                 ", DESCRIPTION='" + mDescription + "\n" +
                 '}';
     }
-
 
     public String getOriginalText() {
         return mOriginalText;

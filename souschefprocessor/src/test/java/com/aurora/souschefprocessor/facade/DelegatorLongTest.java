@@ -10,8 +10,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +33,10 @@ public class DelegatorLongTest {
         String filename = "src/test/java/com/aurora/souschefprocessor/facade/json-recipes.txt";
         List<ExtractedText> list = new ArrayList<>();
         try {
-            FileReader fReader = new FileReader(filename);
-            BufferedReader reader = new BufferedReader(fReader);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(filename), "UTF8"));
+
             String line = reader.readLine();
 
             while (line != null) {
@@ -51,12 +55,12 @@ public class DelegatorLongTest {
         List<String> recipesFromPlainText = initializeRecipes();
         // split into valid and invalid
         // the first 5 recipes are valid recipes
-        validRecipesFromPlainText = recipesFromPlainText.subList(0, 5);
-        invalidRecipesFromPlainText = recipesFromPlainText.subList(5, 8);
+        validRecipesFromPlainText = recipesFromPlainText.subList(0, 4);
+        invalidRecipesFromPlainText = recipesFromPlainText.subList(4, 8);
 
         List<ExtractedText> jsonRecipes = initializeRecipesJSON();
-        validRecipesJSON = jsonRecipes.subList(0,6);
-        invalidRecipesJSON = jsonRecipes.subList(6, jsonRecipes.size());
+        validRecipesJSON = jsonRecipes.subList(0,5);
+        invalidRecipesJSON = jsonRecipes.subList(5, jsonRecipes.size());
 
         // load in the model
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
@@ -81,8 +85,9 @@ public class DelegatorLongTest {
         String filename = "src/test/java/com/aurora/souschefprocessor/facade/recipes.txt";
         List<String> list = new ArrayList<>();
         try {
-            FileReader fReader = new FileReader(filename);
-            BufferedReader reader = new BufferedReader(fReader);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(filename), "UTF8"));
             StringBuilder bld = new StringBuilder();
             String line = reader.readLine();
 
@@ -150,7 +155,7 @@ public class DelegatorLongTest {
 
             for (ExtractedText text : validRecipesJSON) {
                 Recipe recipe = delegator.processText(text);
-                System.out.println(recipe + "\n--------------------------------");
+                System.out.println(recipe+"\n--------------------------------");
 
             }
         } catch (Exception e) {

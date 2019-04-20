@@ -1,6 +1,6 @@
 package com.aurora.souschef.utilities;
 
-public class StringUtilities {
+public final class StringUtilities {
     private static final int MIN_DENOMINATOR_OF_FRACTIONS = 2;
     private static final int MAX_DENOMINATOR_OF_FRACTIONS = 10;
     private static final double ROUND_EPSILON = 0.05;

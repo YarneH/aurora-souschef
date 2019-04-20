@@ -66,10 +66,6 @@ public class Tab3Steps extends Fragment {
         return rootView;
     }
 
-    protected void setNewAmount(int newAmount) {
-        mStepsPagerAdapter.updateFragments(newAmount);
-    }
-
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
@@ -92,12 +88,6 @@ public class Tab3Steps extends Fragment {
                 return 0;
             }
             return mDescriptionSteps.length;
-        }
-
-        protected void updateFragments(int newAmount) {
-//            for (StepPlaceholderFragment fragment : mFragments) {
-//                fragment.update(newAmount);
-//            }
         }
     }
 

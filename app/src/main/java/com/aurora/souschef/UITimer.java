@@ -88,7 +88,7 @@ public class UITimer {
         setOnClickListeners(mTimerCard);
         this.mLiveDataTimer.getIsFinished().observe(owner, aBoolean -> onTimerFinished());
 
-        this.mLiveDataTimer.getTimerState().observe(owner, aInt -> setIconAndBackground(aInt));
+        this.mLiveDataTimer.getTimerState().observe(owner, this::setIconAndBackground);
 
         // Preparing the ringtone for the alarm
         Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
@@ -105,7 +105,7 @@ public class UITimer {
         }
         mRingtone = RingtoneManager.getRingtone(mTimerCard.getContext(), alert);
 
-        this.mLiveDataTimer.getIsAlarming().observe(owner, aBoolean -> setAlarm(aBoolean));
+        this.mLiveDataTimer.getIsAlarming().observe(owner, this::setAlarm);
 
     }
 

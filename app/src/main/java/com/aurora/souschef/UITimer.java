@@ -126,7 +126,7 @@ public class UITimer {
      * TODO: What happens on timer completion?
      */
     private void onTimerFinished() {
-        // mRingtone.play();
+        // TODO: This function is called when the timer finishes
     }
 
     /**

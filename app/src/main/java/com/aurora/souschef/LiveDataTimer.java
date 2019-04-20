@@ -75,8 +75,7 @@ public class LiveDataTimer {
      */
     public LiveDataTimer(RecipeTimer recipeTimer) {
         mRecipeTimer = new RecipeTimer(recipeTimer.getUpperBound(), recipeTimer.getLowerBound(), null);
-        //mTimeSetByUser = recipeTimer.getLowerBound();
-        mTimeSetByUser = 2;
+        mTimeSetByUser = recipeTimer.getLowerBound();
         mFinished.setValue(false);
         mAlarming.setValue(false);
         mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));

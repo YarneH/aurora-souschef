@@ -1,26 +1,19 @@
 package com.aurora.souschef;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Class defining the functionality of the recipe steps tab.
@@ -82,7 +75,6 @@ public class Tab3Steps extends Fragment {
      * one of the sections/tabs/pages.
      */
     public class StepsPagerAdapter extends FragmentPagerAdapter {
-        // private StepPlaceholderFragment[] mFragments = new StepPlaceholderFragment[mDescriptionSteps.length];
 
         public StepsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -90,9 +82,6 @@ public class Tab3Steps extends Fragment {
 
         @Override
         public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-
-            // Return a PlaceholderFragment (defined as a static inner class below).
             return StepPlaceholderFragment.newInstance(position);
         }
 

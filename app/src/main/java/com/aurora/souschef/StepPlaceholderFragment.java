@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +19,6 @@ import com.aurora.souschef.utilities.StringUtilities;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
-import com.aurora.souschefprocessor.recipe.RecipeTimer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -239,50 +237,6 @@ public class StepPlaceholderFragment extends Fragment {
 
         mCurrentAmount = newAmount;
 
-        Log.d("Description", bld.toString());
-//        // Keeps track of the changes in positions
-//        int offset = 0;
-//
-//        for (int indexIngredient = 0; indexIngredient < mRecipe.getIngredients().size(); indexIngredient++) {
-//            ListIngredient ingredient = mRecipe.getIngredients().get(indexIngredient);
-//            boolean replaced = false;
-//
-//            // Calculate the current length of the quantity
-//            int currentLength = ingredient.getQuantityPosition().getEndIndex() -
-//                    ingredient.getQuantityPosition().getBeginIndex();
-//            // Calculate the begin position considering the new offset which could be different from
-//            // zero when a previous ingredient had a different length
-//            int beginPosition = ingredient.getQuantityPosition().getBeginIndex() + offset;
-//            ingredient.getQuantityPosition().setBeginIndex(beginPosition);
-//
-//            double newQuantity = ingredient.getValue() / mRecipe.getNumberOfPeople() * newAmount;
-//            String newQuantityString = StringUtilities.toDisplayQuantity(newQuantity);
-//
-//            int newLength = newQuantityString.length();
-//            ingredient.getQuantityPosition().setEndIndex(beginPosition + newLength);
-//
-//
-//            for (int i = 0; i < mStepPositions.size() - 1; i++) {
-//                if (beginPosition < mStepPositions.get(i + 1) && !replaced) {
-//
-//                    // Calculate the relative index
-//                    int relativeIndex = beginPosition - mStepPositions.get(i);
-//
-//                    // Get old text and replace the old quantity with the new quantity
-//                    Log.d("Get Text", "i = " + i + " length of list = " + mStepDescriptionParts.size());
-//                    String currentText = String.valueOf(mStepDescriptionParts.get(i).getText());
-//                    StringBuilder builder = new StringBuilder(currentText);
-//                    builder.replace(relativeIndex, relativeIndex + currentLength, newQuantityString);
-//                    String newText = builder.toString();
-//                    mStepDescriptionParts.get(i).setText(newText);
-//
-//                    // Update the offset and the 'replaced' boolean
-//                    offset = newLength - currentLength;
-//                    replaced = true;
-//                }
-//                mStepPositions.set(i, mStepPositions.get(i) + offset);
-//            }
-//        }
     }
 
     public static String[] extractDescriptionSteps(Recipe recipe) {

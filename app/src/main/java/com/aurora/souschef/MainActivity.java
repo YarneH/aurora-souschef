@@ -232,11 +232,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    @Override
-//    public void onAmountOfPeopleChanged(int newAmount) {
-//        ((Tab3Steps) mSectionsPagerAdapter.getItem(TAB_STEPS)).setNewAmount(newAmount);
-//    }
-
     /**
      * Show the progress-screen.
      */

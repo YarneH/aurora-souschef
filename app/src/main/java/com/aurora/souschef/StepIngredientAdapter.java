@@ -19,16 +19,18 @@ import java.util.Locale;
  */
 public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAdapter.CardIngredientViewHolder> {
     private final List<Ingredient> ingredients;
-
+    private int mCurrentAmount = 0;
+    private int mOriginalAmount = 0;
 
     /**
      * Constructs the adapter with a list
      *
      * @param ingredients list for construction
      */
-    public StepIngredientAdapter(List<Ingredient> ingredients) {
-
+    public StepIngredientAdapter(List<Ingredient> ingredients, int originalAmount, int currentAmount) {
         this.ingredients = ingredients;
+        this.mCurrentAmount = currentAmount;
+        this.mOriginalAmount = originalAmount;
     }
 
     @NonNull
@@ -53,6 +55,10 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
         } else {
             return ingredients.size();
         }
+    }
+
+    public void setCurrentAmount(int currentAmount) {
+        mCurrentAmount = currentAmount;
     }
 
     public class CardIngredientViewHolder extends RecyclerView.ViewHolder {
@@ -90,8 +96,10 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
                         + nameWithoutQuantityAndUnit.substring(1);
             }
 
+            double newQuantity = ingredient.getQuantity() * mCurrentAmount / mOriginalAmount;
+
             mIngredientName.setText(nameWithoutQuantityAndUnit);
-            mIngredientAmount.setText(StringUtilities.toDisplayQuantity(ingredient.getQuantity()));
+            mIngredientAmount.setText(StringUtilities.toDisplayQuantity(newQuantity));
             mIngredientUnit.setText(ingredient.getUnit());
         }
     }

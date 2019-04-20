@@ -88,7 +88,7 @@ public class UITimer {
         setOnClickListeners(mTimerCard);
         this.mLiveDataTimer.getIsFinished().observe(owner, aBoolean -> onTimerFinished());
 
-        this.mLiveDataTimer.getTimerState().observe(owner, aInt -> setIcon(aInt));
+        this.mLiveDataTimer.getTimerState().observe(owner, aInt -> setIconAndBackground(aInt));
 
         // Preparing the ringtone for the alarm
         Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
@@ -109,13 +109,16 @@ public class UITimer {
 
     }
 
-    private void setIcon(int timerState) {
+    private void setIconAndBackground(int timerState) {
         ImageView imageView = mTimerCard.findViewById(R.id.iv_timer_icon);
+        View contentView = mTimerCard.findViewById(R.id.cl_timer_content);
 
         if (timerState == LiveDataTimer.TIMER_RUNNING) {
             imageView.setImageResource(R.drawable.ic_pause_white);
+            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimary));
         } else if (timerState == LiveDataTimer.TIMER_PAUSED) {
             imageView.setImageResource(R.drawable.ic_play_white);
+            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
         }
     }
 

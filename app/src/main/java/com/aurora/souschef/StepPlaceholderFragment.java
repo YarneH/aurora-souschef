@@ -24,6 +24,7 @@ import com.aurora.souschefprocessor.recipe.RecipeTimer;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,10 +36,13 @@ public class StepPlaceholderFragment extends Fragment {
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
     private View mRootView;
+    private RecyclerView mIngredientList;
     private String[] mDescriptionStep;
     private int mAmountSteps = 0;
     private RecipeStep mRecipeStep = null;
     private int mOriginalAmount = 0;
+    private int mCurrentAmount = 0;
+    private List<Ingredient> mIngredientsForList = new ArrayList<>();
     private ArrayList<TextView> mStepDescriptionParts = new ArrayList<>();
     private ArrayList<Integer> mStepPositions = new ArrayList<>();
     private ArrayList<Integer> mQuantityPositions = new ArrayList<>();
@@ -78,6 +82,7 @@ public class StepPlaceholderFragment extends Fragment {
                 .get(RecipeViewModel.class);
         recipeViewModel.getRecipe().observe(this, (Recipe recipe) ->
                 this.onNewRecipeObserved(inflater, container, recipe, index));
+        recipeViewModel.getNumberOfPeople().observe(this, aInteger -> update(aInteger));
 
         return mRootView;
     }
@@ -104,20 +109,20 @@ public class StepPlaceholderFragment extends Fragment {
         recipeTimerViewModel.init(recipe);
 
         mAmountSteps = recipe.getRecipeSteps().size();
-        mRecipeStep = recipe.getRecipeSteps().get(getArguments().getInt(ARG_SECTION_NUMBER));
         mOriginalAmount = recipe.getNumberOfPeople();
+        mRecipeStep = recipe.getRecipeSteps().get(getArguments().getInt(ARG_SECTION_NUMBER));
 
         // Sort ingredients on descending beginIndex
         Collections.sort(mRecipeStep.getIngredients(), (l0, l1) ->
                 l0.getQuantityPosition().getBeginIndex() + l1.getQuantityPosition().getBeginIndex());
 
         // Setup the RecyclerView of the ingredients
-        RecyclerView mIngredientList = mRootView.findViewById(R.id.rv_ingredient_list);
+        mIngredientList = mRootView.findViewById(R.id.rv_ingredient_list);
         mIngredientList.setLayoutManager(new LinearLayoutManager(this.getContext()));
 
         // Feed Adapter
         StepIngredientAdapter ingredientAdapter =
-                new StepIngredientAdapter(mRecipeStep.getIngredients());
+                new StepIngredientAdapter(mRecipeStep.getIngredients(), recipe.getNumberOfPeople(), mCurrentAmount);
         mIngredientList.setAdapter(ingredientAdapter);
 
         // Disable the line if there are no ingredients listed
@@ -214,6 +219,11 @@ public class StepPlaceholderFragment extends Fragment {
     }
 
     protected void update(int newAmount) {
+
+        ((StepIngredientAdapter) mIngredientList.getAdapter()).setCurrentAmount(newAmount);
+        mIngredientList.getAdapter().notifyDataSetChanged();
+
+
         StringBuilder bld = new StringBuilder(mRecipeStep.getDescription());
 
         for (Ingredient ingredient : mRecipeStep.getIngredients()){
@@ -226,6 +236,8 @@ public class StepPlaceholderFragment extends Fragment {
                         newQuantityString);
             }
         }
+
+        mCurrentAmount = newAmount;
 
         Log.d("Description", bld.toString());
 //        // Keeps track of the changes in positions

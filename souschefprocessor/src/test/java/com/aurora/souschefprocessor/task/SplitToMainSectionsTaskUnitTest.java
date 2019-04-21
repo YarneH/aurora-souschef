@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+
 
 public class SplitToMainSectionsTaskUnitTest {
     private static List<String> recipeTexts;
@@ -200,6 +202,7 @@ public class SplitToMainSectionsTaskUnitTest {
             task.doTask();
 
             // Assert
+            assertEquals("ingredients", fieldsList.get(i).get("INGR").toLowerCase(), rip.getIngredientsString().toLowerCase());
             assert (rip.getIngredientsString().equalsIgnoreCase(fieldsList.get(i).get("INGR")));
             assert (rip.getStepsString().equalsIgnoreCase(fieldsList.get(i).get("STEPS")));
             assert (rip.getDescription() != null);
@@ -238,7 +241,7 @@ public class SplitToMainSectionsTaskUnitTest {
         String description = "How to make chocolate mousse\n" +
                 "2 ratings\n" +
                 "How to make chocolate mousse\n" +
-                "By Lesley Waters\n" +
+                "By Lesley Waters\n\n" +
                 "Preparation time\n" +
                 "30 mins to 1 hour\n" +
                 "Cooking time\n" +
@@ -276,10 +279,9 @@ public class SplitToMainSectionsTaskUnitTest {
 
         // Act
         task.doTask();
-        System.out.println(rip.getStepsString());
-        assert (rip.getDescription().equals(description));
-        assert (rip.getIngredientsString().equals(ingredients));
-        assert (rip.getStepsString().equals(steps));
+        assertEquals("description", description, rip.getDescription());
+        assertEquals("steps", steps, rip.getStepsString());
+        assertEquals("ingredients", ingredients, rip.getIngredientsString());
 
 
         // test that needs the parser
@@ -344,8 +346,8 @@ public class SplitToMainSectionsTaskUnitTest {
         RecipeInProgress rip = new RecipeInProgress(text);
         SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
         task.doTask();
-
-
+        System.out.println(rip.getStepsString());
+        assertEquals("ingredients", rip.getIngredientsString(), bodyIngredients);
         assert (rip.getIngredientsString().equals(bodyIngredients));
 
         assert (rip.getStepsString().equals(steps));
@@ -395,7 +397,7 @@ public class SplitToMainSectionsTaskUnitTest {
         SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
         task.doTask();
 
-
+        assertEquals("ingredients", bodyIngredients, rip.getIngredientsString());
         assert (rip.getIngredientsString().equals(bodyIngredients));
 
         assert (rip.getStepsString().equals(steps));
@@ -503,5 +505,120 @@ public class SplitToMainSectionsTaskUnitTest {
         assert (rip.getStepsString().equals(steps));
         assert (rip.getDescription().equals(title + "\n" + titleFirstBody+ "\n" + firstBody +
                 "\n" +titleSecondBody +"\n" + secondBody));
+    }
+
+
+    @Test
+    public void SplitToMainSectionsTask_doTask_NotAllIngredientsInSameSection(){
+        // Arrange
+        String json = "{\n" +
+                "   \"mFilename\": \"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3DGDPoHpBnY6%2BmsRjpbyFZ64nchB90csqZM1KpNqa1adcFQ1v9eXj7Snb0Fgo%3D\",\n" +
+                "   \"mSections\": [\n" +
+                "       {\n" +
+                "           \"mBody\": \"The beste chocomousse for: 4 people!\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"150 g pure chocolade 78%\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0,\n" +
+                "           \"mTitle\": \"Ingredients\"\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"2 large eggs\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"50 g witte basterdsuiker\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"200 ml verse slagroom\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Hak de chocolade fijn. Laat de chocolade in ca. 5 min. au bain-marie smelten in\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0,\n" +
+                "           \"mTitle\": \"Cooking steps\"\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"een kom boven een pan kokend water. Roer af en toe. Neem de kom van de pan.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Splits de eieren. Klop het eiwit met de helft van de suiker met een mixer ca.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"5 min. totdat het glanzende stijve pieken vormt. Doe de slagroom in een ruime kom en\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"klop in ca. 3 min. stijf.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Klop de eidooiers los met een garde. Roer de rest van de suiker erdoor.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Roer de gesmolten chocolade door het eidooier-suikermengsel. Spatel het door de\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"slagroom. Spatel het eiwit snel en luchtig in delen door het chocolademengsel.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Schep de chocolademousse in glazen, potjes of coupes, dek af met vershoudfolie\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"en laat minimaal 2 uur opstijven in de koelkast.  ;\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       }\n" +
+                "   ],\n" +
+                "   \"mTitle\": \"Chocomousse\"\n" +
+                "}";
+        String ingredients = "150 g pure chocolade 78%\n" +
+                "2 large eggs\n" +
+                "50 g witte basterdsuiker\n" +
+                "200 ml verse slagroom";
+        String steps = "Hak de chocolade fijn. Laat de chocolade in ca. 5 min. au bain-marie smelten in\n" +
+                "een kom boven een pan kokend water. Roer af en toe. Neem de kom van de pan.\n" +
+                "Splits de eieren. Klop het eiwit met de helft van de suiker met een mixer ca.\n" +
+                "5 min. totdat het glanzende stijve pieken vormt. Doe de slagroom in een ruime kom en\n" +
+                "klop in ca. 3 min. stijf.\n" +
+                "Klop de eidooiers los met een garde. Roer de rest van de suiker erdoor.\n" +
+                "Roer de gesmolten chocolade door het eidooier-suikermengsel. Spatel het door de\n" +
+                "slagroom. Spatel het eiwit snel en luchtig in delen door het chocolademengsel.\n" +
+                "Schep de chocolademousse in glazen, potjes of coupes, dek af met vershoudfolie\n" +
+                "en laat minimaal 2 uur opstijven in de koelkast.  ;";
+        String description = "Chocomousse\n" +
+                "The beste chocomousse for: 4 people!";
+
+        // Act
+        ExtractedText text = ExtractedText.fromJson(json);
+        RecipeInProgress rip = new RecipeInProgress(text);
+        (new SplitToMainSectionsTask(rip)).doTask();
+
+        // Assert
+        assertEquals("description", description, rip.getDescription());
+        assertEquals("steps", steps, rip.getStepsString());
+        assertEquals("ingredients", ingredients, rip.getIngredientsString());
     }
 }

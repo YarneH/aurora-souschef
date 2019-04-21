@@ -13,13 +13,13 @@ import edu.stanford.nlp.ling.CoreLabel;
  * provides constants and methods for calculating quantities when they have been detected
  */
 abstract class DetectIngredientsTask extends AbstractProcessingTask {
-
     /**
      * An array of spelled out numbers, generally numbers greater than twelve are not spelled out so
      * these are numbers zero to twelve
      */
     private static final String[] NUMBERS_TO_TWELVE = {"zero", "one", "two", "three", "four", "five",
             "six", "seven", "eight", "nine", "ten", "eleven", "twelve"};
+
     /**
      * An array of spelled out numbers since multiples of ten are also spelled out
      */
@@ -35,7 +35,6 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
      * The number 10
      */
     private static final double TEN = 10;
-
 
     DetectIngredientsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
@@ -61,10 +60,12 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
                     // it was true
                     multiply = false;
                     // after this not a fraction
+
                 } else if (multiply) {
                     // if previous was multiplication, multiply
                     result *= Double.parseDouble(s);
                     multiply = false;
+
                 } else if ("x".equalsIgnoreCase(s)) {
                     // if this is a multiplication sign set multiply to two
                     multiply = true;
@@ -73,6 +74,7 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
                     // just add the result
                     result += Double.parseDouble(s);
                 }
+
             } catch (NumberFormatException iae) {
                 // String identified as quantity is not parsable...
 
@@ -80,11 +82,13 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
                 if (multiply) {
                     result *= nonParsableQuantity;
                     multiply = false;
+
                 } else {
                     result += nonParsableQuantity;
                 }
             }
         }
+
         return result;
     }
 
@@ -105,8 +109,8 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
         } else {
             intermediateResult *= numerator / denominator;
         }
-        return intermediateResult;
 
+        return intermediateResult;
     }
 
     /**
@@ -130,7 +134,6 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
                 return i * TEN;
             }
         }
-
         // if not one of the previous cases consider wrongly labeled
         return 0.0;
     }
@@ -163,6 +166,4 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
         }
         return result;
     }
-
-
 }

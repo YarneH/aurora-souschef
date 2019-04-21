@@ -19,14 +19,17 @@ public class Recipe extends PluginObject {
      * The list of detected {@link ListIngredient} in this recipe
      */
     protected List<ListIngredient> mIngredients = new ArrayList<>();
+
     /**
      * The list of detected {@link RecipeStep} in this recipe
      */
     protected List<RecipeStep> mRecipeSteps = new ArrayList<>();
+
     /**
      * The detected number of people this recipe is for
      */
     protected int mNumberOfPeople;
+
     /**
      * The (optional) description of this recipe
      */
@@ -41,7 +44,8 @@ public class Recipe extends PluginObject {
         this.mDescription = description;
     }
 
-    public Recipe() {}
+    public Recipe() {
+    }
 
     public synchronized int getNumberOfPeople() {
         return mNumberOfPeople;
@@ -83,9 +87,28 @@ public class Recipe extends PluginObject {
         }
     }
 
+    /**
+     * Converts the units of the this recipe to metric or US
+     *
+     * @param toMetric boolean to indicate if it should be converted to metric or US
+     */
+    public void convertUnit(boolean toMetric) {
+        for (ListIngredient listIngredient : mIngredients) {
+            listIngredient.convertUnit(toMetric);
+        }
+        for (RecipeStep step : mRecipeSteps) {
+            step.convertUnit(toMetric);
+        }
+    }
+
     @Override
-    public boolean equals(Object o){
-        if(o instanceof Recipe){
+    public int hashCode() {
+        return Objects.hash(mIngredients, mNumberOfPeople, mRecipeSteps, mDescription);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Recipe) {
             Recipe r = (Recipe) o;
             return r.getIngredients().equals(mIngredients) && r.getNumberOfPeople() == mNumberOfPeople
                     && r.getRecipeSteps().equals(mRecipeSteps) && r.getDescription().equals(mDescription);
@@ -93,10 +116,6 @@ public class Recipe extends PluginObject {
         return false;
     }
 
-    @Override
-    public int hashCode(){
-        return Objects.hash(mIngredients, mNumberOfPeople, mRecipeSteps, mDescription);
-    }
     @Override
     public String toString() {
         return "Recipe{" +

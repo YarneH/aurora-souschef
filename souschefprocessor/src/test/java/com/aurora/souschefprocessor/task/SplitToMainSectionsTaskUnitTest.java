@@ -66,7 +66,7 @@ public class SplitToMainSectionsTaskUnitTest {
         List<Map<String, String>> fieldsList = new ArrayList<>();
         //recipe 1
         Map<String, String> map = new HashMap<>();
-        map.put("STEPS", "Toast baguette slices lightly on one side.\n" +
+        /*map.put("STEPS", "Toast baguette slices lightly on one side.\n" +
                 "Layer each round with smoked salmon, top with a dollup of sour\n" +
                 "cream and sprinkle with a few capers and lots of freshly ground black\npepper.");
         map.put("INGR", "8 thin slices baguette\n" +
@@ -74,7 +74,7 @@ public class SplitToMainSectionsTaskUnitTest {
                 "sour cream\n" +
                 "capers\n" +
                 "lemon cheeks, to serve");
-        fieldsList.add(map);
+        fieldsList.add(map);*/
 
         // recipe 2
         map = new HashMap<>();

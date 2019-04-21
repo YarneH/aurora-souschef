@@ -51,11 +51,11 @@ public class DetectNumberOfPeopleTaskUnitTest {
 
 
     private static String[] initializeDataSetTags() {
-        return ("NUMBER\t4\n" +
+        return (
                 "NUMBER\t4\n" +
                 "NUMBER\t4\n" +
                 "NUMBER\t4\n" +
-                "NUMBER\t8\n" +
+                "NUMBER\t8\n" + "NUMBER\t4\n" +
                 "NUMBER\t2525\n" +
                 "NO_NUMBER\n" +
                 "NO_NUMBER\n").split("\n");
@@ -150,6 +150,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
                 int num = Integer.parseInt(number);
                 if (recipe.getNumberOfPeople() != num) {
                     correct--;
+                    System.out.println(recipeText);
                 }
             }
         }

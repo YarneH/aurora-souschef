@@ -10,7 +10,8 @@ import java.util.Objects;
  */
 public class Position {
 
-    /** The beginIndex of this position. This is the index of the first character of the detected
+    /**
+     * The beginIndex of this position. This is the index of the first character of the detected
      * element.
      */
     private int mBeginIndex;
@@ -105,7 +106,7 @@ public class Position {
      * @param string the string to check the legality of the position in
      * @return A boolean that indicates whether this position is legal in the string
      */
-    public boolean isLegalInString(String string) {
+    boolean isLegalInString(String string) {
         if (string == null) {
             return false;
         }
@@ -134,17 +135,6 @@ public class Position {
         return false;
     }
 
-    public void trimToLengthOfString(String s){
-        int length = s.length();
-        if(mBeginIndex >= length){
-            throw new IllegalArgumentException("This string is shorter than the beginIndex of " +
-                    "this position, trimming is impossible");
-        }
-        if( mEndIndex > length){
-            mEndIndex = length;
-        }
-    }
-
     @Override
     public String toString() {
         return "Position{" +
@@ -152,4 +142,42 @@ public class Position {
                 ", mEndIndex=" + mEndIndex +
                 '}';
     }
+
+    /**
+     * Trims the position to the given string. This ensures that the endIndex is never bigger than
+     * the string
+     *
+     * @param s The string to trim to
+     */
+    public void trimToLengthOfString(String s) {
+        int length = s.length();
+        if (mBeginIndex >= length) {
+            throw new IllegalArgumentException("This string is shorter than the beginIndex of " +
+                    "this position, trimming is impossible");
+        }
+        if (mEndIndex > length) {
+            mEndIndex = length;
+        }
+    }
+
+    /**
+     * Sets both the beginIndex and endIndex
+     *
+     * @param beginIndex the beginindex
+     * @param endIndex   the endIndex
+     */
+    public void setIndices(int beginIndex, int endIndex) {
+        // check if the arguments are legal
+        checkLegality(beginIndex, endIndex);
+
+        // make sure beginindex is smaller than endindex
+        if (!beginSmallerThanEnd(beginIndex, endIndex)) {
+            mBeginIndex = endIndex;
+            mEndIndex = beginIndex;
+        } else {
+            mBeginIndex = beginIndex;
+            mEndIndex = endIndex;
+        }
+    }
+
 }

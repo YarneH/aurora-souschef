@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.facade;
 
 
+import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Recipe;
@@ -25,29 +26,40 @@ import java.util.concurrent.TimeUnit;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotator;
+import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
+import edu.stanford.nlp.pipeline.TokenizerAnnotator;
+import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
  * described in the architecture.
  */
 public class Delegator {
-
     /**
      * A constant describing 1/2
      */
     private static final double HALF = 0.5;
+
     /**
      * An object that serves as a lock to ensure that the pipelines are only created once
      */
     private static final Object LOCK = new Object();
     /**
+     * A list of basic annotators needed for every step that has a pipeline (tokenizer, wordstosentence
+     * and POS)
+     */
+    private static final List<Annotator> sBasicAnnotators = new ArrayList<>();
+
+    //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
+    /**
+     * The number of basic annotator, for now 3 (tokenize, words to sentence and POS)
+     */
+    private static final int BASIC_ANNOTATOR_SIZE = 3;
+    /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
     private static boolean sStartedCreatingPipelines = false;
-
-    //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
-
-
     /**
      * A threadPoolExecutor to execute steps in parallel
      */
@@ -61,16 +73,15 @@ public class Delegator {
         createAnnotationPipelines();
     }
 
-
     /**
      * The classifier to classify ingredients
      */
     private CRFClassifier<CoreLabel> mIngredientClassifier;
+
     /**
      * A boolean that indicates whether the processing should be parallelized
      */
     private boolean mParallelize;
-
 
     /**
      * Creating the delegator
@@ -79,10 +90,12 @@ public class Delegator {
      * @param parallelize          boolean to indicate wheter to parallelize or not
      */
     Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
-
         mIngredientClassifier = ingredientClassifier;
         mParallelize = parallelize;
+    }
 
+    public static List<Annotator> getBasicAnnotators() {
+        return createBasicAnnotators();
     }
 
     /**
@@ -100,11 +113,41 @@ public class Delegator {
             sStartedCreatingPipelines = true;
             LOCK.notifyAll();
         }
+        Thread t = new Thread(() -> {
+            createBasicAnnotators();
+            DetectTimersInStepTask.initializeAnnotationPipeline();
+            DetectIngredientsInStepTask.initializeAnnotationPipeline();
+        });
+        t.start();
+    }
 
-        DetectTimersInStepTask.initializeAnnotationPipeline();
-        DetectIngredientsInStepTask.initializeAnnotationPipeline();
+    /**
+     * Creates the basicannotators (tokenizer, words to sentence and POS), ensures that is only created
+     * once and notifies other threads if the creation is finished.
+     *
+     * @return the list of sBasicAnnotators
+     */
+    private static List<Annotator> createBasicAnnotators() {
 
+        synchronized (sBasicAnnotators) {
 
+            if (sBasicAnnotators.isEmpty()) {
+
+                sBasicAnnotators.add(new TokenizerAnnotator(false, "en"));
+                incrementProgressAnnotationPipelines(); //1
+            }
+            if (sBasicAnnotators.size() == 1) {
+                sBasicAnnotators.add(new WordsToSentencesAnnotator(false));
+                incrementProgressAnnotationPipelines(); //2
+            }
+            if (sBasicAnnotators.size() < BASIC_ANNOTATOR_SIZE) {
+                sBasicAnnotators.add(new POSTaggerAnnotator(false));
+                incrementProgressAnnotationPipelines(); //3
+            }
+            sBasicAnnotators.notifyAll();
+        }
+
+        return sBasicAnnotators;
     }
 
     /**
@@ -112,6 +155,8 @@ public class Delegator {
      */
     public static void incrementProgressAnnotationPipelines() {
         Communicator.incrementProgressAnnotationPipelines();
+        Log.d("DELEGATOR", "STEP");
+
     }
 
     /**
@@ -145,6 +190,12 @@ public class Delegator {
                 decodeWorkQueue);
     }
 
+    public static ThreadPoolExecutor getThreadPoolExecutor() {
+        if (sThreadPoolExecutor == null) {
+            setUpThreadPool();
+        }
+        return sThreadPoolExecutor;
+    }
 
     /**
      * This is the core function of the delegator, where the text is processed by applying the filters
@@ -158,14 +209,15 @@ public class Delegator {
         if (sThreadPoolExecutor == null) {
             setUpThreadPool();
         }
+
         RecipeInProgress recipeInProgress = new RecipeInProgress(text);
         List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
         if (pipeline != null) {
             for (AbstractProcessingTask task : pipeline) {
                 task.doTask();
+                Log.d("DELEGATOR", task.getClass().toString());
             }
         }
-
 
         return recipeInProgress.convertToRecipe();
     }
@@ -182,6 +234,7 @@ public class Delegator {
         if (sThreadPoolExecutor == null) {
             setUpThreadPool();
         }
+
         RecipeInProgress recipeInProgress = new RecipeInProgress(text);
         List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
         if (pipeline != null) {
@@ -190,7 +243,6 @@ public class Delegator {
             }
         }
 
-
         return recipeInProgress.convertToRecipe();
     }
 
@@ -198,19 +250,22 @@ public class Delegator {
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
      */
+
     private List<AbstractProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
-        ArrayList<AbstractProcessingTask> pipeline = new ArrayList<>();
+        List<AbstractProcessingTask> pipeline = new ArrayList<>();
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
+
         pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));
         pipeline.add(new SplitStepsTask(recipeInProgress));
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));
         StepTaskNames[] taskNames = {StepTaskNames.INGR, StepTaskNames.TIMER};
         if (mParallelize) {
             pipeline.add(new ParallelizeStepsTask(recipeInProgress, sThreadPoolExecutor, taskNames));
+
         } else {
             pipeline.add(new NonParallelizeStepTask(recipeInProgress, taskNames));
         }
+
         return pipeline;
     }
 }
-

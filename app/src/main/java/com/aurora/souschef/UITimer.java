@@ -1,140 +1,118 @@
 package com.aurora.souschef;
 
+import android.annotation.SuppressLint;
+import android.arch.lifecycle.LifecycleOwner;
 import android.content.DialogInterface;
-import android.os.CountDownTimer;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.aurora.souschefprocessor.recipe.RecipeTimer;
-
 /**
- * A UI class representing a RecipeTimer. It adds a CountDownTimer to a already existing TextView
- * mRunning: a boolean, representing whether the timer is running
- * mTimeSetByUser: an int, representing a value between the upper and lower bound, chosen by the user
- * mMillisLeft: a long, representing the amount of milliseconds left on the CountDownTimer
- * mTextViewTimer: the TextView of the timer
- * mCountDownTimer: a CountDownTimer that counts down the seconds of the timer
+ * A UI class responsible for filling in the UI with timer data.
  */
-public class UITimer extends RecipeTimer {
-    private static final int AMOUNT_MILLISEC_IN_SEC = 1000;
+public class UITimer {
+    /**
+     * Time constant: seconds in an hour.
+     */
     private static final int AMOUNT_SEC_IN_HOUR = 3600;
+    /**
+     * Time constant: seconds in half an hour.
+     */
     private static final int AMOUNT_SEC_IN_HALF_HOUR = 1800;
+    /**
+     * Time constant: seconds in a quarter hour.
+     */
     private static final int AMOUNT_SEC_IN_QUARTER = 900;
-    private static final int AMOUNT_SEC_IN_MIN = 60;
+    /**
+     * Time constant: seconds in a minute.
+     */
     private static final int MINUTE_STEP = 60;
+    /**
+     * Time constant: seconds in half a minute.
+     */
     private static final int HALF_MINUTE_STEP = 30;
+    /**
+     * Time constant: seconds in 15 seconds (?!?).
+     */
     private static final int QUARTER_MINUTE_STEP = 15;
+    /**
+     * Time constant: the amount of seconds in exactly one second.
+     */
     private static final int SECOND_STEP = 1;
+    /**
+     * Maximum percentage. Preventing magic numbers.
+     */
     private static final int PERCENT = 100;
 
-    private boolean mRunning = false;
-    private int mTimeSetByUser;
-    private long mMillisLeft;
-    private CountDownTimer mCountDownTimer;
-    private TextView mTextViewTimer;
-
-    public UITimer(int lowerBound, int upperBound, TextView textView) {
-        super(upperBound, lowerBound, null);
-        // Use getLowerBound so the lower and upper bound are switched if needed (implemented in RecipeTimer)
-        mTimeSetByUser = getLowerBound();
-        mTextViewTimer = textView;
-
-        resetTimer();
-    }
-
-    public UITimer(RecipeTimer timer, TextView textView) {
-        super(timer.getUpperBound(), timer.getLowerBound(), null);
-        // Use getLowerBound so the lower and upper bound are switched if needed (implemented in RecipeTimer)
-        mTimeSetByUser = getLowerBound();
-        mTextViewTimer = textView;
-
-        resetTimer();
-    }
-
     /**
-     * Starts the timer
-     * If this is called a second time, the CountDownTimer resets with the value of mMillisLeft as
-     * remaining milliseconds (Can be made public if needed)
+     * Data container for timers.
      */
-    private void startTimer() {
-        mCountDownTimer = new CountDownTimer(mMillisLeft, AMOUNT_MILLISEC_IN_SEC) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                performTick(millisUntilFinished);
-            }
-
-            // TODO: Call to onFinish is not as quick as onTick (takes +/- 1.8 sec)
-            // We could fix this by adding a second to the timer and ending it at 1 sec
-            @Override
-            public void onFinish() {
-                performTick(0);
-            }
-        }.start();
-
-        mRunning = true;
-    }
+    private final LiveDataTimer mLiveDataTimer;
+    /**
+     * View where the timer is displayed.
+     */
+    private View mTimerCard;
 
     /**
-     * This function is called every tick of the CountDownTimer
-     * It adjusts the amount of milliseconds remaining and the TextView of the timer
+     * Sets up text and timer views.
      *
-     * @param millis the amount of milliseconds remaining
+     * @param liveDataTimer timer data container
+     * @param timerCard     view where to put the timer. Should be a timer_card.xml
+     * @param owner         LifeCycleOwner responsible for the LiveData objects.
+     *                      Normally the activity.
      */
-    private void performTick(long millis) {
-        mMillisLeft = millis;
-        int secondsLeft = (int) millis / AMOUNT_MILLISEC_IN_SEC;
-        String timerText = convertTimeToString(secondsLeft);
-        mTextViewTimer.setText(timerText);
+    public UITimer(LiveDataTimer liveDataTimer, View timerCard, LifecycleOwner owner) {
+        this.mLiveDataTimer = liveDataTimer;
+        this.mTimerCard = timerCard;
+
+        // set timer observer to update text field.
+        TextView timerText = timerCard.findViewById(R.id.tv_timer);
+        liveDataTimer.getMillisLeft().observe(owner, (Long millisLeft) -> {
+            if (millisLeft != null) {
+                timerText.setText(LiveDataTimer.convertTimeToString(millisLeft));
+            }
+        });
+
+        setOnClickListeners(mTimerCard);
+        this.mLiveDataTimer.getIsFinished().observe(owner, aBoolean -> onTimerFinished());
+
+        this.mLiveDataTimer.getTimerState().observe(owner, aInt -> setIcon(aInt));
     }
 
-    /**
-     * Pause the timer (Can be made public if needed)
-     */
-    private void pauseTimer() {
-        if (mCountDownTimer != null) {
-            mRunning = false;
-            mCountDownTimer.cancel();
+    private void setIcon(int timerState) {
+        ImageView imageView = mTimerCard.findViewById(R.id.iv_timer_icon);
+
+        if (timerState == LiveDataTimer.TIMER_RUNNING) {
+            imageView.setImageResource(R.drawable.ic_pause_white);
+        } else if (timerState == LiveDataTimer.TIMER_PAUSED) {
+            imageView.setImageResource(R.drawable.ic_play_white);
         }
     }
 
     /**
-     * Reset the timer (Can be made public if needed)
+     * TODO: What happens on timer completion?
      */
-    private void resetTimer() {
-        // Subtract one to make sure the timer shows the correct value when started
-        mMillisLeft = (long) mTimeSetByUser * AMOUNT_MILLISEC_IN_SEC - 1;
-        mTextViewTimer.setText(convertTimeToString(mTimeSetByUser));
+    // NOSONAR
+    private void onTimerFinished() {
+        // TODO: implement what happens when timer finishes.
     }
 
     /**
-     * Create a new onClickListener and onLongClickListener for the Timer TextView
+     * Create a new onClickListener and onLongClickListener for the Timer TextView.
+     * <p>
+     * Uses toggleTimer.
      */
-    public void setOnClickListeners() {
-        // Add a listener for a short click (Pausing and resuming)
-        mTextViewTimer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mRunning) {
-                    pauseTimer();
-                } else {
-                    startTimer();
-                }
-            }
-        });
+    private void setOnClickListeners(View clickableView) {
 
-        // Add a listener for a long click (Show an input for setting the timer, if timer isn't running)
-        mTextViewTimer.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                if (!mRunning && getLowerBound() != getUpperBound()) {
-                    pauseTimer();
-                    setTimerPopup();
-                }
-                return true;
+        clickableView.setOnClickListener((View v) -> mLiveDataTimer.toggleTimer());
+        clickableView.setOnLongClickListener((View v) -> {
+            if (mLiveDataTimer.canChangeTimer()) {
+                setTimerPopup();
             }
+            return true;
         });
     }
 
@@ -144,7 +122,7 @@ public class UITimer extends RecipeTimer {
      */
     private void setTimerPopup() {
         // Calculate the difference and the associated step for the Seekbar
-        int difference = getUpperBound() - getLowerBound();
+        int difference = mLiveDataTimer.getUpperBound() - mLiveDataTimer.getLowerBound();
         int step;
         if (difference >= AMOUNT_SEC_IN_HOUR) {
             step = MINUTE_STEP;
@@ -157,13 +135,15 @@ public class UITimer extends RecipeTimer {
         }
 
         // Initiate the LayoutInflater and inflate the Popup layout
-        LayoutInflater li = LayoutInflater.from(mTextViewTimer.getContext());
+        LayoutInflater li = LayoutInflater.from(mTimerCard.getContext());
+        // using null as root is allowed here since it is a promptView
+        @SuppressLint("InflateParams")
         View promptView = li.inflate(R.layout.card_timer, null);
-        SeekBar seekBar = (SeekBar) promptView.findViewById(R.id.sk_timer);
+        SeekBar seekBar = promptView.findViewById(R.id.sk_timer);
 
         // Get the TextView of the popup and set to the initial value
-        final TextView seekBarValue = (TextView) promptView.findViewById(R.id.tv_timer);
-        seekBarValue.setText(convertTimeToString(getLowerBound()));
+        final TextView seekBarValue = promptView.findViewById(R.id.tv_timer);
+        seekBarValue.setText(LiveDataTimer.convertTimeToString(mLiveDataTimer.getLowerBound()));
 
         // Set the listener of the SeekBar
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -171,7 +151,7 @@ public class UITimer extends RecipeTimer {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int newValue = convertProgressToSeconds(progress, step);
 
-                seekBarValue.setText(convertTimeToString(newValue));
+                seekBarValue.setText(LiveDataTimer.convertTimeToString(newValue));
             }
 
             @Override
@@ -186,15 +166,12 @@ public class UITimer extends RecipeTimer {
         });
 
         // Build the actual popup and show it to the user
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mTextViewTimer.getContext());
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mTimerCard.getContext());
         alertDialogBuilder.setView(promptView);
         alertDialogBuilder.setCancelable(false)
-                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        mTimeSetByUser = convertProgressToSeconds(seekBar.getProgress(), step);
-                        resetTimer();
-                    }
+                .setPositiveButton("Ok", (DialogInterface dialogInterface, int id) -> {
+                    int timeSetByUser = convertProgressToSeconds(seekBar.getProgress(), step);
+                    mLiveDataTimer.setTimeSetByUser(timeSetByUser);
                 });
         alertDialogBuilder.create().show();
     }
@@ -206,32 +183,10 @@ public class UITimer extends RecipeTimer {
      * @return The amount of seconds currently chosen with the SeekBar
      */
     private int convertProgressToSeconds(int progress, int step) {
-        int difference = getUpperBound() - getLowerBound();
+        int difference = mLiveDataTimer.getUpperBound() - mLiveDataTimer.getLowerBound();
         double progressValue = ((double) (difference)) * progress / PERCENT;
         int incrementValue = (int) Math.floor(progressValue / step) * step;
 
-        return getLowerBound() + incrementValue;
+        return mLiveDataTimer.getLowerBound() + incrementValue;
     }
-
-    /**
-     * Convert an amount of seconds into a string representation
-     *
-     * @param amountSeconds integer representing the amount of seconds
-     * @return a String representation of the time
-     */
-    private static String convertTimeToString(int amountSeconds) {
-        int amountHours = amountSeconds / AMOUNT_SEC_IN_HOUR;
-        int amountMins = (amountSeconds - amountHours * AMOUNT_SEC_IN_HOUR) / AMOUNT_SEC_IN_MIN;
-        int amountSec = amountSeconds - amountHours * AMOUNT_SEC_IN_HOUR - amountMins * AMOUNT_SEC_IN_MIN;
-
-        String timerText = "";
-
-        if (amountHours != 0) {
-            timerText += amountHours + ":";
-        }
-        timerText += String.format("%02d", amountMins) + ":" + String.format("%02d", amountSec);
-
-        return timerText;
-    }
-
 }

@@ -51,16 +51,11 @@ public class DelegatorLongTest {
 
     @BeforeClass
     public static void initialize() {
-        // load in the recipes
-        List<String> recipesFromPlainText = initializeRecipes();
-        // split into valid and invalid
-        // the first 5 recipes are valid recipes
-        validRecipesFromPlainText = recipesFromPlainText.subList(0, 4);
-        invalidRecipesFromPlainText = recipesFromPlainText.subList(4, 8);
+
 
         List<ExtractedText> jsonRecipes = initializeRecipesJSON();
-        validRecipesJSON = jsonRecipes.subList(0,5);
-        invalidRecipesJSON = jsonRecipes.subList(5, jsonRecipes.size());
+        validRecipesJSON = jsonRecipes.subList(0,6);
+        invalidRecipesJSON = jsonRecipes.subList(6, jsonRecipes.size());
 
         // load in the model
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
@@ -155,7 +150,8 @@ public class DelegatorLongTest {
             boolean thrown = false;
             // Act
             try {
-                delegator.processText(text);
+                Recipe recipe = delegator.processText(text);
+                System.out.println(recipe);
             } catch (Exception e) {
                 // set thrown to true, this should happen
                 Log.e("Woop", "Error was thrown", e);

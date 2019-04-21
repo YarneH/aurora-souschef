@@ -6,7 +6,6 @@ import android.util.Log;
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
 import com.aurora.souschefprocessor.facade.Delegator;
-import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
@@ -30,6 +29,9 @@ import edu.stanford.nlp.util.CoreMap;
  * A AbstractProcessingTask that divides the original text into usable sections
  */
 public class SplitToMainSectionsTask extends AbstractProcessingTask {
+    private static final String [] VERBS_NOT_DETECTED_BY_NLP = {"preheat", "toast", "layer", "beat", "heat"};
+    private static final String[] NOT_INGREDIENTS_WORDS = {"mins", "minutes", "hours", "hour", "min", "minute",
+    "servings", "portions", "people", "persons"};
     /**
      * A regex that covers most commonly used words that indicate the instructions of the recipe are
      * following
@@ -116,7 +118,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             // remove from the title
             if (section.getTitle() != null) {
                 String title = section.getTitle();
-                int index = title.toLowerCase().indexOf(clutter);
+                int index = title.toLowerCase(Locale.ENGLISH).indexOf(clutter);
                 // remove the clutter string
                 if (index > -1) {
                     // if found remove it
@@ -127,7 +129,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             // remove from the body
             if (section.getBody() != null) {
                 String body = section.getBody();
-                int index = body.toLowerCase().indexOf(clutter);
+                int index = body.toLowerCase(Locale.ENGLISH).indexOf(clutter);
                 if (index > -1) {
                     // if found remove it
                     body = body.substring(0, index) + body.substring(index + clutter.length());
@@ -227,19 +229,11 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return "";
     }
 
-    /**
-     * Finds the steps based on a regex. It checks whether some common names that start
-     * the instruction section are present. This is based on the {@link #STEP_STARTER_REGEX}. It uses
-     * the {@link #mSections} list and this list is altered during the method, in that the steps
-     * are removed from the list.
-     *
-     * @return A string representing the steps of this recipe
-     */
-    private String findStepsRegexBased() {
-        // first try with the titles
-        String result = findStepsOrIngredientsRegexBasedTitles(true);
-        if (result.length() > 0) {
-            return result;
+    public String findStepsOrIngredientsRegexBasedWithoutTitles(boolean steps) {
+
+        String regex = INGREDIENT_STARTER_REGEX;
+        if (steps) {
+            regex = STEP_STARTER_REGEX;
         }
 
         boolean found = false;
@@ -254,7 +248,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             for (String line : lines) {
 
                 String lowerCaseLine = line.toLowerCase(Locale.ENGLISH);
-                Matcher match = Pattern.compile(STEP_STARTER_REGEX).matcher(lowerCaseLine);
+                Matcher match = Pattern.compile(regex).matcher(lowerCaseLine);
 
                 if (found) {
                     bld.append(line);
@@ -279,6 +273,24 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         }
 
         return bld.toString().trim();
+    }
+
+    /**
+     * Finds the steps based on a regex. It checks whether some common names that start
+     * the instruction section are present. This is based on the {@link #STEP_STARTER_REGEX}. It uses
+     * the {@link #mSections} list and this list is altered during the method, in that the steps
+     * are removed from the list.
+     *
+     * @return A string representing the steps of this recipe
+     */
+    private String findStepsRegexBased() {
+        // first try with the titles
+        String result = findStepsOrIngredientsRegexBasedTitles(true);
+        if (result.length() > 0) {
+            return result;
+        }
+        // try without title
+        return findStepsOrIngredientsRegexBasedWithoutTitles(true);
     }
 
     /**
@@ -324,38 +336,55 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * will start with a digit. It uses the {@link #mSections} list and this list is altered during
      * the method, in that the ingredients are removed from the list.
      *
-     * @return the index that is the index of the ingredientssection of the recipe, if no ingredients
-     * are found -1 is returned
+     * @return the found ingredients, if no ingredients found return the empty string
      */
-    private int findIngredientsDigit() {
+    private String findIngredientsDigit() {
         boolean found = false;
-        Section ingredientsSection = null;
+        StringBuilder bld = new StringBuilder();
+        int firstSection = mSections.size();
         for (Section section : mSections) {
             String body = section.getBody();
             String[] lines = body.split("\n");
-            // at least two ingredients needed
-            if (lines.length > 1) {
-                for (String line : lines) {
-                    // only do this of not found already and the line has at least two characters
-                    // (one character can never be an ingredient)
-                    boolean notFoundAndAtLeastTwoCharacters = !found && line.length() > 1;
-                    if (notFoundAndAtLeastTwoCharacters) {
-                        // look at the first actural character and not a whitespace
-                        line = line.trim();
-                        char c = line.charAt(0);
-                        found = Character.isDigit(c);
-                        // if found  this is set to the correct section
-                        ingredientsSection = section;
-                    }
+
+            for (String line : lines) {
+                // only do this of not found already and the line has at least two characters
+                // (one character can never be an ingredient)
+                boolean notFoundAndAtLeastTwoCharacters = !found && line.length() > 1;
+                if (notFoundAndAtLeastTwoCharacters) {
+                    // look at the first actual character and not a whitespace
+                    line = line.trim();
+                    char c = line.charAt(0);
+                    found = Character.isDigit(c) && doesNotContainNonIngredientWords(line);
+                    firstSection = mSections.indexOf(section);
+
+                }
+            }
+            if (found) {
+                bld.append(body);
+                if (bld.lastIndexOf("\n")!= bld.length() - 1){
+                    // append a new line if necessary
+                    bld.append("\n");
                 }
             }
         }
 
         if (found) {
-            return mSections.indexOf(ingredientsSection);
+            // remove all the sections starting from the firs section
+            mSections = mSections.subList(0, firstSection);
+            return bld.toString();
         }
         // let caller know nothing was found
-        return -1;
+        return "";
+    }
+
+    private boolean doesNotContainNonIngredientWords(String line) {
+        String lowerCase = line.toLowerCase(Locale.ENGLISH);
+        for (String notIngredientWord : NOT_INGREDIENTS_WORDS) {
+            if (lowerCase.contains(notIngredientWord)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -374,15 +403,14 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             mSections.add(removeClutter(new Section(s)));
         }
 
-        int indexOfSection = findIngredientsDigit();
-        if (indexOfSection < 0) {
+        String result = findIngredientsDigit();
+        if (result.length() == 0) {
             return new ResultAndAlteredTextPair("", text);
         }
 
-        String ingredientsSection = sections[indexOfSection];
-        text = text.replace(ingredientsSection, "");
+        text = text.replace(result, "");
 
-        return new ResultAndAlteredTextPair(ingredientsSection, text);
+        return new ResultAndAlteredTextPair(result, text);
     }
 
     /**
@@ -395,35 +423,19 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         String ingredients;
         String steps;
         String description;
-        if (mRecipeInProgress.getExtractedText() == null) {
-            String originalText = this.mRecipeInProgress.getOriginalText();
 
-            if (("").equals(originalText)) {
-                throw new RecipeDetectionException("No original text found, this is probably not a recipe");
-            }
+        ExtractedText text = mRecipeInProgress.getExtractedText();
+        Log.d("TEXT", text.toJSON());
+        mSections = new ArrayList<>();
 
-
-            ResultAndAlteredTextPair stepsAndText = findSteps(originalText);
-            steps = stepsAndText.getResult();
-            ResultAndAlteredTextPair ingredientsAndText = findIngredients(stepsAndText.getAlteredText());
-
-            ingredients = ingredientsAndText.getResult();
-
-            description = findDescription(ingredientsAndText.getAlteredText());
-
-        } else {
-            ExtractedText text = mRecipeInProgress.getExtractedText();
-            Log.d("TEXT", text.toJSON());
-            mSections = new ArrayList<>();
-
-            for (Section sec : text.getSections()) {
-                mSections.add(removeClutter(sec));
-            }
-
-            steps = findSteps();
-            ingredients = findIngredients();
-            description = findDescription();
+        for (Section sec : text.getSections()) {
+            mSections.add(removeClutter(sec));
         }
+
+        steps = findSteps();
+        ingredients = findIngredients();
+        description = findDescription();
+
 
         modifyRecipe(trimNewLines(ingredients), trimNewLines(steps), trimNewLines(description));
     }
@@ -482,28 +494,18 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return A string representing the ingredients, if nothing is found an empty string is returned
      */
     private String findIngredients() {
-        String ingredientsRegexBased = findIngredientsRegexBased();
-        if (ingredientsRegexBased.length() > 0) {
-            return ingredientsRegexBased;
+        String foundIngredients = findIngredientsRegexBased();
+        if (foundIngredients.length() > 0) {
+            return foundIngredients;
         }
 
-        int indexOfIngredients = findIngredientsDigit();
-        if (indexOfIngredients < 0) {
+        foundIngredients = findIngredientsDigit();
+        if (foundIngredients.length() > 0) {
             // nothing found return the empty string
-            return "";
+            return foundIngredients;
         }
 
-        StringBuilder bld = new StringBuilder(mSections.get(indexOfIngredients).getBody());
-        List<Section> toRemove = new ArrayList<>(Collections.singleton(mSections.get(indexOfIngredients)));
-        int length = mSections.size();
-        for (int i = indexOfIngredients + 1; i < length; i++) {
-            Section next = mSections.get(i);
-            bld.append(next.getBody());
-            toRemove.add(next);
-        }
-        mSections.removeAll(toRemove);
-
-        return bld.toString();
+        return "";
 
     }
 
@@ -661,6 +663,12 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 CoreLabel secondToken = tokens.get(1);
                 if ("VB".equals(startToken.tag()) && !"CD".equals(secondToken.tag())) {
                     return true;
+                }
+                // check the known collection of wrongly detected words
+                for(String verb: VERBS_NOT_DETECTED_BY_NLP){
+                    if(startToken.word().equalsIgnoreCase(verb)){
+                        return true;
+                    }
                 }
             }
         }

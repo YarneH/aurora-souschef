@@ -110,35 +110,7 @@ public class DelegatorLongTest {
     }
 
 
-    @Test
-    public void Delegator_processText_NoExceptionsInDelegatorForValidRecipesTXT() {
-        /**
-         * Check that no exceptions are thrown when these recipes are read in
-         */
-        // Arrange
-        // initialize on false
-        boolean thrown = false;
 
-
-        // Act
-        try {
-
-            for (String text : validRecipesFromPlainText) {
-                Recipe recipe = delegator.processText(text);
-                System.out.println(recipe + "\n--------------------------------");
-
-            }
-        } catch (Exception e) {
-            // set thrown to true, this should not happen
-
-            thrown = true;
-            System.out.println(e);
-        }
-
-        // Assert
-        // assert that no error where thrown
-        assert (!thrown);
-    }
 
     @Test
     public void Delegator_processText_NoExceptionsInDelegatorForValidRecipesJSON() {
@@ -170,32 +142,6 @@ public class DelegatorLongTest {
         assert (!thrown);
     }
 
-    @Test
-    public void Delegator_processText_ExceptionsInDelegatorForInvalidRecipesTXT() {
-        /**
-         * Check that no exceptions are thrown when these recipes are read in
-         */
-
-        // the 6th and 7th recipes are invalid
-        for (String text : invalidRecipesFromPlainText) {
-            // Arrange
-            // initialize on false
-            boolean thrown = false;
-            // Act
-            try {
-                delegator.processText(text);
-            } catch (Exception e) {
-                // set thrown to true, this should happen
-                Log.e("Woop", "Error was thrown", e);
-                thrown = true;
-            }
-            // Assert
-            // assert that an error was thrown
-            assert (thrown);
-        }
-
-
-    }
 
     @Test
     public void Delegator_processText_ExceptionsInDelegatorForInvalidRecipesJSON() {
@@ -233,7 +179,7 @@ public class DelegatorLongTest {
         int average_non = 0;
 
         // Act
-        for (String recipeText : validRecipesFromPlainText) {
+        for (ExtractedText recipeText : validRecipesJSON) {
             // do the processing and add the time this processing costed
             long start = System.currentTimeMillis();
             delegator.processText(recipeText);
@@ -243,7 +189,7 @@ public class DelegatorLongTest {
 
         }
         // divide by the amount of recipes processed to get the average
-        average_non = average_non / validRecipesFromPlainText.size();
+        average_non = average_non / validRecipesJSON.size();
 
         // Assert
         System.out.println(average_non + "  NON PARALLEL TIME");
@@ -260,14 +206,14 @@ public class DelegatorLongTest {
         delegator = new Delegator(crfClassifier, true);
 
         // Act
-        for (String text : validRecipesFromPlainText) {
+        for (ExtractedText text : validRecipesJSON) {
             long start = System.currentTimeMillis();
             Recipe recipe = delegator.processText(text);
             long finish = System.currentTimeMillis();
             long time = finish - start;
             average_para += time;
         }
-        average_para = average_para / validRecipesFromPlainText.size();
+        average_para = average_para / validRecipesJSON.size();
 
 
         // Assert

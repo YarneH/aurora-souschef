@@ -33,7 +33,7 @@ public class DetectIngredientsInListTaskUnitTest {
 
 
         String originalText = "irrelevant";
-        recipe = new RecipeInProgress(originalText);
+        recipe = new RecipeInProgress(null);
 
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
         crfClassifier = CRFClassifier.getClassifier(modelName);
@@ -289,7 +289,7 @@ public class DetectIngredientsInListTaskUnitTest {
                 "350ml/12¼fl oz warm water\n" +
                 "200ml/7fl oz fromage frais\n" +
                 "100g/5½oz raisins";
-        RecipeInProgress rip = new RecipeInProgress("");
+        RecipeInProgress rip = new RecipeInProgress(null);
         rip.setIngredientsString(clutterExamples);
         DetectIngredientsInListTask task = new DetectIngredientsInListTask(rip, crfClassifier);
         Ingredient turkeyIngredient = new Ingredient("turkey crown", "kilogram", 2.5, irrelevantPositions);
@@ -432,7 +432,7 @@ public class DetectIngredientsInListTaskUnitTest {
         Ingredient pepper = new Ingredient("black pepper", "teaspoon", 0.5, irrelevantPositions);
 
 
-        RecipeInProgress rip = new RecipeInProgress("");
+        RecipeInProgress rip = new RecipeInProgress(null);
         rip.setIngredientsString(ingredients);
         DetectIngredientsInListTask task = new DetectIngredientsInListTask(rip, crfClassifier);
 
@@ -452,7 +452,7 @@ public class DetectIngredientsInListTaskUnitTest {
     @Test
     public void DetectIngredientsInListTask_doTask_getOriginalLineWithoutUnitAndQuantityCorrect(){
         String ingredient =" 1 lb. linguine or other long pasta";
-        RecipeInProgress rip = new RecipeInProgress("");
+        RecipeInProgress rip = new RecipeInProgress(null);
         rip.setIngredientsString(ingredient);
 
         // Do the detecting

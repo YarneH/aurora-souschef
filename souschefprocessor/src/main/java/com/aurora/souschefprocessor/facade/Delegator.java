@@ -222,29 +222,7 @@ public class Delegator {
         return recipeInProgress.convertToRecipe();
     }
 
-    /**
-     * This is the core function of the delegator, where the text is processed by applying the filters
-     * This function should be able to at run time decide to do certain filters or not (graceful degradation)
-     *
-     * @param text The text to be processed in to a recipe Object
-     * @return A Recipe object that was constructed from the text
-     */
-    public Recipe processText(String text) {
-        //TODO implement this function so that at runtime it is decided which tasks should be performed
-        if (sThreadPoolExecutor == null) {
-            setUpThreadPool();
-        }
 
-        RecipeInProgress recipeInProgress = new RecipeInProgress(text);
-        List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
-        if (pipeline != null) {
-            for (AbstractProcessingTask task : pipeline) {
-                task.doTask();
-            }
-        }
-
-        return recipeInProgress.convertToRecipe();
-    }
 
     /**
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the

@@ -737,6 +737,7 @@ public class SplitToMainSectionsTaskUnitTest {
                 "   \"mTitle\": \"Chocolate Chip Cookies\"\n" +
                 "}";
         ExtractedText text = ExtractedText.fromJson(json);
+        System.out.println(text.toJSON());
         RecipeInProgress rip = new RecipeInProgress(text);
         (new SplitToMainSectionsTask(rip)).doTask();
         System.out.println(rip);

@@ -73,43 +73,9 @@ public class MainActivity extends AppCompatActivity {
      *
      * @return a recipe json
      */
+    @java.lang.SuppressWarnings("squid:S00103")
     private static String getText() {
-        return "{\n" +
-                "   \"mFilename\": \"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3Du9LNZH%2B96HSRfZRiM%2BAfRmDpyt%2Fl5ToK9NDNWsv0Nxifbb58P0mFzuzD5hIQ\",\n" +
-                "   \"mSections\": [\n" +
-                "       {\n" +
-                "           \"mBody\": \"2 large apples (or 3 medium)\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1/8 tsp. nutmeg\\n1/2 c. oatmeal\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1/2 tsp. cinnamon\\n1/4 c. flour\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1/4 c. butter\\n1/2 c. brown sugar\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1 tsp. lemon juice\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Core, peel and slice the apples into thin wedges.  Place the apples in the square glass dish.\\nIn a medium mixing bowl, combine together oatmeal, flour, brown sugar, nutmeg, cinnamon, butter and lemon juice.\\nUsing a pastry blender, cut the butter into the dry ingredients until the mixture is crumbly.\\nEvenly sprinkle this mixture over the apples.\\nMicrowave on high for 8-10 minutes.\\nRemove from microwave, USING HOT PADS.\\nAllow 5 minutes for STANDING TIME.\\nServe and enjoy eating.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       }\n" +
-                "   ],\n" +
-                "   \"mTitle\": \"Apple Crisp\"\n" +
-                "}";
+        return "{\"mFilename\":\"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3DFr3xSHzCrT%2BQuzQqzL6JGCuSwXoQfIgnnbNN7oCOieFoOZSCsCI%2Bd1DGDGWN\",\"mTitle\":\"Chocolate Chip Cookies\",\"mSections\":[{\"mBody\":\"1 /4 c. shortening\\n1/4 c. margarine\\n1 /4 c. sugar\\n1/2 c. brown sugar, packed\\n1 egg\\n\",\"mImages\":[]},{\"mBody\":\"1/8  tsp. salt\\n1/2  tsp. baking soda\\n1 tsp. vanilla\\n1 1/4 c. flour\\n1 c. chocolate chips\\n\",\"mImages\":[]},{\"mBody\":\"Preheat oven to 375 degrees.\\n\",\"mImages\":[]},{\"mBody\":\"In mixer, CREAM shortening, margarine and sugars until smooth.\\n\",\"mImages\":[]},{\"mBody\":\"Beat in egg, and mix until smooth again.\\n\",\"mImages\":[]},{\"mBody\":\"Mix in salt, baking soda, and vanilla.\\n\",\"mImages\":[]},{\"mBody\":\"Gradually stir in flour.  CHECK OFF YOUR COOKIE DOUGH WITH YOUR TEACHER BEFORE MOVING ON!\\n\",\"mImages\":[]},{\"mBody\":\"Finally add chocolate chips; then form into small round balls and place on a greased cookie sheet.  (Allow space because they spread out while baking).\\n\",\"mImages\":[]},{\"mBody\":\"Bake for 8-10 minutes.\\n\",\"mImages\":[]},{\"mBody\":\"Let cookies cool for 1 minute; then remove with a turner onto a cooling rack.  After cooling about 5 minutes, ENJOY!\\n\",\"mImages\":[]}]}\n";
     }
 
     /**

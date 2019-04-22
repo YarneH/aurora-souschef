@@ -22,7 +22,6 @@ import com.aurora.souschefprocessor.recipe.RecipeStep;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,18 +32,16 @@ public class StepPlaceholderFragment extends Fragment {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
+    private static final String INGREDIENT_CODE = ";1;&!;1";
     private View mRootView;
     private RecyclerView mIngredientList;
     private String[] mDescriptionStep;
-    private int mAmountSteps = 0;
+    private String[] mDescriptionBase;
+    private int[] mStartIndexDescriptionBlocks;
     private RecipeStep mRecipeStep = null;
     private int mOriginalAmount = 0;
     private int mCurrentAmount = 0;
-    private List<Ingredient> mIngredientsForList = new ArrayList<>();
-    private ArrayList<TextView> mStepDescriptionParts = new ArrayList<>();
-    private ArrayList<Integer> mStepPositions = new ArrayList<>();
-    private ArrayList<Integer> mQuantityPositions = new ArrayList<>();
-    private ArrayList<Integer> mQuantityLengths = new ArrayList<>();
+    private ArrayList<TextView> mStepTextViews = new ArrayList<>();
 
 
     public StepPlaceholderFragment() {
@@ -80,7 +77,7 @@ public class StepPlaceholderFragment extends Fragment {
                 .get(RecipeViewModel.class);
         recipeViewModel.getRecipe().observe(this, (Recipe recipe) ->
                 this.onNewRecipeObserved(inflater, container, recipe, index));
-        recipeViewModel.getNumberOfPeople().observe(this, aInteger -> update(aInteger));
+        recipeViewModel.getNumberOfPeople().observe(this, this::update);
 
         return mRootView;
     }
@@ -106,9 +103,11 @@ public class StepPlaceholderFragment extends Fragment {
                 .get(RecipeTimerViewModel.class);
         recipeTimerViewModel.init(recipe);
 
-        mAmountSteps = recipe.getRecipeSteps().size();
         mOriginalAmount = recipe.getNumberOfPeople();
         mRecipeStep = recipe.getRecipeSteps().get(getArguments().getInt(ARG_SECTION_NUMBER));
+        mDescriptionBase = new String[mRecipeStep.getRecipeTimers().size() + 1];
+        mStartIndexDescriptionBlocks = new int[mRecipeStep.getRecipeTimers().size() + 1];
+        mStepTextViews = new ArrayList<>();
 
         // Sort ingredients on descending beginIndex
         Collections.sort(mRecipeStep.getIngredients(), (l0, l1) ->
@@ -134,6 +133,7 @@ public class StepPlaceholderFragment extends Fragment {
 
         // Keep index of the beginning of a text block to know where to cut the text.
         int beginOfTextBlock = 0;
+
         // Run over all timers to place them correctly.
         for (int i = 0; i < recipe.getRecipeSteps().get(index).getRecipeTimers().size(); i++) {
             // New card for the timer.
@@ -161,29 +161,73 @@ public class StepPlaceholderFragment extends Fragment {
                     .getEndIndex();
             // get the substring and place it in the TextView
             String currentSubstring = mDescriptionStep[index].substring(beginOfTextBlock, endOfTextBlock);
-            Pattern p = Pattern.compile("\\p{Alpha}");
-            Matcher m = p.matcher(currentSubstring);
-            if (m.find()) {
-                textView.setText(currentSubstring.substring(m.start()));
+            mDescriptionBase[i] = currentSubstring;
+            mStartIndexDescriptionBlocks[i] = beginOfTextBlock;
+
+            // Change all the quantities of the ingredients to the INGREDIENT_CODE
+            for (Ingredient ingredient : mRecipeStep.getIngredients()) {
+                // Check whether the quantity is in the description of the step
+                if (ingredient.getQuantityPosition().getBeginIndex() != 0
+                        && ingredient.getQuantityPosition().getEndIndex() != mDescriptionStep[index].length()) {
+
+                    // Check if the quantity is represent in the current block of the description
+                    if (ingredient.getQuantityPosition().getBeginIndex() < mStartIndexDescriptionBlocks[i]) {
+                        // The current ingredient (and all the following) is located in a text-block which
+                        // comes before the current text block
+                        break;
+                    } else if (ingredient.getQuantityPosition().getBeginIndex() > endOfTextBlock) {
+                        // The current ingredient is located in a text-block which comes after the current
+                        // text block. Following ingredients can still be located in this current text block
+                        continue;
+                    }
+                    // The quantity is in the step and needs to be replaced by INGREDIENT_CODE
+
+                    String quantityString;
+                    quantityString = mDescriptionBase[i].substring(
+                            ingredient.getQuantityPosition().getBeginIndex() - beginOfTextBlock,
+                            ingredient.getQuantityPosition().getEndIndex() - beginOfTextBlock);
+
+                    mDescriptionBase[i] = mDescriptionBase[i].replace(quantityString, INGREDIENT_CODE);
+                }
             }
+
             // Update the text-block start to be at the beginning of the next piece.
             beginOfTextBlock = endOfTextBlock;
 
             // Add text and timers to the parent.
             insertPoint.addView(textView);
             insertPoint.addView(timerCard);
+            mStepTextViews.add(textView);
         }
         // Check if there is still some text coming after the last timer
         // Repeat.
         if (beginOfTextBlock != mDescriptionStep[index].length()) {
             TextView textView = (TextView) inflater.inflate(R.layout.step_textview, container, false);
             String currentSubstring = mDescriptionStep[index].substring(beginOfTextBlock);
-            Pattern p = Pattern.compile("\\p{Alpha}");
-            Matcher m = p.matcher(mDescriptionStep[index].substring(beginOfTextBlock));
-            if (m.find()) {
-                textView.setText(currentSubstring.substring(m.start()));
+            mDescriptionBase[mDescriptionBase.length - 1] = currentSubstring;
+            mStartIndexDescriptionBlocks[mStartIndexDescriptionBlocks.length - 1] = beginOfTextBlock;
+
+            for (Ingredient ingredient : mRecipeStep.getIngredients()) {
+                if (ingredient.getQuantityPosition().getBeginIndex() != 0
+                        && ingredient.getQuantityPosition().getEndIndex() != mDescriptionStep[index].length()) {
+                    if (ingredient.getQuantityPosition().getBeginIndex() < beginOfTextBlock) {
+                        // The current ingredient (and all the following) is located in a text-block which
+                        // comes before the current text block
+                        break;
+                    }
+                    // The quantity is in the step and needs to be replaced by INGREDIENT_CODE
+
+                    String quantityString;
+                    quantityString = mDescriptionBase[mDescriptionBase.length - 1].substring(
+                            ingredient.getQuantityPosition().getBeginIndex() - beginOfTextBlock,
+                            ingredient.getQuantityPosition().getEndIndex() - beginOfTextBlock);
+
+                    mDescriptionBase[mDescriptionBase.length - 1] =
+                            mDescriptionBase[mDescriptionBase.length - 1].replace(quantityString, INGREDIENT_CODE);
+                }
             }
             insertPoint.addView(textView);
+            mStepTextViews.add(textView);
         }
 
         // Add dots
@@ -217,26 +261,54 @@ public class StepPlaceholderFragment extends Fragment {
     }
 
     protected void update(int newAmount) {
-
         ((StepIngredientAdapter) mIngredientList.getAdapter()).setCurrentAmount(newAmount);
         mIngredientList.getAdapter().notifyDataSetChanged();
 
+        // Put ingredients in ascending beginIndex
+        Collections.reverse(mRecipeStep.getIngredients());
+        mCurrentAmount = newAmount;
 
-        StringBuilder bld = new StringBuilder(mRecipeStep.getDescription());
+        int currentTextView = 0;
+        for (int i = 0; i < mStepTextViews.size(); i++) {
+            String description = mDescriptionBase[i];
+            int endOfTextView;
+            // Define the end index of the current TextView
+            try {
+                endOfTextView = mStartIndexDescriptionBlocks[i + 1];
+            } catch (IndexOutOfBoundsException e) {
+                // Current TextView is last TextView, so the last index is the length of the description
+                endOfTextView = mRecipeStep.getDescription().length();
+            }
 
-        for (Ingredient ingredient : mRecipeStep.getIngredients()){
-            if (ingredient.getQuantityPosition().getBeginIndex() != 0) {
-                double newQuantity = ingredient.getQuantity() / mOriginalAmount * newAmount;
-                String newQuantityString = StringUtilities.toDisplayQuantity(newQuantity);
+            // Replace the INGREDIENT_CODEs with the new quantity
+            for (Ingredient ingredient : mRecipeStep.getIngredients()) {
+                // Check if the ingredient is represent in the description
+                if (ingredient.getQuantityPosition().getBeginIndex() != 0
+                        && ingredient.getQuantityPosition().getEndIndex() != mDescriptionStep[currentTextView].length()) {
+                    // Check if the ingredient is represent in the current block
+                    if (ingredient.getQuantityPosition().getEndIndex() >= mStartIndexDescriptionBlocks[i]
+                            && ingredient.getQuantityPosition().getEndIndex() < endOfTextView) {
+                        // Calculate new quantity and get String representation
+                        double newQuantity = ingredient.getQuantity() / mOriginalAmount * mCurrentAmount;
+                        String quantityString = StringUtilities.toDisplayQuantity(newQuantity);
 
-                bld.replace(ingredient.getQuantityPosition().getBeginIndex(),
-                        ingredient.getQuantityPosition().getEndIndex(),
-                        newQuantityString);
+                        // Replace first INGREDIENT_CODE: Because of ascending begin index, the first will
+                        // always be the right one the replace
+                        description = description.replaceFirst(INGREDIENT_CODE, quantityString);
+                    }
+                }
+            }
+
+            // Remove optional spaces and dots at the beginning of the block and set the text
+            Pattern p = Pattern.compile("\\p{Alpha}");
+            Matcher m = p.matcher(description);
+            if (m.find()) {
+                mStepTextViews.get(i).setText(description.substring(m.start()));
             }
         }
 
-        mCurrentAmount = newAmount;
-
+        // Put ingredients back in descending beginIndex
+        Collections.reverse(mRecipeStep.getIngredients());
     }
 
     public static String[] extractDescriptionSteps(Recipe recipe) {

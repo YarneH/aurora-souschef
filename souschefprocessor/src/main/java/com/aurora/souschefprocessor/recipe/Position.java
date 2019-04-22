@@ -179,5 +179,4 @@ public class Position {
             mEndIndex = endIndex;
         }
     }
-
 }

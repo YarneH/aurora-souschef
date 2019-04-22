@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -288,22 +287,26 @@ public class StepPlaceholderFragment extends Fragment {
 
             // Replace the INGREDIENT_CODEs with the new quantity
             for (Ingredient ingredient : mRecipeStep.getIngredients()) {
-                // Check if the ingredient is represent in the description
-                if (ingredient.getQuantityPosition().getBeginIndex() != 0
-                        && ingredient.getQuantityPosition().getEndIndex() != mDescriptionStep[currentTextView].length()) {
-                    // Check if the ingredient is represent in the current block
-                    if (ingredient.getQuantityPosition().getEndIndex() >= mStartIndexDescriptionBlocks[i]
-                            && ingredient.getQuantityPosition().getEndIndex() < endOfTextView) {
-                        // Calculate new quantity and get String representation
-                        double newQuantity = ingredient.getQuantity() / mOriginalAmount * mCurrentAmount;
-                        String quantityString = StringUtilities.toDisplayQuantity(newQuantity);
+                if (
+                    // Check if the quantity is valid. This cannot only be the last check, because of
+                    // description which only contain 1 block of text
+                        ingredient.getQuantityPosition().getBeginIndex() != 0
+                                && ingredient.getQuantityPosition().getEndIndex()
+                                != mDescriptionStep[currentTextView].length()
+                                // Check if the quantity is in current block
+                                && ingredient.getQuantityPosition().getEndIndex() >= mStartIndexDescriptionBlocks[i]
+                                && ingredient.getQuantityPosition().getEndIndex() < endOfTextView) {
 
-                        // Replace first INGREDIENT_CODE: Because of ascending begin index, the first will
-                        // always be the right one the replace
-                        description = description.replaceFirst(INGREDIENT_CODE, quantityString);
-                    }
+                    // Calculate new quantity and get String representation
+                    double newQuantity = ingredient.getQuantity() / mOriginalAmount * mCurrentAmount;
+                    String quantityString = StringUtilities.toDisplayQuantity(newQuantity);
+
+                    // Replace first INGREDIENT_CODE: Because of ascending begin index, the first will
+                    // always be the right one the replace
+                    description = description.replaceFirst(INGREDIENT_CODE, quantityString);
                 }
             }
+
 
             // Remove optional spaces and dots at the beginning of the block and set the text
             Pattern p = Pattern.compile("\\p{Alpha}");

@@ -62,7 +62,7 @@ public class RecipeStepUnitTest {
     public void RecipeStep_convertUnit_correctConversion() {
 
         // Add the ingredient to the recipe
-        RecipeInProgress rip = new RecipeInProgress("");
+        RecipeInProgress rip = new RecipeInProgress(null);
         EnumMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
         Position pos = new Position(0, 1);
         for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {

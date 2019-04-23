@@ -570,7 +570,7 @@ public class DetectTimersInStepTaskLongTest {
             ArrayList<RecipeStep> list = new ArrayList<>();
             list.add(step);
 
-            RecipeInProgress rip = new RecipeInProgress("irrelevant");
+            RecipeInProgress rip = new RecipeInProgress(null);
             rip.setRecipeSteps(list);
 
             DetectTimersInStepTask detector = new DetectTimersInStepTask(rip, 0);

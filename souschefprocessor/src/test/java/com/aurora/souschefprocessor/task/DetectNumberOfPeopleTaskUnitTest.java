@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.task;
 
+import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.Section;
 import com.aurora.souschefprocessor.task.sectiondivider.DetectNumberOfPeopleTask;
 
 import org.junit.After;
@@ -24,7 +26,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
     public static void initialize() {
 
         originalText = initializeRecipeText();
-        recipe = new RecipeInProgress("");
+        recipe = new RecipeInProgress(null);
         recipe.setDescription(originalText);
         detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipe);
     }
@@ -51,36 +53,28 @@ public class DetectNumberOfPeopleTaskUnitTest {
 
 
     private static String[] initializeDataSetTags() {
-        return (
+        return ("NUMBER\t6\n" +
                 "NUMBER\t4\n" +
                 "NUMBER\t4\n" +
                 "NUMBER\t4\n" +
-                "NUMBER\t8\n" + "NUMBER\t4\n" +
-                "NUMBER\t2525\n" +
-                "NO_NUMBER\n" +
-                "NO_NUMBER\n").split("\n");
+                "NUMBER\t8\n" +
+
+                "NUMBER\t4\n" + "NUMBER\t2525\n" + "NO_NUMBER\n"+ "NO_NUMBER\n" ).split("\n");
     }
 
-    private static List<String> initializeDataSet() {
-        String filename = "src/test/java/com/aurora/souschefprocessor/facade/recipes.txt";
-        List<String> list = new ArrayList<>();
+    private static List<ExtractedText> initializeDataSet() {
+        String filename = "src/test/java/com/aurora/souschefprocessor/facade/json-recipes.txt";
+        List<ExtractedText> list = new ArrayList<>();
         try {
             FileReader fReader = new FileReader(filename);
             BufferedReader reader = new BufferedReader(fReader);
-            StringBuilder bld = new StringBuilder();
+
             String line = reader.readLine();
 
             while (line != null) {
-                if (!line.equals("----------")) {
-                    bld.append(line + "\n");
-                } else {
-                    list.add(bld.toString());
-                    bld = new StringBuilder();
-
-                }
+                list.add(ExtractedText.fromJson(line));
                 line = reader.readLine();
             }
-            list.add(bld.toString());
         } catch (IOException io) {
             System.err.print(io);
         }
@@ -109,8 +103,8 @@ public class DetectNumberOfPeopleTaskUnitTest {
          * of people are mentioned is ommitted.
          */
         // arrange
-        String originalTextNoNumber = originalText.substring(0, originalText.indexOf('\n') + 1);
-        RecipeInProgress recipeNoNumber = new RecipeInProgress(originalTextNoNumber);
+       String originalTextNoNumber = originalText.substring(0, originalText.indexOf('\n') + 1);
+        RecipeInProgress recipeNoNumber = new RecipeInProgress(null);
         recipeNoNumber.setDescription(originalTextNoNumber);
         DetectNumberOfPeopleTask detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipeNoNumber);
         // act
@@ -125,23 +119,34 @@ public class DetectNumberOfPeopleTaskUnitTest {
         /**
          * The number of people detected should be correctly detected in 95% of the cases
          */
-        List<String> dataSet = initializeDataSet();
+        List<ExtractedText> dataSet = initializeDataSet();
         String[] dataSetTags = initializeDataSetTags();
         int amount = dataSet.size();
         int correct = amount;
 
-        for (int i = 1; i <= amount ; i++) {
-            String recipeText = dataSet.get(i - 1);
-            String recipeTag = dataSetTags[i - 1];
+        for (int i = 0; i < amount; i++) {
+            ExtractedText recipeText = dataSet.get(i);
+            String recipeTag = dataSetTags[i];
 
             RecipeInProgress recipe = new RecipeInProgress(recipeText);
-            recipe.setDescription(recipeText);
+            // just add all the text
+            String description = recipeText.getTitle();
+            for (Section s : recipeText.getSections()) {
+                if (s.getTitle() != null) {
+                    description += "\n" + s.getTitle();
+                }
+                if (s.getBody() != null) {
+                    description += "\n" + s.getBody();
+                }
+            }
+
+            recipe.setDescription(description);
             DetectNumberOfPeopleTask detector = new DetectNumberOfPeopleTask(recipe);
             detector.doTask();
 
             if (recipeTag.equals("NO_NUMBER")) {
                 if (recipe.getNumberOfPeople() != -1) {
-                    System.out.println(recipeText);
+                    System.out.println(recipeText + "  NO_Number");
                     correct--;
                 }
             } else if (recipeTag.startsWith("NUMBER")) {
@@ -150,7 +155,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
                 int num = Integer.parseInt(number);
                 if (recipe.getNumberOfPeople() != num) {
                     correct--;
-                    System.out.println(recipeText);
+                    System.out.println(recipeText + "    " + num);
                 }
             }
         }

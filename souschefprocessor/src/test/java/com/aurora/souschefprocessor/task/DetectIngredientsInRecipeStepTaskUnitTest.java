@@ -34,7 +34,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     public static void initialize() {
         // Initialize recipe in progress
         String originalText = "irrelevant";
-        recipe = new RecipeInProgress(originalText);
+        recipe = new RecipeInProgress(null);
         DetectIngredientsInStepTask.initializeAnnotationPipeline();
 
         // Initialize positions with dummy values
@@ -228,7 +228,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @Test
     public void newTest(){
         RecipeStep step = new RecipeStep("Add one tablespoon of melted butter");
-        RecipeInProgress rip = new RecipeInProgress("");
+        RecipeInProgress rip = new RecipeInProgress(null);
         ListIngredient ing = new ListIngredient("butter", "", 1.0, "  ",irrelevantPositions);
         ArrayList<ListIngredient> list = new ArrayList<>();
         list.add(ing);

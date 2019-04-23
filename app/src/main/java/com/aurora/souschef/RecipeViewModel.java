@@ -272,7 +272,8 @@ public class RecipeViewModel extends AndroidViewModel {
         private boolean mWithExtractedText = false;
 
         public SouschefInit(String text) {
-            this.mText = text;
+            this.mExtractedText = ExtractedText.fromJson(text);
+            this.mWithExtractedText = false;
         }
 
         public SouschefInit(ExtractedText extractedText) {
@@ -296,8 +297,6 @@ public class RecipeViewModel extends AndroidViewModel {
                                     " persists, please send feedback in Aurora");
                         }
                         return comm.process(mExtractedText);
-                    } else {
-                        return comm.process(mText);
                     }
                 } catch (RecipeDetectionException rde) {
                     Log.d("FAILURE", rde.getMessage());

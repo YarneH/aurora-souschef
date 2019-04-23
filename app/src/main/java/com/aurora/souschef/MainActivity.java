@@ -70,52 +70,11 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Dummy for this demo
      *
-     * @return a recipe text
+     * @return a recipe json
      */
+    @java.lang.SuppressWarnings("squid:S00103")
     private static String getText() {
-        return "Yield\n" +
-                "    4 servings\n" +
-                "Active Time\n" +
-                "    30 minutes\n" +
-                "Total Time\n" +
-                "    35 minutes\n" +
-                "\n" +
-                "Ingredients\n" +
-                "\n" +
-                "        1 lb. linguine or other long pasta\n" +
-                "        Kosher salt\n" +
-                "        1 (14-oz.) can diced tomatoes\n" +
-                "        1/2 cup extra-virgin olive oil, divided\n" +
-                "        1/4 cup capers, drained\n" +
-                "        6 oil-packed anchovy fillets\n" +
-                "        1 Tbsp. tomato paste\n" +
-                "        1/3 cup pitted Kalamata olives, halved\n" +
-                "        2 tsp. dried oregano\n" +
-                "        1/2 tsp. crushed red pepper flakes\n" +
-                "        6 oz. oil-packed tuna\n" +
-                "\n" +
-                " \n" +
-                "\n" +
-                "        Cook pasta in a large pot of boiling salted water, stirring " +
-                "occasionally, until al dente. Drain pasta, reserving 1 cup pasta cooking " +
-                "liquid; return pasta to pot.\n" +
-                "        While pasta cooks, pour tomatoes into a fine-mesh sieve set over " +
-                "a medium bowl. Shake to release as much juice as possible, then let tomatoes " +
-                "drain in sieve, collecting juices in bowl, until ready to use.\n" +
-                "        Heat 1/4 cup oil in a large deep-sided skillet over medium-high. " +
-                "Add capers and cook, swirling pan occasionally, until they burst and are " +
-                "crisp, about 3 minutes. Using a slotted spoon, transfer capers to a paper " +
-                "towel-lined plate, reserving oil in skillet.\n" +
-                "        Combine anchovies, tomato paste, and drained tomatoes in skillet. " +
-                "Cook over medium-high heat, stirring occasionally, until tomatoes begin " +
-                "to caramelize and anchovies start to break down, about 5 minutes. Add " +
-                "collected tomato juices, olives, oregano, and red pepper flakes and bring " +
-                "to a simmer. Cook, stirring occasionally, until sauce is slightly thickened, " +
-                "about 5 minutes. Add pasta, remaining 1/4 cup oil, and 3/4 cup pasta " +
-                "cooking liquid to pan. Cook over medium heat, stirring and adding remaining " +
-                "1/4 cup pasta cooking liquid to loosen if needed, until sauce is thickened " +
-                "and emulsified, about 2 minutes. Flake tuna into pasta and toss to combine.\n" +
-                "        Divide pasta among plates. Top with fried capers.\n";
+        return "{\"mFilename\":\"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3DFr3xSHzCrT%2BQuzQqzL6JGCuSwXoQfIgnnbNN7oCOieFoOZSCsCI%2Bd1DGDGWN\",\"mTitle\":\"Chocolate Chip Cookies\",\"mSections\":[{\"mBody\":\"1 /4 c. shortening\\n1/4 c. margarine\\n1 /4 c. sugar\\n1/2 c. brown sugar, packed\\n1 egg\\n\",\"mImages\":[]},{\"mBody\":\"1/8  tsp. salt\\n1/2  tsp. baking soda\\n1 tsp. vanilla\\n1 1/4 c. flour\\n1 c. chocolate chips\\n\",\"mImages\":[]},{\"mBody\":\"Preheat oven to 375 degrees.\\n\",\"mImages\":[]},{\"mBody\":\"In mixer, CREAM shortening, margarine and sugars until smooth.\\n\",\"mImages\":[]},{\"mBody\":\"Beat in egg, and mix until smooth again.\\n\",\"mImages\":[]},{\"mBody\":\"Mix in salt, baking soda, and vanilla.\\n\",\"mImages\":[]},{\"mBody\":\"Gradually stir in flour.  CHECK OFF YOUR COOKIE DOUGH WITH YOUR TEACHER BEFORE MOVING ON!\\n\",\"mImages\":[]},{\"mBody\":\"Finally add chocolate chips; then form into small round balls and place on a greased cookie sheet.  (Allow space because they spread out while baking).\\n\",\"mImages\":[]},{\"mBody\":\"Bake for 8-10 minutes.\\n\",\"mImages\":[]},{\"mBody\":\"Let cookies cool for 1 minute; then remove with a turner onto a cooling rack.  After cooling about 5 minutes, ENJOY!\\n\",\"mImages\":[]}]}\n";
     }
 
     /**

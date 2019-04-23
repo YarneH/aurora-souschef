@@ -18,9 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+
 
 public class SplitToMainSectionsTaskUnitTest {
-    private static List<String> recipeTexts;
+    private static List<ExtractedText> recipeTexts;
 
 
     @BeforeClass
@@ -28,29 +30,21 @@ public class SplitToMainSectionsTaskUnitTest {
         recipeTexts = initializeRecipeText();
     }
 
-    private static List<String> initializeRecipeText() {
+    private static List<ExtractedText> initializeRecipeText() {
 
-        String filename = "src/test/java/com/aurora/souschefprocessor/facade/recipes.txt";
-        List<String> list = new ArrayList<>();
+        String filename = "src/test/java/com/aurora/souschefprocessor/facade/json-recipes.txt";
+        List<ExtractedText> list = new ArrayList<>();
         try {
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(
                             new FileInputStream(filename), "UTF8"));
 
-            StringBuilder bld = new StringBuilder();
             String line = reader.readLine();
-
             while (line != null) {
-                if (!line.equals("----------")) {
-                    bld.append(line + "\n");
-                } else {
-                    list.add(bld.toString());
-                    bld = new StringBuilder();
-
-                }
+                list.add(ExtractedText.fromJson(line));
                 line = reader.readLine();
             }
-            list.add(bld.toString());
+
         } catch (IOException io) {
             System.err.print(io);
         }
@@ -64,23 +58,42 @@ public class SplitToMainSectionsTaskUnitTest {
         List<Map<String, String>> fieldsList = new ArrayList<>();
         //recipe 1
         Map<String, String> map = new HashMap<>();
-        /*map.put("STEPS", "Toast baguette slices lightly on one side.\n" +
-                "Layer each round with smoked salmon, top with a dollup of sour\n" +
-                "cream and sprinkle with a few capers and lots of freshly ground black\npepper.");
-        map.put("INGR", "8 thin slices baguette\n" +
-                "100g (3 oz) smoked salmon, sliced\n" +
-                "sour cream\n" +
-                "capers\n" +
-                "lemon cheeks, to serve");
-        fieldsList.add(map);*/
 
         // recipe 2
         map = new HashMap<>();
-        map.put("STEPS", "cook pasta in a large pot of boiling salted water, stirring occasionally, until al dente. drain pasta, reserving 1 cup pasta cooking liquid; return pasta to pot.\n" +
-                "while pasta cooks, pour tomatoes into a fine-mesh sieve set over a medium bowl. shake to release as much juice as possible, then let tomatoes drain in sieve, collecting juices in bowl, until ready to use.\n" +
-                "heat 1/4 cup oil in a large deep-sided skillet over medium-high. add capers and cook, swirling pan occasionally, until they burst and are crisp, about 3 minutes. using a slotted spoon, transfer capers to a paper towel-lined plate, reserving oil in skillet.\n" +
-                "combine anchovies, tomato paste, and drained tomatoes in skillet. cook over medium-high heat, stirring occasionally, until tomatoes begin to caramelize and anchovies start to break down, about 5 minutes. add collected tomato juices, olives, oregano, and red pepper flakes and bring to a simmer. cook, stirring occasionally, until sauce is slightly thickened, about 5 minutes. add pasta, remaining 1/4 cup oil, and 3/4 cup pasta cooking liquid to pan. cook over medium heat, stirring and adding remaining 1/4 cup pasta cooking liquid to loosen if needed, until sauce is thickened and emulsified, about 2 minutes. flake tuna into pasta and toss to combine.\n" +
-                "divide pasta among plates. top with fried capers.");
+        map.put("STEPS", "Place a bowl over a pan of simmering water (the water shouldn't touch the bottom of the bowl) and gently melt the chocolate in the bowl. Remove from the heat once melted and let it cool slightly.\n" +
+                "\n" +
+                "Separate the egg yolks from the egg whites. Beat the egg yolks and most of the sugar together until creamy and pale in colour (keep two teaspoons of sugar to one side for the egg whites).\n" +
+                "\n" +
+                "When it has cooled slightly, whisk the chocolate into the egg yolk and sugar mixture.\n" +
+                "\n" +
+                "Melt the butter in a pan over a low heat.\n" +
+                "\n" +
+                "Whisk the melted butter into the chocolate mixture. If it gets too thick, add a couple of tablespoons of water.\n" +
+                "\n" +
+                "In a clean bowl, whisk the egg whites and the remaining two teaspoons of sugar with an electric whisk until they're light and fluffy and hold a soft peak. Do not over-beat. The sugar will give them a gentle sheen.\n" +
+                "\n" +
+                "Carefully fold the egg whites into the chocolate mixture using a metal spoon.\n" +
+                "\n" +
+                "Spoon the chocolate mixture into small teacups or ramekins and refrigerate for about two hours.\n" +
+                "\n" +
+                "Just before serving, top each marquise with a dollop of crème fraîche and two fresh cherries, then sprinkle with cocoa powder.");
+        map.put("INGR", "225g/8oz dark chocolate\n" +
+                "5 medium free-range eggs\n" +
+                "100g/3½oz caster sugar\n" +
+                "170g/6oz unsalted butter\n" +
+                "200ml/7fl oz crème fraîche\n" +
+                "12-16 fresh cherries\n" +
+                "cocoa powder, for dusting");
+        fieldsList.add(map);
+
+        // recipe 3
+        map = new HashMap<>();
+        map.put("STEPS", "Cook pasta in a large pot of boiling salted water, stirring occasionally, until al dente. Drain pasta, reserving 1 cup pasta cooking liquid; return pasta to pot.\n" +
+                "While pasta cooks, pour tomatoes into a fine-mesh sieve set over a medium bowl. Shake to release as much juice as possible, then let tomatoes drain in sieve, collecting juices in bowl, until ready to use.\n" +
+                "Heat 1/4 cup oil in a large deep-sided skillet over medium-high. Add capers and cook, swirling pan occasionally, until they burst and are crisp, about 3 minutes. Using a slotted spoon, transfer capers to a paper towel-lined plate, reserving oil in skillet.\n" +
+                "Combine anchovies, tomato paste, and drained tomatoes in skillet. Cook over medium-high heat, stirring occasionally, until tomatoes begin to caramelize and anchovies start to break down, about 5 minutes. Add collected tomato juices, olives, oregano, and red pepper flakes and bring to a simmer. Cook, stirring occasionally, until sauce is slightly thickened, about 5 minutes. Add pasta, remaining 1/4 cup oil, and 3/4 cup pasta cooking liquid to pan. Cook over medium heat, stirring and adding remaining 1/4 cup pasta cooking liquid to loosen if needed, until sauce is thickened and emulsified, about 2 minutes. Flake tuna into pasta and toss to combine.\n" +
+                "Divide pasta among plates. Top with fried capers.");
         map.put("INGR", "1 lb. linguine or other long pasta\n" +
                 "kosher salt\n" +
                 "1 (14-oz.) can diced tomatoes\n" +
@@ -94,7 +107,7 @@ public class SplitToMainSectionsTaskUnitTest {
                 "6 oz. oil-packed tuna");
         fieldsList.add(map);
 
-        // recipe 3
+        // recipe 4
         map = new HashMap<>();
         map.put("STEPS", "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.");
         map.put("INGR", "1 lb. lean ground beef\n" +
@@ -105,11 +118,13 @@ public class SplitToMainSectionsTaskUnitTest {
                 "1⁄2 tsp. ground black pepper\n" +
                 "1 c. rice\n" +
                 "1 tsp. salt\n" +
-                "1 Tbsp. of dry onion soup mix\n" +
+                "1 tbsp. of dry onion soup mix\n" +
                 "2 c. water\n" +
                 "1 10 oz. can cream of mushroom soup\n" +
                 "1⁄2 c. low-fat milk\n" +
-                "1 c. crushed potato chips");
+                "1 c. crushed potato chips\n"
+                + "size of bake ware: 8” x 8” baking dish\n" +
+                "cooking temperature: 350f");
         fieldsList.add(map);
 
         // recipe 4
@@ -118,21 +133,18 @@ public class SplitToMainSectionsTaskUnitTest {
                 "Remove and reserve about 1/2 cup of the cooking water, then drain the pasta and quickly toss with the zucchini, parsley, and mint. Spoon on the ricotta and toss lightly again, add small amounts of the cooking water to lighten the cheese to the consistency you like, and serve.\n" +
                 "\n" +
                 "Cooks' Note\n" +
-                "Zucchini is easy to shred on the large holes of a box grater, with the shredding attachment of a food processor, or with a mandoline."
-        );
-        map.put("INGR", "" +
-                "Salt\n" +
+                "Zucchini is easy to shred on the large holes of a box grater, with the shredding attachment of a food processor, or with a mandoline.");
+        map.put("INGR", "salt\n" +
                 "1 pound fettuccine\n" +
                 "4 tablespoons extra-virgin olive oil\n" +
                 "3 or 4 garlic cloves, finely chopped or grated\n" +
-                "Zest of 1 to 2 lemons\n" +
+                "zest of 1 to 2 lemons\n" +
                 "2 medium- large or 4 small zucchini, cleaned but not peeled, and shredded\n" +
-                "Freshly ground pepper\n" +
+                "freshly ground pepper\n" +
                 "1/4 cup chopped fresh flat-leaf parsley\n" +
                 "1/4 cup chopped fresh mint\n" +
                 "1 cup fresh whole-milk ricotta cheese, at room temperature");
         fieldsList.add(map);
-
 
         // recipe 5
         map = new HashMap<>();
@@ -170,7 +182,7 @@ public class SplitToMainSectionsTaskUnitTest {
         /**
          * After the task the sections are not null
          */
-        for (String text : recipeTexts) {
+        for (ExtractedText text : recipeTexts) {
             // Arrange
             RecipeInProgress rip = new RecipeInProgress(text);
             SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
@@ -185,6 +197,7 @@ public class SplitToMainSectionsTaskUnitTest {
 
     @Test
     public void SplitToMainSections_doTask_sectionsHaveCorrectValues() {
+        recipeTexts = initializeRecipeText();
         /**
          * The correct sections are detected
          */
@@ -193,25 +206,26 @@ public class SplitToMainSectionsTaskUnitTest {
 
         for (int i = 0; i < fieldsList.size(); i++) {
             // Arrange
-            String text = recipeTexts.get(i);
+            ExtractedText text = recipeTexts.get(i);
             RecipeInProgress rip = new RecipeInProgress(text);
             SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
             // Act
             task.doTask();
 
             // Assert
-            assert (rip.getIngredientsString().equalsIgnoreCase(fieldsList.get(i).get("INGR")));
-            assert (rip.getStepsString().equalsIgnoreCase(fieldsList.get(i).get("STEPS")));
-            assert (rip.getDescription() != null);
+            assertEquals("steps", fieldsList.get(i).get("STEPS"), rip.getStepsString());
+            assertEquals("ingredients", fieldsList.get(i).get("INGR").toLowerCase(), rip.getIngredientsString().toLowerCase());
+
+            // assert (rip.getDescription() != null);
         }
     }
 
     @Test
     public void SplitToMainSectionsTaskTest_doTask_NoExceptionsAreThrown() {
-        List<String> array = initializeRecipeText();
+        List<ExtractedText> array = initializeRecipeText();
         boolean thrown = false;
         try {
-            for (String text : array) {
+            for (ExtractedText text : array) {
                 RecipeInProgress rip = new RecipeInProgress(text);
                 SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
                 task.doTask();
@@ -238,7 +252,7 @@ public class SplitToMainSectionsTaskUnitTest {
         String description = "How to make chocolate mousse\n" +
                 "2 ratings\n" +
                 "How to make chocolate mousse\n" +
-                "By Lesley Waters\n" +
+                "By Lesley Waters\n\n" +
                 "Preparation time\n" +
                 "30 mins to 1 hour\n" +
                 "Cooking time\n" +
@@ -276,10 +290,9 @@ public class SplitToMainSectionsTaskUnitTest {
 
         // Act
         task.doTask();
-        System.out.println(rip.getStepsString());
-        assert (rip.getDescription().equals(description));
-        assert (rip.getIngredientsString().equals(ingredients));
-        assert (rip.getStepsString().equals(steps));
+        assertEquals("ingredients", ingredients, rip.getIngredientsString());
+        assertEquals("description", description, rip.getDescription());
+        assertEquals("steps", steps, rip.getStepsString());
 
 
         // test that needs the parser
@@ -344,8 +357,8 @@ public class SplitToMainSectionsTaskUnitTest {
         RecipeInProgress rip = new RecipeInProgress(text);
         SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
         task.doTask();
-
-
+        System.out.println(rip.getStepsString());
+        assertEquals("ingredients", rip.getIngredientsString(), bodyIngredients);
         assert (rip.getIngredientsString().equals(bodyIngredients));
 
         assert (rip.getStepsString().equals(steps));
@@ -395,7 +408,7 @@ public class SplitToMainSectionsTaskUnitTest {
         SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
         task.doTask();
 
-
+        assertEquals("ingredients", bodyIngredients, rip.getIngredientsString());
         assert (rip.getIngredientsString().equals(bodyIngredients));
 
         assert (rip.getStepsString().equals(steps));
@@ -482,7 +495,7 @@ public class SplitToMainSectionsTaskUnitTest {
                 "1⁄2 c. low-fat milk\n" +
                 "1 c. crushed potato chips";
         Section section1 = new Section(titleFirstBody, firstBody, images);
-        Section section2 = new Section(titleSecondBody,secondBody, images);
+        Section section2 = new Section(titleSecondBody, secondBody, images);
         Section step = new Section(steps);
         Section ingredients = new Section(titleIngredients, bodyIngredients, images);
 
@@ -501,7 +514,232 @@ public class SplitToMainSectionsTaskUnitTest {
         assert (rip.getIngredientsString().equals(bodyIngredients));
 
         assert (rip.getStepsString().equals(steps));
-        assert (rip.getDescription().equals(title + "\n" + titleFirstBody+ "\n" + firstBody +
-                "\n" +titleSecondBody +"\n" + secondBody));
+        assert (rip.getDescription().equals(title + "\n" + titleFirstBody + "\n" + firstBody +
+                "\n" + titleSecondBody + "\n" + secondBody));
+    }
+
+
+    @Test
+    public void SplitToMainSectionsTask_doTask_NotAllIngredientsInSameSection() {
+        // Arrange
+        String json = "{\n" +
+                "   \"mFilename\": \"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3DGDPoHpBnY6%2BmsRjpbyFZ64nchB90csqZM1KpNqa1adcFQ1v9eXj7Snb0Fgo%3D\",\n" +
+                "   \"mSections\": [\n" +
+                "       {\n" +
+                "           \"mBody\": \"The beste chocomousse for: 4 people!\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"150 g pure chocolade 78%\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"2 large eggs\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"50 g witte basterdsuiker\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"200 ml verse slagroom\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Hak de chocolade fijn. Laat de chocolade in ca. 5 min. au bain-marie smelten in\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0,\n" +
+                "           \"mTitle\": \"Cooking steps\"\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"een kom boven een pan kokend water. Roer af en toe. Neem de kom van de pan.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Splits de eieren. Klop het eiwit met de helft van de suiker met een mixer ca.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"5 min. totdat het glanzende stijve pieken vormt. Doe de slagroom in een ruime kom en\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"klop in ca. 3 min. stijf.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Klop de eidooiers los met een garde. Roer de rest van de suiker erdoor.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Roer de gesmolten chocolade door het eidooier-suikermengsel. Spatel het door de\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"slagroom. Spatel het eiwit snel en luchtig in delen door het chocolademengsel.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Schep de chocolademousse in glazen, potjes of coupes, dek af met vershoudfolie\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"en laat minimaal 2 uur opstijven in de koelkast.  ;\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       }\n" +
+                "   ],\n" +
+                "   \"mTitle\": \"Chocomousse\"\n" +
+                "}";
+        String ingredients = "150 g pure chocolade 78%\n" +
+                "2 large eggs\n" +
+                "50 g witte basterdsuiker\n" +
+                "200 ml verse slagroom";
+        String steps = "Hak de chocolade fijn. Laat de chocolade in ca. 5 min. au bain-marie smelten in\n" +
+                "een kom boven een pan kokend water. Roer af en toe. Neem de kom van de pan.\n" +
+                "Splits de eieren. Klop het eiwit met de helft van de suiker met een mixer ca.\n" +
+                "5 min. totdat het glanzende stijve pieken vormt. Doe de slagroom in een ruime kom en\n" +
+                "klop in ca. 3 min. stijf.\n" +
+                "Klop de eidooiers los met een garde. Roer de rest van de suiker erdoor.\n" +
+                "Roer de gesmolten chocolade door het eidooier-suikermengsel. Spatel het door de\n" +
+                "slagroom. Spatel het eiwit snel en luchtig in delen door het chocolademengsel.\n" +
+                "Schep de chocolademousse in glazen, potjes of coupes, dek af met vershoudfolie\n" +
+                "en laat minimaal 2 uur opstijven in de koelkast.  ;";
+        String description = "Chocomousse\n" +
+                "The beste chocomousse for: 4 people!";
+
+        // Act
+        ExtractedText text = ExtractedText.fromJson(json);
+        RecipeInProgress rip = new RecipeInProgress(text);
+        (new SplitToMainSectionsTask(rip)).doTask();
+
+        // Assert
+        assertEquals("ingredients", ingredients, rip.getIngredientsString());
+        assertEquals("description", description, rip.getDescription());
+        assertEquals("steps", steps, rip.getStepsString());
+
+    }
+
+    @Test
+    public void n() {
+        String json = "{\n" +
+                "   \"mFilename\": \"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3Du9LNZH%2B96HSRfZRiM%2BAfRmDpyt%2Fl5ToK9NDNWsv0Nxifbb58P0mFzuzD5hIQ\",\n" +
+                "   \"mSections\": [\n" +
+                "       {\n" +
+                "           \"mBody\": \"2 large apples (or 3 medium)\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"1/8 tsp. nutmeg\\n1/2 c. oatmeal\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"1/2 tsp. cinnamon\\n1/4 c. flour\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"1/4 c. butter\\n1/2 c. brown sugar\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"1 tsp. lemon juice\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Core, peel and slice the apples into thin wedges.  Place the apples in the square glass dish.\\nIn a medium mixing bowl, combine together oatmeal, flour, brown sugar, nutmeg, cinnamon, butter and lemon juice.\\nUsing a pastry blender, cut the butter into the dry ingredients until the mixture is crumbly.\\nEvenly sprinkle this mixture over the apples.\\nMicrowave on high for 8-10 minutes.\\nRemove from microwave, USING HOT PADS.\\nAllow 5 minutes for STANDING TIME.\\nServe and enjoy eating.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       }\n" +
+                "   ],\n" +
+                "   \"mTitle\": \"Apple Crisp\"\n" +
+                "}";
+
+        ExtractedText text = ExtractedText.fromJson(json);
+        RecipeInProgress rip = new RecipeInProgress(text);
+        (new SplitToMainSectionsTask(rip)).doTask();
+        System.out.println(rip);
+    }
+
+    @Test
+    public void t(){
+        String json = "{\n" +
+                "   \"mFilename\": \"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3DFr3xSHzCrT%2BQuzQqzL6JGCuSwXoQfIgnnbNN7oCOieFoOZSCsCI%2Bd1DGDGWN\",\n" +
+                "   \"mSections\": [\n" +
+                "       {\n" +
+                "           \"mBody\": \"1 /4 c. shortening\\n1/4 c. margarine\\n1 /4 c. sugar\\n1/2 c. brown sugar, packed\\n1 egg\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"1/8  tsp. salt\\n1/2  tsp. baking soda\\n1 tsp. vanilla\\n1 1/4 c. flour\\n1 c. chocolate chips\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Preheat oven to 375 degrees.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"In mixer, CREAM shortening, margarine and sugars until smooth.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Beat in egg, and mix until smooth again.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Mix in salt, baking soda, and vanilla.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Gradually stir in flour.  CHECK OFF YOUR COOKIE DOUGH WITH YOUR TEACHER BEFORE MOVING ON!\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Finally add chocolate chips; then form into small round balls and place on a greased cookie sheet.  (Allow space because they spread out while baking).\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Bake for 8-10 minutes.\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       },\n" +
+                "       {\n" +
+                "           \"mBody\": \"Let cookies cool for 1 minute; then remove with a turner onto a cooling rack.  After cooling about 5 minutes, ENJOY!\\n\",\n" +
+                "           \"mImages\": [],\n" +
+                "           \"mLevel\": 0\n" +
+                "       }\n" +
+                "   ],\n" +
+                "   \"mTitle\": \"Chocolate Chip Cookies\"\n" +
+                "}";
+        ExtractedText text = ExtractedText.fromJson(json);
+        System.out.println(text.toJSON());
+        RecipeInProgress rip = new RecipeInProgress(text);
+        (new SplitToMainSectionsTask(rip)).doTask();
+        System.out.println(rip);
     }
 }

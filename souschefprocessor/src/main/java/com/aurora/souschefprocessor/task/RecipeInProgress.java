@@ -23,20 +23,12 @@ public class RecipeInProgress extends Recipe {
      */
     private String mStepsString;
 
-    /**
-     * The original text given by Aurora (could change to Annotation)
-     */
-    private String mOriginalText;
 
     /**
      * An extractedtet object from Aurora
      */
     private ExtractedText mExtractedText;
 
-    public RecipeInProgress(String originalText) {
-        super();
-        this.mOriginalText = originalText;
-    }
 
     public RecipeInProgress(ExtractedText originalText) {
         super();
@@ -52,9 +44,6 @@ public class RecipeInProgress extends Recipe {
                 '}';
     }
 
-    public String getOriginalText() {
-        return mOriginalText;
-    }
 
     public synchronized String getStepsString() {
         return mStepsString;

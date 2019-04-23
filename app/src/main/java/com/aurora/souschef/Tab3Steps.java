@@ -27,7 +27,6 @@ public class Tab3Steps extends Fragment {
      * Adapter for filling the different step cards.
      */
     private StepsPagerAdapter mStepsPagerAdapter;
-    private int mAmountPeople;
 
     /**
      * Viewpager for swiping and navigating through the different cards.

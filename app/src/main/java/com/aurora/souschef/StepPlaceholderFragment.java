@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,21 +25,54 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A PlaceholderFragment which is used for each step of the recipe
+ */
 public class StepPlaceholderFragment extends Fragment {
     /**
      * The fragment argument representing the section number for this
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private static final String INGREDIENT_CODE = ";1;&!;1";
+    /**
+     * A code which is used to replace the quantities in the base description of the step
+     */
+    private static final String INGREDIENT_CODE = "<#tag:ingredient#>";
+    /**
+     * A (Card)View which is the main view of the step
+     */
     private View mRootView;
-    private RecyclerView mIngredientList;
+    /**
+     * The MaxHeightRecyclerView used for the ingredients in the step
+     */
+    private MaxHeightRecyclerView mIngredientList;
+    /**
+     * A list of original descriptions
+     */
     private String[] mDescriptionStep;
+    /**
+     * A list of the description where the quantities of the ingredients are replaced with the INGREDIENT_CODE
+     */
     private String[] mDescriptionBase;
+    /**
+     * A list of integers representing the start indices of the blocks of a step
+     */
     private int[] mStartIndexDescriptionBlocks;
+    /**
+     * The current RecipeStep, which is represented by the StepPlaceholderFragment
+     */
     private RecipeStep mRecipeStep = null;
+    /**
+     * The original amount of people the recipe is for
+     */
     private int mOriginalAmount = 0;
+    /**
+     * A new, by the user set, amount of people
+     */
     private int mCurrentAmount = 0;
+    /**
+     * A list of the TextView which are used to display the different blocks of the description
+     */
     private ArrayList<TextView> mStepTextViews = new ArrayList<>();
 
 
@@ -265,6 +297,11 @@ public class StepPlaceholderFragment extends Fragment {
         }
     }
 
+    /**
+     * This function will update the TextView with a new quantity
+     *
+     * @param newAmount the new set amount of people
+     */
     protected void update(int newAmount) {
         ((StepIngredientAdapter) mIngredientList.getAdapter()).setCurrentAmount(newAmount);
         mIngredientList.getAdapter().notifyDataSetChanged();
@@ -320,6 +357,12 @@ public class StepPlaceholderFragment extends Fragment {
         Collections.reverse(mRecipeStep.getIngredients());
     }
 
+    /**
+     * Extract the description of the steps
+     *
+     * @param recipe    the recipe of which the steps will be extracted
+     * @return          a list of Strings, representing all the different descriptions of the steps
+     */
     public static String[] extractDescriptionSteps(Recipe recipe) {
         int stepsCount = recipe.getRecipeSteps().size();
         String[] steps = new String[stepsCount];

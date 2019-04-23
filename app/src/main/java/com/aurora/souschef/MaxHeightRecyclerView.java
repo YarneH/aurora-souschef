@@ -6,8 +6,14 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 
+/**
+ * This class extends a default RecyclerView. It will make sure that the RecyclerView will not take
+ * a height bigger than MAX_HEIGHT
+ */
 public class MaxHeightRecyclerView extends RecyclerView {
-    // Also present in Tab3Steps
+    /**
+     * An integer representing the maximum possible height
+     */
     private static final int MAX_HEIGHT = 300;
 
     public MaxHeightRecyclerView(@NonNull Context context) {

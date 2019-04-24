@@ -336,6 +336,10 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private List<Ingredient> detectIngredients(RecipeStep recipeStep, List<ListIngredient> ingredientListRecipe) {
         List<Ingredient> set = new ArrayList<>();
 
+
+        // trim the description
+        recipeStep.setDescription(recipeStep.getDescription().trim());
+        
         // Maps list ingredients to a an array of words in their name for matching the name in the step
         // Necessary in case only a certain word of the list ingredient is used to describe it in the step
         HashMap<ListIngredient, List<String>> ingredientListMap = new HashMap<>();

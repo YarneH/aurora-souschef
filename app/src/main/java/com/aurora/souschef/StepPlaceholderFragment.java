@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +38,7 @@ public class StepPlaceholderFragment extends Fragment {
     /**
      * A code which is used to replace the quantities in the base description of the step
      */
-    private static final String INGREDIENT_CODE = "<#tag:ingredient#>";
+    private static final String INGREDIENT_CODE = ";1;&!;1";
     /**
      * A (Card)View which is the main view of the step
      */
@@ -246,25 +247,23 @@ public class StepPlaceholderFragment extends Fragment {
         for (Ingredient ingredient : mRecipeStep.getIngredients()) {
             // Check whether the quantity is in the description of the step
             if (ingredient.getQuantityPosition().getBeginIndex() != 0
-                    && ingredient.getQuantityPosition().getEndIndex() != descriptionLength) {
+                    || ingredient.getQuantityPosition().getEndIndex() != descriptionLength) {
 
                 // Check if the quantity is represent in the current block of the description
                 if (ingredient.getQuantityPosition().getBeginIndex() < beginOfTextBlock) {
                     // The current ingredient (and all the following) is located in a text-block which
                     // comes before the current text block
                     break;
-                } else if (ingredient.getQuantityPosition().getBeginIndex() > endOfTextBlock) {
+                } else if (ingredient.getQuantityPosition().getEndIndex() > endOfTextBlock) {
                     // The current ingredient is located in a text-block which comes after the current
                     // text block. Following ingredients can still be located in this current text block
                     continue;
                 }
                 // The quantity is in the step and needs to be replaced by INGREDIENT_CODE
-                String quantityString;
-                quantityString = description.substring(
-                        ingredient.getQuantityPosition().getBeginIndex() - beginOfTextBlock,
-                        ingredient.getQuantityPosition().getEndIndex() - beginOfTextBlock);
-
-                description = description.replace(quantityString, INGREDIENT_CODE);
+                description = description.
+                        substring(0, ingredient.getQuantityPosition().getBeginIndex() - beginOfTextBlock)
+                        + INGREDIENT_CODE
+                        + description.substring(ingredient.getQuantityPosition().getEndIndex() - beginOfTextBlock);
             }
         }
 
@@ -360,8 +359,8 @@ public class StepPlaceholderFragment extends Fragment {
     /**
      * Extract the description of the steps
      *
-     * @param recipe    the recipe of which the steps will be extracted
-     * @return          a list of Strings, representing all the different descriptions of the steps
+     * @param recipe the recipe of which the steps will be extracted
+     * @return a list of Strings, representing all the different descriptions of the steps
      */
     public static String[] extractDescriptionSteps(Recipe recipe) {
         int stepsCount = recipe.getRecipeSteps().size();

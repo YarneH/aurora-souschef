@@ -1,6 +1,5 @@
 package com.aurora.souschef;
 
-
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;

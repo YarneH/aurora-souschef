@@ -103,7 +103,6 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
             double newQuantity = ingredient.getQuantity() * mCurrentAmount / mOriginalAmount;
 
             mIngredientName.setText(nameWithoutQuantityAndUnit);
-            mIngredientUnit.setText(ingredient.getUnit());
 
             // Only display quantity in list if the quantity is in the current step description
             if (ingredient.getQuantityPosition().getBeginIndex() != 0
@@ -112,6 +111,14 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
                 mIngredientAmount.setVisibility(View.VISIBLE);
             } else {
                 mIngredientAmount.setVisibility(View.GONE);
+            }
+
+            // Set TextView of unit to GONE when it has no unit
+            if ("".equals(ingredient.getUnit())){
+                mIngredientUnit.setVisibility(View.GONE);
+            } else {
+                mIngredientUnit.setText(ingredient.getUnit());
+                mIngredientUnit.setVisibility(View.VISIBLE);
             }
         }
     }

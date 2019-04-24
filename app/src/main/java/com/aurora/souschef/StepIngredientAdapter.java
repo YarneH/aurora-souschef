@@ -3,6 +3,7 @@ package com.aurora.souschef;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,16 +22,19 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
     private final List<Ingredient> ingredients;
     private int mCurrentAmount = 0;
     private int mOriginalAmount = 0;
+    private int mStepDescriptionLength = 0;
 
     /**
      * Constructs the adapter with a list
      *
      * @param ingredients list for construction
      */
-    public StepIngredientAdapter(List<Ingredient> ingredients, int originalAmount, int currentAmount) {
+    public StepIngredientAdapter(List<Ingredient> ingredients, int originalAmount, int currentAmount,
+                                 int descriptionLength) {
         this.ingredients = ingredients;
         this.mCurrentAmount = currentAmount;
         this.mOriginalAmount = originalAmount;
+        this.mStepDescriptionLength = descriptionLength;
     }
 
     @NonNull
@@ -99,8 +103,16 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
             double newQuantity = ingredient.getQuantity() * mCurrentAmount / mOriginalAmount;
 
             mIngredientName.setText(nameWithoutQuantityAndUnit);
-            mIngredientAmount.setText(StringUtilities.toDisplayQuantity(newQuantity));
             mIngredientUnit.setText(ingredient.getUnit());
+
+            // Only display quantity in list if the quantity is in the current step description
+            if (ingredient.getQuantityPosition().getBeginIndex() != 0
+                    || ingredient.getQuantityPosition().getEndIndex() != mStepDescriptionLength) {
+                mIngredientAmount.setText(StringUtilities.toDisplayQuantity(newQuantity));
+                mIngredientAmount.setVisibility(View.VISIBLE);
+            } else {
+                mIngredientAmount.setVisibility(View.GONE);
+            }
         }
     }
 }

@@ -144,7 +144,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
         private void bind() {
             ListIngredient ingredient = mIngredients.get(getAdapterPosition());
 
-            String nameWithoutQuantityAndUnit = ingredient.getOriginalLineWithoutUnitAndQuantity();
+            String nameWithoutQuantityAndUnit = ingredient.getName();
             // if it is possible to capitalize the first letter, capitalize.
             if (nameWithoutQuantityAndUnit.length() > 1) {
                 nameWithoutQuantityAndUnit = nameWithoutQuantityAndUnit.substring(0, 1).toUpperCase(Locale.getDefault())

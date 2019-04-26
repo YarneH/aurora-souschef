@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.task;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
+import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
@@ -13,10 +14,13 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
 
 public class DetectIngredientsInRecipeStepTaskUnitTest {
 
@@ -133,12 +137,12 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         detector1.doTask();
 
         // Assert
-        assert(recipe.getRecipeSteps().get(0).getIngredients().size() == 1);
-        assert(recipe.getRecipeSteps().get(1).getIngredients().size() == 2);
+        assert (recipe.getRecipeSteps().get(0).getIngredients().size() == 1);
+        assert (recipe.getRecipeSteps().get(1).getIngredients().size() == 2);
     }
 
     @Test
-    public void IngredientDetectorStep_doTask_ingredientDetectedWithoutUnit(){
+    public void IngredientDetectorStep_doTask_ingredientDetectedWithoutUnit() {
         // Arrange
         Ingredient stepIngredient = new Ingredient("spaghetti", DEFAULT_UNIT, DEFAULT_QUANTITY, irrelevantPositions);
 
@@ -148,11 +152,11 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         Collection<Ingredient> stepIngredients = recipe.getRecipeSteps().get(0).getIngredients();
 
         // Assert
-        assert(stepIngredients.contains(stepIngredient));
+        assert (stepIngredients.contains(stepIngredient));
     }
 
     @Test
-    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnit(){
+    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnit() {
         // Arrange
         Ingredient stepIngredient = new Ingredient("garlic", "clove", DEFAULT_QUANTITY, irrelevantPositions);
 
@@ -162,11 +166,11 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         Collection<Ingredient> stepIngredients = recipe.getRecipeSteps().get(1).getIngredients();
 
         // Assert
-        assert(stepIngredients.contains(stepIngredient));
+        assert (stepIngredients.contains(stepIngredient));
     }
 
     @Test
-    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndVerboseQuantity(){
+    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndVerboseQuantity() {
         // Arrange
         Ingredient stepIngredient = new Ingredient("basil leaves", DEFAULT_UNIT, 5.0, irrelevantPositions);
 
@@ -176,7 +180,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         Collection<Ingredient> stepIngredients = recipe.getRecipeSteps().get(2).getIngredients();
 
         // Assert
-        assert(stepIngredients.contains(stepIngredient));
+        assert (stepIngredients.contains(stepIngredient));
     }
 
     @Test
@@ -195,7 +199,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     }
 
     @Test
-    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndQuantityAndPosition(){
+    public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndQuantityAndPosition() {
         // Arrange
         HashMap<Ingredient.PositionKeysForIngredients, Position> positions = new HashMap<>();
         positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(25, 30));
@@ -219,17 +223,17 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
         // Assert
 
-        assert(detectedIngredient.getUnitPosition().equals(stepIngredient.getUnitPosition()));
-        assert(detectedIngredient.getQuantityPosition().equals(stepIngredient.getQuantityPosition()));
-        assert(detectedIngredient.getNamePosition().equals(stepIngredient.getNamePosition()));
+        assert (detectedIngredient.getUnitPosition().equals(stepIngredient.getUnitPosition()));
+        assert (detectedIngredient.getQuantityPosition().equals(stepIngredient.getQuantityPosition()));
+        assert (detectedIngredient.getNamePosition().equals(stepIngredient.getNamePosition()));
     }
 
 
     @Test
-    public void newTest(){
+    public void DetectIngredientsInStepTask_doTask_CorrectIfAnAdjectiveBetweenNameAndUnit() {
         RecipeStep step = new RecipeStep("Add one tablespoon of melted butter");
         RecipeInProgress rip = new RecipeInProgress(null);
-        ListIngredient ing = new ListIngredient("butter", "", 1.0, "  ",irrelevantPositions);
+        ListIngredient ing = new ListIngredient("butter", "", 1.0, "  ", irrelevantPositions);
         ArrayList<ListIngredient> list = new ArrayList<>();
         list.add(ing);
         rip.setIngredients(list);
@@ -239,12 +243,9 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
         DetectIngredientsInStepTask task = new DetectIngredientsInStepTask(rip, 0);
         task.doTask();
-        System.out.println(step);
-        assert(step.getIngredients().get(0).getUnit().equals("tablespoon"));
+
+        assertEquals( "The unit is not as expected for step: " + step,"tablespoon", step.getIngredients().get(0).getUnit());
 
     }
-
-
-
 
 }

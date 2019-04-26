@@ -3,7 +3,9 @@ package com.aurora.souschefprocessor.facade;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.Recipe;
+import com.aurora.souschefprocessor.recipe.RecipeStep;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -54,7 +56,7 @@ public class DelegatorLongTest {
 
 
         List<ExtractedText> jsonRecipes = initializeRecipesJSON();
-        validRecipesJSON = jsonRecipes.subList(0,6);
+        validRecipesJSON = jsonRecipes.subList(0, 6);
         invalidRecipesJSON = jsonRecipes.subList(6, jsonRecipes.size());
 
         // load in the model
@@ -105,8 +107,6 @@ public class DelegatorLongTest {
     }
 
 
-
-
     @Test
     public void Delegator_processText_NoExceptionsInDelegatorForValidRecipesJSON() {
         /**
@@ -122,7 +122,7 @@ public class DelegatorLongTest {
 
             for (ExtractedText text : validRecipesJSON) {
                 Recipe recipe = delegator.processText(text);
-                System.out.println(recipe+"\n--------------------------------");
+                System.out.println(recipe + "\n--------------------------------");
 
             }
         } catch (Exception e) {
@@ -223,6 +223,7 @@ public class DelegatorLongTest {
     public void wipeDelegator() {
         delegator = new Delegator(crfClassifier, true);
     }
+
 
 
 }

@@ -242,7 +242,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         for (String ingredient : list) {
             if (ingredient != null && ingredient.length() > 0) {
-
                 ListIngredient listIngredient = (detectIngredient(standardizeLine(ingredient)));
                 returnList.add(listIngredient);
             }

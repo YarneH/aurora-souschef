@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,7 +38,7 @@ public class SplitToMainSectionsTaskUnitTest {
         try {
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream(filename), "UTF8"));
+                            new FileInputStream(filename), StandardCharsets.UTF_8));
 
             String line = reader.readLine();
             while (line != null) {
@@ -315,19 +316,33 @@ public class SplitToMainSectionsTaskUnitTest {
 
     }
 
+    /**
+     * This checks if the steps, ingredients and description are correctly detected if both the sections containing steps and ingredients have titles
+     */
     @Test
     public void SplitToMainSectionsTask_doTask_correctWithExtractedTextWithTitlesForIngredientsAndSteps() {
 
 
+        //  Create Extracted Test
+        ExtractedText text = new ExtractedText("", new Date(System.currentTimeMillis()));
+
+        // set the tile
         String title = "BEEF AND RICE CASSEROLE";
+        text.setTitle(title);
+
+        // add the description bodies
         String firstBody = "Yield: 4 servings\n" +
                 "Total Preparation Time: 60 minutes";
         String secondBody = "Size of bake ware: 8” x 8” baking dish\n" +
                 "Cooking temperature: 350F";
-        String titleSteps = "Cooking steps";
-        String steps = "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.";
+
+        text.addSection(new Section(firstBody));
+        text.addSection(new Section(secondBody));
+
+        // empty list needed for titlesections
         List<String> images = new ArrayList<>();
 
+        // add the ingredient body WITH TITLE
         String titleIngredients = "Ingredients";
         String bodyIngredients = "1 lb. lean ground beef\n" +
                 "1⁄2 c. chopped onion\n" +
@@ -342,43 +357,55 @@ public class SplitToMainSectionsTaskUnitTest {
                 "1 10 oz. can cream of mushroom soup\n" +
                 "1⁄2 c. low-fat milk\n" +
                 "1 c. crushed potato chips";
-        Section section1 = new Section(firstBody);
-        Section section2 = new Section(secondBody);
-        Section ingredients = new Section(titleIngredients, bodyIngredients, images);
-        Section stepsSection = new Section(titleSteps, steps, images);
 
-        ExtractedText text = new ExtractedText("", new Date(System.currentTimeMillis()));
-        text.setTitle(title);
-        text.addSection(section1);
-        text.addSection(section2);
-        text.addSection(ingredients);
+        text.addSection(new Section(titleIngredients, bodyIngredients, images));
+
+        // add the steps section WITH TITLE
+        String titleSteps = "Cooking steps";
+        String steps = "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.";
+
+        Section stepsSection = new Section(titleSteps, steps, images);
         text.addSection(stepsSection);
 
+        // Create the RecipeInProgress
         RecipeInProgress rip = new RecipeInProgress(text);
-        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
-        task.doTask();
-        System.out.println(rip.getStepsString());
-        assertEquals("ingredients", rip.getIngredientsString(), bodyIngredients);
-        assert (rip.getIngredientsString().equals(bodyIngredients));
 
-        assert (rip.getStepsString().equals(steps));
-        assert (rip.getDescription().equals(title + "\n" + firstBody + "\n" + secondBody));
+        // Act
+        // Split the recipe in to sections
+        (new SplitToMainSectionsTask(rip)).doTask();
+
+
+        // Assert
+        assertEquals("The ingredients are not as expected", bodyIngredients, rip.getIngredientsString());
+        assertEquals("The steps are not as expected", steps, rip.getStepsString());
+        assertEquals("The description is not as expected", title + "\n" + firstBody + "\n" + secondBody, rip.getDescription());
+
+
     }
 
+    /**
+     * This checks if the steps, ingredients and description are corretcly detected if only the sections containing steps have titles
+     */
     @Test
     public void SplitToMainSectionsTask_doTask_correctWithExtractedTextWithTitlesOnlyForSteps() {
 
+        //  Create Extracted Test
+        ExtractedText text = new ExtractedText("", new Date(System.currentTimeMillis()));
 
+        // set the tile
         String title = "BEEF AND RICE CASSEROLE";
+        text.setTitle(title);
+
+        // add the description bodies
         String firstBody = "Yield: 4 servings\n" +
                 "Total Preparation Time: 60 minutes";
         String secondBody = "Size of bake ware: 8” x 8” baking dish\n" +
                 "Cooking temperature: 350F";
-        String titleSteps = "Cooking steps";
-        String steps = "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.";
-        List<String> images = new ArrayList<>();
 
+        text.addSection(new Section(firstBody));
+        text.addSection(new Section(secondBody));
 
+        // add the ingredient body
         String bodyIngredients = "1 lb. lean ground beef\n" +
                 "1⁄2 c. chopped onion\n" +
                 "1⁄4 c. chopped bell pepper\n" +
@@ -392,27 +419,29 @@ public class SplitToMainSectionsTaskUnitTest {
                 "1 10 oz. can cream of mushroom soup\n" +
                 "1⁄2 c. low-fat milk\n" +
                 "1 c. crushed potato chips";
-        Section section1 = new Section(firstBody);
-        Section section2 = new Section(secondBody);
-        Section ingredients = new Section(bodyIngredients);
-        Section stepsSection = new Section(titleSteps, steps, images);
 
-        ExtractedText text = new ExtractedText("", new Date(System.currentTimeMillis()));
-        text.setTitle(title);
-        text.addSection(section1);
-        text.addSection(section2);
-        text.addSection(ingredients);
+        text.addSection(new Section(bodyIngredients));
+
+        // add the steps section WITH TITLE
+        String titleSteps = "Cooking steps";
+        String steps = "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.";
+        List<String> images = new ArrayList<>();
+        Section stepsSection = new Section(titleSteps, steps, images);
         text.addSection(stepsSection);
 
+        // Create the RecipeInProgress
         RecipeInProgress rip = new RecipeInProgress(text);
-        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
-        task.doTask();
 
-        assertEquals("ingredients", bodyIngredients, rip.getIngredientsString());
-        assert (rip.getIngredientsString().equals(bodyIngredients));
+        // Act
+        // Split the recipe in to sections
+        (new SplitToMainSectionsTask(rip)).doTask();
 
-        assert (rip.getStepsString().equals(steps));
-        assert (rip.getDescription().equals(title + "\n" + firstBody + "\n" + secondBody));
+
+        // Assert
+        assertEquals("The ingredients are not as expected", bodyIngredients, rip.getIngredientsString());
+        assertEquals("The steps are not as expected", steps, rip.getStepsString());
+        assertEquals("The description is not as expected", title + "\n" + firstBody + "\n" + secondBody, rip.getDescription());
+
     }
 
     @Test
@@ -510,15 +539,18 @@ public class SplitToMainSectionsTaskUnitTest {
         SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
         task.doTask();
 
+        assertEquals("The ingredientsection is not correctly detected", bodyIngredients, rip.getIngredientsString());
+        assertEquals("The stepsSection is not correctly detected", steps, rip.getStepsString());
+        assertEquals("The description is not correctly detected", title + "\n" + titleFirstBody + "\n" + firstBody +
+                "\n" + titleSecondBody + "\n" + secondBody, rip.getDescription());
 
-        assert (rip.getIngredientsString().equals(bodyIngredients));
-
-        assert (rip.getStepsString().equals(steps));
-        assert (rip.getDescription().equals(title + "\n" + titleFirstBody + "\n" + firstBody +
-                "\n" + titleSecondBody + "\n" + secondBody));
     }
 
 
+    /**
+     * This test asserts that even if the ingredients are listed in different sections of the Extracted text, they are still all recognized and added
+     * to the ingredientssection
+     */
     @Test
     public void SplitToMainSectionsTask_doTask_NotAllIngredientsInSameSection() {
         // Arrange
@@ -633,113 +665,5 @@ public class SplitToMainSectionsTaskUnitTest {
 
     }
 
-    @Test
-    public void n() {
-        String json = "{\n" +
-                "   \"mFilename\": \"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3Du9LNZH%2B96HSRfZRiM%2BAfRmDpyt%2Fl5ToK9NDNWsv0Nxifbb58P0mFzuzD5hIQ\",\n" +
-                "   \"mSections\": [\n" +
-                "       {\n" +
-                "           \"mBody\": \"2 large apples (or 3 medium)\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1/8 tsp. nutmeg\\n1/2 c. oatmeal\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1/2 tsp. cinnamon\\n1/4 c. flour\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1/4 c. butter\\n1/2 c. brown sugar\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1 tsp. lemon juice\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Core, peel and slice the apples into thin wedges.  Place the apples in the square glass dish.\\nIn a medium mixing bowl, combine together oatmeal, flour, brown sugar, nutmeg, cinnamon, butter and lemon juice.\\nUsing a pastry blender, cut the butter into the dry ingredients until the mixture is crumbly.\\nEvenly sprinkle this mixture over the apples.\\nMicrowave on high for 8-10 minutes.\\nRemove from microwave, USING HOT PADS.\\nAllow 5 minutes for STANDING TIME.\\nServe and enjoy eating.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       }\n" +
-                "   ],\n" +
-                "   \"mTitle\": \"Apple Crisp\"\n" +
-                "}";
 
-        ExtractedText text = ExtractedText.fromJson(json);
-        RecipeInProgress rip = new RecipeInProgress(text);
-        (new SplitToMainSectionsTask(rip)).doTask();
-        System.out.println(rip);
-    }
-
-    @Test
-    public void t(){
-        String json = "{\n" +
-                "   \"mFilename\": \"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3DFr3xSHzCrT%2BQuzQqzL6JGCuSwXoQfIgnnbNN7oCOieFoOZSCsCI%2Bd1DGDGWN\",\n" +
-                "   \"mSections\": [\n" +
-                "       {\n" +
-                "           \"mBody\": \"1 /4 c. shortening\\n1/4 c. margarine\\n1 /4 c. sugar\\n1/2 c. brown sugar, packed\\n1 egg\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1/8  tsp. salt\\n1/2  tsp. baking soda\\n1 tsp. vanilla\\n1 1/4 c. flour\\n1 c. chocolate chips\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Preheat oven to 375 degrees.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"In mixer, CREAM shortening, margarine and sugars until smooth.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Beat in egg, and mix until smooth again.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Mix in salt, baking soda, and vanilla.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Gradually stir in flour.  CHECK OFF YOUR COOKIE DOUGH WITH YOUR TEACHER BEFORE MOVING ON!\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Finally add chocolate chips; then form into small round balls and place on a greased cookie sheet.  (Allow space because they spread out while baking).\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Bake for 8-10 minutes.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Let cookies cool for 1 minute; then remove with a turner onto a cooling rack.  After cooling about 5 minutes, ENJOY!\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       }\n" +
-                "   ],\n" +
-                "   \"mTitle\": \"Chocolate Chip Cookies\"\n" +
-                "}";
-        ExtractedText text = ExtractedText.fromJson(json);
-        System.out.println(text.toJSON());
-        RecipeInProgress rip = new RecipeInProgress(text);
-        (new SplitToMainSectionsTask(rip)).doTask();
-        System.out.println(rip);
-    }
 }

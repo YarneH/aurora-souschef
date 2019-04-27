@@ -110,7 +110,7 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
-    public void SplitStepsTask_doTask_ExceptionThrownWhenStepStringIsEmpty(){
+    public void SplitStepsTask_doTask_ExceptionThrownWhenStepStringIsEmpty() {
         /**
          * If the step string is empty then this is probably not a recipe, throw an error
          */
@@ -120,12 +120,12 @@ public class SplitStepsTaskUnitTest {
         SplitStepsTask task = new SplitStepsTask(emptyStep);
         boolean thrown = false;
         // Act
-        try{
+        try {
             task.doTask();
-        }catch(Exception e){
+        } catch (Exception e) {
             thrown = true;
         }
-        assert(thrown);
+        assert (thrown);
 
     }
 

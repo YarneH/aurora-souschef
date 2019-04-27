@@ -145,6 +145,21 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return section;
     }
 
+    /**
+     * Checks if the line doe not contain any of the {@link #NOT_INGREDIENTS_WORDS}
+     *
+     * @param line the line to check
+     * @return a boolean
+     */
+    private static boolean doesNotContainNonIngredientWords(String line) {
+        String lowerCase = line.toLowerCase(Locale.ENGLISH);
+        for (String notIngredientWord : NOT_INGREDIENTS_WORDS) {
+            if (lowerCase.contains(notIngredientWord)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * Creates the {@link #mAnnotationPipeline}
@@ -296,7 +311,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return findStepsOrIngredientsRegexBasedWithoutTitles(STEP_STARTER_REGEX);
     }
 
-
     /**
      * Finds the ingredients based on the fact that for most recipes at least one of the ingredients
      * will start with a digit. It uses the {@link #mSections} list and this list is altered during
@@ -342,22 +356,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         // let caller know nothing was found
         return "";
     }
-
-    /**
-     * Checks if the line doe not contain any of the {@link #NOT_INGREDIENTS_WORDS}
-     * @param line the line to check
-     * @return a boolean
-     */
-    private static boolean doesNotContainNonIngredientWords(String line) {
-        String lowerCase = line.toLowerCase(Locale.ENGLISH);
-        for (String notIngredientWord : NOT_INGREDIENTS_WORDS) {
-            if (lowerCase.contains(notIngredientWord)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 
     /**
      * Divides the original text into a string representing list of mIngredients, string representing

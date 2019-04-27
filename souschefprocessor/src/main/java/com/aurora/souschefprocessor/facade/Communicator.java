@@ -38,8 +38,7 @@ public class Communicator {
      *                              {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask} task
      */
     Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
-        mDelegator = new Delegator(ingredientsClassifier, false);
-
+        mDelegator = new Delegator(ingredientsClassifier, true);
     }
 
     /**
@@ -70,7 +69,7 @@ public class Communicator {
      */
     public static void createAnnotationPipelines() {
 
-    Delegator.createAnnotationPipelines();
+        Delegator.createAnnotationPipelines();
     }
 
     /**
@@ -87,9 +86,9 @@ public class Communicator {
      */
     static void incrementProgressAnnotationPipelines() {
         mProgressAnnotationPipelines.incrementAndGet();
-        Log.d("STEP", ""+mProgressAnnotationPipelines);
+        Log.d("STEP", "" + mProgressAnnotationPipelines);
     }
-    
+
     /**
      * Receives an extractedText object from the AuroraKernel that will be processed into a custom Recipe Object
      *

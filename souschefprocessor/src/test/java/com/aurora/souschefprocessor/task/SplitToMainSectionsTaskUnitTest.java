@@ -14,6 +14,8 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -4972,7 +4974,14 @@ public class SplitToMainSectionsTaskUnitTest {
                 "\n"
         });
 
-        ExtractedText text = ExtractedText.fromJson(trial);
+        String contents = null;
+        try {
+            contents = new String(Files.readAllBytes(Paths.get("input.txt")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ExtractedText text = ExtractedText.fromJson(contents);
         RecipeInProgress rip = new RecipeInProgress(text);
 
         (new SplitToMainSectionsTask(rip)).doTask();

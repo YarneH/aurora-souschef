@@ -48,7 +48,7 @@ public class Tab1Overview extends Fragment {
 
         // Add the floating action button to change the settings.
         FloatingActionButton mSettingsFab = rootView.findViewById(R.id.fab_settings);
-        mSettingsFab.setOnClickListener(this::onSettingsClicked);
+        mSettingsFab.setOnClickListener(v -> onSettingsClicked());
 
         // Get the card and make it disappear on clicking outside of it.
         mSettingsCard = rootView.findViewById(R.id.cv_settings);
@@ -57,10 +57,11 @@ public class Tab1Overview extends Fragment {
         // Switch for changing the units.
         Switch mToggleImperial = rootView.findViewById(R.id.switch_toggle_imperial);
         // Change the settings in sharedPreferences.
-        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(SETTINGS_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = requireActivity()
+                .getSharedPreferences(SETTINGS_PREFERENCES, Context.MODE_PRIVATE);
         boolean imperial = sharedPreferences.getBoolean(IMPERIAL_SETTING, false);
         mToggleImperial.setChecked(imperial);
-        mToggleImperial.setOnCheckedChangeListener(this::onSwitchToggled);
+        mToggleImperial.setOnCheckedChangeListener((v, isChecked) -> onSwitchToggled(isChecked));
 
         // Listen for recipe changes.
         RecipeViewModel mRecipe = ViewModelProviders.of(requireActivity()).get(RecipeViewModel.class);
@@ -76,9 +77,8 @@ public class Tab1Overview extends Fragment {
     /**
      * Handle what happens on clicking the settings-FAB.
      *
-     * @param v the clicked view
      */
-    private void onSettingsClicked(View v) {
+    private void onSettingsClicked() {
         if (mSettingsCard.getVisibility() == View.VISIBLE) {
             mSettingsCard.setVisibility(View.GONE);
         } else {
@@ -89,11 +89,11 @@ public class Tab1Overview extends Fragment {
     /**
      * Change the sharedPreferences on toggling the switch to imperial and back.
      *
-     * @param v         switch that is toggled
      * @param isChecked the toggled state
      */
-    private void onSwitchToggled(View v, boolean isChecked) {
-        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(SETTINGS_PREFERENCES, Context.MODE_PRIVATE);
+    private void onSwitchToggled(boolean isChecked) {
+        SharedPreferences sharedPreferences = requireActivity().
+                getSharedPreferences(SETTINGS_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(IMPERIAL_SETTING, isChecked);
         editor.apply();

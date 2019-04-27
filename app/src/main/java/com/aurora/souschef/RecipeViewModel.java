@@ -89,8 +89,10 @@ public class RecipeViewModel extends AndroidViewModel {
     /**
      * Listener that listens to changes in the shared preferences. It is used to check when the user
      * changes the settings from metric to imperial or back.
+     *
+     * Must be a variable of this class to prevent garbage collection and stop listening
      */
-    SharedPreferences.OnSharedPreferenceChangeListener listener = null;
+    private SharedPreferences.OnSharedPreferenceChangeListener listener = null;
 
     /**
      * Constructor that initialises the pipeline and LiveData.
@@ -108,8 +110,10 @@ public class RecipeViewModel extends AndroidViewModel {
         mCurrentPeople.setValue(0);
         mProcessingFailed.setValue(false);
         Communicator.createAnnotationPipelines();
-        SharedPreferences sharedPreferences = application.getSharedPreferences(Tab1Overview.SETTINGS_PREFERENCES, Context.MODE_PRIVATE);
-        listener = (preferences, key) -> {
+        SharedPreferences sharedPreferences = application.getSharedPreferences(
+                        Tab1Overview.SETTINGS_PREFERENCES,
+                        Context.MODE_PRIVATE);
+        listener = (SharedPreferences preferences, String key) -> {
             if (key.equals(Tab1Overview.IMPERIAL_SETTING)) {
                 boolean imperial = preferences.getBoolean(key, false);
                 Recipe recipe = mRecipe.getValue();

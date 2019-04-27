@@ -6,6 +6,7 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -85,6 +86,11 @@ public class RecipeViewModel extends AndroidViewModel {
      */
     @SuppressLint("StaticFieldLeak")
     private Context mContext;
+    /**
+     * Listener that listens to changes in the shared preferences. It is used to check when the user
+     * changes the settings from metric to imperial or back.
+     */
+    SharedPreferences.OnSharedPreferenceChangeListener listener = null;
 
     /**
      * Constructor that initialises the pipeline and LiveData.
@@ -102,6 +108,19 @@ public class RecipeViewModel extends AndroidViewModel {
         mCurrentPeople.setValue(0);
         mProcessingFailed.setValue(false);
         Communicator.createAnnotationPipelines();
+        SharedPreferences sharedPreferences = application.getSharedPreferences(Tab1Overview.SETTINGS_PREFERENCES, Context.MODE_PRIVATE);
+        listener = (preferences, key) -> {
+            if (key.equals(Tab1Overview.IMPERIAL_SETTING)) {
+                boolean imperial = preferences.getBoolean(key, false);
+                Recipe recipe = mRecipe.getValue();
+                if (recipe != null) {
+                    recipe.convertUnit(!imperial);
+                    mRecipe.postValue(recipe);
+                }
+            }
+        };
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+
     }
 
     public LiveData<String> getFailureMessage() {

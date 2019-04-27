@@ -14,4 +14,5 @@
     <!-- String for timer -->
     <string name="timer_icon_description">This is the icon for a timer card</string>
     <string name="indicator_dot_description">Contains indicator dot to provide navigation through the steps.</string>
+    <string name="settings_use_imperial_units">Use imperial units</string>
 </resources>

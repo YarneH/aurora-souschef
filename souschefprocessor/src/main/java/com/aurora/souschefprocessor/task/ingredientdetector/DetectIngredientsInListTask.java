@@ -325,10 +325,11 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             // Calculate the position and add it to the map
             // beginPosition of the first element and endPosition of the last element
             int beginPosition = line.indexOf(nameList.get(0).word());
-            int endPosition = line.indexOf(nameList.get(nameList.size() -1 ).word()) + nameList.get(nameList.size() - 1).word().length();
+            int endPosition = line.indexOf(nameList.get(nameList.size() -1 ).word()) +
+                    nameList.get(nameList.size() - 1).word().length();
 
             line = makeNewLine(line, beginPosition, endPosition, name);
-            
+
             positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(beginPosition, endPosition));
 
         } else {

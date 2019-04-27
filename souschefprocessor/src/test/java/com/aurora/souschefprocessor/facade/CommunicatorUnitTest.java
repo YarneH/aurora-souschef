@@ -1,9 +1,5 @@
 package com.aurora.souschefprocessor.facade;
 
-import android.util.Log;
-
-import com.aurora.souschefprocessor.recipe.Recipe;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 

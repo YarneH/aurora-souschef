@@ -36,10 +36,6 @@ import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
  * described in the architecture.
  */
 public class Delegator {
-    /**
-     * A constant describing 1/2
-     */
-    private static final double HALF = 0.5;
 
     /**
      * An object that serves as a lock to ensure that the pipelines are only created once
@@ -51,7 +47,6 @@ public class Delegator {
      */
     private static final List<Annotator> sBasicAnnotators = new ArrayList<>();
 
-    //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
     /**
      * The number of basic annotator, for now 3 (tokenize, words to sentence and POS)
      */
@@ -81,7 +76,7 @@ public class Delegator {
     /**
      * A boolean that indicates whether the processing should be parallelized
      */
-    private boolean mParallelize;
+    private boolean mParallellize;
 
     /**
      * Creating the delegator
@@ -91,7 +86,7 @@ public class Delegator {
      */
     Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
         mIngredientClassifier = ingredientClassifier;
-        mParallelize = parallelize;
+        mParallellize = parallelize;
     }
 
     public static List<Annotator> getBasicAnnotators() {
@@ -151,7 +146,7 @@ public class Delegator {
     }
 
     /**
-     * Increments the {@link Communicator#mProgressAnnotationPipelines} value of the communicator
+     * calls the {@link Communicator#incrementProgressAnnotationPipelines()} function
      */
     public static void incrementProgressAnnotationPipelines() {
         Communicator.incrementProgressAnnotationPipelines();
@@ -170,7 +165,7 @@ public class Delegator {
          * switching
          */
         int numberOfCores = (int)
-                (Runtime.getRuntime().availableProcessors() * HALF);
+                (Runtime.getRuntime().availableProcessors() );
         // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue
@@ -237,7 +232,7 @@ public class Delegator {
         pipeline.add(new SplitStepsTask(recipeInProgress));
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));
         StepTaskNames[] taskNames = {StepTaskNames.INGR, StepTaskNames.TIMER};
-        if (mParallelize) {
+        if (mParallellize) {
             pipeline.add(new ParallelizeStepsTask(recipeInProgress, sThreadPoolExecutor, taskNames));
 
         } else {

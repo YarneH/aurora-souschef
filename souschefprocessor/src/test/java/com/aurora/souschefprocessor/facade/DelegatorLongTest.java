@@ -3,9 +3,7 @@ package com.aurora.souschefprocessor.facade;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.Recipe;
-import com.aurora.souschefprocessor.recipe.RecipeStep;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -13,7 +11,6 @@ import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -23,17 +20,16 @@ import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 
 public class DelegatorLongTest {
-    private static List<String> validRecipesFromPlainText;
-    private static List<String> invalidRecipesFromPlainText;
 
-    private static List<ExtractedText> validRecipesJSON;
-    private static List<ExtractedText> invalidRecipesJSON;
+
+    private static List<String> validRecipesJSON;
+    private static List<String> invalidRecipesJSON;
     private static Delegator delegator;
     private static CRFClassifier<CoreLabel> crfClassifier;
 
-    private static List<ExtractedText> initializeRecipesJSON() {
+    private static List<String> initializeRecipesJSON() {
         String filename = "src/test/java/com/aurora/souschefprocessor/facade/json-recipes.txt";
-        List<ExtractedText> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
         try {
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(
@@ -41,8 +37,9 @@ public class DelegatorLongTest {
 
             String line = reader.readLine();
 
+
             while (line != null) {
-                list.add(ExtractedText.fromJson(line));
+                list.add(line);
                 line = reader.readLine();
             }
         } catch (IOException io) {
@@ -55,7 +52,7 @@ public class DelegatorLongTest {
     public static void initialize() {
 
 
-        List<ExtractedText> jsonRecipes = initializeRecipesJSON();
+        List<String> jsonRecipes = initializeRecipesJSON();
         validRecipesJSON = jsonRecipes.subList(0, 6);
         invalidRecipesJSON = jsonRecipes.subList(6, jsonRecipes.size());
 
@@ -120,7 +117,8 @@ public class DelegatorLongTest {
         // Act
         try {
 
-            for (ExtractedText text : validRecipesJSON) {
+            for (String json : validRecipesJSON) {
+                ExtractedText text = ExtractedText.fromJson(json);
                 Recipe recipe = delegator.processText(text);
                 System.out.println(recipe + "\n--------------------------------");
 
@@ -144,7 +142,8 @@ public class DelegatorLongTest {
          * Check that no exceptions are thrown when these recipes are read in
          */
 
-        for (ExtractedText text : invalidRecipesJSON) {
+        for (String json : invalidRecipesJSON) {
+            ExtractedText text = ExtractedText.fromJson(json);
             // Arrange
             // initialize on false
             boolean thrown = false;
@@ -175,10 +174,11 @@ public class DelegatorLongTest {
         int average_non = 0;
 
         // Act
-        for (ExtractedText recipeText : validRecipesJSON) {
+        for (String json : validRecipesJSON) {
+            ExtractedText text = ExtractedText.fromJson(json);
             // do the processing and add the time this processing costed
             long start = System.currentTimeMillis();
-            delegator.processText(recipeText);
+            delegator.processText(text);
             long finish = System.currentTimeMillis();
             long time = finish - start;
             average_non += time;
@@ -202,7 +202,8 @@ public class DelegatorLongTest {
         delegator = new Delegator(crfClassifier, true);
 
         // Act
-        for (ExtractedText text : validRecipesJSON) {
+        for (String json : validRecipesJSON) {
+            ExtractedText text = ExtractedText.fromJson(json);
             long start = System.currentTimeMillis();
             Recipe recipe = delegator.processText(text);
             long finish = System.currentTimeMillis();

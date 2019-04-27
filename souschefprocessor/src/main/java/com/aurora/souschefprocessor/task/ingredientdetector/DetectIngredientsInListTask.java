@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,6 +54,11 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
      * see {@link #removeClutter(String)}
      */
     private static final String CLUTTER_DASH_REGEX = "[–-][0-9\\p{No}]+";
+
+    /**
+     * Some common structures that are clearly not ingredients but could have been classified as an ingredient
+     */
+    private static final String[] NON_INGREDIENTS = {"cooking temperature", "cooking time", "baking dish", "preparation time"};
 
     /**
      * The classifier to detect ingredients
@@ -190,6 +196,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
     /**
      * A private helper function for updating the line after the name component has been identiefied
+     *
      * @param line
      * @param beginPosition
      * @param endPosition
@@ -197,7 +204,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
      * @return
      */
     private static String makeNewLine(String line, int beginPosition, int endPosition, String name) {
-        if(beginPosition < 0 || endPosition < 0 || beginPosition >= line.length() || endPosition > line.length()){
+        if (beginPosition < 0 || endPosition < 0 || beginPosition >= line.length() || endPosition > line.length()) {
             // the positions are not in this line
             return line;
         }
@@ -242,8 +249,18 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         for (String ingredient : list) {
             if (ingredient != null && ingredient.length() > 0) {
-                ListIngredient listIngredient = (detectIngredient(standardizeLine(ingredient)));
-                returnList.add(listIngredient);
+                String standardizedLine = standardizeLine(ingredient);
+                if (doesNotContainANonIngredientStructure(standardizedLine)) {
+                    ListIngredient listIngredient = (detectIngredient(standardizedLine));
+                    if (listIngredient.getName().equals("")) {
+                        // If the name was not detected just set the original line without unit and quantity
+                        listIngredient.setName(listIngredient.getOriginalLineWithoutUnitAndQuantity());
+                    }
+                    returnList.add(listIngredient);
+                }else{
+                    // the line was a non ingredient and should be in the description
+                    mRecipeInProgress.setDescription(mRecipeInProgress.getDescription() + "\n" + standardizedLine);
+                }
             }
         }
 
@@ -251,13 +268,29 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
     }
 
     /**
+     * A helper function that checks if the line is not one of the {@link #NON_INGREDIENTS}
+     * @param line the line to check
+     * @return a boolean, true -> did not contain one of the {@link #NON_INGREDIENTS}
+     */
+    private boolean doesNotContainANonIngredientStructure(String line){
+        line = line.toLowerCase(Locale.ENGLISH);
+        for(String nonIngredientStructure : NON_INGREDIENTS){
+            if(line.contains(nonIngredientStructure)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Helper function for {@link #detectIngredient(String)}. Populates the map with the data of the classified list, the map will have keys that are the
      * labels of the classifiedlist, and as values every string that was classified in to one of the
      * classes.
+     *
      * @param classifiedList The data for populating the map
-     * @param map the map to populate
+     * @param map            the map to populate
      */
-    private void populateMapWithClassifiedData(List<List<CoreLabel>> classifiedList,Map<String, List<CoreLabel>> map ){
+    private void populateMapWithClassifiedData(List<List<CoreLabel>> classifiedList, Map<String, List<CoreLabel>> map) {
         for (List<CoreLabel> l : classifiedList) {
             for (CoreLabel cl : l) {
                 String classifiedClass = (cl.get(CoreAnnotations.AnswerAnnotation.class)).trim();
@@ -272,6 +305,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             }
         }
     }
+
     /**
      * Detects the ingredient described in the line and constructs an Ingredient object with this information
      *
@@ -359,7 +393,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             positions.put(Ingredient.PositionKeysForIngredients.QUANTITY, new Position(0, line.length()));
             quantity = 1.0;
         }
-        for(Ingredient.PositionKeysForIngredients key: positions.keySet()){
+        for (Ingredient.PositionKeysForIngredients key : positions.keySet()) {
             positions.get(key).trimToLengthOfString(line);
         }
 

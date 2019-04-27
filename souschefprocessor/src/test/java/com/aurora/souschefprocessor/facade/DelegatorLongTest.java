@@ -203,6 +203,7 @@ public class DelegatorLongTest {
 
         // Act
         for (ExtractedText text : validRecipesJSON) {
+
             long start = System.currentTimeMillis();
             Recipe recipe = delegator.processText(text);
             long finish = System.currentTimeMillis();

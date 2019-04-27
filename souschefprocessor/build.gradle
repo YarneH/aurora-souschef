@@ -60,6 +60,8 @@ dependencies {
         exclude group: 'org.apache.lucene'
     }
 
+    implementation group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.7.1'
+
 
 
 

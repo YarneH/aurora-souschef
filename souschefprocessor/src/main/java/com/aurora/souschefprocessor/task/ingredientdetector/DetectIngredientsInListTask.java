@@ -58,7 +58,8 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
     /**
      * Some common structures that are clearly not ingredients but could have been classified as an ingredient
      */
-    private static final String[] NON_INGREDIENTS = {"cooking temperature", "cooking time", "baking dish", "preparation time"};
+    private static final String[] NON_INGREDIENTS = {"cooking temperature", "cooking time", "baking dish",
+            "preparation time"};
 
     /**
      * The classifier to detect ingredients
@@ -217,6 +218,22 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
     }
 
     /**
+     * A helper function that checks if the line is not one of the {@link #NON_INGREDIENTS}
+     *
+     * @param line the line to check
+     * @return a boolean, true -> did not contain one of the {@link #NON_INGREDIENTS}
+     */
+    private static boolean doesNotContainANonIngredientStructure(String line) {
+        line = line.toLowerCase(Locale.ENGLISH);
+        for (String nonIngredientStructure : NON_INGREDIENTS) {
+            if (line.contains(nonIngredientStructure)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Detects the ListIngredients presented in the ingredientsString and sets the mIngredients field
      * in the recipe to this set of ListIngredients.
      */
@@ -252,12 +269,12 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
                 String standardizedLine = standardizeLine(ingredient);
                 if (doesNotContainANonIngredientStructure(standardizedLine)) {
                     ListIngredient listIngredient = (detectIngredient(standardizedLine));
-                    if (listIngredient.getName().equals("")) {
+                    if ("".equals(listIngredient.getName())) {
                         // If the name was not detected just set the original line without unit and quantity
                         listIngredient.setName(listIngredient.getOriginalLineWithoutUnitAndQuantity());
                     }
                     returnList.add(listIngredient);
-                }else{
+                } else {
                     // the line was a non ingredient and should be in the description
                     mRecipeInProgress.setDescription(mRecipeInProgress.getDescription() + "\n" + standardizedLine);
                 }
@@ -265,21 +282,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         }
 
         return returnList;
-    }
-
-    /**
-     * A helper function that checks if the line is not one of the {@link #NON_INGREDIENTS}
-     * @param line the line to check
-     * @return a boolean, true -> did not contain one of the {@link #NON_INGREDIENTS}
-     */
-    private boolean doesNotContainANonIngredientStructure(String line){
-        line = line.toLowerCase(Locale.ENGLISH);
-        for(String nonIngredientStructure : NON_INGREDIENTS){
-            if(line.contains(nonIngredientStructure)){
-                return false;
-            }
-        }
-        return true;
     }
 
     /**

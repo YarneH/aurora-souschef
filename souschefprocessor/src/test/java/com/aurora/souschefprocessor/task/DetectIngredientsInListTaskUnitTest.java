@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
-import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 
 import static org.junit.Assert.assertEquals;
@@ -451,8 +450,8 @@ public class DetectIngredientsInListTaskUnitTest {
 
 
     @Test
-    public void DetectIngredientsInListTask_doTask_getOriginalLineWithoutUnitAndQuantityCorrect(){
-        String ingredient =" 1 lb. linguine or other long pasta";
+    public void DetectIngredientsInListTask_doTask_getOriginalLineWithoutUnitAndQuantityCorrect() {
+        String ingredient = " 1 lb. linguine or other long pasta";
         RecipeInProgress rip = new RecipeInProgress(null);
         rip.setIngredientsString(ingredient);
 
@@ -469,17 +468,17 @@ public class DetectIngredientsInListTaskUnitTest {
     }
 
     @Test
-    public void DetectIngredientsInListTask_doTask_CorrectForIngredientsWithLargeInDescription(){
+    public void DetectIngredientsInListTask_doTask_CorrectForIngredientsWithLargeInDescription() {
         String ingredient = "2 large apples (or 3 medium)";
         RecipeInProgress rip = new RecipeInProgress(null);
         rip.setIngredientsString(ingredient);
-        ListIngredient target = new ListIngredient("large apples","", 2, "irrelevant", irrelevantPositions);
+        ListIngredient target = new ListIngredient("large apples", "", 2, "irrelevant", irrelevantPositions);
 
         DetectIngredientsInListTask task = new DetectIngredientsInListTask(rip, crfClassifier);
         task.doTask();
 
         ListIngredient detected = rip.getIngredients().get(0);
-        assertEquals("The detected ingredient is incorrect", target, detected );
+        assertEquals("The detected ingredient is incorrect", target, detected);
     }
 
 

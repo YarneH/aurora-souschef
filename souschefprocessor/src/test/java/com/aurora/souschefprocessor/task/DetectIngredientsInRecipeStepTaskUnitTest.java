@@ -3,9 +3,7 @@ package com.aurora.souschefprocessor.task;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
-import com.aurora.souschefprocessor.recipe.Recipe;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
-import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 
 import org.junit.After;
@@ -14,11 +12,8 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -244,7 +239,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         DetectIngredientsInStepTask task = new DetectIngredientsInStepTask(rip, 0);
         task.doTask();
 
-        assertEquals( "The unit is not as expected for step: " + step,"tablespoon", step.getIngredients().get(0).getUnit());
+        assertEquals("The unit is not as expected for step: " + step, "tablespoon", step.getIngredients().get(0).getUnit());
 
     }
 

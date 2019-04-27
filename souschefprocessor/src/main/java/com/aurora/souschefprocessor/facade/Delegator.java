@@ -164,8 +164,7 @@ public class Delegator {
          * the processing is faster if this only half of the available cores to limit context
          * switching
          */
-        int numberOfCores = (int)
-                (Runtime.getRuntime().availableProcessors() );
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
         // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue
@@ -216,7 +215,6 @@ public class Delegator {
 
         return recipeInProgress.convertToRecipe();
     }
-
 
 
     /**

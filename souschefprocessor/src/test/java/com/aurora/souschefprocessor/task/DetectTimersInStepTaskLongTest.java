@@ -15,11 +15,11 @@ public class DetectTimersInStepTaskLongTest {
     private static Position irrelevantPosition = new Position(0, 1);
 
     @BeforeClass
-    public static void initialize(){
+    public static void initialize() {
         DetectTimersInStepTask.initializeAnnotationPipeline();
     }
 
- private RecipeTimer getTimer(String label) {
+    private RecipeTimer getTimer(String label) {
         String[] amountAndUnit = label.split(" ");
         int multiplier = 1;
         switch (amountAndUnit[1]) {

@@ -8,7 +8,9 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class RecipeStepUnitTest {
 
@@ -87,6 +89,6 @@ public class RecipeStepUnitTest {
 
         // convert back
         step.convertUnit(false);
-        assertEquals("The description is not the same after converting twice",originalDescription, step.getDescription());
+        assertEquals("The description is not the same after converting twice", originalDescription, step.getDescription());
     }
 }

@@ -1,5 +1,8 @@
 package com.aurora.souschefprocessor.facade;
 
+
+import com.aurora.auroralib.ExtractedText;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -9,36 +12,69 @@ import java.util.List;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class CommunicatorUnitTest {
 
-    private static List<String> validRecipesFromPlainText;
-    private static List<String> invalidRecipesFromPlainText;
+    private static List<String> validRecipes;
+    private static List<String> invalidRecipes;
     private static Communicator communicator;
     private static CRFClassifier<CoreLabel> crfClassifier;
+
     @BeforeClass
     public static void initialize() {
         // load in the recipes
-        List<String> recipesFromPlainText = DelegatorLongTest.initializeRecipes();
+        List<String> jsonRecipes = DelegatorLongTest.initializeRecipesJSON();
         // split into valid and invalid
-        // the first 5 recipes are valid recipes
-        validRecipesFromPlainText = recipesFromPlainText.subList(0, 5);
-        invalidRecipesFromPlainText = recipesFromPlainText.subList(5, 8);
+        // the first 6 recipes are valid recipes
+        validRecipes = jsonRecipes.subList(0, 6);
+        invalidRecipes = jsonRecipes.subList(6, 8);
 
-        // load in the model
+        // load in the model and create the communicator
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
         try {
             crfClassifier = CRFClassifier.getClassifier(modelName);
-            // create the delegator object
-            // parallel is better when the number of cores are only half
-            // sequnetial performs faster
             communicator = new Communicator(crfClassifier);
         } catch (IOException | ClassNotFoundException e) {
         }
     }
 
+    /**
+     * Assert that invalid recipes will throw an error
+     */
     @Test
-    public void Communicator_process_ThrowsExceptionForInvalidRecipe(){
+    public void Communicator_process_ThrowsExceptionForInvalidRecipe() {
+        for (String json : invalidRecipes) {
+            boolean thrown = false;
+            try {
+                ExtractedText text = ExtractedText.fromJson(json);
+                communicator.process(text);
+            } catch (RecipeDetectionException e) {
+                thrown = true;
+            }
+            assertTrue("no exception was thrown for json " + json, thrown);
+        }
+    }
 
+    /**
+     * Assert that the processing for valid recipes does not throw any errors
+     */
+    @Test
+    public void Communicator_process_NoExceptionForValidRecipe() {
+        for (String json : validRecipes) {
+            boolean thrown = false;
+            String message = "";
+            try {
+                ExtractedText text = ExtractedText.fromJson(json);
+                communicator.process(text);
+            } catch (RecipeDetectionException e) {
+                thrown = true;
+                message = e.getMessage();
 
+            }
+            assertFalse("an exception was thrown for json " + json + "/n" +
+                    "Exception = " + message, thrown);
+        }
     }
 }

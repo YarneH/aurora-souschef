@@ -2,7 +2,6 @@ package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
-import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask;
 
 import org.junit.After;
@@ -13,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,7 +38,7 @@ public class SplitToMainSectionsTaskUnitTest {
         try {
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream(filename), "UTF8"));
+                            new FileInputStream(filename), StandardCharsets.UTF_8));
 
             String line = reader.readLine();
             while (line != null) {
@@ -379,7 +379,6 @@ public class SplitToMainSectionsTaskUnitTest {
         assertEquals("The ingredients are not as expected", bodyIngredients, rip.getIngredientsString());
         assertEquals("The steps are not as expected", steps, rip.getStepsString());
         assertEquals("The description is not as expected", title + "\n" + firstBody + "\n" + secondBody, rip.getDescription());
-
 
 
     }

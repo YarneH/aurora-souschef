@@ -77,6 +77,9 @@ public class RecipeViewModel extends AndroidViewModel {
      * Indicates whether or not this recipe is already being processed
      */
     private boolean isBeingProcessed = false;
+    /**
+     * Boolean
+     */
 
     /**
      * The context of the application.
@@ -89,7 +92,7 @@ public class RecipeViewModel extends AndroidViewModel {
     /**
      * Listener that listens to changes in the shared preferences. It is used to check when the user
      * changes the settings from metric to imperial or back.
-     *
+     * <p>
      * Must be a variable of this class to prevent garbage collection and stop listening
      */
     private SharedPreferences.OnSharedPreferenceChangeListener listener = null;
@@ -111,20 +114,25 @@ public class RecipeViewModel extends AndroidViewModel {
         mProcessingFailed.setValue(false);
         Communicator.createAnnotationPipelines();
         SharedPreferences sharedPreferences = application.getSharedPreferences(
-                        Tab1Overview.SETTINGS_PREFERENCES,
-                        Context.MODE_PRIVATE);
+                Tab1Overview.SETTINGS_PREFERENCES,
+                Context.MODE_PRIVATE);
         listener = (SharedPreferences preferences, String key) -> {
             if (key.equals(Tab1Overview.IMPERIAL_SETTING)) {
                 boolean imperial = preferences.getBoolean(key, false);
                 Recipe recipe = mRecipe.getValue();
-                if (recipe != null) {
-                    recipe.convertUnit(!imperial);
-                    mRecipe.postValue(recipe);
-                }
+                convertRecipeUnits(!imperial);
+                mRecipe.postValue(recipe);
             }
         };
         sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
 
+    }
+
+    private boolean isImperial() {
+        SharedPreferences sharedPreferences = getApplication().getSharedPreferences(
+                Tab1Overview.SETTINGS_PREFERENCES,
+                Context.MODE_PRIVATE);
+        return sharedPreferences.getBoolean(Tab1Overview.IMPERIAL_SETTING, false);
     }
 
     public LiveData<String> getFailureMessage() {
@@ -185,6 +193,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * @param recipe the recipe for data extraction.
      */
     public void initialiseWithRecipe(Recipe recipe) {
+        recipe.convertUnit(!isImperial());
         RecipeViewModel.this.mRecipe.setValue(recipe);
         RecipeViewModel.this.mCurrentPeople.setValue(recipe.getNumberOfPeople());
         mInitialised.setValue(true);

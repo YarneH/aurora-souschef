@@ -77,9 +77,6 @@ public class RecipeViewModel extends AndroidViewModel {
      * Indicates whether or not this recipe is already being processed
      */
     private boolean isBeingProcessed = false;
-    /**
-     * Boolean
-     */
 
     /**
      * The context of the application.
@@ -100,7 +97,7 @@ public class RecipeViewModel extends AndroidViewModel {
     /**
      * Constructor that initialises the pipeline and LiveData.
      *
-     * @param application
+     * @param application Needed for the initialisation and lifetime of a viewModel
      */
     public RecipeViewModel(@NonNull Application application) {
         super(application);
@@ -119,9 +116,7 @@ public class RecipeViewModel extends AndroidViewModel {
         listener = (SharedPreferences preferences, String key) -> {
             if (key.equals(Tab1Overview.IMPERIAL_SETTING)) {
                 boolean imperial = preferences.getBoolean(key, false);
-                Recipe recipe = mRecipe.getValue();
                 convertRecipeUnits(!imperial);
-                mRecipe.postValue(recipe);
             }
         };
         sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
@@ -253,6 +248,7 @@ public class RecipeViewModel extends AndroidViewModel {
         if (recipe != null) {
             recipe.convertUnit(toMetric);
         }
+        mRecipe.postValue(recipe);
     }
 
     public void setBeingProcessed(boolean isBeingProcessed) {

@@ -1,6 +1,5 @@
 package com.aurora.souschefprocessor.task;
 
-import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
@@ -25,7 +24,9 @@ import java.util.concurrent.TimeUnit;
 
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
-import edu.stanford.nlp.pipeline.Annotator;
+import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
+import edu.stanford.nlp.pipeline.TokenizerAnnotator;
+import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.INGR;
 import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.TIMER;
@@ -83,9 +84,11 @@ public class ParallelizableTaskLongTest {
         rip.setStepsInProgress(recipeSteps);
         // annotate the steps
         AnnotationPipeline pipeline = new AnnotationPipeline();
-        for (Annotator annotator : Delegator.getBasicAnnotators()) {
-            pipeline.addAnnotator(annotator);
-        }
+
+        pipeline.addAnnotator(new TokenizerAnnotator());
+        pipeline.addAnnotator(new WordsToSentencesAnnotator());
+        pipeline.addAnnotator(new POSTaggerAnnotator());
+
 
         for (RecipeStepInProgress step : recipeSteps) {
             Annotation a = new Annotation(step.getDescription());

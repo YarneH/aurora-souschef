@@ -32,7 +32,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * These steps are hard-coded-counted. This means that when the implementation
      * of the Souschef-processor takes longer or shorter, this value must be changed.
      */
-    private static final int DETECTION_STEPS = 5;
+    private static final int DETECTION_STEPS = 3;
     /**
      * The maximum amount of people you can cook for.
      */

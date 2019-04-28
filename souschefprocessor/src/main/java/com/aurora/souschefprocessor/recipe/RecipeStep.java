@@ -48,6 +48,7 @@ public class RecipeStep {
 
     /**
      * A private constructor for converting one of the subclasses
+     *
      * @param mIngredients
      * @param mRecipeTimers
      * @param mDescription
@@ -64,14 +65,6 @@ public class RecipeStep {
     }
 
     /**
-     * A constructor for converting a {@link com.aurora.souschefprocessor.task.RecipeStepInProgress}
-     * to a RecipeStep
-     */
-    protected RecipeStep convertToRecipeStep() {
-        return new RecipeStep(mIngredients, mRecipeTimers, mDescription, mIngredientDetectionDone, mTimerDetectionDone);
-    }
-
-    /**
      * Construct a step using the description that can be used to detect ingredients and timers
      *
      * @param description the description of this step
@@ -82,6 +75,14 @@ public class RecipeStep {
         this.mRecipeTimers = new ArrayList<>();
         this.mIngredientDetectionDone = false;
         this.mTimerDetectionDone = false;
+    }
+
+    /**
+     * A constructor for converting a {@link com.aurora.souschefprocessor.task.RecipeStepInProgress}
+     * to a RecipeStep
+     */
+    protected RecipeStep convertToRecipeStep() {
+        return new RecipeStep(mIngredients, mRecipeTimers, mDescription, mIngredientDetectionDone, mTimerDetectionDone);
     }
 
     public synchronized List<Ingredient> getIngredients() {

@@ -89,9 +89,6 @@ public class Delegator {
         mParallelize = parallelize;
     }
 
-    public static List<Annotator> getBasicAnnotators() {
-        return createBasicAnnotators();
-    }
 
     /**
      * Creates the annotation pipelines for the {@link DetectIngredientsInStepTask} and
@@ -109,41 +106,12 @@ public class Delegator {
             LOCK.notifyAll();
         }
         Thread t = new Thread(() -> {
-            createBasicAnnotators();
             DetectTimersInStepTask.initializeAnnotationPipeline();
-            DetectIngredientsInStepTask.initializeAnnotationPipeline();
         });
         t.start();
     }
 
-    /**
-     * Creates the basicannotators (tokenizer, words to sentence and POS), ensures that is only created
-     * once and notifies other threads if the creation is finished.
-     *
-     * @return the list of sBasicAnnotators
-     */
-    private static List<Annotator> createBasicAnnotators() {
 
-        synchronized (sBasicAnnotators) {
-
-            if (sBasicAnnotators.isEmpty()) {
-
-                sBasicAnnotators.add(new TokenizerAnnotator(false, "en"));
-                incrementProgressAnnotationPipelines(); //1
-            }
-            if (sBasicAnnotators.size() == 1) {
-                sBasicAnnotators.add(new WordsToSentencesAnnotator(false));
-                incrementProgressAnnotationPipelines(); //2
-            }
-            if (sBasicAnnotators.size() < BASIC_ANNOTATOR_SIZE) {
-                sBasicAnnotators.add(new POSTaggerAnnotator(false));
-                incrementProgressAnnotationPipelines(); //3
-            }
-            sBasicAnnotators.notifyAll();
-        }
-
-        return sBasicAnnotators;
-    }
 
     /**
      * calls the {@link Communicator#incrementProgressAnnotationPipelines()} function

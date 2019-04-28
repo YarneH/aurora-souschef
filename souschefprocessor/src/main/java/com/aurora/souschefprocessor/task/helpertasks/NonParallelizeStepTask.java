@@ -1,7 +1,6 @@
 package com.aurora.souschefprocessor.task.helpertasks;
 
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
-import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschefprocessor.task.RecipeStepInProgress;

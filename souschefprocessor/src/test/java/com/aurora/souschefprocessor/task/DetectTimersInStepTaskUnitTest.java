@@ -1,6 +1,5 @@
 package com.aurora.souschefprocessor.task;
 
-import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
@@ -16,7 +15,9 @@ import java.util.List;
 
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
-import edu.stanford.nlp.pipeline.Annotator;
+import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
+import edu.stanford.nlp.pipeline.TokenizerAnnotator;
+import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 import static org.junit.Assert.assertEquals;
 
@@ -52,9 +53,10 @@ public class DetectTimersInStepTaskUnitTest {
         }
 
         AnnotationPipeline pipeline = new AnnotationPipeline();
-        for (Annotator annotator : Delegator.getBasicAnnotators()) {
-            pipeline.addAnnotator(annotator);
-        }
+        pipeline.addAnnotator(new TokenizerAnnotator());
+        pipeline.addAnnotator(new WordsToSentencesAnnotator());
+        pipeline.addAnnotator(new POSTaggerAnnotator());
+
 
         for (RecipeStepInProgress step : recipeSteps) {
             Annotation a = new Annotation(step.getDescription());

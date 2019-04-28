@@ -28,14 +28,14 @@ public class SplitStepsTask extends AbstractProcessingTask {
         List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
         for (CoreLabel token : tokens) {
             // only consider alpha numeric tokens
-            if (token.word().matches("[A-Za-z0-9]+")) {
-                if (!description.contains(token.word())) {
+            if (token.word().matches("[A-Za-z0-9]+") &&
+                    !description.contains(token.word())) {
                     // this is not the wanted sentence skip to the next sentence
                     return false;
                 }
             }
 
-        }
+
         return true;
     }
 

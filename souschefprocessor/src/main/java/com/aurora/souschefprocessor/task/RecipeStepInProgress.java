@@ -33,24 +33,25 @@ public class RecipeStepInProgress extends RecipeStep {
 
     }
 
-    public void setSentenceAnnotation(List<CoreMap> annotations) {
-        this.sentenceAnnotation = annotations;
-    }
-
-    public void setBeginPositionOffset(int beginPositionOffset) {
-        this.beginPositionOffset = beginPositionOffset;
-    }
-
     public List<CoreMap> getSentenceAnnotation() {
         return sentenceAnnotation;
+    }
+
+    public void setSentenceAnnotation(List<CoreMap> annotations) {
+        this.sentenceAnnotation = annotations;
     }
 
     public int getBeginPositionOffset() {
         return beginPositionOffset;
     }
 
+    public void setBeginPositionOffset(int beginPositionOffset) {
+        this.beginPositionOffset = beginPositionOffset;
+    }
+
     /**
      * Converts this to a {@link RecipeStep}
+     *
      * @return the
      */
     public RecipeStep convertToRecipeStep() {
@@ -61,17 +62,17 @@ public class RecipeStepInProgress extends RecipeStep {
     /**
      * Trim the step, remove new lines and update positions
      */
-    private void cleanUp(){
+    private void cleanUp() {
         mDescription = mDescription.replace("\n", " ");
         // trim the description and update the positions
         String trimmed = mDescription.trim();
         int offset = mDescription.indexOf(trimmed);
 
-        for(RecipeTimer timer: mRecipeTimers){
+        for (RecipeTimer timer : mRecipeTimers) {
             timer.getPosition().addOffset(offset);
         }
 
-        for(Ingredient ingredient: mIngredients){
+        for (Ingredient ingredient : mIngredients) {
             ingredient.addOffsetToPositions(offset);
         }
     }

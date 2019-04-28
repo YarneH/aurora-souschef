@@ -21,7 +21,6 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
-import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.time.SUTime;
 import edu.stanford.nlp.time.TimeAnnotations;
 import edu.stanford.nlp.time.TimeAnnotator;
@@ -268,13 +267,10 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         props.setProperty("sutime.binders", "0");
 
         AnnotationPipeline pipeline = new AnnotationPipeline();
-        /*for (Annotator a : Delegator.getBasicAnnotators()) {
-            pipeline.addAnnotator(a);
-        }*/
 
 
         pipeline.addAnnotator(new TimeAnnotator("sutime", props));
-        Delegator.incrementProgressAnnotationPipelines(); //4
+        Delegator.incrementProgressAnnotationPipelines(); //3
         return pipeline;
     }
 
@@ -465,13 +461,9 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     }
 
     /**
-     * Detects the timer in a mRecipeStep
-     *
-     * @param recipeStep The mRecipeStep in which to detect a timer
-     * @return A list of timers detected in the mRecipeStep
+     * Waits untill the statid {@link #sAnnotationPipeline} is created
      */
-    private List<RecipeTimer> detectTimer(RecipeStepInProgress recipeStep) {
-        List<RecipeTimer> listOfTimers = new ArrayList<>();
+    private void waitForCreationOfPipeline(){
         while (sAnnotationPipeline == null) {
             try {
                 // wait unitill the pipeline is created
@@ -483,6 +475,18 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    /**
+     * Detects the timer in a mRecipeStep
+     *
+     * @param recipeStep The mRecipeStep in which to detect a timer
+     * @return A list of timers detected in the mRecipeStep
+     */
+    private List<RecipeTimer> detectTimer(RecipeStepInProgress recipeStep) {
+        List<RecipeTimer> listOfTimers = new ArrayList<>();
+
+        waitForCreationOfPipeline();
 
         Annotation recipeStepAnnotated = new Annotation(recipeStep.getSentenceAnnotation());
         sAnnotationPipeline.annotate(recipeStepAnnotated);
@@ -528,10 +532,11 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
             // check if the previous token is of structure number-number
             int firstIndex = allTokens.indexOf(firstTimexToken);
-            if(firstIndex > 0){
+            if (firstIndex > 0) {
                 CoreLabel previousToken = allTokens.get(firstIndex - 1);
                 String previous = previousToken.word();
-                Position positionWithDashStructure = new Position(previousToken.beginPosition(), lastTimexToken.endPosition());
+                Position positionWithDashStructure = new Position(previousToken.beginPosition(),
+                        lastTimexToken.endPosition());
                 added = addWithDashStructure(listOfTimers, cm, previous, positionWithDashStructure);
 
             }
@@ -540,8 +545,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                 // check if the next token is "to" and get the position of the token after this cm
                 toFound = nextTokenIsTo(allTokens, lastTimexToken);
                 toIndex = allTokens.indexOf(lastTimexToken) + 1;
-
-
 
 
                 // The position of the detected timer = beginIndex of the first token, endIndex of the last token
@@ -567,13 +570,14 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         return listOfTimers;
     }
 
-    private boolean addWithDashStructure(List<RecipeTimer> timers, CoreMap timeAnnotations, String previous, Position position){
-        if(previous.matches("[0-9]+[−–—―‒-][0-9]+")){
-            String [] bounds = previous.split("[−–—―‒-]");
+    private boolean addWithDashStructure(List<RecipeTimer> timers, CoreMap timeAnnotations, String previous,
+                                         Position position) {
+        if (previous.matches("[0-9]+[−–—―‒-][0-9]+")) {
+            String[] bounds = previous.split("[−–—―‒-]");
             int lower = Integer.parseInt(bounds[0]);
             int upper = Integer.parseInt(bounds[1]);
             SUTime.Temporal temporal = timeAnnotations.get(TimeExpression.Annotation.class).getTemporal();
-            if(! (temporal.getDuration() instanceof SUTime.DurationRange)){
+            if (!(temporal.getDuration() instanceof SUTime.DurationRange)) {
                 int seconds = (int) temporal
                         .getDuration().getJodaTimeDuration().getStandardSeconds();
                 lower *= seconds;
@@ -695,8 +699,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * timers of this step are set to the detected timers.
      */
     public void doTask() {
-        // trim and add spaces to the description
-        //mRecipeStep.setDescription(addSpaces(mRecipeStep.getDescription().trim()));
         List<RecipeTimer> recipeTimers = detectTimer(mRecipeStep);
         recipeTimers = mergeTimers(recipeTimers);
         mRecipeStep.setRecipeTimers(recipeTimers);

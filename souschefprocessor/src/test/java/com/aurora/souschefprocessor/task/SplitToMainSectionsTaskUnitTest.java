@@ -242,7 +242,7 @@ public class SplitToMainSectionsTaskUnitTest {
 
     }
 
-    
+
 
     /**
      * This test asserts that even if the ingredients are listed in different sections of the Extracted text, they are still all recognized and added

@@ -1,9 +1,7 @@
 package com.aurora.souschefprocessor.task.ingredientdetector;
 
 import android.support.v4.util.Pair;
-import android.util.Log;
 
-import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
@@ -23,8 +21,6 @@ import java.util.Map;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.AnnotationPipeline;
-import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.process.Morphology;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -83,11 +79,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private static final double DEFAULT_QUANTITY = 1.0;
 
-    /**
-     * A lock to ensure the only one thread accesses the {@link #sAnnotationPipeline} at the same time
-     * and that the pipeline is only created once
-     */
-    private static final Object LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE = new Object();
 
     /**
      * An array of strings that should be ignored when looking for matches between the ingredientlist and
@@ -102,15 +93,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private static final String[] TAGS_TO_IGNORE = {"TO", "IN", "JJ", "JJR", "JJS"};
 
-    /**
-     * A boolean that indicates if the pipelines have been created (or the creation has started)
-     */
-    private static boolean sStartedCreatingPipeline = false;
-
-    /**
-     * The pipeline for annotating the sentences
-     */
-    private static AnnotationPipeline sAnnotationPipeline;
 
     /**
      * A static map that matches the {@link #FRACTION_HALF} and {@link #FRACTION_QUARTER} strings to
@@ -119,11 +101,10 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private static Map<String, Double> sFractionMultipliers = new HashMap<>();
 
 
-    /* populate the map and try to create the pipeline */
+    /* populate the map */
     static {
         sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);
         sFractionMultipliers.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
-        initializeAnnotationPipeline();
     }
 
     /**
@@ -150,43 +131,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         this.mRecipeStep = recipeInProgress.getStepsInProgress().get(stepIndex);
     }
 
-    /**
-     * Initializes the AnnotationPipeline for ingredients, should be called before using the first detector.
-     * It also checks if no other thread has already started to create the pipeline
-     */
-    public static void initializeAnnotationPipeline() {
-
-        synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
-            if (sStartedCreatingPipeline) {
-                // creating already started or finished  so do not start again
-                return;
-            }
-            // ensure no other thread can initialize
-            sStartedCreatingPipeline = true;
-        }
-        sAnnotationPipeline = createIngredientAnnotationPipeline();
-        synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
-            // get the lock again to notify that the pipeline has been created
-            LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.notifyAll();
-        }
-
-
-    }
-
-    /**
-     * Creates custom annotation pipeline for detecting ingredients in a recipe step
-     *
-     * @return Annotation pipeline
-     */
-    private static AnnotationPipeline createIngredientAnnotationPipeline() {
-        AnnotationPipeline pipeline = new AnnotationPipeline();
-
-        for (Annotator a : Delegator.getBasicAnnotators()) {
-            pipeline.addAnnotator(a);
-        }
-
-        return pipeline;
-    }
 
     /**
      * Checks if a string should be ignored (if it is contained in the {@link #STRINGS_TO_IGNORE}
@@ -305,24 +249,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
     }
 
-    /**
-     * Waits  until the sAnnotationPipeline is created
-     */
-    private void waitForPipeline() {
-        initializeAnnotationPipeline();
-        // wait as long as the pipeline object is null
-        while (sAnnotationPipeline == null) {
-            try {
-                synchronized (LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE) {
-                    LOCK_DETECT_INGREDIENTS_IN_STEP_PIPELINE.wait();
-                }
-
-            } catch (InterruptedException e) {
-                Log.d("Interrupted", "detecttimer", e);
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
 
     /**
      * Detects the set of mIngredients in a recipeStep. It also checks if this corresponds with the mIngredients of the
@@ -332,7 +258,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @param ingredientListRecipe The set of mIngredients contained in the recipe of which the recipeStep is a part
      * @return A set of Ingredient objects that represent the mIngredients contained in the recipeStep
      */
-    private List<Ingredient> detectIngredients(RecipeStepInProgress recipeStep, List<ListIngredient> ingredientListRecipe) {
+    private List<Ingredient> detectIngredients(RecipeStepInProgress recipeStep,
+                                               List<ListIngredient> ingredientListRecipe) {
         List<Ingredient> set = new ArrayList<>();
 
 
@@ -373,7 +300,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                         foundIngredients.add(listIngredient);
                         set.add(getStepIngredient(tokenIndex, nameParts, listIngredient, tokens));
                         foundName = true;
-
 
 
                         // Check if the mentioned ingredient is being described by multiple words in the step
@@ -472,7 +398,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private Ingredient getStepIngredient(int nameIndex, List<String> nameParts,
                                          Ingredient listIngredient, List<CoreLabel> tokens) {
-        int originalSize = tokens.size();
+
         int beginPosOffset = mRecipeStep.getBeginPositionOffset();
         Ingredient stepIngredient = defaultStepIngredient();
         stepIngredient.setName(listIngredient.getName());
@@ -497,11 +423,9 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         int precedingLength = unitLength + PREPOSITION_LENGTH + FRACTIONS_LENGTH + MAX_QUANTITY_LENGTH;
         List<CoreLabel> precedingTokens = new ArrayList<>();
 
-        for(CoreLabel token:tokens.subList(Math.max(0, nameIndex - (precedingLength)), nameIndex) ){
+        for (CoreLabel token : tokens.subList(Math.max(0, nameIndex - (precedingLength)), nameIndex)) {
             precedingTokens.add(token);
         }
-                ;
-
 
         if (!precedingTokens.isEmpty()) {
             String foundUnit = findUnit(precedingTokens, listIngredient.getUnit());
@@ -707,9 +631,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             if (stopSearchingForUnit(precedingTokens.get(i))) {
                 i = 0;
 
-            }
-
-            else if (doNotIgnoreToken(precedingTokens.get(i)) &&
+            } else if (doNotIgnoreToken(precedingTokens.get(i)) &&
                     unitPartsWithSingulars.contains(precedingTokens.get(i).originalText())) {
 
                 unitTokens.add(precedingTokens.get(i));
@@ -727,13 +649,13 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
         if (!unitTokens.isEmpty()) {
             StringBuilder bld = new StringBuilder();
-            for(CoreLabel unitLabel: unitTokens){
+            for (CoreLabel unitLabel : unitTokens) {
                 bld.append(unitLabel.word());
                 bld.append(" ");
             }
             // remove the last space
             bld.deleteCharAt(bld.length() - 1);
-            return  bld.toString();
+            return bld.toString();
         }
 
         return "";

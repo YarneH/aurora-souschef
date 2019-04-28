@@ -72,8 +72,6 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
             }
         }
 
-        // Perform the detection of ingredients in steps
-        DetectIngredientsInStepTask.initializeAnnotationPipeline();
         for (RecipeInProgress r: rips) {
             for (RecipeStepInProgress s: r.getStepsInProgress()) {
                 // Execute the detection for each recipe step in this RecipeInProgress

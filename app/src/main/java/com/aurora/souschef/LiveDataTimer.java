@@ -108,7 +108,7 @@ public class LiveDataTimer {
      */
     public void toggleTimer() {
 
-        if (getIsAlarming().getValue()) {
+        if (mAlarming.getValue()) {
             mAlarming.setValue(false);
             return;
         }
@@ -194,22 +194,42 @@ public class LiveDataTimer {
         return mRunning && (mRecipeTimer.getLowerBound() != mRecipeTimer.getUpperBound());
     }
 
+    /**
+     * Get the upper bound on the timer.
+     * @return upper bound in seconds
+     */
     public int getUpperBound() {
         return mRecipeTimer.getUpperBound();
     }
 
+    /**
+     * Get the lower bound on the timer.
+     * @return lower bound in seconds
+     */
     public int getLowerBound() {
         return mRecipeTimer.getLowerBound();
     }
 
+    /**
+     * LiveData with a boolean whether or not the timer is finished.
+     * @return LiveData with boolean
+     */
     public LiveData<Boolean> getIsFinished() {
         return mFinished;
     }
 
-    public LiveData<Boolean> getIsAlarming() {
+    /**
+     * LiveData with alarming state.
+     * @return Livedata with boolean whether or not alarming
+     */
+    public LiveData<Boolean> isAlarming() {
         return mAlarming;
     }
 
+    /**
+     * Get the timer state as Live data.
+     * @return LiveData with the state-ID of the timer
+     */
     public LiveData<Integer> getTimerState() {
         return mTimerState;
     }

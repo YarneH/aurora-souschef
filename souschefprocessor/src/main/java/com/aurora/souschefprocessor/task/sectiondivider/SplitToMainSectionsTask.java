@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.task.sectiondivider;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
@@ -140,6 +141,10 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         }
         return section;
     }
+
+
+
+
 
     /**
      * Checks if the line doe not contain any of the {@link #NOT_INGREDIENTS_WORDS}
@@ -513,6 +518,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return the annotated text
      */
     private Annotation createAnnotatedText(Section section) {
+        if(section.getBodyAnnotation() == null){
+            throw new RecipeDetectionException("At least one section was not annotated for this text. Please contact Aurora to resolve this");
+        }
         return section.getBodyAnnotation();
     }
 

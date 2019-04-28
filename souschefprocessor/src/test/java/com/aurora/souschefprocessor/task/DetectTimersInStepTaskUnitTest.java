@@ -154,8 +154,10 @@ public class DetectTimersInStepTaskUnitTest {
         assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
         //assert correct detection
         RecipeTimer timer = new RecipeTimer((int) (60 * 60 * 1.5), irrelevantPosition);
+
         System.out.println(recipeSteps.get(stepIndex).getRecipeTimers().get(0));
         assert (timer.equals(recipeSteps.get(stepIndex).getRecipeTimers().get(0)));
+
     }
 
     @Test

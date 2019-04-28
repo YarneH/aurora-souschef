@@ -144,6 +144,9 @@ public class SplitStepsTask extends AbstractProcessingTask {
         // the annotation of the section of the string
         Annotation annotation = findAnnotationForStep(step.getDescription());
 
+        if(annotation == null){
+            throw new RecipeDetectionException("At least one section is not annotated. Please contact Aurora to resolve this problem");
+        }
         // the sentences in this annotation
         List<CoreMap> sentencesInAnnotation = annotation.get(CoreAnnotations.SentencesAnnotation.class);
 

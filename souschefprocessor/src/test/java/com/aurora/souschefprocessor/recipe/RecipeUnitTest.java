@@ -57,7 +57,7 @@ public class RecipeUnitTest {
 
         // Act
         String json = recipe.toJSON();
-        Recipe recipeAfterConversion =  Recipe.fromJson(json, Recipe.class);
+        Recipe recipeAfterConversion = Recipe.fromJson(json, Recipe.class);
 
         // Assert
         assert (recipe.equals(recipeAfterConversion));

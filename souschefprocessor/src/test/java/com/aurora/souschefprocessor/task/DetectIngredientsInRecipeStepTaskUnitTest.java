@@ -23,8 +23,10 @@ import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 
 public class DetectIngredientsInRecipeStepTaskUnitTest {
 
@@ -158,6 +160,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         assert (recipeSteps.get(0).getIngredients().size() == 1);
         assert (recipeSteps.get(1).getIngredients().size() == 2);
         //TODO other steps
+
     }
 
     @Test

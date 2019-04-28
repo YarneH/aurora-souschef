@@ -1,31 +1,21 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.auroralib.Section;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.util.CoreMap;
 
 import static org.junit.Assert.assertEquals;
 
@@ -46,7 +36,7 @@ public class SplitToMainSectionsTaskUnitTest {
         try {
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream(filename), "UTF8"));
+                            new FileInputStream(filename), StandardCharsets.UTF_8));
 
             String line = reader.readLine();
             while (line != null) {
@@ -252,13 +242,17 @@ public class SplitToMainSectionsTaskUnitTest {
 
     }
 
+    
 
-
+    /**
+     * This test asserts that even if the ingredients are listed in different sections of the Extracted text, they are still all recognized and added
+     * to the ingredientssection
+     */
     @Test
     public void SplitToMainSectionsTask_doTask_NotAllIngredientsInSameSection() {
         // Arrange
 
-       String json = "{\n" +
+        String json = "{\n" +
                 "   \"mFilename\": \"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3DGDPoHpBnY6%2BmsRjpbyFZ64nchB90csqZM1KpNqa1adcFQ1v9eXj7Snb0Fgo%3D\",\n" +
                 "   \"mSections\": [\n" +
                 "       {\n" +
@@ -368,8 +362,4 @@ public class SplitToMainSectionsTaskUnitTest {
         assertEquals("steps", steps, rip.getStepsString());
 
     }
-    
-
-
-
 }

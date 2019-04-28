@@ -59,6 +59,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
                 "NUMBER\t4\n" +
                 "NUMBER\t8\n" +
                 "NUMBER\t4\n" + "NUMBER\t1\n"+ "NUMBER\t2525\n" + "NO_NUMBER\n"+ "NO_NUMBER\n" ).split("\n");
+
     }
 
     private static List<ExtractedText> initializeDataSet() {
@@ -102,7 +103,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
          * of people are mentioned is ommitted.
          */
         // arrange
-       String originalTextNoNumber = originalText.substring(0, originalText.indexOf('\n') + 1);
+        String originalTextNoNumber = originalText.substring(0, originalText.indexOf('\n') + 1);
         RecipeInProgress recipeNoNumber = new RecipeInProgress(null);
         recipeNoNumber.setDescription(originalTextNoNumber);
         DetectNumberOfPeopleTask detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipeNoNumber);

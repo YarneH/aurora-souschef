@@ -20,7 +20,9 @@ import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 import edu.stanford.nlp.util.CoreMap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
 
 public class RecipeStepUnitTest {
 
@@ -111,6 +113,6 @@ public class RecipeStepUnitTest {
 
         // convert back
         step.convertUnit(false);
-        assertEquals("The description is not the same after converting twice",originalDescription, step.getDescription());
+        assertEquals("The description is not the same after converting twice", originalDescription, step.getDescription());
     }
 }

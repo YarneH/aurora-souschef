@@ -242,6 +242,7 @@ public class DelegatorLongTest {
     public void test_with_new_auroralib() {
         String contents = null;
         try {
+
             contents = new String(Files.readAllBytes(Paths.get("input.txt")));
         } catch (IOException e) {
             e.printStackTrace();

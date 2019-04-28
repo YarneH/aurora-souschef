@@ -59,10 +59,7 @@ dependencies {
         exclude group: 'com.sun.xml.bind'
         exclude group: 'org.apache.lucene'
     }
-    implementation('edu.stanford.nlp:stanford-corenlp:3.9.2:models') {
-        exclude group: 'com.sun.xml.bind'
-        exclude group: 'org.apache.lucene'
-    }
+    implementation files('libs/stanford-corenlp-3.9.2-models.jar-small')
 
     implementation group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.7.1'
 

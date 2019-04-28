@@ -519,7 +519,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private Annotation createAnnotatedText(Section section) {
         if(section.getBodyAnnotation() == null){
-            throw new RecipeDetectionException("At least one section was not annotated for this text. Please contact Aurora to resolve this");
+            throw new RecipeDetectionException("At least one section was not annotated for this text. " +
+                    "Please contact Aurora to resolve this");
         }
         return section.getBodyAnnotation();
     }

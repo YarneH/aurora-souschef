@@ -1,16 +1,9 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.auroralib.Section;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.util.CoreMap;
 
 /**
  * A subclass of Recipe, representing a Recipe Object that is being constructed. It has three
@@ -40,16 +33,19 @@ public class RecipeInProgress extends Recipe {
 
     private List<RecipeStepInProgress> mStepsInProgress;
 
-    public List<RecipeStepInProgress> getStepsInProgress() {
-        return mStepsInProgress;
-    }
-
     public RecipeInProgress(ExtractedText originalText) {
         super();
         this.mExtractedText = originalText;
 
     }
 
+    public List<RecipeStepInProgress> getStepsInProgress() {
+        return mStepsInProgress;
+    }
+
+    public void setStepsInProgress(List<RecipeStepInProgress> mStepsInProgress) {
+        this.mStepsInProgress = mStepsInProgress;
+    }
 
     @Override
     public String toString() {
@@ -59,7 +55,6 @@ public class RecipeInProgress extends Recipe {
                 ", DESCRIPTION='" + mDescription + "\n" +
                 '}';
     }
-
 
     public synchronized String getStepsString() {
         return mStepsString;
@@ -75,11 +70,6 @@ public class RecipeInProgress extends Recipe {
 
     public synchronized void setIngredientsString(String ingredientsString) {
         this.mIngredientsString = ingredientsString;
-    }
-
-
-    public void setStepsInProgress(List<RecipeStepInProgress> mStepsInProgress) {
-        this.mStepsInProgress = mStepsInProgress;
     }
 
     /**
@@ -99,9 +89,6 @@ public class RecipeInProgress extends Recipe {
     public ExtractedText getExtractedText() {
         return mExtractedText;
     }
-
-
-
 
 
 }

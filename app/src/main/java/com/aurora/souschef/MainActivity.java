@@ -72,8 +72,10 @@ public class MainActivity extends AppCompatActivity {
      *
      * @return a recipe json
      */
-    
+
     private  String getText() {
+        // should refer to input.txt file, crashes the app now because too large string, wait for
+        // Jeroen's update
         return getString(R.string.defaultRecipe);}
 
     /**

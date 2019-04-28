@@ -92,7 +92,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * <p>
      * Must be a variable of this class to prevent garbage collection and stop listening
      */
-    private SharedPreferences.OnSharedPreferenceChangeListener listener = null;
+    private SharedPreferences.OnSharedPreferenceChangeListener mListener = null;
 
     /**
      * Constructor that initialises the pipeline and LiveData.
@@ -113,13 +113,13 @@ public class RecipeViewModel extends AndroidViewModel {
         SharedPreferences sharedPreferences = application.getSharedPreferences(
                 Tab1Overview.SETTINGS_PREFERENCES,
                 Context.MODE_PRIVATE);
-        listener = (SharedPreferences preferences, String key) -> {
+        mListener = (SharedPreferences preferences, String key) -> {
             if (key.equals(Tab1Overview.IMPERIAL_SETTING)) {
                 boolean imperial = preferences.getBoolean(key, false);
                 convertRecipeUnits(!imperial);
             }
         };
-        sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(mListener);
 
     }
 

@@ -105,7 +105,7 @@ public class UITimer {
         }
         mRingtone = RingtoneManager.getRingtone(mTimerCard.getContext(), alert);
 
-        this.mLiveDataTimer.getIsAlarming().observe(owner, this::setAlarm);
+        this.mLiveDataTimer.isAlarming().observe(owner, this::setAlarm);
 
     }
 

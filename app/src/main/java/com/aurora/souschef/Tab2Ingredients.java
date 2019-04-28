@@ -55,7 +55,7 @@ public class Tab2Ingredients extends Fragment {
         ImageButton minusButton = rootView.findViewById(R.id.btn_minus);
         minusButton.setOnClickListener(view -> mRecipe.decrementPeople());
 
-        mRecipe = ViewModelProviders.of(getActivity()).get(RecipeViewModel.class);
+        mRecipe = ViewModelProviders.of(requireActivity()).get(RecipeViewModel.class);
         mRecipe.getRecipe().observe(this, (Recipe recipe) -> {
             if (recipe == null) {
                 return;

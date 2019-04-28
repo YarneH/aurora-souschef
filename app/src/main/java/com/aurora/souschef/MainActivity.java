@@ -141,12 +141,12 @@ public class MainActivity extends AppCompatActivity {
          * Each if statement calls initialise (with different paraments)
          * on the recipe data object.
          */
-        Intent intentThatStartedThisActivity = getIntent();
         if (mRecipe.isBeingProcessed()) {
             return;
         }
         mRecipe.setBeingProcessed(true);
         Log.d(TAG, "setup");
+        Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
             /*BasicPluginObject basicPluginObject = null
              * TODO remove this if statement probably. Is currently used to handle cases where a

@@ -3,6 +3,9 @@ package com.aurora.souschef;
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.LifecycleOwner;
 import android.content.DialogInterface;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +29,8 @@ public class UITimer {
      * Time constant: seconds in a quarter hour.
      */
     private static final int AMOUNT_SEC_IN_QUARTER = 900;
+    private static final int AMOUNT_SEC_IN_MIN = 60;
+    private static final int CHANGE_COLOR_MILLISEC_DELAY = 250;
     /**
      * Time constant: seconds in a minute.
      */
@@ -55,6 +60,10 @@ public class UITimer {
      * View where the timer is displayed.
      */
     private View mTimerCard;
+    /**
+     * Ringtone for the alarm of the timer
+     */
+    private Ringtone mRingtone;
 
     /**
      * Sets up text and timer views.
@@ -79,25 +88,45 @@ public class UITimer {
         setOnClickListeners(mTimerCard);
         this.mLiveDataTimer.getIsFinished().observe(owner, aBoolean -> onTimerFinished());
 
-        this.mLiveDataTimer.getTimerState().observe(owner, aInt -> setIcon(aInt));
+        this.mLiveDataTimer.getTimerState().observe(owner, this::setIconAndBackground);
+
+        // Preparing the ringtone for the alarm
+        Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        if (alert == null) {
+            // alert is null, using backup
+            alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+            // I can't see this ever being null (as always have a default notification)
+            // but just in case
+            if (alert == null) {
+                // alert backup is null, using 2nd backup
+                alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+            }
+        }
+        mRingtone = RingtoneManager.getRingtone(mTimerCard.getContext(), alert);
+
+        this.mLiveDataTimer.isAlarming().observe(owner, this::setAlarm);
+
     }
 
-    private void setIcon(int timerState) {
+    private void setIconAndBackground(int timerState) {
         ImageView imageView = mTimerCard.findViewById(R.id.iv_timer_icon);
+        View contentView = mTimerCard.findViewById(R.id.cl_timer_content);
 
         if (timerState == LiveDataTimer.TIMER_RUNNING) {
             imageView.setImageResource(R.drawable.ic_pause_white);
+            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimary));
         } else if (timerState == LiveDataTimer.TIMER_PAUSED) {
             imageView.setImageResource(R.drawable.ic_play_white);
+            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
         }
     }
 
     /**
      * TODO: What happens on timer completion?
      */
-    // NOSONAR
     private void onTimerFinished() {
-        // TODO: implement what happens when timer finishes.
+        // TODO: This function is called when the timer finishes
     }
 
     /**
@@ -106,7 +135,6 @@ public class UITimer {
      * Uses toggleTimer.
      */
     private void setOnClickListeners(View clickableView) {
-
         clickableView.setOnClickListener((View v) -> mLiveDataTimer.toggleTimer());
         clickableView.setOnLongClickListener((View v) -> {
             if (mLiveDataTimer.canChangeTimer()) {
@@ -138,7 +166,7 @@ public class UITimer {
         LayoutInflater li = LayoutInflater.from(mTimerCard.getContext());
         // using null as root is allowed here since it is a promptView
         @SuppressLint("InflateParams")
-        View promptView = li.inflate(R.layout.card_timer, null);
+        View promptView = li.inflate(R.layout.prompt_timer_card, null);
         SeekBar seekBar = promptView.findViewById(R.id.sk_timer);
 
         // Get the TextView of the popup and set to the initial value
@@ -174,6 +202,16 @@ public class UITimer {
                     mLiveDataTimer.setTimeSetByUser(timeSetByUser);
                 });
         alertDialogBuilder.create().show();
+    }
+
+    private void setAlarm(boolean status) {
+        if (status) {
+            mRingtone.play();
+        } else {
+            if (mRingtone.isPlaying()) {
+                mRingtone.stop();
+            }
+        }
     }
 
     /**

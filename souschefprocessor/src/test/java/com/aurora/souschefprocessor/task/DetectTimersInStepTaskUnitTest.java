@@ -8,7 +8,6 @@ import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ public class DetectTimersInStepTaskUnitTest {
         recipeSteps.add(new RecipeStep("Put in the oven for 50 minutes to 1 hour")); //9 to case
 
         String originalText = "irrelevant";
-        recipe = new RecipeInProgress(originalText);
+        recipe = new RecipeInProgress(null);
         recipe.setRecipeSteps(recipeSteps);
 
         for (int stepIndex = 0; stepIndex < recipeSteps.size(); stepIndex++) {
@@ -134,7 +133,7 @@ public class DetectTimersInStepTaskUnitTest {
         assert (recipeSteps.get(stepIndex).getRecipeTimers().size() > 0);
         //assert correct detection
         RecipeTimer timer = new RecipeTimer((int) (60 * 60 * 1.5), irrelevantPosition);
-        System.out.println( recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0));
+        System.out.println(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0));
         assert (timer.equals(recipe.getRecipeSteps().get(stepIndex).getRecipeTimers().get(0)));
     }
 

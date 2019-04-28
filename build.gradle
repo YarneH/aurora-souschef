@@ -19,7 +19,7 @@ buildscript {
         classpath 'com.google.gms:google-services:4.2.0'
         classpath 'com.dicedmelon.gradle:jacoco-android:0.1.4'
         // Firebase crashalytics
-        classpath 'io.fabric.tools:gradle:1.26.1'
+        classpath 'io.fabric.tools:gradle:1.28.0'
 
 
         // NOTE: Do not place your application dependencies here; they belong

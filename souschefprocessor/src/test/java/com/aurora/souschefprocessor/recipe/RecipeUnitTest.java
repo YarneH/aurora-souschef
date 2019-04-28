@@ -22,7 +22,7 @@ public class RecipeUnitTest {
         for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantPositions.put(key, irrelevantPosition);
         }
-        rip = new RecipeInProgress("");
+        rip = new RecipeInProgress(null);
         RecipeStep step1 = new RecipeStep("Let the pasta boil for 10 minutes");
         RecipeTimer timer1 = new RecipeTimer(10 * 60, irrelevantPosition);
 
@@ -56,7 +56,7 @@ public class RecipeUnitTest {
 
         // Act
         String json = recipe.toJSON();
-        Recipe recipeAfterConversion =  Recipe.fromJson(json, Recipe.class);
+        Recipe recipeAfterConversion = Recipe.fromJson(json, Recipe.class);
 
         // Assert
         assert (recipe.equals(recipeAfterConversion));

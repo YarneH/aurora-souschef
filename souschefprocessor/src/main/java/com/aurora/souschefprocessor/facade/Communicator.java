@@ -38,8 +38,7 @@ public class Communicator {
      *                              {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask} task
      */
     Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
-        mDelegator = new Delegator(ingredientsClassifier, false);
-
+        mDelegator = new Delegator(ingredientsClassifier, true);
     }
 
     /**
@@ -70,7 +69,7 @@ public class Communicator {
      */
     public static void createAnnotationPipelines() {
 
-    Delegator.createAnnotationPipelines();
+        Delegator.createAnnotationPipelines();
     }
 
     /**
@@ -87,34 +86,7 @@ public class Communicator {
      */
     static void incrementProgressAnnotationPipelines() {
         mProgressAnnotationPipelines.incrementAndGet();
-        Log.d("STEP", ""+mProgressAnnotationPipelines);
-    }
-
-    /**
-     * Receives a string from the AuroraKernel that will be processed into a custom Recipe Object
-     *
-     * @param text the text to be processed
-     */
-    public Recipe process(String text) {
-        // for now String, should be TextObject but not yet defined by Aurora
-        // for now this is independent of the tasks sent
-        Recipe recipe = null;
-        try {
-            recipe = mDelegator.processText(text);
-            sendObjectToAuroraKernel(recipe);
-        } catch (RecipeDetectionException rde) {
-            Log.e("DETECTION", "process text", rde);
-            // if something went wrong with the detection rethrow the error and let the
-            // environment decide what to do in this case
-            throw new RecipeDetectionException(rde.getMessage());
-        } catch (IllegalArgumentException iae) {
-            // This means something is programmatically wrong, so let the programmer know extra
-            // checks are needed somewhere in the code
-            Log.e("ILLEGAL", "processText", iae);
-
-        }
-        return recipe;
-
+        Log.d("STEP", "" + mProgressAnnotationPipelines);
     }
 
     /**

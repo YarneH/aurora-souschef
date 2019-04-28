@@ -145,7 +145,7 @@ class Amount {
     /**
      * Converts the amount to either metric or US
      *
-     * @param toMetric a boolean that indicates if it should be converted to metric or to US
+     * @param toMetric a boolean that indicates if it should be converted to metric if true, or to US if false
      */
     void convert(boolean toMetric) {
 

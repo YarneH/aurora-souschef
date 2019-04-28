@@ -23,12 +23,12 @@ public class SplitStepsTaskUnitTest {
         originalText = "irrelevant";
 
         stepList = initializeStepList();
-        recipe = new RecipeInProgress(originalText);
+        recipe = new RecipeInProgress(null);
         recipe.setStepsString(stepList);
         splitStepsTask = new SplitStepsTask(recipe);
 
         stepListAcrossNewline = initializeStepListAcrossNewline();
-        recipeAcrossNewline = new RecipeInProgress(originalText);
+        recipeAcrossNewline = new RecipeInProgress(null);
         recipeAcrossNewline.setStepsString(stepListAcrossNewline);
         splitStepsTaskAcrossNewline = new SplitStepsTask(recipeAcrossNewline);
     }
@@ -110,22 +110,22 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
-    public void SplitStepsTask_doTask_ExceptionThrownWhenStepStringIsEmpty(){
+    public void SplitStepsTask_doTask_ExceptionThrownWhenStepStringIsEmpty() {
         /**
          * If the step string is empty then this is probably not a recipe, throw an error
          */
         // Arrange
-        RecipeInProgress emptyStep = new RecipeInProgress("irrelevant");
+        RecipeInProgress emptyStep = new RecipeInProgress(null);
         emptyStep.setStepsString("");
         SplitStepsTask task = new SplitStepsTask(emptyStep);
         boolean thrown = false;
         // Act
-        try{
+        try {
             task.doTask();
-        }catch(Exception e){
+        } catch (Exception e) {
             thrown = true;
         }
-        assert(thrown);
+        assert (thrown);
 
     }
 

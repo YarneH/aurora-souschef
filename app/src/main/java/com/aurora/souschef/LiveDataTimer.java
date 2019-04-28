@@ -24,15 +24,15 @@ public class LiveDataTimer {
      */
     private static final int TIME_BABIES = 60;
     /**
-     * One of the three states of the timer
+     * One of the states of the timer
      */
     protected static final int TIMER_INITIALISED = 0;
     /**
-     * One of the three states of the timer
+     * One of the states of the timer
      */
     protected static final int TIMER_RUNNING = 1;
     /**
-     * One of the three states of the timer
+     * One of the states of the timer
      */
     protected static final int TIMER_PAUSED = 2;
     /**
@@ -54,6 +54,8 @@ public class LiveDataTimer {
 
     private MutableLiveData<Boolean> mFinished = new MutableLiveData<>();
 
+    private MutableLiveData<Boolean> mAlarming = new MutableLiveData<>();
+
     /**
      * Holds the observable time left until finished.
      * Call observe on this field to keep track of time in the UI.
@@ -62,7 +64,7 @@ public class LiveDataTimer {
 
     /**
      * Indicates the current state of the timer
-     * (TIMER_RUNNING, TIMER_PAUSED, TIMER_INITIALISED)
+     * (TIMER_RUNNING, TIMER_PAUSED, TIMER_INITIALISED, TIMER_ALARMING)
      */
     private MutableLiveData<Integer> mTimerState = new MutableLiveData<>();
 
@@ -75,6 +77,7 @@ public class LiveDataTimer {
         mRecipeTimer = new RecipeTimer(recipeTimer.getUpperBound(), recipeTimer.getLowerBound(), null);
         mTimeSetByUser = recipeTimer.getLowerBound();
         mFinished.setValue(false);
+        mAlarming.setValue(false);
         mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));
         mRunning = false;
         mTimerState.setValue(TIMER_INITIALISED);
@@ -105,6 +108,15 @@ public class LiveDataTimer {
      */
     public void toggleTimer() {
 
+        if (mAlarming.getValue()) {
+            mAlarming.setValue(false);
+            return;
+        }
+
+        if (mFinished.getValue()) {
+            return;
+        }
+
         if (mRunning) {
             mRunning = false;
             mTimerState.setValue(TIMER_PAUSED);
@@ -120,6 +132,7 @@ public class LiveDataTimer {
             @Override
             public void onFinish() {
                 mFinished.setValue(true);
+                mAlarming.setValue(true);
                 //TODO: check if running needs to be set to false
                 mRunning = false;
             }
@@ -181,18 +194,42 @@ public class LiveDataTimer {
         return mRunning && (mRecipeTimer.getLowerBound() != mRecipeTimer.getUpperBound());
     }
 
+    /**
+     * Get the upper bound on the timer.
+     * @return upper bound in seconds
+     */
     public int getUpperBound() {
         return mRecipeTimer.getUpperBound();
     }
 
+    /**
+     * Get the lower bound on the timer.
+     * @return lower bound in seconds
+     */
     public int getLowerBound() {
         return mRecipeTimer.getLowerBound();
     }
 
+    /**
+     * LiveData with a boolean whether or not the timer is finished.
+     * @return LiveData with boolean
+     */
     public LiveData<Boolean> getIsFinished() {
         return mFinished;
     }
 
+    /**
+     * LiveData with alarming state.
+     * @return Livedata with boolean whether or not alarming
+     */
+    public LiveData<Boolean> isAlarming() {
+        return mAlarming;
+    }
+
+    /**
+     * Get the timer state as Live data.
+     * @return LiveData with the state-ID of the timer
+     */
     public LiveData<Integer> getTimerState() {
         return mTimerState;
     }

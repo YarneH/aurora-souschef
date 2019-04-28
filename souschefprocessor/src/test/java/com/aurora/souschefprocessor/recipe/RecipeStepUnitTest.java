@@ -8,7 +8,9 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class RecipeStepUnitTest {
 
@@ -62,7 +64,7 @@ public class RecipeStepUnitTest {
     public void RecipeStep_convertUnit_correctConversion() {
 
         // Add the ingredient to the recipe
-        RecipeInProgress rip = new RecipeInProgress("");
+        RecipeInProgress rip = new RecipeInProgress(null);
         EnumMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
         Position pos = new Position(0, 1);
         for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
@@ -87,6 +89,6 @@ public class RecipeStepUnitTest {
 
         // convert back
         step.convertUnit(false);
-        assertEquals("The description is not the same after converting twice",originalDescription, step.getDescription());
+        assertEquals("The description is not the same after converting twice", originalDescription, step.getDescription());
     }
 }

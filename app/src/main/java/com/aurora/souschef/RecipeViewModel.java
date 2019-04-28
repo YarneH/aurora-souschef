@@ -6,6 +6,7 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -85,11 +86,18 @@ public class RecipeViewModel extends AndroidViewModel {
      */
     @SuppressLint("StaticFieldLeak")
     private Context mContext;
+    /**
+     * Listener that listens to changes in the shared preferences. It is used to check when the user
+     * changes the settings from metric to imperial or back.
+     * <p>
+     * Must be a variable of this class to prevent garbage collection and stop listening
+     */
+    private SharedPreferences.OnSharedPreferenceChangeListener mListener = null;
 
     /**
      * Constructor that initialises the pipeline and LiveData.
      *
-     * @param application
+     * @param application Needed for the initialisation and lifetime of a viewModel
      */
     public RecipeViewModel(@NonNull Application application) {
         super(application);
@@ -102,6 +110,24 @@ public class RecipeViewModel extends AndroidViewModel {
         mCurrentPeople.setValue(0);
         mProcessingFailed.setValue(false);
         Communicator.createAnnotationPipelines();
+        SharedPreferences sharedPreferences = application.getSharedPreferences(
+                Tab1Overview.SETTINGS_PREFERENCES,
+                Context.MODE_PRIVATE);
+        mListener = (SharedPreferences preferences, String key) -> {
+            if (key.equals(Tab1Overview.IMPERIAL_SETTING)) {
+                boolean imperial = preferences.getBoolean(key, false);
+                convertRecipeUnits(!imperial);
+            }
+        };
+        sharedPreferences.registerOnSharedPreferenceChangeListener(mListener);
+
+    }
+
+    private boolean isImperial() {
+        SharedPreferences sharedPreferences = getApplication().getSharedPreferences(
+                Tab1Overview.SETTINGS_PREFERENCES,
+                Context.MODE_PRIVATE);
+        return sharedPreferences.getBoolean(Tab1Overview.IMPERIAL_SETTING, false);
     }
 
     public LiveData<String> getFailureMessage() {
@@ -162,6 +188,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * @param recipe the recipe for data extraction.
      */
     public void initialiseWithRecipe(Recipe recipe) {
+        recipe.convertUnit(!isImperial());
         RecipeViewModel.this.mRecipe.setValue(recipe);
         RecipeViewModel.this.mCurrentPeople.setValue(recipe.getNumberOfPeople());
         mInitialised.setValue(true);
@@ -221,6 +248,7 @@ public class RecipeViewModel extends AndroidViewModel {
         if (recipe != null) {
             recipe.convertUnit(toMetric);
         }
+        mRecipe.postValue(recipe);
     }
 
     public void setBeingProcessed(boolean isBeingProcessed) {
@@ -272,7 +300,8 @@ public class RecipeViewModel extends AndroidViewModel {
         private boolean mWithExtractedText = false;
 
         public SouschefInit(String text) {
-            this.mText = text;
+            this.mExtractedText = ExtractedText.fromJson(text);
+            this.mWithExtractedText = false;
         }
 
         public SouschefInit(ExtractedText extractedText) {
@@ -296,8 +325,6 @@ public class RecipeViewModel extends AndroidViewModel {
                                     " persists, please send feedback in Aurora");
                         }
                         return comm.process(mExtractedText);
-                    } else {
-                        return comm.process(mText);
                     }
                 } catch (RecipeDetectionException rde) {
                     Log.d("FAILURE", rde.getMessage());

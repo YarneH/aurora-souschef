@@ -253,7 +253,6 @@ public class DetectIngredientsInListTaskLongTest {
                 "Small, sharp knife\t1\t  \n" +
                 "1/4 teaspoon cream of tartar or 2 teaspoons light-colored corn syrup\t0.2500\tteaspoon   \n" +
                 "One purchased 9-inch angel food cake\t1\t ";
-        ;
         String listForRecipe = "";
         List<String> list = Arrays.asList(testIngredients.split("\n"));
         System.out.println(list.size());
@@ -270,7 +269,7 @@ public class DetectIngredientsInListTaskLongTest {
             index++;
         }
 
-        testRecipe = new RecipeInProgress(originalText);
+        testRecipe = new RecipeInProgress(null);
         testRecipe.setIngredientsString(listForRecipe);
         testDetector = new DetectIngredientsInListTask(testRecipe, crfClassifier);
         testIngredientsInitialized = true;

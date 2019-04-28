@@ -36,10 +36,6 @@ import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
  * described in the architecture.
  */
 public class Delegator {
-    /**
-     * A constant describing 1/2
-     */
-    private static final double HALF = 0.5;
 
     /**
      * An object that serves as a lock to ensure that the pipelines are only created once
@@ -51,7 +47,6 @@ public class Delegator {
      */
     private static final List<Annotator> sBasicAnnotators = new ArrayList<>();
 
-    //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
     /**
      * The number of basic annotator, for now 3 (tokenize, words to sentence and POS)
      */
@@ -151,7 +146,7 @@ public class Delegator {
     }
 
     /**
-     * Increments the {@link Communicator#mProgressAnnotationPipelines} value of the communicator
+     * calls the {@link Communicator#incrementProgressAnnotationPipelines()} function
      */
     public static void incrementProgressAnnotationPipelines() {
         Communicator.incrementProgressAnnotationPipelines();
@@ -169,8 +164,7 @@ public class Delegator {
          * the processing is faster if this only half of the available cores to limit context
          * switching
          */
-        int numberOfCores = (int)
-                (Runtime.getRuntime().availableProcessors() * HALF);
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
         // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue
@@ -222,29 +216,6 @@ public class Delegator {
         return recipeInProgress.convertToRecipe();
     }
 
-    /**
-     * This is the core function of the delegator, where the text is processed by applying the filters
-     * This function should be able to at run time decide to do certain filters or not (graceful degradation)
-     *
-     * @param text The text to be processed in to a recipe Object
-     * @return A Recipe object that was constructed from the text
-     */
-    public Recipe processText(String text) {
-        //TODO implement this function so that at runtime it is decided which tasks should be performed
-        if (sThreadPoolExecutor == null) {
-            setUpThreadPool();
-        }
-
-        RecipeInProgress recipeInProgress = new RecipeInProgress(text);
-        List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
-        if (pipeline != null) {
-            for (AbstractProcessingTask task : pipeline) {
-                task.doTask();
-            }
-        }
-
-        return recipeInProgress.convertToRecipe();
-    }
 
     /**
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the

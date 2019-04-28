@@ -173,7 +173,6 @@ public class IngredientUnitTest {
         }
         // Assert
         assertTrue("Only endIndex too big does not throw exception", case1Thrown);
-        ;
 
         // case 2 both too big
         // Arrange

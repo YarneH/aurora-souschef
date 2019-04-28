@@ -76,7 +76,7 @@ public class Delegator {
     /**
      * A boolean that indicates whether the processing should be parallelized
      */
-    private boolean mParallellize;
+    private boolean mParallelize;
 
     /**
      * Creating the delegator
@@ -86,7 +86,7 @@ public class Delegator {
      */
     Delegator(CRFClassifier<CoreLabel> ingredientClassifier, boolean parallelize) {
         mIngredientClassifier = ingredientClassifier;
-        mParallellize = parallelize;
+        mParallelize = parallelize;
     }
 
     public static List<Annotator> getBasicAnnotators() {
@@ -230,7 +230,7 @@ public class Delegator {
         pipeline.add(new SplitStepsTask(recipeInProgress));
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));
         StepTaskNames[] taskNames = {StepTaskNames.INGR, StepTaskNames.TIMER};
-        if (mParallellize) {
+        if (mParallelize) {
             pipeline.add(new ParallelizeStepsTask(recipeInProgress, sThreadPoolExecutor, taskNames));
 
         } else {

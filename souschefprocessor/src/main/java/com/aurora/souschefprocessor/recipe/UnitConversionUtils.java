@@ -161,7 +161,8 @@ public final class UnitConversionUtils {
      */
     public static String getBase(String original) {
 
-        String lowerCase = original.toLowerCase(Locale.ENGLISH);
+        String lowerCase = original.toLowerCase(Locale.ENGLISH).trim();
+
         String base = getBaseMetric(lowerCase);
         // base is found, return base
         if (base != null) {
@@ -169,7 +170,9 @@ public final class UnitConversionUtils {
         }
         // if base was not found via metric
         base = getBaseUS(lowerCase);
+
         if (base != null) {
+
             return base;
         }
 
@@ -226,6 +229,7 @@ public final class UnitConversionUtils {
             if (ABBREVIATIONS_US[i].equals(lowerCase)) {
                 return BASE_UNITS_US[i];
             }
+
         }
         return null;
     }

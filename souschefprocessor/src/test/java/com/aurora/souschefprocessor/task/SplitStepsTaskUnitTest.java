@@ -1,11 +1,24 @@
 package com.aurora.souschefprocessor.task;
 
 
+import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.Section;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitStepsTask;
 
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.Date;
+
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
+import edu.stanford.nlp.pipeline.ProtobufAnnotationSerializer;
+import edu.stanford.nlp.pipeline.TokenizerAnnotator;
+import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
+
+import static org.junit.Assert.assertEquals;
 
 public class SplitStepsTaskUnitTest {
     private static RecipeInProgress recipe;
@@ -16,19 +29,45 @@ public class SplitStepsTaskUnitTest {
     private static RecipeInProgress recipeAcrossNewline;
     private static String stepListAcrossNewline;
     private static SplitStepsTask splitStepsTaskAcrossNewline;
-    private static String getStepListAcrossNewline;
+
+    private static AnnotationPipeline sPipeline;
+
+    private static String mockAuroraOutput(String stepList) {
+        Annotation annotatedList = new Annotation(stepList);
+        if (sPipeline == null) {
+            sPipeline = new AnnotationPipeline();
+            sPipeline.addAnnotator(new TokenizerAnnotator());
+            sPipeline.addAnnotator(new WordsToSentencesAnnotator());
+            sPipeline.addAnnotator(new POSTaggerAnnotator());
+        }
+        sPipeline.annotate(annotatedList);
+        ProtobufAnnotationSerializer serializer = new ProtobufAnnotationSerializer(true);
+        ExtractedText aurora = new ExtractedText("", new Date(System.currentTimeMillis()));
+        aurora.setTitle("");
+        Section s = new Section();
+        s.setBody(stepList);
+        s.setTitle("");
+        s.setBodyAnnotationProto(serializer.toProto(annotatedList));
+        aurora.addSection(s);
+        String json = aurora.toJSON();
+
+        return json;
+    }
 
     @BeforeClass
     public static void initialize() {
-        originalText = "irrelevant";
 
         stepList = initializeStepList();
-        recipe = new RecipeInProgress(null);
+        String json = mockAuroraOutput(stepList);
+        recipe = new RecipeInProgress(ExtractedText.fromJson(json));
         recipe.setStepsString(stepList);
         splitStepsTask = new SplitStepsTask(recipe);
 
         stepListAcrossNewline = initializeStepListAcrossNewline();
-        recipeAcrossNewline = new RecipeInProgress(null);
+        json = mockAuroraOutput(stepListAcrossNewline);
+        ExtractedText text = ExtractedText.fromJson(json);
+
+        recipeAcrossNewline = new RecipeInProgress(ExtractedText.fromJson(json));
         recipeAcrossNewline.setStepsString(stepListAcrossNewline);
         splitStepsTaskAcrossNewline = new SplitStepsTask(recipeAcrossNewline);
     }
@@ -75,8 +114,9 @@ public class SplitStepsTaskUnitTest {
          */
         // Act
         splitStepsTask.doTask();
+
         // Assert
-        assert (recipe.getRecipeSteps().size() == 3);
+        assert (recipe.getStepsInProgress().size() == 3);
     }
 
     @Test
@@ -87,14 +127,13 @@ public class SplitStepsTaskUnitTest {
         // Act
         splitStepsTask.doTask();
         // Assert
-        assert (recipe.getRecipeSteps().get(0).getDescription()
+        assert (recipe.getStepsInProgress().get(0).getDescription()
                 .equals("In a medium bowl, with a potato masher or a fork, " +
                         "mash the beans with the soy sauce, chopped pepper; and ginger, until pureed but not smooth."));
-        assert (recipe.getRecipeSteps().get(1).getDescription()
-                .equals("Spoon into a small serving dish and top with scallion."));
+        assertEquals("The step is not correct", "Spoon into a small serving dish and top with scallion.", recipe.getStepsInProgress().get(1).getDescription() );
 
-        assert (recipe.getRecipeSteps().get(2).getDescription()
-                .equals("Serve with sesame crackers."));
+        assertEquals("The step is not correct", "Serve with sesame crackers.", recipe.getStepsInProgress().get(2).getDescription() );
+
     }
 
     @Test
@@ -106,11 +145,11 @@ public class SplitStepsTaskUnitTest {
         // Act
         splitStepsTaskAcrossNewline.doTask();
         // Assert
-        assert (recipeAcrossNewline.getRecipeSteps().size() == 5);
+        assert (recipeAcrossNewline.getStepsInProgress().size() == 5);
     }
 
     @Test
-    public void SplitStepsTask_doTask_ExceptionThrownWhenStepStringIsEmpty(){
+    public void SplitStepsTask_doTask_ExceptionThrownWhenStepStringIsEmpty() {
         /**
          * If the step string is empty then this is probably not a recipe, throw an error
          */
@@ -120,12 +159,12 @@ public class SplitStepsTaskUnitTest {
         SplitStepsTask task = new SplitStepsTask(emptyStep);
         boolean thrown = false;
         // Act
-        try{
+        try {
             task.doTask();
-        }catch(Exception e){
+        } catch (Exception e) {
             thrown = true;
         }
-        assert(thrown);
+        assert (thrown);
 
     }
 
@@ -138,17 +177,17 @@ public class SplitStepsTaskUnitTest {
         // Act
         splitStepsTaskAcrossNewline.doTask();
         // Assert
-        assert (recipeAcrossNewline.getRecipeSteps().get(0).getDescription()
+        assert (recipeAcrossNewline.getStepsInProgress().get(0).getDescription()
                 .equals("Heat the oil in a medium skillet over medium heat."));
-        assert (recipeAcrossNewline.getRecipeSteps().get(1).getDescription()
+        assert (recipeAcrossNewline.getStepsInProgress().get(1).getDescription()
                 .equals("Add the garlic and stir for about a minute."));
-        assert (recipeAcrossNewline.getRecipeSteps().get(2).getDescription()
+        assert (recipeAcrossNewline.getStepsInProgress().get(2).getDescription()
                 .equals("Then add the beans with their liquid."));
-        assert (recipeAcrossNewline.getRecipeSteps().get(3).getDescription()
+        assert (recipeAcrossNewline.getStepsInProgress().get(3).getDescription()
                 .equals("Mash the beans with a potato masher or the " +
                         "back of a spoon until you have a coarse puree, then cook, stirring regularly, until the beans " +
                         "are thickened just enough to hold their shape in a spoon, about 10 minutes."));
-        assert (recipeAcrossNewline.getRecipeSteps().get(4).getDescription()
+        assert (recipeAcrossNewline.getStepsInProgress().get(4).getDescription()
                 .equals("Taste and add up to ¼ teaspoon salt."));
     }
 

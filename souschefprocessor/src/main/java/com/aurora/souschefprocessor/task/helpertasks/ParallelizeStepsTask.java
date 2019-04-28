@@ -6,6 +6,7 @@ import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschefprocessor.task.RecipeStepInProgress;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
@@ -50,7 +51,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
      */
     public void doTask() {
 
-        List<RecipeStep> recipeSteps = mRecipeInProgress.getRecipeSteps();
+        List<RecipeStepInProgress> recipeSteps = mRecipeInProgress.getStepsInProgress();
         if (recipeSteps.isEmpty()) {
             throw new RecipeDetectionException("No steps were detected in this recipe. This is probably not" +
                     "a recipe!");

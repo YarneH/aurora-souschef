@@ -223,7 +223,6 @@ public class Delegator {
     }
 
 
-
     /**
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
@@ -246,4 +245,6 @@ public class Delegator {
 
         return pipeline;
     }
+
+
 }

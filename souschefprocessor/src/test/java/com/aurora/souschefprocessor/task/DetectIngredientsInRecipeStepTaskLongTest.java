@@ -4,7 +4,6 @@ package com.aurora.souschefprocessor.task;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
-import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 
 import org.junit.BeforeClass;
@@ -13,8 +12,15 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
+import edu.stanford.nlp.pipeline.TokenizerAnnotator;
+import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 public class DetectIngredientsInRecipeStepTaskLongTest {
 
@@ -51,13 +57,30 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         // set the recipe steps for the detection RecipeInProgress list
         setRecipeSteps();
 
+        // annotate the steps
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+        pipeline.addAnnotator(new TokenizerAnnotator());
+        pipeline.addAnnotator(new WordsToSentencesAnnotator());
+        pipeline.addAnnotator(new POSTaggerAnnotator());
+
+        for (RecipeInProgress rip : rips) {
+            List<RecipeStepInProgress> recipeSteps = rip.getStepsInProgress();
+            for (RecipeStepInProgress s : recipeSteps) {
+                Annotation a = new Annotation(s.getDescription());
+                pipeline.annotate(a);
+                s.setSentenceAnnotation(Collections.singletonList(a));
+            }
+        }
+
         // Perform the detection of ingredients in steps
         DetectIngredientsInStepTask.initializeAnnotationPipeline();
-        for (int r = 0; r < rips.size(); r++) {
-            for (int s = 0; s < rips.get(r).getRecipeSteps().size(); s++) {
+        for (RecipeInProgress r: rips) {
+            for (RecipeStepInProgress s: r.getStepsInProgress()) {
                 // Execute the detection for each recipe step in this RecipeInProgress
-                DetectIngredientsInStepTask detector = new DetectIngredientsInStepTask(rips.get(r), s);
+                DetectIngredientsInStepTask detector = new DetectIngredientsInStepTask(r, r.getStepsInProgress().indexOf(s));
+                System.out.println(s);
                 detector.doTask();
+                System.out.println(s);
             }
         }
     }
@@ -91,12 +114,12 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         for (int i = 0; i < stepsPerRecipe.length; i++) {
             String[] recipeStepsString = stepsPerRecipe[i].split("\n");
 
-            List<RecipeStep> recipeSteps = new ArrayList<>();
+            List<RecipeStepInProgress> recipeSteps = new ArrayList<>();
             for (String stepString : recipeStepsString) {
-                RecipeStep recipeStep = new RecipeStep(stepString);
+                RecipeStepInProgress recipeStep = new RecipeStepInProgress(stepString);
                 recipeSteps.add(recipeStep);
             }
-            rips.get(i).setRecipeSteps(recipeSteps);
+            rips.get(i).setStepsInProgress(recipeSteps);
         }
     }
 
@@ -156,8 +179,8 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                         correctIngr.getUnit().equals(detectedIngr.getUnit())) {
 
                     equalUnits += 1;
-                } else if (correctIngr.getName().equals(detectedIngr.getName())){
-                System.out.println(index + ": " + correctIngr + "  " + detectedIngr);
+                } else if (correctIngr.getName().equals(detectedIngr.getName())) {
+                    System.out.println(index + ": " + correctIngr + "  " + detectedIngr);
 
                 }
                 index++;
@@ -2471,18 +2494,20 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         for (int r = 0; r < rips.size(); r++) {
             List<List<Ingredient>> correctRecipe = correctIngredientsPerRecipe.get(r);
 
-            for (int s = 0; s < rips.get(r).getRecipeSteps().size(); s++) {
+            for (int s = 0; s < rips.get(r).getStepsInProgress().size(); s++) {
 
                 List<Ingredient> correctStepIngredients = correctRecipe.get(s);
-                Collection<Ingredient> detectedStepIngredients = rips.get(r).getRecipeSteps().get(s).getIngredients();
+                Collection<Ingredient> detectedStepIngredients = rips.get(r).getStepsInProgress().get(s).getIngredients();
 
                 // Compare detected ingredients with correct ingredients
                 correctQuantities += equalQuantities(correctStepIngredients, detectedStepIngredients);
+
             }
         }
 
         // Assert
         double accuracy = (double) correctQuantities / totalIngredients;
+        System.out.println(accuracy);
         assert (accuracy > 0.85);
     }
 
@@ -2493,10 +2518,10 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         for (int r = 0; r < rips.size(); r++) {
             List<List<Ingredient>> correctRecipe = correctIngredientsPerRecipe.get(r);
 
-            for (int s = 0; s < rips.get(r).getRecipeSteps().size(); s++) {
+            for (int s = 0; s < rips.get(r).getStepsInProgress().size(); s++) {
 
                 List<Ingredient> correctStepIngredients = correctRecipe.get(s);
-                Collection<Ingredient> detectedStepIngredients = rips.get(r).getRecipeSteps().get(s).getIngredients();
+                Collection<Ingredient> detectedStepIngredients = rips.get(r).getStepsInProgress().get(s).getIngredients();
                 System.out.println("Recipe: " + r + ", step: " + s);
                 // Compare detected ingredients with correct ingredients
                 correctUnits += equalUnits(correctStepIngredients, detectedStepIngredients);

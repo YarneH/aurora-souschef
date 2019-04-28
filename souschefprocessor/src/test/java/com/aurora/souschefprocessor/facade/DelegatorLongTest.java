@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.facade;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 import org.junit.After;
@@ -11,9 +12,11 @@ import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +38,7 @@ public class DelegatorLongTest {
         try {
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream(filename), "UTF8"));
+                            new FileInputStream(filename), StandardCharsets.UTF_8));
 
             String line = reader.readLine();
 
@@ -54,8 +57,8 @@ public class DelegatorLongTest {
 
 
         List<ExtractedText> jsonRecipes = initializeRecipesJSON();
-        validRecipesJSON = jsonRecipes.subList(0,6);
-        invalidRecipesJSON = jsonRecipes.subList(6, jsonRecipes.size());
+        validRecipesJSON = jsonRecipes.subList(0, 7);
+        invalidRecipesJSON = jsonRecipes.subList(7, jsonRecipes.size());
 
         // load in the model
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
@@ -82,7 +85,7 @@ public class DelegatorLongTest {
         try {
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream(filename), "UTF8"));
+                            new FileInputStream(filename), StandardCharsets.UTF_8));
             StringBuilder bld = new StringBuilder();
             String line = reader.readLine();
 
@@ -105,36 +108,18 @@ public class DelegatorLongTest {
     }
 
 
-
-
     @Test
     public void Delegator_processText_NoExceptionsInDelegatorForValidRecipesJSON() {
         /**
          * Check that no exceptions are thrown when these recipes are read in
          */
-        // Arrange
-        // initialize on false
-        boolean thrown = false;
 
 
-        // Act
-        try {
+        for (ExtractedText text : validRecipesJSON) {
+            Recipe recipe = delegator.processText(text);
+            System.out.println(recipe + "\n--------------------------------");
 
-            for (ExtractedText text : validRecipesJSON) {
-                Recipe recipe = delegator.processText(text);
-                System.out.println(recipe+"\n--------------------------------");
-
-            }
-        } catch (Exception e) {
-            // set thrown to true, this should not happen
-
-            thrown = true;
-            System.out.println(e);
         }
-
-        // Assert
-        // assert that no errors were thrown
-        assert (!thrown);
     }
 
 
@@ -223,6 +208,29 @@ public class DelegatorLongTest {
     @After
     public void wipeDelegator() {
         delegator = new Delegator(crfClassifier, true);
+        List<ExtractedText> jsonRecipes = initializeRecipesJSON();
+        validRecipesJSON = jsonRecipes.subList(0, 7);
+        invalidRecipesJSON = jsonRecipes.subList(7, jsonRecipes.size());
+
+    }
+
+    @Test
+    public void test_with_new_auroralib() {
+        String contents = null;
+        try {
+            contents = new String(Files.readAllBytes(Paths.get("input.txt")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ExtractedText text = ExtractedText.fromJson(contents);
+
+        Recipe r = delegator.processText(text);
+        Position pos = r.getRecipeSteps().get(2).getIngredients().get(0).getQuantityPosition();
+        System.out.println(r.getRecipeSteps().get(2).getDescription().substring(pos.getBeginIndex(), pos.getEndIndex()));
+        System.out.println(r.getRecipeSteps().get(2).getDescription());
+
+
     }
 
 

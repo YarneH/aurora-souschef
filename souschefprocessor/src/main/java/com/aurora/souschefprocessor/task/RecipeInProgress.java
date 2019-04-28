@@ -1,7 +1,16 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.Section;
 import com.aurora.souschefprocessor.recipe.Recipe;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.util.CoreMap;
 
 /**
  * A subclass of Recipe, representing a Recipe Object that is being constructed. It has three
@@ -25,15 +34,22 @@ public class RecipeInProgress extends Recipe {
 
 
     /**
-     * An extractedtet object from Aurora
+     * An extractedtext object from Aurora
      */
     private ExtractedText mExtractedText;
 
+    private List<RecipeStepInProgress> mStepsInProgress;
+
+    public List<RecipeStepInProgress> getStepsInProgress() {
+        return mStepsInProgress;
+    }
 
     public RecipeInProgress(ExtractedText originalText) {
         super();
         this.mExtractedText = originalText;
+
     }
+
 
     @Override
     public String toString() {
@@ -61,16 +77,31 @@ public class RecipeInProgress extends Recipe {
         this.mIngredientsString = ingredientsString;
     }
 
+
+    public void setStepsInProgress(List<RecipeStepInProgress> mStepsInProgress) {
+        this.mStepsInProgress = mStepsInProgress;
+    }
+
     /**
-     * Converts the RecipeInProgress to a Recipe object by dropping the two additional fields
+     * Converts the RecipeInProgress to a Recipe object by dropping the two additional fields and
+     * converting the {@link RecipeStepInProgress} steps to {@link com.aurora.souschefprocessor.recipe.RecipeStep}
+     * steps
      *
      * @return the converted recipe
      */
     public Recipe convertToRecipe() {
+        for (RecipeStepInProgress step : mStepsInProgress) {
+            mRecipeSteps.add(step.convertToRecipeStep());
+        }
         return new Recipe(mIngredients, mRecipeSteps, mNumberOfPeople, mDescription);
     }
 
     public ExtractedText getExtractedText() {
         return mExtractedText;
     }
+
+
+
+
+
 }

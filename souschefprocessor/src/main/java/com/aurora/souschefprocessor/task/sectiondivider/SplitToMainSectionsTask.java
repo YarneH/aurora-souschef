@@ -1,11 +1,8 @@
 package com.aurora.souschefprocessor.task.sectiondivider;
 
 
-import android.util.Log;
-
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
-import com.aurora.souschefprocessor.facade.Delegator;
 import com.aurora.souschefprocessor.task.AbstractProcessingTask;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
@@ -19,7 +16,6 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
-import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.util.CoreMap;
 
 
@@ -145,16 +141,20 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         return section;
     }
 
-
     /**
-     * Creates the {@link #mAnnotationPipeline}
+     * Checks if the line doe not contain any of the {@link #NOT_INGREDIENTS_WORDS}
+     *
+     * @param line the line to check
+     * @return a boolean
      */
-    private void createAnnotationPipeline() {
-        AnnotationPipeline pipeline = new AnnotationPipeline();
-        for (Annotator a : Delegator.getBasicAnnotators()) {
-            pipeline.addAnnotator(a);
+    private static boolean doesNotContainNonIngredientWords(String line) {
+        String lowerCase = line.toLowerCase(Locale.ENGLISH);
+        for (String notIngredientWord : NOT_INGREDIENTS_WORDS) {
+            if (lowerCase.contains(notIngredientWord)) {
+                return false;
+            }
         }
-        mAnnotationPipeline = pipeline;
+        return true;
     }
 
     /**
@@ -172,10 +172,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         for (Section section : mSections) {
             String body = section.getBody();
             if (!alreadyFound) {
-                boolean verbDetected = verbDetected(body, false);
-                if (!verbDetected) {
-                    verbDetected = verbDetected(body, true);
-                }
+                boolean verbDetected = verbDetected(section);
+
                 alreadyFound = verbDetected;
             }
 
@@ -224,6 +222,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         if (bld != null) {
             mSections.removeAll(foundSections);
             return bld.toString();
+
         }
 
         return "";
@@ -271,6 +270,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         }
 
         if (sectionIndex >= 0) {
+
             // remove the section containing steps from the list, only remove if some steps were found
             mSections = mSections.subList(0, sectionIndex + 1);
         }
@@ -289,13 +289,12 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     private String findStepsRegexBased() {
         // first try with the titles
         String result = findStepsOrIngredientsRegexBasedTitles(STEP_STARTER_REGEX);
-        if (result.length() > 0) {
+        if (!result.isEmpty()) {
             return result;
         }
         // try without title
         return findStepsOrIngredientsRegexBasedWithoutTitles(STEP_STARTER_REGEX);
     }
-
 
     /**
      * Finds the ingredients based on the fact that for most recipes at least one of the ingredients
@@ -344,22 +343,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     }
 
     /**
-     * Checks if the line doe not contain any of the {@link #NOT_INGREDIENTS_WORDS}
-     * @param line the line to check
-     * @return a boolean
-     */
-    private static boolean doesNotContainNonIngredientWords(String line) {
-        String lowerCase = line.toLowerCase(Locale.ENGLISH);
-        for (String notIngredientWord : NOT_INGREDIENTS_WORDS) {
-            if (lowerCase.contains(notIngredientWord)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    /**
      * Divides the original text into a string representing list of mIngredients, string representing
      * a list of mRecipeSteps, string representing the mDescription of the recipe (if present) and an integer
      * representing the amount of people the original recipe is for. It will then modify the recipe
@@ -371,7 +354,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         String description;
 
         ExtractedText text = mRecipeInProgress.getExtractedText();
-        Log.d("TEXT", text.toJSON());
+
         mSections = new ArrayList<>();
 
         for (Section sec : text.getSections()) {
@@ -423,7 +406,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     private String findSteps() {
         String steps = findStepsRegexBased();
 
-        if (steps.length() == 0) {
+        if (steps.isEmpty()) {
             steps = findStepsNLP();
         }
 
@@ -492,17 +475,15 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
 
     /**
-     * This checks if a text starts with a verb.
+     * This checks if the section contains imperative sentences starting with a verb
      *
-     * @param text      The text
-     * @param lowercase indicates wheter the detection should be done on a lowercase text. Since corenlp
-     *                  can be better at detecting sentences starting with a verb when it is lowercase
-     * @return a boolean that indicates if a verb was detectec
+     * @param section The section to analyze
+     * @return a boolean that indicates if a verb was detected
      */
-    private boolean verbDetected(String text, boolean lowercase) {
+    private boolean verbDetected(Section section) {
         // TODO adapt this method to new input of aurora
-        Annotation annotatedTextLowerCase = createAnnotatedText(text, lowercase);
-        List<CoreMap> sentences = annotatedTextLowerCase.get(CoreAnnotations.SentencesAnnotation.class);
+        Annotation annotatedText = createAnnotatedText(section);
+        List<CoreMap> sentences = annotatedText.get(CoreAnnotations.SentencesAnnotation.class);
 
         for (CoreMap sentence : sentences) {
             List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
@@ -531,24 +512,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      *
      * @return the annotated text
      */
-    private Annotation createAnnotatedText(String text, boolean lowercase) {
-        if (mAnnotationPipeline == null) {
-            createAnnotationPipeline();
-        }
-        // The parser could perform better on imperative sentences (instructions) when the
-        // first word is decapitalize see: https://stackoverflow.com/questions/35872324/stanford-nlp-vp-vs-np
-        Annotation annotation;
-        if (lowercase) {
-            annotation = new Annotation(text.toLowerCase(Locale.ENGLISH));
-        } else {
-            annotation = new Annotation(text);
-        }
-
-        mAnnotationPipeline.annotate(annotation);
-        return annotation;
-
+    private Annotation createAnnotatedText(Section section) {
+        return section.getBodyAnnotation();
     }
-
 
 }
 

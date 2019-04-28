@@ -19,32 +19,57 @@ public class RecipeStep {
     /**
      * A set of {@link Ingredient}s that were detected in this step
      */
-    private List<Ingredient> mIngredients;
+    protected List<Ingredient> mIngredients;
 
     /**
      * A list of {@link RecipeTimer}s that were detected in this step (in order)
      */
-    private List<RecipeTimer> mRecipeTimers;
+    protected List<RecipeTimer> mRecipeTimers;
 
     /**
      * The original description of this step. This is the string where timers and ingredients have been
      * detected in
      */
-    private String mDescription;
+    protected String mDescription;
 
     /**
      * A boolean indicating whether the
      * {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask} task
      * has been executed on this step
      */
-    private boolean mIngredientDetectionDone;
+    protected boolean mIngredientDetectionDone;
 
     /**
      * A boolean indicating whether the
      * {@link com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask} task
      * has been executed on this step
      */
-    private boolean mTimerDetectionDone;
+    protected boolean mTimerDetectionDone;
+
+    /**
+     * A private constructor for converting one of the subclasses
+     * @param mIngredients
+     * @param mRecipeTimers
+     * @param mDescription
+     * @param mIngredientDetectionDone
+     * @param mTimerDetectionDone
+     */
+    private RecipeStep(List<Ingredient> mIngredients, List<RecipeTimer> mRecipeTimers, String mDescription,
+                       boolean mIngredientDetectionDone, boolean mTimerDetectionDone) {
+        this.mIngredients = mIngredients;
+        this.mRecipeTimers = mRecipeTimers;
+        this.mDescription = mDescription;
+        this.mIngredientDetectionDone = mIngredientDetectionDone;
+        this.mTimerDetectionDone = mTimerDetectionDone;
+    }
+
+    /**
+     * A constructor for converting a {@link com.aurora.souschefprocessor.task.RecipeStepInProgress}
+     * to a RecipeStep
+     */
+    protected RecipeStep convertToRecipeStep() {
+        return new RecipeStep(mIngredients, mRecipeTimers, mDescription, mIngredientDetectionDone, mTimerDetectionDone);
+    }
 
     /**
      * Construct a step using the description that can be used to detect ingredients and timers
@@ -248,7 +273,7 @@ public class RecipeStep {
      *
      * @param toMetric a boolean that indicates wheter to convert to metric or to US
      */
-    void convertUnit(boolean toMetric) {
+    public void convertUnit(boolean toMetric) {
         if (mIngredientDetectionDone) {
             for (Ingredient ingredient : mIngredients) {
                 mDescription = ingredient.convertUnit(toMetric, mDescription);

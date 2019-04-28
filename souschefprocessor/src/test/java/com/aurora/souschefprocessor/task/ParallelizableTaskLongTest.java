@@ -11,11 +11,16 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.Annotator;
 
 import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.INGR;
 import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.TIMER;
@@ -23,7 +28,7 @@ import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.TIMER;
 public class ParallelizableTaskLongTest {
 
     private static ThreadPoolExecutor mThreadPoolExecutor;
-    private static List<RecipeStep> recipeSteps = new ArrayList<>();
+    private static List<RecipeStepInProgress> recipeSteps = new ArrayList<>();
     private static StepTaskNames[] onlyTimerName = {TIMER};
     private static StepTaskNames[] onlyIngrName = {INGR};
     private static StepTaskNames[] both = {TIMER, INGR};
@@ -35,15 +40,27 @@ public class ParallelizableTaskLongTest {
     public static void initialize() {
         RecipeInProgress rip = new RecipeInProgress(null);
         DetectTimersInStepTask.initializeAnnotationPipeline();
-        recipeSteps.add(new RecipeStep("Put 500 gram sauce in the microwave for 3 minutes")); //0 minutes
-        recipeSteps.add(new RecipeStep("Heat the oil in a saucepan and gently fry the onion until softened, about 4-5 minutes.")); //1 upperbound and lowerbound with dash //"Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //1 (upperbound and lowerbound different)
-        recipeSteps.add(new RecipeStep("Put in the oven for 30 minutes and let rest for 20 minutes.")); //2 (two timers)
-        recipeSteps.add(new RecipeStep("Grate cheese for 30 seconds")); //3 (seconds)
-        recipeSteps.add(new RecipeStep("Wait for 4 hours")); //4 (hours)
-        recipeSteps.add(new RecipeStep("Let cool down for an hour and a half.")); //5 (verbose hour)
-        recipeSteps.add(new RecipeStep("Put the lasagna in the oven for 1h"));//6 (symbol hour)
-        recipeSteps.add(new RecipeStep("Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //7 (upperbound and lowerbound different)))
-        rip.setRecipeSteps(recipeSteps);
+        recipeSteps.add(new RecipeStepInProgress("Put 500 gram sauce in the microwave for 3 minutes")); //0 minutes
+        recipeSteps.add(new RecipeStepInProgress("Heat the oil in a saucepan and gently fry the onion until softened, about 4-5 minutes.")); //1 upperbound and lowerbound with dash //"Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //1 (upperbound and lowerbound different)
+        recipeSteps.add(new RecipeStepInProgress("Put in the oven for 30 minutes and let rest for 20 minutes.")); //2 (two timers)
+        recipeSteps.add(new RecipeStepInProgress("Grate cheese for 30 seconds")); //3 (seconds)
+        recipeSteps.add(new RecipeStepInProgress("Wait for 4 hours")); //4 (hours)
+        recipeSteps.add(new RecipeStepInProgress("Let cool down for an hour and a half.")); //5 (verbose hour)
+        recipeSteps.add(new RecipeStepInProgress("Put the lasagna in the oven for 1h"));//6 (symbol hour)
+        recipeSteps.add(new RecipeStepInProgress("Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //7 (upperbound and lowerbound different)))
+        rip.setStepsInProgress(recipeSteps);
+        // annotate the steps
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+        for (Annotator annotator : Delegator.getBasicAnnotators()) {
+            pipeline.addAnnotator(annotator);
+        }
+
+        for (RecipeStepInProgress step : recipeSteps) {
+            Annotation a = new Annotation(step.getDescription());
+            pipeline.annotate(a);
+            step.setSentenceAnnotation(Collections.singletonList(a));
+            step.setBeginPositionOffset(0);
+        }
         setUpThreadPool();
         onlyTimerstask = new ParallelizeStepsTask(rip, mThreadPoolExecutor, onlyTimerName);
         onlyIngrtask = new ParallelizeStepsTask(rip, mThreadPoolExecutor, onlyIngrName);

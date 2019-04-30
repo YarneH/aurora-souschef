@@ -100,6 +100,9 @@ public class Communicator {
         // for now String, should be TextObject but not yet defined by Aurora
         // for now this is independent of the tasks sent
         Recipe recipe = null;
+        if(extractedText == null){
+            throw new RecipeDetectionException("No text was extracted. Something went wrong in Aurora!");
+        }
         try {
             recipe = mDelegator.processText(extractedText);
             sendObjectToAuroraKernel(recipe);

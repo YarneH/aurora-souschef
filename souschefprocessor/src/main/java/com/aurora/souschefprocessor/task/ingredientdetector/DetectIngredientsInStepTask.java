@@ -275,7 +275,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         // is mentioned multiple times in the recipe step
         List<Ingredient> foundIngredients = new ArrayList<>();
 
-        List<CoreMap> stepSentences = recipeStep.getSentenceAnnotation();
+        List<CoreMap> stepSentences = recipeStep.getSentenceAnnotations();
 
         for (CoreMap sentence : stepSentences) {
             List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
@@ -399,7 +399,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private Ingredient getStepIngredient(int nameIndex, List<String> nameParts,
                                          Ingredient listIngredient, List<CoreLabel> tokens) {
 
-        int beginPosOffset = mRecipeStep.getBeginPositionOffset();
+        int beginPosOffset = mRecipeStep.getBeginPosition();
         Ingredient stepIngredient = defaultStepIngredient();
         stepIngredient.setName(listIngredient.getName());
 

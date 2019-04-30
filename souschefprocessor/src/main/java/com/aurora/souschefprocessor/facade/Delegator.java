@@ -102,9 +102,8 @@ public class Delegator {
             sStartedCreatingPipelines = true;
             LOCK.notifyAll();
         }
-        Thread t = new Thread(() -> {
-            DetectTimersInStepTask.initializeAnnotationPipeline();
-        });
+        Thread t = new Thread(DetectTimersInStepTask::initializeAnnotationPipeline);
+
         t.start();
     }
 

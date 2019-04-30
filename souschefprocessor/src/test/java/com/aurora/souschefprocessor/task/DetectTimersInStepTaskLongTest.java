@@ -1,7 +1,6 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.souschefprocessor.recipe.Position;
-import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
@@ -584,8 +583,8 @@ public class DetectTimersInStepTaskLongTest {
             for (RecipeStepInProgress s : list) {
                 Annotation a = new Annotation(s.getDescription());
                 pipeline.annotate(a);
-                s.setSentenceAnnotation(Collections.singletonList(a));
-                s.setBeginPositionOffset(0);
+                s.setSentenceAnnotations(Collections.singletonList(a));
+                s.setBeginPosition(0);
             }
 
             RecipeInProgress rip = new RecipeInProgress(null);

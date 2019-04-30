@@ -488,7 +488,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
         waitForCreationOfPipeline();
 
-        Annotation recipeStepAnnotated = new Annotation(recipeStep.getSentenceAnnotation());
+        Annotation recipeStepAnnotated = new Annotation(recipeStep.getSentenceAnnotations());
         sAnnotationPipeline.annotate(recipeStepAnnotated);
 
         List<CoreLabel> allTokens = recipeStepAnnotated.get(CoreAnnotations.TokensAnnotation.class);

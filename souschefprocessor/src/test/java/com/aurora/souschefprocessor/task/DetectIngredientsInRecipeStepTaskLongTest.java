@@ -68,7 +68,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
             for (RecipeStepInProgress s : recipeSteps) {
                 Annotation a = new Annotation(s.getDescription());
                 pipeline.annotate(a);
-                s.setSentenceAnnotation(Collections.singletonList(a));
+                s.setSentenceAnnotations(Collections.singletonList(a));
             }
         }
 

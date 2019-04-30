@@ -90,8 +90,8 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         for (RecipeStepInProgress s : recipeSteps) {
             Annotation a = new Annotation(s.getDescription());
             pipeline.annotate(a);
-            s.setSentenceAnnotation(Collections.singletonList(a));
-            s.setBeginPositionOffset(0);
+            s.setSentenceAnnotations(Collections.singletonList(a));
+            s.setBeginPosition(0);
         }
 
     }

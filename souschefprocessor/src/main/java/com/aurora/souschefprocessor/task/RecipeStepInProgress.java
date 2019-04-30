@@ -17,13 +17,13 @@ public class RecipeStepInProgress extends RecipeStep {
     /**
      * The annotation concerned with the description of this step
      */
-    private List<CoreMap> sentenceAnnotation;
+    private List<CoreMap> mSentenceAnnotations;
 
     /**
      * The offset of the beginposition of this step, defaults to 0. This is the beginposition in the entire
      * text
      */
-    private int beginPositionOffset = 0;
+    private int mBeginPostitionOffset = 0;
 
     /**
      * Construct a step using the description that can be used to detect ingredients and timers
@@ -36,20 +36,20 @@ public class RecipeStepInProgress extends RecipeStep {
 
     }
 
-    public List<CoreMap> getSentenceAnnotation() {
-        return sentenceAnnotation;
+    public List<CoreMap> getSentenceAnnotations() {
+        return mSentenceAnnotations;
     }
 
-    public void setSentenceAnnotation(List<CoreMap> annotations) {
-        this.sentenceAnnotation = annotations;
+    public void setSentenceAnnotations(List<CoreMap> annotations) {
+        this.mSentenceAnnotations = annotations;
     }
 
-    public int getBeginPositionOffset() {
-        return beginPositionOffset;
+    public int getBeginPosition() {
+        return mBeginPostitionOffset;
     }
 
-    public void setBeginPositionOffset(int beginPositionOffset) {
-        this.beginPositionOffset = beginPositionOffset;
+    public void setBeginPosition(int mBeginPositionOffset) {
+        this.mBeginPostitionOffset = mBeginPositionOffset;
     }
 
     /**
@@ -82,7 +82,7 @@ public class RecipeStepInProgress extends RecipeStep {
 
     /**
      * {@inheritDoc}
-     * This overrides the super method by subtracting the {@link #beginPositionOffset} of the position
+     * This overrides the super method by subtracting the {@link #mBeginPostitionOffset} of the position
      * of the timers
      *
      * @param recipeTimers The list to set as ingredients
@@ -93,7 +93,7 @@ public class RecipeStepInProgress extends RecipeStep {
         if (recipeTimers != null && !recipeTimers.isEmpty()) {
             for (RecipeTimer timer : recipeTimers) {
                 // change the position of the timer by subtrackting the offset
-                timer.getPosition().subtractOffset(beginPositionOffset);
+                timer.getPosition().subtractOffset(mBeginPostitionOffset);
                 // this also checks if the position of the timer is valid
 
                 add(timer);

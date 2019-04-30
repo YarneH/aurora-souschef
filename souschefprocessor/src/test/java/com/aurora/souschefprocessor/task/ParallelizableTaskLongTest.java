@@ -93,8 +93,8 @@ public class ParallelizableTaskLongTest {
         for (RecipeStepInProgress step : recipeSteps) {
             Annotation a = new Annotation(step.getDescription());
             pipeline.annotate(a);
-            step.setSentenceAnnotation(Collections.singletonList(a));
-            step.setBeginPositionOffset(0);
+            step.setSentenceAnnotations(Collections.singletonList(a));
+            step.setBeginPosition(0);
         }
 
         // create the threadpool

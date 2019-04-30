@@ -98,8 +98,8 @@ public class RecipeStepUnitTest {
         Annotation annotation = new Annotation(step.getDescription());
         pipeline.annotate(annotation);
         List<CoreMap> sentencesInAnnotation = annotation.get(CoreAnnotations.SentencesAnnotation.class);
-        step.setSentenceAnnotation(sentencesInAnnotation);
-        step.setBeginPositionOffset(0);
+        step.setSentenceAnnotations(sentencesInAnnotation);
+        step.setBeginPosition(0);
 
         rip.setStepsInProgress(Collections.singletonList(step));
 

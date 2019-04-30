@@ -134,8 +134,8 @@ public class SplitStepsTask extends AbstractProcessingTask {
     }
 
     /**
-     * A helper function for {@link #setAnnotations(List)}. It calls the {@link RecipeStepInProgress#setBeginPositionOffset(int)}
-     * and {@link RecipeStepInProgress#setSentenceAnnotation(List)} methods
+     * A helper function for {@link #setAnnotations(List)}. It calls the {@link RecipeStepInProgress#setBeginPosition(int)}
+     * and {@link RecipeStepInProgress#setSentenceAnnotations(List)} methods
      *
      * @param step the step whose annotations are filled in
      */
@@ -170,8 +170,8 @@ public class SplitStepsTask extends AbstractProcessingTask {
         CoreLabel firstToken = sentenceAnnotationsForStep.get(0).get(CoreAnnotations.TokensAnnotation.class).get(0);
 
         // Call the setters
-        step.setBeginPositionOffset(firstToken.beginPosition());
-        step.setSentenceAnnotation(sentenceAnnotationsForStep);
+        step.setBeginPosition(firstToken.beginPosition());
+        step.setSentenceAnnotations(sentenceAnnotationsForStep);
     }
 
     private Annotation findAnnotationForStep(String description) {

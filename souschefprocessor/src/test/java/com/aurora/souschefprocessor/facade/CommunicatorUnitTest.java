@@ -28,8 +28,8 @@ public class CommunicatorUnitTest {
         List<String> jsonRecipes = DelegatorLongTest.initializeRecipesJSON();
         // split into valid and invalid
         // the first 6 recipes are valid recipes
-        validRecipes = jsonRecipes.subList(0, 6);
-        invalidRecipes = jsonRecipes.subList(6, 8);
+        validRecipes = jsonRecipes.subList(0, 7);
+        invalidRecipes = jsonRecipes.subList(7, jsonRecipes.size());
 
         // load in the model and create the communicator
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";

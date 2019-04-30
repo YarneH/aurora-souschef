@@ -69,5 +69,7 @@ dependencies {
     implementation 'com.github.nisrulz:sensey:1.8.0'
     // Better annotations in android studio
     implementation 'org.jetbrains:annotations:15.0'
+
+    implementation group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.7.1'
 }
 apply plugin: 'com.google.gms.google-services'

@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.facade;
 
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 import org.junit.After;
@@ -9,9 +10,12 @@ import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +32,28 @@ public class DelegatorLongTest {
     private static List<String> invalidRecipesJSON;
     private static Delegator delegator;
     private static CRFClassifier<CoreLabel> crfClassifier;
+
+    @BeforeClass
+    public static void initialize() {
+
+        // Read in the recipes, the first 7 are valid recipes
+        List<String> jsonRecipes = initializeRecipesJSON();
+        validRecipesJSON = jsonRecipes.subList(0, 7);
+        invalidRecipesJSON = jsonRecipes.subList(7, jsonRecipes.size());
+
+
+        // load in the model and create the delegator
+        String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
+        try {
+            crfClassifier = CRFClassifier.getClassifier(modelName);
+            // create the delegator object
+            // parallel is better when the number of cores are only half
+            // sequnetial performs faster
+            delegator = new Delegator(crfClassifier, false);
+        } catch (IOException | ClassNotFoundException e) {
+        }
+
+    }
 
     /**
      * Read in the json recipes
@@ -55,26 +81,37 @@ public class DelegatorLongTest {
         return list;
     }
 
-    @BeforeClass
-    public static void initialize() {
-
-        // Read in the recipes, the first 6 are valid recipes
-        List<String> jsonRecipes = initializeRecipesJSON();
-        validRecipesJSON = jsonRecipes.subList(0, 6);
-        invalidRecipesJSON = jsonRecipes.subList(6, jsonRecipes.size());
-
-        // load in the model and create the delegator
-        String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
+    /**
+     * Read in the testrecipes
+     *
+     * @return A list of testrecipes
+     */
+    public static List<String> initializeRecipes() {
+        String filename = "src/test/java/com/aurora/souschefprocessor/facade/recipes.txt";
+        List<String> list = new ArrayList<>();
         try {
-            crfClassifier = CRFClassifier.getClassifier(modelName);
-            // create the delegator object
-            // parallel is better when the number of cores are only half
-            // sequnetial performs faster
-            delegator = new Delegator(crfClassifier, false);
-        } catch (IOException | ClassNotFoundException e) {
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(filename), StandardCharsets.UTF_8));
+            StringBuilder bld = new StringBuilder();
+            String line = reader.readLine();
+
+            while (line != null) {
+                if (!line.equals("----------")) {
+                    bld.append(line + "\n");
+                } else {
+                    list.add(bld.toString());
+                    bld = new StringBuilder();
+
+                }
+                line = reader.readLine();
+            }
+            list.add(bld.toString());
+        } catch (IOException io) {
+            System.err.print(io);
         }
 
-
+        return list;
     }
 
 
@@ -105,8 +142,6 @@ public class DelegatorLongTest {
             assertFalse("an exception was thrown for json " + json + "/n" +
                     "Exception = " + message, thrown);
         }
-
-
     }
 
 
@@ -133,7 +168,6 @@ public class DelegatorLongTest {
             // assert that an error was thrown
             assertTrue("No exception was thrown for json ", thrown);
         }
-
 
     }
 
@@ -175,6 +209,7 @@ public class DelegatorLongTest {
         delegator = new Delegator(crfClassifier, true);
 
         // Act
+
         for (String json : validRecipesJSON) {
             ExtractedText text = ExtractedText.fromJson(json);
             long start = System.currentTimeMillis();
@@ -190,13 +225,42 @@ public class DelegatorLongTest {
         System.out.println(average_para + "  PARALLEL TIME");
         assert (average_para < 2000);
 
-
     }
 
     @After
     public void wipeDelegator() {
         delegator = new Delegator(crfClassifier, true);
+        List<String> jsonRecipes = initializeRecipesJSON();
+        validRecipesJSON = jsonRecipes.subList(0, 7);
+        invalidRecipesJSON = jsonRecipes.subList(7, jsonRecipes.size());
+
     }
 
+    @Test
+    public void test_with_new_auroralib() {
+        String contents = null;
+        try {
+            System.out.println(Paths.get("").toAbsolutePath().toString());
+            BufferedReader reader = new BufferedReader(new FileReader("../app/src/main/res/raw/input.txt"));
+            StringBuilder bld = new StringBuilder();
+            String line = reader.readLine();
+            while (line != null) {
+                bld.append(line);
+                line = reader.readLine();
+
+            }
+            contents = bld.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ExtractedText text = ExtractedText.fromJson(contents);
+
+        Recipe r = delegator.processText(text);
+        Position pos = r.getRecipeSteps().get(2).getIngredients().get(0).getQuantityPosition();
+        System.out.println(r.getRecipeSteps().get(2).getDescription().substring(pos.getBeginIndex(), pos.getEndIndex()));
+        System.out.println(r.getRecipeSteps().get(2).getDescription());
+
+    }
 
 }

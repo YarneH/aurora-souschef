@@ -1,16 +1,28 @@
 package com.aurora.souschefprocessor.recipe;
 
 import com.aurora.souschefprocessor.task.RecipeInProgress;
+import com.aurora.souschefprocessor.task.RecipeStepInProgress;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
+
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
+import edu.stanford.nlp.pipeline.TokenizerAnnotator;
+import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
+import edu.stanford.nlp.util.CoreMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+
 
 public class RecipeStepUnitTest {
 
@@ -76,8 +88,20 @@ public class RecipeStepUnitTest {
         // construct the step and add it to the recipe
         String originalDescription = "Heat 0.25 cup oil in a large deep-sided skillet over medium-high";
 
-        RecipeStep step = new RecipeStep(originalDescription);
-        rip.setRecipeSteps(new ArrayList<RecipeStep>(Arrays.asList(step)));
+        RecipeStepInProgress step = new RecipeStepInProgress(originalDescription);
+
+        // annotate the step
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+        pipeline.addAnnotator(new TokenizerAnnotator());
+        pipeline.addAnnotator(new WordsToSentencesAnnotator());
+        pipeline.addAnnotator(new POSTaggerAnnotator());
+        Annotation annotation = new Annotation(step.getDescription());
+        pipeline.annotate(annotation);
+        List<CoreMap> sentencesInAnnotation = annotation.get(CoreAnnotations.SentencesAnnotation.class);
+        step.setSentenceAnnotations(sentencesInAnnotation);
+        step.setBeginPosition(0);
+
+        rip.setStepsInProgress(Collections.singletonList(step));
 
         // detect the ingredients in the step
         DetectIngredientsInStepTask task = new DetectIngredientsInStepTask(rip, 0);

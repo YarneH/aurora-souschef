@@ -27,9 +27,6 @@ import java.util.concurrent.TimeUnit;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotator;
-import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
-import edu.stanford.nlp.pipeline.TokenizerAnnotator;
-import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
@@ -89,9 +86,6 @@ public class Delegator {
         mParallelize = parallelize;
     }
 
-    public static List<Annotator> getBasicAnnotators() {
-        return createBasicAnnotators();
-    }
 
     /**
      * Creates the annotation pipelines for the {@link DetectIngredientsInStepTask} and
@@ -108,42 +102,11 @@ public class Delegator {
             sStartedCreatingPipelines = true;
             LOCK.notifyAll();
         }
-        Thread t = new Thread(() -> {
-            createBasicAnnotators();
-            DetectTimersInStepTask.initializeAnnotationPipeline();
-            DetectIngredientsInStepTask.initializeAnnotationPipeline();
-        });
+        Thread t = new Thread(DetectTimersInStepTask::initializeAnnotationPipeline);
+
         t.start();
     }
 
-    /**
-     * Creates the basicannotators (tokenizer, words to sentence and POS), ensures that is only created
-     * once and notifies other threads if the creation is finished.
-     *
-     * @return the list of sBasicAnnotators
-     */
-    private static List<Annotator> createBasicAnnotators() {
-
-        synchronized (sBasicAnnotators) {
-
-            if (sBasicAnnotators.isEmpty()) {
-
-                sBasicAnnotators.add(new TokenizerAnnotator(false, "en"));
-                incrementProgressAnnotationPipelines(); //1
-            }
-            if (sBasicAnnotators.size() == 1) {
-                sBasicAnnotators.add(new WordsToSentencesAnnotator(false));
-                incrementProgressAnnotationPipelines(); //2
-            }
-            if (sBasicAnnotators.size() < BASIC_ANNOTATOR_SIZE) {
-                sBasicAnnotators.add(new POSTaggerAnnotator(false));
-                incrementProgressAnnotationPipelines(); //3
-            }
-            sBasicAnnotators.notifyAll();
-        }
-
-        return sBasicAnnotators;
-    }
 
     /**
      * calls the {@link Communicator#incrementProgressAnnotationPipelines()} function
@@ -239,4 +202,6 @@ public class Delegator {
 
         return pipeline;
     }
+
+
 }

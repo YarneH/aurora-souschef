@@ -6,6 +6,7 @@ import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.helpertasks.ParallelizeStepsTask;
 import com.aurora.souschefprocessor.task.helpertasks.StepTaskNames;
+import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -13,6 +14,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -20,15 +22,22 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
+import edu.stanford.nlp.pipeline.TokenizerAnnotator;
+import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
+
 import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.INGR;
 import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.TIMER;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+
 public class ParallelizableTaskLongTest {
 
     private static ThreadPoolExecutor mThreadPoolExecutor;
-    private static List<RecipeStep> recipeSteps = new ArrayList<>();
+    private static List<RecipeStepInProgress> recipeSteps = new ArrayList<>();
     private static StepTaskNames[] onlyTimerName = {TIMER};
     private static StepTaskNames[] onlyIngrName = {INGR};
     private static StepTaskNames[] both = {TIMER, INGR};
@@ -46,6 +55,9 @@ public class ParallelizableTaskLongTest {
             irrelevantPositions.put(key, pos);
         }
         RecipeInProgress rip = new RecipeInProgress(null);
+
+        DetectTimersInStepTask.initializeAnnotationPipeline();
+
         // what a yummy recipe
 
         // create the ingredients
@@ -60,18 +72,33 @@ public class ParallelizableTaskLongTest {
         rip.setIngredients(new ArrayList<>(Arrays.asList(sauce, oil, dough, coffee, cheese, lasagna, spaghetti, chips)));
 
         // create the steps
-        RecipeStep sauceStep = new RecipeStep("Put 500 gram sauce in the microwave for 3 minutes"); //0 minutes
-        RecipeStep oilStep = new RecipeStep("Heat the oil in a saucepan and gently fry the onion until softened, about 4-5 minutes."); //1 upperbound and lowerbound with dash //"Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //1 (upperbound and lowerbound different)
-        RecipeStep doughStep = new RecipeStep("Put the dough in the oven for 30 minutes and let rest for 20 minutes."); //2 (two timers)
-        RecipeStep cheeseStep = new RecipeStep("Grate cheese for 30 seconds"); //3 (seconds)
-        RecipeStep coffeeStep = new RecipeStep("Wait for 4 hours and drink your coffee"); //4 (hours)
-        RecipeStep chipsStep = new RecipeStep("Let cool down for an hour and a half. The chips are now very crispy"); //5 (verbose hour)
-        RecipeStep lasagnaStep = new RecipeStep("Put the lasagna in the oven for 1h");//6 (symbol hour)
-        RecipeStep spaghettiStep = new RecipeStep("Put 500 gram spaghetti in boiling water 7 to 9 minutes"); //7 (upperbound and lowerbound different)))
+        RecipeStepInProgress sauceStep = new RecipeStepInProgress("Put 500 gram sauce in the microwave for 3 minutes"); //0 minutes
+        RecipeStepInProgress oilStep = new RecipeStepInProgress("Heat the oil in a saucepan and gently fry the onion until softened, about 4-5 minutes."); //1 upperbound and lowerbound with dash //"Put 500 gram spaghetti in boiling water 7 to 9 minutes")); //1 (upperbound and lowerbound different)
+        RecipeStepInProgress doughStep = new RecipeStepInProgress("Put the dough in the oven for 30 minutes and let rest for 20 minutes."); //2 (two timers)
+        RecipeStepInProgress cheeseStep = new RecipeStepInProgress("Grate cheese for 30 seconds"); //3 (seconds)
+        RecipeStepInProgress coffeeStep = new RecipeStepInProgress("Wait for 4 hours and drink your coffee"); //4 (hours)
+        RecipeStepInProgress chipsStep = new RecipeStepInProgress("Let cool down for an hour and a half. The chips are now very crispy"); //5 (verbose hour)
+        RecipeStepInProgress lasagnaStep = new RecipeStepInProgress("Put the lasagna in the oven for 1h");//6 (symbol hour)
+        RecipeStepInProgress spaghettiStep = new RecipeStepInProgress("Put 500 gram spaghetti in boiling water 7 to 9 minutes"); //7 (upperbound and lowerbound different)))
         recipeSteps = new ArrayList<>(Arrays.asList(oilStep, sauceStep, spaghettiStep, lasagnaStep, doughStep, chipsStep, cheeseStep, coffeeStep));
-        rip.setRecipeSteps(recipeSteps);
+        rip.setStepsInProgress(recipeSteps);
+        // annotate the steps
+        AnnotationPipeline pipeline = new AnnotationPipeline();
+
+        pipeline.addAnnotator(new TokenizerAnnotator());
+        pipeline.addAnnotator(new WordsToSentencesAnnotator());
+        pipeline.addAnnotator(new POSTaggerAnnotator());
+
+
+        for (RecipeStepInProgress step : recipeSteps) {
+            Annotation a = new Annotation(step.getDescription());
+            pipeline.annotate(a);
+            step.setSentenceAnnotations(Collections.singletonList(a));
+            step.setBeginPosition(0);
+        }
 
         // create the threadpool
+
         setUpThreadPool();
 
         // create the tasks

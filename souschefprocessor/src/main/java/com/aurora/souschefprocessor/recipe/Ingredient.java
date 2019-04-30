@@ -278,4 +278,15 @@ public class Ingredient {
     public enum PositionKeysForIngredients {
         NAME, QUANTITY, UNIT
     }
+
+    /**
+     * Updates the positions of the QUANTITY UNIT and name by adding an offset. Calls the {@link Position#addOffset(int)}
+     * method
+     * @param offset the offset to add
+     */
+    public void addOffsetToPositions(int offset){
+        for(PositionKeysForIngredients key: PositionKeysForIngredients.values()){
+            mPositions.get(key).addOffset(offset);
+        }
+    }
 }

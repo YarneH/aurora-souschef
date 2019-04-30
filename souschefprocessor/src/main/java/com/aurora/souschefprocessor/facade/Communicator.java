@@ -53,9 +53,11 @@ public class Communicator {
         createAnnotationPipelines();
         try (GZIPInputStream is = new GZIPInputStream(context.getResources().
                 openRawResource(R.raw.detect_ingr_list_model))) {
+            // log for the opening
+            incrementProgressAnnotationPipelines(); // 1
             Log.d("COMMUNICATOR", "start loading model");
             CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
-            incrementProgressAnnotationPipelines(); // 5
+            incrementProgressAnnotationPipelines(); // 2
             return new Communicator(crf);
         } catch (IOException | ClassNotFoundException e) {
             Log.e("COMMUNICATOR", "createCommunicator ", e);
@@ -95,8 +97,10 @@ public class Communicator {
      * @param extractedText the text to be processed
      */
     public Recipe process(ExtractedText extractedText) {
-        // for now String, should be TextObject but not yet defined by Aurora
-        // for now this is independent of the tasks sent
+
+        if(extractedText == null){
+            throw new RecipeDetectionException("No text was extracted. Something went wrong in Aurora!");
+        }
         Recipe recipe = null;
         try {
             recipe = mDelegator.processText(extractedText);

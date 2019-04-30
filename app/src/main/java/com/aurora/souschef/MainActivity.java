@@ -22,6 +22,11 @@ import com.aurora.auroralib.PluginObject;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 public class MainActivity extends AppCompatActivity {
 
     /**
@@ -72,9 +77,24 @@ public class MainActivity extends AppCompatActivity {
      *
      * @return a recipe json
      */
-    @java.lang.SuppressWarnings("squid:S00103")
-    private static String getText() {
-        return "{\"mFilename\":\"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3DFr3xSHzCrT%2BQuzQqzL6JGCuSwXoQfIgnnbNN7oCOieFoOZSCsCI%2Bd1DGDGWN\",\"mTitle\":\"Chocolate Chip Cookies\",\"mSections\":[{\"mBody\":\"1 /4 c. shortening\\n1/4 c. margarine\\n1 /4 c. sugar\\n1/2 c. brown sugar, packed\\n1 egg\\n\",\"mImages\":[]},{\"mBody\":\"1/8  tsp. salt\\n1/2  tsp. baking soda\\n1 tsp. vanilla\\n1 1/4 c. flour\\n1 c. chocolate chips\\n\",\"mImages\":[]},{\"mBody\":\"Preheat oven to 375 degrees.\\n\",\"mImages\":[]},{\"mBody\":\"In mixer, CREAM shortening, margarine and sugars until smooth.\\n\",\"mImages\":[]},{\"mBody\":\"Beat in egg, and mix until smooth again.\\n\",\"mImages\":[]},{\"mBody\":\"Mix in salt, baking soda, and vanilla.\\n\",\"mImages\":[]},{\"mBody\":\"Gradually stir in flour.  CHECK OFF YOUR COOKIE DOUGH WITH YOUR TEACHER BEFORE MOVING ON!\\n\",\"mImages\":[]},{\"mBody\":\"Finally add chocolate chips; then form into small round balls and place on a greased cookie sheet.  (Allow space because they spread out while baking).\\n\",\"mImages\":[]},{\"mBody\":\"Bake for 8-10 minutes.\\n\",\"mImages\":[]},{\"mBody\":\"Let cookies cool for 1 minute; then remove with a turner onto a cooling rack.  After cooling about 5 minutes, ENJOY!\\n\",\"mImages\":[]}]}\n";
+
+    private String getText() {
+
+        InputStream stream = getResources().openRawResource(R.raw.input);
+        StringBuilder bld = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        try {
+            String line = reader.readLine();
+            while (line != null) {
+                bld.append(line);
+
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            Log.e("MAIN", "opening default file failed", e );
+        }
+        Log.d("read", bld.toString());
+        return bld.toString();
     }
 
     /**

@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
      */
 
     private String getText() {
-        
+
         InputStream stream = getResources().openRawResource(R.raw.input);
         StringBuilder bld = new StringBuilder();
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
+        showProgress();
 
         // setup recipe data object (RecipeViewModel).
         setUpRecipeDataObject();

@@ -143,9 +143,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     }
 
 
-
-
-
     /**
      * Checks if the line doe not contain any of the {@link #NOT_INGREDIENTS_WORDS}
      *
@@ -175,7 +172,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         List<Section> sectionsToRemove = new ArrayList<>();
         boolean alreadyFound = false;
         for (Section section : mSections) {
-            String body = section.getBody();
+
             if (!alreadyFound) {
                 boolean verbDetected = verbDetected(section);
 
@@ -186,7 +183,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 // remove this section
                 sectionsToRemove.add(section);
                 // append it to the builder
-                bld.append(body);
+                bld.append(section.getBody());
                 bld.append("\n\n");
             }
         }
@@ -210,12 +207,12 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         if (mRecipeInProgress.getExtractedText() != null) {
             for (Section s : mSections) {
 
-                String title = s.getTitle();
                 if (bld != null) {
                     // if bld exists it means the regex has been found
                     bld.append(s.getBody());
                     foundSections.add(s);
                 } else {
+                    String title = s.getTitle();
                     if (title != null && Pattern.compile(regex).matcher(
                             title.toLowerCase(Locale.ENGLISH)).find()) {
                         bld = new StringBuilder(s.getBody());
@@ -249,29 +246,31 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         for (Section section : mSections) {
             String body = section.getBody();
-            String[] lines = body.split("\n");
 
+            if (body != null) {
+                String[] lines = body.split("\n");
 
-            for (String line : lines) {
+                for (String line : lines) {
 
-                String lowerCaseLine = line.toLowerCase(Locale.ENGLISH);
-                Matcher match = Pattern.compile(regex).matcher(lowerCaseLine);
+                    String lowerCaseLine = line.toLowerCase(Locale.ENGLISH);
+                    Matcher match = Pattern.compile(regex).matcher(lowerCaseLine);
 
-                if (found) {
-                    bld.append(line);
-                    bld.append("\n");
+                    if (found) {
+                        bld.append(line);
+                        bld.append("\n");
 
-                } else {
-                    if (match.find()) {
-                        found = true;
-                        sectionIndex = mSections.indexOf(section);
-                        // remove this line and any following of this section from the body
-                        mSections.get(sectionIndex).setBody(body.substring(0, body.indexOf(line)));
+                    } else {
+                        if (match.find()) {
+                            found = true;
+                            sectionIndex = mSections.indexOf(section);
+                            // remove this line and any following of this section from the body
+                            mSections.get(sectionIndex).setBody(body.substring(0, body.indexOf(line)));
+                        }
                     }
                 }
+                // make sure the bodies (steps) are split up by \n\n
+                bld.append("\n\n");
             }
-            // make sure the bodies (steps) are split up by \n\n
-            bld.append("\n\n");
         }
 
         if (sectionIndex >= 0) {
@@ -314,26 +313,29 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         int firstSection = mSections.size();
         for (Section section : mSections) {
             String body = section.getBody();
-            String[] lines = body.split("\n");
+            if (body != null) {
+                String[] lines = body.split("\n");
 
-            for (String line : lines) {
-                // only do this of not found already and the line has at least two characters
-                // (one character can never be an ingredient)
-                boolean notFoundAndAtLeastTwoCharacters = !found && line.length() > 1;
-                if (notFoundAndAtLeastTwoCharacters) {
-                    // look at the first actual character and not a whitespace
-                    line = line.trim();
-                    char c = line.charAt(0);
-                    found = Character.isDigit(c) && doesNotContainNonIngredientWords(line);
-                    firstSection = mSections.indexOf(section);
+                for (String line : lines) {
+                    // only do this of not found already and the line has at least two characters
+                    // (one character can never be an ingredient)
+                    boolean notFoundAndAtLeastTwoCharacters = !found && line.length() > 1;
+                    if (notFoundAndAtLeastTwoCharacters) {
+                        // look at the first actual character and not a whitespace
+                        line = line.trim();
+                        char c = line.charAt(0);
+                        found = Character.isDigit(c) && doesNotContainNonIngredientWords(line);
+                        firstSection = mSections.indexOf(section);
 
+                    }
                 }
-            }
-            if (found) {
-                bld.append(body);
-                if (bld.lastIndexOf("\n") != bld.length() - 1) {
-                    // append a new line if necessary
-                    bld.append("\n");
+
+                if (found) {
+                    bld.append(body);
+                    if (bld.lastIndexOf("\n") != bld.length() - 1) {
+                        // append a new line if necessary
+                        bld.append("\n");
+                    }
                 }
             }
         }
@@ -394,9 +396,11 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                     bld.append("\n");
                 }
 
-                bld.append(body.trim());
-                // append a new line between the sections for readability
-                bld.append("\n");
+                if (body != null) {
+                    bld.append(body.trim());
+                    // append a new line between the sections for readability
+                    bld.append("\n");
+                }
             }
         }
 
@@ -487,7 +491,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private boolean verbDetected(Section section) {
         // TODO adapt this method to new input of aurora
-        Annotation annotatedText = createAnnotatedText(section);
+        Annotation annotatedText = getAnnotatedText(section);
         List<CoreMap> sentences = annotatedText.get(CoreAnnotations.SentencesAnnotation.class);
 
         for (CoreMap sentence : sentences) {
@@ -512,13 +516,12 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
 
     /**
-     * Creates annotation pipeline and parses the text
-     * (this should be in Aurora)
+     * Gets the annotation of the section
      *
      * @return the annotated text
      */
-    private Annotation createAnnotatedText(Section section) {
-        if(section.getBodyAnnotation() == null){
+    private Annotation getAnnotatedText(Section section) {
+        if (section.getBodyAnnotation() == null) {
             throw new RecipeDetectionException("At least one section was not annotated for this text. " +
                     "Please contact Aurora to resolve this");
         }

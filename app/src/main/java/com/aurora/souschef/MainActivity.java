@@ -22,6 +22,11 @@ import com.aurora.auroralib.PluginObject;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 public class MainActivity extends AppCompatActivity {
 
     /**
@@ -73,10 +78,25 @@ public class MainActivity extends AppCompatActivity {
      * @return a recipe json
      */
 
-    private  String getText() {
+    private String getText() {
         // should refer to input.txt file, crashes the app now because too large string, wait for
         // Jeroen's update
-        return getString(R.string.defaultRecipe);}
+        InputStream stream = getResources().openRawResource(R.raw.input);
+        StringBuilder bld = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        try {
+            String line = reader.readLine();
+            while (line != null) {
+                bld.append(line);
+
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+
+        }
+        Log.d("read", bld.toString());
+        return bld.toString();
+    }
 
     /**
      * Sets up the observation of the recipeviewmodel
@@ -132,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        showProgress();
+
 
         // setup recipe data object (RecipeViewModel).
         setUpRecipeDataObject();

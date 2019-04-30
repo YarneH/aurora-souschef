@@ -8,7 +8,10 @@ import java.util.List;
 
 import edu.stanford.nlp.util.CoreMap;
 
-
+/**
+ * A subclass of RecipeStep, it stores the annotations that were received by Aurora as well as the offset
+ * that this step has towards the entire step.
+ */
 public class RecipeStepInProgress extends RecipeStep {
 
     /**

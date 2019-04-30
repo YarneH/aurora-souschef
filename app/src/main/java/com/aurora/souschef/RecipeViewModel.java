@@ -301,7 +301,7 @@ public class RecipeViewModel extends AndroidViewModel {
 
         public SouschefInit(String text) {
             this.mExtractedText = ExtractedText.fromJson(text);
-            this.mWithExtractedText = false;
+            this.mWithExtractedText = true;
         }
 
         public SouschefInit(ExtractedText extractedText) {

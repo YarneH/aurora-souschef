@@ -79,8 +79,7 @@ public class MainActivity extends AppCompatActivity {
      */
 
     private String getText() {
-        // should refer to input.txt file, crashes the app now because too large string, wait for
-        // Jeroen's update
+        
         InputStream stream = getResources().openRawResource(R.raw.input);
         StringBuilder bld = new StringBuilder();
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));

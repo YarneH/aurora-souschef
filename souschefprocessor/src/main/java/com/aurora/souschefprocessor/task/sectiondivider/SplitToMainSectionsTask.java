@@ -84,33 +84,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     }
 
     /**
-     * Divides the original text into a string representing list of mIngredients, string representing
-     * a list of mRecipeSteps, string representing the mDescription of the recipe (if present) and an integer
-     * representing the amount of people the original recipe is for. It will then modify the recipe
-     * with these fields
-     */
-    public void doTask() {
-        String ingredients;
-        String steps;
-        String description;
-
-        ExtractedText text = mRecipeInProgress.getExtractedText();
-
-        mSections = new ArrayList<>();
-
-        for (Section sec : text.getSections()) {
-            mSections.add(removeClutter(sec));
-        }
-
-        steps = findSteps();
-        ingredients = findIngredients();
-        description = findDescription();
-
-
-        modifyRecipe(trimNewLines(ingredients), trimNewLines(steps), trimNewLines(description));
-    }
-
-    /**
      * Removes the {@link #CLUTTER_STRINGS} from a section if they are present
      *
      * @param section the section to remove the clutter from
@@ -141,6 +114,94 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             }
         }
         return section;
+    }
+
+    /**
+     * This trims each line (via split on new line character) of a block of text
+     *
+     * @param text The text to trim
+     * @return The trimmed text
+     */
+    private static String trimNewLines(String text) {
+        if (text.length() == 0) {
+            return text;
+        }
+
+        StringBuilder bld = new StringBuilder();
+        String[] lines = text.split("\n");
+        for (String line : lines) {
+            bld.append(line.trim());
+            bld.append("\n");
+        }
+        // Remove last new line
+        if (bld.length() == 0) {
+            return text;
+        } else {
+            return bld.toString().trim().replace("\n\n\n", "\n\n");
+        }
+    }
+
+    /**
+     * Helper function for {@link #findIngredientsDigit()} and
+     * {@link #findStepsOrIngredientsRegexBasedWithoutTitles(String)} Appends the text to the
+     * stringBuilder if the section
+     * starting with digits has already been found.
+     *
+     * @param found a boolean that indicates if the text should be added
+     * @param bld   The stringBuilder to append to
+     * @param text  The text to append to the stringBuilder
+     */
+    private static void appendTextToStringBuilderIfFound(boolean found, StringBuilder bld, String text) {
+        if (found) {
+            bld.append(text);
+            if (bld.lastIndexOf("\n") != bld.length() - 1) {
+                // append a new line if necessary
+                bld.append("\n");
+            }
+        }
+    }
+
+    /**
+     * Checks if the line doe not contain any of the {@link #NOT_INGREDIENTS_WORDS}
+     *
+     * @param line the line to check
+     * @return a boolean
+     */
+    private static boolean doesNotContainNonIngredientWords(String line) {
+        String lowerCase = line.toLowerCase(Locale.ENGLISH);
+        for (String notIngredientWord : NOT_INGREDIENTS_WORDS) {
+            if (lowerCase.contains(notIngredientWord)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Divides the original text into a string representing list of mIngredients, string representing
+     * a list of mRecipeSteps, string representing the mDescription of the recipe (if present) and an integer
+     * representing the amount of people the original recipe is for. It will then modify the recipe
+     * with these fields
+     */
+    public void doTask() {
+        String ingredients;
+        String steps;
+        String description;
+
+        ExtractedText text = mRecipeInProgress.getExtractedText();
+
+        mSections = new ArrayList<>();
+
+        for (Section sec : text.getSections()) {
+            mSections.add(removeClutter(sec));
+        }
+
+        steps = findSteps();
+        ingredients = findIngredients();
+        description = findDescription();
+
+
+        modifyRecipe(trimNewLines(ingredients), trimNewLines(steps), trimNewLines(description));
     }
 
     /**
@@ -226,31 +287,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         mRecipeInProgress.setIngredientsString(ingredients);
         mRecipeInProgress.setStepsString(steps);
         mRecipeInProgress.setDescription(description);
-    }
-
-    /**
-     * This trims each line (via split on new line character) of a block of text
-     *
-     * @param text The text to trim
-     * @return The trimmed text
-     */
-    private static String trimNewLines(String text) {
-        if (text.length() == 0) {
-            return text;
-        }
-
-        StringBuilder bld = new StringBuilder();
-        String[] lines = text.split("\n");
-        for (String line : lines) {
-            bld.append(line.trim());
-            bld.append("\n");
-        }
-        // Remove last new line
-        if (bld.length() == 0) {
-            return text;
-        } else {
-            return bld.toString().trim().replace("\n\n\n", "\n\n");
-        }
     }
 
     /**
@@ -354,7 +390,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
                     }
                 }
-                appendBodyToStringBuilderIfFound(found, bld, body);
+                appendTextToStringBuilderIfFound(found, bld, body);
             }
         }
 
@@ -365,23 +401,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         }
         // let caller know nothing was found
         return "";
-    }
-
-    /**
-     * Helper function for {@link #findIngredientsDigit()} Appends the body to the stringBuilder if the section
-     * starting with digits has already been found.
-     * @param found a boolean that indicates if the body should be added
-     * @param bld The stringBuilder to append to
-     * @param body The body to append to the stringBuilder
-     */
-    private static void appendBodyToStringBuilderIfFound(boolean found, StringBuilder bld, String body){
-        if (found) {
-            bld.append(body);
-            if (bld.lastIndexOf("\n") != bld.length() - 1) {
-                // append a new line if necessary
-                bld.append("\n");
-            }
-        }
     }
 
     /**
@@ -447,17 +466,13 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                     String lowerCaseLine = line.toLowerCase(Locale.ENGLISH);
                     Matcher match = Pattern.compile(regex).matcher(lowerCaseLine);
 
-                    if (found) {
-                        bld.append(line);
-                        bld.append("\n");
+                    appendTextToStringBuilderIfFound(found, bld, line);
 
-                    } else {
-                        if (match.find()) {
-                            found = true;
-                            sectionIndex = mSections.indexOf(section);
-                            // remove this line and any following of this section from the body
-                            mSections.get(sectionIndex).setBody(body.substring(0, body.indexOf(line)));
-                        }
+                    if (!found && match.find()) {
+                        found = true;
+                        sectionIndex = mSections.indexOf(section);
+                        // remove this line and any following of this section from the body
+                        mSections.get(sectionIndex).setBody(body.substring(0, body.indexOf(line)));
                     }
                 }
                 // make sure the bodies (steps) are split up by \n\n
@@ -466,7 +481,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         }
 
         if (sectionIndex >= 0) {
-
             // remove the section containing steps from the list, only remove if some steps were found
             mSections = mSections.subList(0, sectionIndex + 1);
         }
@@ -503,22 +517,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         }
 
         return false;
-    }
-
-    /**
-     * Checks if the line doe not contain any of the {@link #NOT_INGREDIENTS_WORDS}
-     *
-     * @param line the line to check
-     * @return a boolean
-     */
-    private static boolean doesNotContainNonIngredientWords(String line) {
-        String lowerCase = line.toLowerCase(Locale.ENGLISH);
-        for (String notIngredientWord : NOT_INGREDIENTS_WORDS) {
-            if (lowerCase.contains(notIngredientWord)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**

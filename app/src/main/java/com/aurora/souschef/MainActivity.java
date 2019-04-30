@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
                 line = reader.readLine();
             }
         } catch (IOException e) {
-
+            Log.e("MAIN", "opening default file failed", e );
         }
         Log.d("read", bld.toString());
         return bld.toString();

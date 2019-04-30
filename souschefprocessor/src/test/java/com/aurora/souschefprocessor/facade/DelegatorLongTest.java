@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -31,6 +32,28 @@ public class DelegatorLongTest {
     private static List<String> invalidRecipesJSON;
     private static Delegator delegator;
     private static CRFClassifier<CoreLabel> crfClassifier;
+
+    @BeforeClass
+    public static void initialize() {
+
+        // Read in the recipes, the first 7 are valid recipes
+        List<String> jsonRecipes = initializeRecipesJSON();
+        validRecipesJSON = jsonRecipes.subList(0, 7);
+        invalidRecipesJSON = jsonRecipes.subList(7, jsonRecipes.size());
+
+
+        // load in the model and create the delegator
+        String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
+        try {
+            crfClassifier = CRFClassifier.getClassifier(modelName);
+            // create the delegator object
+            // parallel is better when the number of cores are only half
+            // sequnetial performs faster
+            delegator = new Delegator(crfClassifier, false);
+        } catch (IOException | ClassNotFoundException e) {
+        }
+
+    }
 
     /**
      * Read in the json recipes
@@ -56,29 +79,6 @@ public class DelegatorLongTest {
             System.out.println(io);
         }
         return list;
-    }
-
-    @BeforeClass
-    public static void initialize() {
-
-        // Read in the recipes, the first 7 are valid recipes
-        List<String> jsonRecipes = initializeRecipesJSON();
-        validRecipesJSON = jsonRecipes.subList(0, 7);
-        invalidRecipesJSON = jsonRecipes.subList(7, jsonRecipes.size());
-
-
-        // load in the model and create the delegator
-        String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
-        try {
-            crfClassifier = CRFClassifier.getClassifier(modelName);
-            // create the delegator object
-            // parallel is better when the number of cores are only half
-            // sequnetial performs faster
-            delegator = new Delegator(crfClassifier, false);
-        } catch (IOException | ClassNotFoundException e) {
-        }
-
-
     }
 
     /**
@@ -169,7 +169,6 @@ public class DelegatorLongTest {
             assertTrue("No exception was thrown for json ", thrown);
         }
 
-
     }
 
     @Test
@@ -226,7 +225,6 @@ public class DelegatorLongTest {
         System.out.println(average_para + "  PARALLEL TIME");
         assert (average_para < 2000);
 
-
     }
 
     @After
@@ -242,8 +240,16 @@ public class DelegatorLongTest {
     public void test_with_new_auroralib() {
         String contents = null;
         try {
+            System.out.println(Paths.get("").toAbsolutePath().toString());
+            BufferedReader reader = new BufferedReader(new FileReader("../app/src/main/res/raw/input.txt"));
+            StringBuilder bld = new StringBuilder();
+            String line = reader.readLine();
+            while (line != null) {
+                bld.append(line);
+                line = reader.readLine();
 
-            contents = new String(Files.readAllBytes(Paths.get("input.txt")));
+            }
+            contents = bld.toString();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -255,8 +261,6 @@ public class DelegatorLongTest {
         System.out.println(r.getRecipeSteps().get(2).getDescription().substring(pos.getBeginIndex(), pos.getEndIndex()));
         System.out.println(r.getRecipeSteps().get(2).getDescription());
 
-
     }
-
 
 }

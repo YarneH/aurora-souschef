@@ -173,10 +173,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
-                // Extracted Text
-                //String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
-                //        Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
-
                 // Get the Uri to the transferred file
                 Uri fileUri = intentThatStartedThisActivity.getData();
 

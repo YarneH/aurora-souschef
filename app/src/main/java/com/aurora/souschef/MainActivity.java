@@ -2,7 +2,9 @@ package com.aurora.souschef;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
@@ -23,6 +25,8 @@ import com.aurora.souschefprocessor.recipe.Recipe;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -168,22 +172,48 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "setup");
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-            /*BasicPluginObject basicPluginObject = null
-             * TODO remove this if statement probably. Is currently used to handle cases where a
-             * plain String is sent instead of an ExtractedText
-             */
-            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
-                // Plain Text
-                String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
-                Log.d(TAG, "Loading plain text.");
-                mRecipe.initialiseWithPlainText(inputText);
-
-            } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
+            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
                 // Extracted Text
-                // TODO Souschef should probably take an ExtractedText as input instead of just a String
-                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
-                        Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
-                ExtractedText extractedText = ExtractedText.fromJson(inputTextJSON);
+                //String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
+                //        Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
+
+                // Get the Uri to the transferred file
+                Uri fileUri = intentThatStartedThisActivity.getData();
+
+                StringBuilder total = new StringBuilder();
+                if(fileUri != null) {
+                    // Open the file
+                    ParcelFileDescriptor inputPFD = null;
+                    try {
+                        inputPFD = getContentResolver().openFileDescriptor(fileUri, "r");
+                    } catch (FileNotFoundException e) {
+                        Log.e("MAIN", "There was a problem receiving the file from " +
+                                "the plugin", e);
+                    }
+
+                    // Read the file
+                    if(inputPFD != null) {
+                        InputStream fileStream = new FileInputStream(inputPFD.getFileDescriptor());
+                        BufferedReader r = new BufferedReader(new InputStreamReader(fileStream));
+                        try {
+                            for (String line; (line = r.readLine()) != null; ) {
+                                total.append(line).append('\n');
+                            }
+                        } catch (IOException e) {
+                            Log.e("MAIN", "There was a problem receiving the file from " +
+                                    "the plugin", e);
+                        }
+                    } else {
+                        Log.e("MAIN", "There was a problem receiving the file from " +
+                                "the plugin");
+                    }
+                } else {
+                    Log.e("MAIN", "There was a problem receiving the file from " +
+                            "the plugin");
+                }
+
+                // Convert the read file to an ExtractedText object
+                ExtractedText extractedText = ExtractedText.fromJson(total.toString());
                 if (extractedText != null) {
                     Log.d(TAG, "Loading extracted text.");
                     mRecipe.initialiseWithExtractedText(extractedText);
@@ -195,9 +225,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
                 // Cached Object.
                 // TODO handle a PluginObject that was cached
-                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
+                String recipeJSON = intentThatStartedThisActivity.getStringExtra(
                         Constants.PLUGIN_INPUT_OBJECT);
-                Recipe receivedObject = PluginObject.fromJson(inputTextJSON, Recipe.class);
+                Recipe receivedObject = PluginObject.fromJson(recipeJSON, Recipe.class);
                 // TODO catch if the receivedObject was not able to be de-JSONed.
                 // Waiting for auroralib update for this.
                 Log.d(TAG, "Loading cashed Object.");

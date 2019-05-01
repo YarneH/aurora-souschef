@@ -180,40 +180,8 @@ public class MainActivity extends AppCompatActivity {
                 // Get the Uri to the transferred file
                 Uri fileUri = intentThatStartedThisActivity.getData();
 
-                StringBuilder total = new StringBuilder();
-                if(fileUri != null) {
-                    // Open the file
-                    ParcelFileDescriptor inputPFD = null;
-                    try {
-                        inputPFD = getContentResolver().openFileDescriptor(fileUri, "r");
-                    } catch (FileNotFoundException e) {
-                        Log.e("MAIN", "There was a problem receiving the file from " +
-                                "the plugin", e);
-                    }
-
-                    // Read the file
-                    if(inputPFD != null) {
-                        InputStream fileStream = new FileInputStream(inputPFD.getFileDescriptor());
-                        BufferedReader r = new BufferedReader(new InputStreamReader(fileStream));
-                        try {
-                            for (String line; (line = r.readLine()) != null; ) {
-                                total.append(line).append('\n');
-                            }
-                        } catch (IOException e) {
-                            Log.e("MAIN", "There was a problem receiving the file from " +
-                                    "the plugin", e);
-                        }
-                    } else {
-                        Log.e("MAIN", "There was a problem receiving the file from " +
-                                "the plugin");
-                    }
-                } else {
-                    Log.e("MAIN", "There was a problem receiving the file from " +
-                            "the plugin");
-                }
-
                 // Convert the read file to an ExtractedText object
-                ExtractedText extractedText = ExtractedText.fromJson(total.toString());
+                ExtractedText extractedText = getExtractedTextFromFile(fileUri);
                 if (extractedText != null) {
                     Log.d(TAG, "Loading extracted text.");
                     mRecipe.initialiseWithExtractedText(extractedText);
@@ -238,6 +206,44 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Loading plain default text (getText())");
             mRecipe.initialiseWithPlainText(getText());
         }
+    }
+
+    private ExtractedText getExtractedTextFromFile(Uri fileUri){
+        StringBuilder total = new StringBuilder();
+        ParcelFileDescriptor inputPFD = null;
+        if(fileUri != null) {
+            // Open the file
+            try {
+                inputPFD = getContentResolver().openFileDescriptor(fileUri, "r");
+            } catch (FileNotFoundException e) {
+                Log.e("MAIN", "There was a problem receiving the file from " +
+                        "the plugin", e);
+            }
+
+            // Read the file
+            if (inputPFD != null) {
+                InputStream fileStream = new FileInputStream(inputPFD.getFileDescriptor());
+
+
+                try (BufferedReader r = new BufferedReader(new InputStreamReader(fileStream))) {
+                    for (String line; (line = r.readLine()) != null; ) {
+                        total.append(line).append('\n');
+                    }
+                } catch (IOException e) {
+                    Log.e("MAIN", "There was a problem receiving the file from " +
+                            "the plugin", e);
+                }
+            } else {
+                Log.e("MAIN", "There was a problem receiving the file from " +
+                        "the plugin");
+            }
+        } else {
+            Log.e("MAIN", "There was a problem receiving the file from " +
+                    "the plugin");
+        }
+
+        // Convert the read file to an ExtractedText object
+        return ExtractedText.fromJson(total.toString());
     }
 
     /**

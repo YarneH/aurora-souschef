@@ -121,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Convert the read file to an ExtractedText object
                 ExtractedText extractedText = getExtractedTextFromFile(fileUri);
+                Log.d("TEXT", extractedText.toJSON());
                 if (extractedText != null) {
                     Log.d(TAG, "Loading extracted text.");
                     mRecipeViewModel.initialiseWithExtractedText(extractedText);

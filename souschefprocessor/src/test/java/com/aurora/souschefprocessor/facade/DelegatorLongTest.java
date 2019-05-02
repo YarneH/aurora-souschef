@@ -241,7 +241,7 @@ public class DelegatorLongTest {
         String contents = null;
         try {
             System.out.println(Paths.get("").toAbsolutePath().toString());
-            BufferedReader reader = new BufferedReader(new FileReader("../app/src/main/res/raw/input.txt"));
+            BufferedReader reader = new BufferedReader(new FileReader("../app/src/main/res/raw/input2.txt"));
             StringBuilder bld = new StringBuilder();
             String line = reader.readLine();
             while (line != null) {
@@ -257,9 +257,23 @@ public class DelegatorLongTest {
         ExtractedText text = ExtractedText.fromJson(contents);
 
         Recipe r = delegator.processText(text);
-        Position pos = r.getRecipeSteps().get(2).getIngredients().get(0).getQuantityPosition();
-        System.out.println(r.getRecipeSteps().get(2).getDescription().substring(pos.getBeginIndex(), pos.getEndIndex()));
-        System.out.println(r.getRecipeSteps().get(2).getDescription());
+        Position pos = r.getRecipeSteps().get(0).getIngredients().get(5).getQuantityPosition();
+        System.out.println(pos);
+        System.out.println(r.getRecipeSteps().get(0).getDescription());
+        System.out.println(r.getRecipeSteps().get(0).getDescription().length());
+        System.out.println(r.getRecipeSteps().get(0).getDescription().substring(pos.getBeginIndex(), pos.getEndIndex()));
+        System.out.println(r.getRecipeSteps().get(0).getDescription());
+
+
+        r.convertUnit(true);
+
+        pos = r.getRecipeSteps().get(0).getIngredients().get(5).getQuantityPosition();
+        System.out.println(pos);
+        System.out.println(r.getRecipeSteps().get(0).getDescription());
+        System.out.println(r.getRecipeSteps().get(0).getDescription().length());
+        System.out.println(r.getRecipeSteps().get(0).getDescription().substring(pos.getBeginIndex(), pos.getEndIndex()));
+        System.out.println(r.getRecipeSteps().get(0).getDescription());
+
 
     }
 

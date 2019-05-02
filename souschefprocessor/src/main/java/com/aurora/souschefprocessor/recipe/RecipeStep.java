@@ -275,10 +275,16 @@ public class RecipeStep {
      * @param toMetric a boolean that indicates wheter to convert to metric or to US
      */
     public void convertUnit(boolean toMetric) {
+        int originalLength = mDescription.length();
         if (mIngredientDetectionDone) {
             for (Ingredient ingredient : mIngredients) {
                 mDescription = ingredient.convertUnit(toMetric, mDescription);
             }
+
+            for(Ingredient ingredient: mIngredients){
+                ingredient.setPositionEndOfStringCorrect(originalLength, mDescription.length());
+            }
         }
+
     }
 }

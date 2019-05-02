@@ -289,4 +289,13 @@ public class Ingredient {
             mPositions.get(key).addOffset(offset);
         }
     }
+
+    public void setPositionEndOfStringCorrect(int originalLength, int newLength){
+        for(PositionKeysForIngredients key: PositionKeysForIngredients.values()){
+            Position pos = mPositions.get(key);
+            if(pos.getEndIndex() == originalLength){
+                pos.setEndIndex(newLength);
+            }
+        }
+    }
 }

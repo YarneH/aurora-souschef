@@ -278,4 +278,5 @@ public class IngredientUnitTest {
         assertEquals("NAME positions are not equal", namePos, namePosN);
         assertEquals("Unit positions are not equal", unitPos, unitPosN);
     }
+
 }

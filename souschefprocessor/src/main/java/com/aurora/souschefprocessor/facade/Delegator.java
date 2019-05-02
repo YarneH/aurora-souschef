@@ -147,12 +147,6 @@ public class Delegator {
                 decodeWorkQueue);
     }
 
-    public static ThreadPoolExecutor getThreadPoolExecutor() {
-        if (sThreadPoolExecutor == null) {
-            setUpThreadPool();
-        }
-        return sThreadPoolExecutor;
-    }
 
     /**
      * This is the core function of the delegator, where the text is processed by applying the filters

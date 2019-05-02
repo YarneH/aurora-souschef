@@ -131,6 +131,12 @@ public class MainActivity extends AppCompatActivity {
                 pb.setProgress(0);
             }
         });
+        mRecipe.getDefaultAmountSet().observe(this, (Boolean set) -> {
+            if (set != null && set) {
+                Toast.makeText(this, "Amount of servings not found. Default (4) is set!",
+                        Toast.LENGTH_LONG).show();
+            }
+        });
 
     }
 

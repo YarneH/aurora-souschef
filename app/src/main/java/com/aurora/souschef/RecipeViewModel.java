@@ -26,6 +26,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * for updates on the progressbar. This could also be done with an observable.
      */
     private static final int MILLIS_BETWEEN_UPDATES = 500;
+
     /**
      * The amount of steps it takes to detect a recipe.
      * This is used to pick the interval updates of the progress bar.
@@ -33,32 +34,43 @@ public class RecipeViewModel extends AndroidViewModel {
      * of the Souschef-processor takes longer or shorter, this value must be changed.
      */
     private static final int DETECTION_STEPS = 3;
+
     /**
      * The maximum amount of people you can cook for.
      */
     private static final int MAX_PEOPLE = 80;
+
     /**
      * Stop actively updating the progressbar after MAX_WAIT_TIME.
      */
     private static final int MAX_WAIT_TIME = 15000;
+
     /**
      * Percentages in 100%
      */
     private static final double MAX_PERCENTAGE = 100.0;
 
     /**
+     * Default amount of people
+     */
+    private static final int DEFAULT_SERVINGS_AMOUNT = 4;
+
+    /**
      * LiveData of the current amount of people. Used for changing the amount of people,
      * especially tab 2.
      */
     private MutableLiveData<Integer> mCurrentPeople;
+
     /**
      * LiveData of the progress. Used to update the UI according to the progress.
      */
     private MutableLiveData<Integer> mProgressStep;
+
     /**
      * This LiveData value updates when the initialisation is finished.
      */
     private MutableLiveData<Boolean> mInitialised;
+
     /**
      * When the recipe is set, this value changes -> all observers act.
      */
@@ -73,6 +85,12 @@ public class RecipeViewModel extends AndroidViewModel {
      * This LiveData value updates when the processing has failed and sets the failing message
      */
     private MutableLiveData<String> mFailureMessage = new MutableLiveData<>();
+
+    /**
+     * This LiveData value updates when the amount of people is not found and set to default
+     */
+    private MutableLiveData<Boolean> mDefaultAmountSet = new MutableLiveData<>();
+
     /**
      * Indicates whether or not this recipe is already being processed
      */
@@ -86,6 +104,7 @@ public class RecipeViewModel extends AndroidViewModel {
      */
     @SuppressLint("StaticFieldLeak")
     private Context mContext;
+
     /**
      * Listener that listens to changes in the shared preferences. It is used to check when the user
      * changes the settings from metric to imperial or back.
@@ -109,6 +128,7 @@ public class RecipeViewModel extends AndroidViewModel {
         mCurrentPeople = new MutableLiveData<>();
         mCurrentPeople.setValue(0);
         mProcessingFailed.setValue(false);
+        mDefaultAmountSet.setValue(false);
         Communicator.createAnnotationPipelines();
         SharedPreferences sharedPreferences = application.getSharedPreferences(
                 Tab1Overview.SETTINGS_PREFERENCES,
@@ -190,6 +210,10 @@ public class RecipeViewModel extends AndroidViewModel {
     public void initialiseWithRecipe(Recipe recipe) {
         recipe.convertUnit(!isImperial());
         RecipeViewModel.this.mRecipe.setValue(recipe);
+        if (mRecipe.getValue().getNumberOfPeople() == -1) {
+            mRecipe.getValue().setNumberOfPeople(DEFAULT_SERVINGS_AMOUNT);
+            mDefaultAmountSet.setValue(true);
+        }
         RecipeViewModel.this.mCurrentPeople.setValue(recipe.getNumberOfPeople());
         mInitialised.setValue(true);
     }
@@ -208,6 +232,10 @@ public class RecipeViewModel extends AndroidViewModel {
 
     public LiveData<Boolean> getProcessFailed() {
         return mProcessingFailed;
+    }
+
+    public LiveData<Boolean> getDefaultAmountSet() {
+        return mDefaultAmountSet;
     }
 
     /**

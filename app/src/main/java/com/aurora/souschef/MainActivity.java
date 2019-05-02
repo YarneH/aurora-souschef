@@ -122,13 +122,9 @@ public class MainActivity extends AppCompatActivity {
                 // Convert the read file to an ExtractedText object
                 ExtractedText extractedText = getExtractedTextFromFile(fileUri);
                 Log.d("TEXT", extractedText.toJSON());
-                if (extractedText != null) {
-                    Log.d(TAG, "Loading extracted text.");
-                    mRecipeViewModel.initialiseWithExtractedText(extractedText);
-                } else {
-                    // Error in case ExtractedText was null.
-                    Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
-                }
+
+                Log.d(TAG, "Loading extracted text.");
+                mRecipeViewModel.initialiseWithExtractedText(extractedText);
 
             } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
                 // Cached Object.

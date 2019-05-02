@@ -12,6 +12,8 @@ import com.aurora.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschefprocessor.task.RecipeStepInProgress;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +92,9 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * A list of words that are detected by the annotator as time expresssion but which is not needed
      * for souschef (e.g "overnight")
      */
-    private static final ArrayList<String> TIME_WORDS_NOT_TO_INCLUDE = new ArrayList<>();
+    private static final ArrayList<String> TIME_WORDS_NOT_TO_INCLUDE =
+            new ArrayList<>(Arrays.asList("overnight", "spring", "summer", "fall", "autumn"));
+
     /**
      * A static map that matches the {@link #FRACTION_HALF} and {@link #FRACTION_QUARTER} strings to
      * their numerical values
@@ -111,7 +115,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         FRACTION_MULTIPLIERS.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
         // overnight should not be a timer
         // this might be expanded to other tokens that do not require a timer
-        TIME_WORDS_NOT_TO_INCLUDE.add("overnight");
         initializeAnnotationPipeline();
     }
 

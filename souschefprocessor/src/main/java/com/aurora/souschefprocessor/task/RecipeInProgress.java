@@ -34,7 +34,7 @@ public class RecipeInProgress extends Recipe {
     private List<RecipeStepInProgress> mStepsInProgress;
 
     public RecipeInProgress(ExtractedText originalText) {
-        super();
+        super(originalText.getFilename());
         this.mExtractedText = originalText;
 
     }
@@ -83,7 +83,7 @@ public class RecipeInProgress extends Recipe {
         for (RecipeStepInProgress step : mStepsInProgress) {
             mRecipeSteps.add(step.convertToRecipeStep());
         }
-        return new Recipe(mIngredients, mRecipeSteps, mNumberOfPeople, mDescription);
+        return new Recipe(mFileName, mIngredients, mRecipeSteps, mNumberOfPeople, mDescription);
     }
 
     public ExtractedText getExtractedText() {

@@ -59,6 +59,10 @@ dependencies {
     implementation project(':auroralib')
     implementation project(':souschefprocessor')
 
+
+    // Required by auroralib
+    implementation group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.7.1'
+
     // Firebase statistics
     implementation 'com.google.firebase:firebase-core:16.0.8'
     // For perfomance monitoring
@@ -70,6 +74,6 @@ dependencies {
     // Better annotations in android studio
     implementation 'org.jetbrains:annotations:15.0'
 
-    implementation group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.7.1'
+
 }
 apply plugin: 'com.google.gms.google-services'

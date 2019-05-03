@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
+import com.aurora.auroralib.ProcessorCommunicator;
+import com.aurora.souschefprocessor.PluginConstants;
 import com.aurora.souschefprocessor.R;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
@@ -18,7 +20,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 /**
  * Communicates with the kernel and the UI of souschefprocessor
  */
-public class Communicator {
+public class SouschefProcessorCommunicator extends ProcessorCommunicator {
     /**
      * An atomicInteger to showcase the update of the creating of the pipelines
      */
@@ -28,28 +30,32 @@ public class Communicator {
      * The delgator that executes the processing
      */
     private Delegator mDelegator;
-    // TODO add attribute kernelCommunicator to communicate with Aurora
 
     /**
      * Create a communicator using a CRFClassifier that was loaded in and is used to classify the
      * ingredients
-     *
+     * @param context               Context required by {@link com.aurora.auroralib.ProcessorCommunicator}
      * @param ingredientsClassifier the classifier for the
      *                              {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask} task
      */
-    Communicator(CRFClassifier<CoreLabel> ingredientsClassifier) {
+    SouschefProcessorCommunicator(Context context, CRFClassifier<CoreLabel> ingredientsClassifier) {
+        /*
+         * A UNIQUE_PLUGIN_NAME needs to be passed to the constructor of ProcessorCommunicator for
+         * proper configuration of the cache
+         */
+        super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
         mDelegator = new Delegator(ingredientsClassifier, true);
     }
 
     /**
-     * Creates a Communicator object by loading in the model for the detection of ingredients i
+     * Creates a SouschefProcessorCommunicator object by loading in the model for the detection of ingredients i
      * the list. It also calls the {@link #createAnnotationPipelines()} to create the pipeline if
      * this has not been done yet
      *
      * @param context The context to access the resources to load in the model
      * @return A communicator object that has the model loaded in
      */
-    public static Communicator createCommunicator(Context context) {
+    public static SouschefProcessorCommunicator createCommunicator(Context context) {
         createAnnotationPipelines();
         try (GZIPInputStream is = new GZIPInputStream(context.getResources().
                 openRawResource(R.raw.detect_ingr_list_model))) {
@@ -58,7 +64,7 @@ public class Communicator {
             Log.d("COMMUNICATOR", "start loading model");
             CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
             incrementProgressAnnotationPipelines(); // 2
-            return new Communicator(crf);
+            return new SouschefProcessorCommunicator(context, crf);
         } catch (IOException | ClassNotFoundException e) {
             Log.e("COMMUNICATOR", "createCommunicator ", e);
         }
@@ -96,7 +102,8 @@ public class Communicator {
      *
      * @param extractedText the text to be processed
      */
-    public Recipe process(ExtractedText extractedText) {
+    @Override
+    protected PluginObject process(ExtractedText extractedText) {
 
         if(extractedText == null){
             throw new RecipeDetectionException("No text was extracted. Something went wrong in Aurora!");
@@ -104,7 +111,6 @@ public class Communicator {
         Recipe recipe = null;
         try {
             recipe = mDelegator.processText(extractedText);
-            sendObjectToAuroraKernel(recipe);
         } catch (RecipeDetectionException rde) {
             Log.e("DETECTION", "process text", rde);
             // if something went wrong with the detection rethrow the error and let the
@@ -120,14 +126,4 @@ public class Communicator {
 
     }
 
-    /**
-     * TODO
-     *
-     * @param o
-     */
-    public void sendObjectToAuroraKernel(PluginObject o) {
-        // TODO either this method is inherited from a class that does not exist yet or implement here,
-        // should I think be a function of PluginCommunicator a class defined by Aurora
-
-    }
 }

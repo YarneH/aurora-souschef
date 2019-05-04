@@ -1,5 +1,6 @@
 package com.aurora.souschefprocessor.recipe;
 
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschefprocessor.task.RecipeStepInProgress;
 
@@ -20,6 +21,7 @@ public class RecipeUnitTest {
     private static Position irrelevantPosition = new Position(0, 1);
     private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
     private static RecipeInProgress rip;
+    private static ExtractedText emptyExtractedText = new ExtractedText("", null);
 
 
     @BeforeClass
@@ -28,7 +30,7 @@ public class RecipeUnitTest {
         for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantPositions.put(key, irrelevantPosition);
         }
-        rip = new RecipeInProgress(null);
+        rip = new RecipeInProgress(emptyExtractedText);
         RecipeStepInProgress step1 = new RecipeStepInProgress("Let the pasta boil for 10 minutes");
         RecipeTimer timer1 = new RecipeTimer(10 * 60, irrelevantPosition);
 

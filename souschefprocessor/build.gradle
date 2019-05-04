@@ -61,9 +61,11 @@ dependencies {
     }
     implementation files('libs/stanford-corenlp-3.9.2-models.jar-small')
 
+    // Required by auroralib
+    implementation 'com.google.code.gson:gson:2.8.5'
+
+    // Required by auroralib for running tests
     implementation group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.7.1'
-
-
 
 
 }

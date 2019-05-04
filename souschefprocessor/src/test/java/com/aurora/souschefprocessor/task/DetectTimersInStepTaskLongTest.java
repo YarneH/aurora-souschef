@@ -1,5 +1,6 @@
 package com.aurora.souschefprocessor.task;
 
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
@@ -18,6 +19,7 @@ import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 public class DetectTimersInStepTaskLongTest {
+    private static ExtractedText testEmptyExtractedText = new ExtractedText("", null);
     private static Position irrelevantPosition = new Position(0, 1);
     private static AnnotationPipeline pipeline = new AnnotationPipeline();
 
@@ -587,7 +589,7 @@ public class DetectTimersInStepTaskLongTest {
                 s.setBeginPosition(0);
             }
 
-            RecipeInProgress rip = new RecipeInProgress(null);
+            RecipeInProgress rip = new RecipeInProgress(testEmptyExtractedText);
             rip.setStepsInProgress(list);
 
             DetectTimersInStepTask detector = new DetectTimersInStepTask(rip, 0);

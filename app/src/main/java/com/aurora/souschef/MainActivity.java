@@ -11,6 +11,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -70,74 +71,10 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Holds the data of a recipe in a LifeCycle-friendly way.
      */
-    private RecipeViewModel mRecipe;
+    private RecipeViewModel mRecipeViewModel;
 
     public MainActivity() {
         // Default constructor
-    }
-
-    /**
-     * Dummy for this demo
-     *
-     * @return a recipe json
-     */
-
-    private String getText() {
-
-        InputStream stream = getResources().openRawResource(R.raw.input);
-        StringBuilder bld = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-        try {
-            String line = reader.readLine();
-            while (line != null) {
-                bld.append(line);
-
-                line = reader.readLine();
-            }
-        } catch (IOException e) {
-            Log.e("MAIN", "opening default file failed", e );
-        }
-        Log.d("read", bld.toString());
-        return bld.toString();
-    }
-
-    /**
-     * Sets up the observation of the recipeviewmodel
-     */
-    private void setUpRecipeDataObject() {
-        mRecipe.getProgressStep().observe(this, (Integer step) -> {
-                    ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                    pb.setProgress(mRecipe.getProgress());
-
-                    // TODO: set TextView to visualize progress
-                }
-        );
-        mRecipe.getInitialised().observe(this, (Boolean isInitialised) -> {
-            if (isInitialised == null) {
-                return;
-            }
-            if (!isInitialised) {
-                showProgress();
-                return;
-            }
-            hideProgress();
-        });
-        mRecipe.getProcessFailed().observe(this, (Boolean failed) -> {
-            if (failed != null && failed) {
-                Toast.makeText(this, "Detection failed: " +
-                                mRecipe.getFailureMessage().getValue(),
-                        Toast.LENGTH_LONG).show();
-                ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                pb.setProgress(0);
-            }
-        });
-        mRecipe.getDefaultAmountSet().observe(this, (Boolean set) -> {
-            if (set != null && set) {
-                Toast.makeText(this, "Amount of servings not found. Default (4) is set!",
-                        Toast.LENGTH_LONG).show();
-            }
-        });
-
     }
 
     /**
@@ -147,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mRecipe = ViewModelProviders.of(this).get(RecipeViewModel.class);
+        mRecipeViewModel = ViewModelProviders.of(this).get(RecipeViewModel.class);
 
         super.onCreate(savedInstanceState);
         // TODO: Change back to the correct view
@@ -171,10 +108,10 @@ public class MainActivity extends AppCompatActivity {
          * Each if statement calls initialise (with different paraments)
          * on the recipe data object.
          */
-        if (mRecipe.isBeingProcessed()) {
+        if (mRecipeViewModel.isBeingProcessed()) {
             return;
         }
-        mRecipe.setBeingProcessed(true);
+        mRecipeViewModel.setBeingProcessed(true);
         Log.d(TAG, "setup");
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
@@ -186,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
                 ExtractedText extractedText = getExtractedTextFromFile(fileUri);
                 if (extractedText != null) {
                     Log.d(TAG, "Loading extracted text.");
-                    mRecipe.initialiseWithExtractedText(extractedText);
+                    mRecipeViewModel.initialiseWithExtractedText(extractedText);
                 } else {
                     // Error in case ExtractedText was null.
                     Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
@@ -201,19 +138,77 @@ public class MainActivity extends AppCompatActivity {
                 // TODO catch if the receivedObject was not able to be de-JSONed.
                 // Waiting for auroralib update for this.
                 Log.d(TAG, "Loading cashed Object.");
-                mRecipe.initialiseWithRecipe(receivedObject);
+                mRecipeViewModel.initialiseWithRecipe(receivedObject);
             }
 
         } else {
             Log.d(TAG, "Loading plain default text (getText())");
-            mRecipe.initialiseWithPlainText(getText());
+            mRecipeViewModel.initialiseWithPlainText(getText());
         }
     }
 
-    private ExtractedText getExtractedTextFromFile(Uri fileUri){
+    /**
+     * Show the progress-screen.
+     */
+    private void showProgress() {
+        ViewPager mViewPager;
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = findViewById(R.id.container);
+        mViewPager.setVisibility(View.GONE);
+
+
+        // Set up the TabLayout to follow the ViewPager.
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(mViewPager);
+        tabLayout.setVisibility(View.GONE);
+
+        ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+        cl.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Sets up the observation of the recipeviewmodel
+     */
+    private void setUpRecipeDataObject() {
+        mRecipeViewModel.getProgressStep().observe(this, (Integer step) -> {
+                    ProgressBar pb = findViewById(R.id.pb_loading_screen);
+                    pb.setProgress(mRecipeViewModel.getProgress());
+
+                    // TODO: set TextView to visualize progress
+                }
+        );
+        mRecipeViewModel.getInitialised().observe(this, (Boolean isInitialised) -> {
+            if (isInitialised == null) {
+                return;
+            }
+            if (!isInitialised) {
+                showProgress();
+                return;
+            }
+            hideProgress();
+        });
+        mRecipeViewModel.getProcessFailed().observe(this, (Boolean failed) -> {
+            if (failed != null && failed) {
+                Toast.makeText(this, "Detection failed: " +
+                                mRecipeViewModel.getFailureMessage().getValue(),
+                        Toast.LENGTH_LONG).show();
+                ProgressBar pb = findViewById(R.id.pb_loading_screen);
+                pb.setProgress(0);
+            }
+        });
+        mRecipeViewModel.getDefaultAmountSet().observe(this, (Boolean set) -> {
+            if (set != null && set) {
+                Toast.makeText(this, "Amount of servings not found. Default (4) is set!",
+                        Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
+
+    private ExtractedText getExtractedTextFromFile(Uri fileUri) {
         StringBuilder total = new StringBuilder();
         ParcelFileDescriptor inputPFD = null;
-        if(fileUri != null) {
+        if (fileUri != null) {
             // Open the file
             try {
                 inputPFD = getContentResolver().openFileDescriptor(fileUri, "r");
@@ -249,21 +244,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Show the progress-screen.
+     * Hardcoded recipe with extracted text and annotations
+     *
+     * @return the json of the annotated extracted test
      */
-    private void showProgress() {
-        ViewPager mViewPager;
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = findViewById(R.id.container);
-        mViewPager.setVisibility(View.GONE);
 
-        // Set up the TabLayout to follow the ViewPager.
-        TabLayout tabLayout = findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-        tabLayout.setVisibility(View.GONE);
+    private String getText() {
 
-        ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
-        cl.setVisibility(View.VISIBLE);
+        InputStream stream = getResources().openRawResource(R.raw.input);
+        StringBuilder bld = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        try {
+            String line = reader.readLine();
+            while (line != null) {
+                bld.append(line);
+
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            Log.e("MAIN", "opening default file failed", e);
+        }
+        Log.d("read", bld.toString());
+        return bld.toString();
     }
 
     /**
@@ -288,10 +290,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
+     * A {@link FragmentStatePagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);

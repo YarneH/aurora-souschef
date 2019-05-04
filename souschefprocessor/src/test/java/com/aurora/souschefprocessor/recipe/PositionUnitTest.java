@@ -112,7 +112,5 @@ public class PositionUnitTest {
         assertNotEquals("Differnt lowerbound gives equality", pos4, pos1);
 
 
-
-
     }
 }

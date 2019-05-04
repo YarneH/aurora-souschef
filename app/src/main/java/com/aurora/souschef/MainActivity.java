@@ -2,13 +2,16 @@ package com.aurora.souschef;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -18,9 +21,13 @@ import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.auroralib.PluginObject;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.google.firebase.analytics.FirebaseAnalytics;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,34 +68,48 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Holds the data of a recipe in a LifeCycle-friendly way.
      */
-    private RecipeViewModel mRecipe;
+    private RecipeViewModel mRecipeViewModel;
 
     public MainActivity() {
         // Default constructor
     }
 
     /**
-     * Dummy for this demo
+     * Hardcoded recipe with extracted text and annotations
      *
-     * @return a recipe json
+     * @return the json of the annotated extracted test
      */
-    @java.lang.SuppressWarnings("squid:S00103")
-    private static String getText() {
-        return "{\"mFilename\":\"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3DFr3xSHzCrT%2BQuzQqzL6JGCuSwXoQfIgnnbNN7oCOieFoOZSCsCI%2Bd1DGDGWN\",\"mTitle\":\"Chocolate Chip Cookies\",\"mSections\":[{\"mBody\":\"1 /4 c. shortening\\n1/4 c. margarine\\n1 /4 c. sugar\\n1/2 c. brown sugar, packed\\n1 egg\\n\",\"mImages\":[]},{\"mBody\":\"1/8  tsp. salt\\n1/2  tsp. baking soda\\n1 tsp. vanilla\\n1 1/4 c. flour\\n1 c. chocolate chips\\n\",\"mImages\":[]},{\"mBody\":\"Preheat oven to 375 degrees.\\n\",\"mImages\":[]},{\"mBody\":\"In mixer, CREAM shortening, margarine and sugars until smooth.\\n\",\"mImages\":[]},{\"mBody\":\"Beat in egg, and mix until smooth again.\\n\",\"mImages\":[]},{\"mBody\":\"Mix in salt, baking soda, and vanilla.\\n\",\"mImages\":[]},{\"mBody\":\"Gradually stir in flour.  CHECK OFF YOUR COOKIE DOUGH WITH YOUR TEACHER BEFORE MOVING ON!\\n\",\"mImages\":[]},{\"mBody\":\"Finally add chocolate chips; then form into small round balls and place on a greased cookie sheet.  (Allow space because they spread out while baking).\\n\",\"mImages\":[]},{\"mBody\":\"Bake for 8-10 minutes.\\n\",\"mImages\":[]},{\"mBody\":\"Let cookies cool for 1 minute; then remove with a turner onto a cooling rack.  After cooling about 5 minutes, ENJOY!\\n\",\"mImages\":[]}]}\n";
+    private String getText() {
+
+        InputStream stream = getResources().openRawResource(R.raw.input);
+        StringBuilder bld = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        try {
+            String line = reader.readLine();
+            while (line != null) {
+                bld.append(line);
+
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            Log.e("MAIN", "opening default file failed", e );
+        }
+        Log.d("read", bld.toString());
+        return bld.toString();
     }
 
     /**
      * Sets up the observation of the recipeviewmodel
      */
     private void setUpRecipeDataObject() {
-        mRecipe.getProgressStep().observe(this, (Integer step) -> {
+        mRecipeViewModel.getProgressStep().observe(this, (Integer step) -> {
                     ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                    pb.setProgress(mRecipe.getProgress());
+                    pb.setProgress(mRecipeViewModel.getProgress());
 
                     // TODO: set TextView to visualize progress
                 }
         );
-        mRecipe.getInitialised().observe(this, (Boolean isInitialised) -> {
+        mRecipeViewModel.getInitialised().observe(this, (Boolean isInitialised) -> {
             if (isInitialised == null) {
                 return;
             }
@@ -98,13 +119,19 @@ public class MainActivity extends AppCompatActivity {
             }
             hideProgress();
         });
-        mRecipe.getProcessFailed().observe(this, (Boolean failed) -> {
+        mRecipeViewModel.getProcessFailed().observe(this, (Boolean failed) -> {
             if (failed != null && failed) {
                 Toast.makeText(this, "Detection failed: " +
-                                mRecipe.getFailureMessage().getValue(),
+                                mRecipeViewModel.getFailureMessage().getValue(),
                         Toast.LENGTH_LONG).show();
                 ProgressBar pb = findViewById(R.id.pb_loading_screen);
                 pb.setProgress(0);
+            }
+        });
+        mRecipeViewModel.getDefaultAmountSet().observe(this, (Boolean set) -> {
+            if (set != null && set) {
+                Toast.makeText(this, "Amount of servings not found. Default (4) is set!",
+                        Toast.LENGTH_LONG).show();
             }
         });
 
@@ -117,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mRecipe = ViewModelProviders.of(this).get(RecipeViewModel.class);
+        mRecipeViewModel = ViewModelProviders.of(this).get(RecipeViewModel.class);
 
         super.onCreate(savedInstanceState);
         // TODO: Change back to the correct view
@@ -141,52 +168,106 @@ public class MainActivity extends AppCompatActivity {
          * Each if statement calls initialise (with different paraments)
          * on the recipe data object.
          */
-        Intent intentThatStartedThisActivity = getIntent();
-        if (mRecipe.isBeingProcessed()) {
+        if (mRecipeViewModel.isBeingProcessed()) {
             return;
         }
-        mRecipe.setBeingProcessed(true);
+        mRecipeViewModel.setBeingProcessed(true);
         Log.d(TAG, "setup");
-        if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-            /*BasicPluginObject basicPluginObject = null
-             * TODO remove this if statement probably. Is currently used to handle cases where a
-             * plain String is sent instead of an ExtractedText
-             */
-            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
-                // Plain Text
-                String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
-                Log.d(TAG, "Loading plain text.");
-                mRecipe.initialiseWithPlainText(inputText);
+        Intent intentThatStartedThisActivity = getIntent();
 
-            } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
-                // Extracted Text
-                // TODO Souschef should probably take an ExtractedText as input instead of just a String
-                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
-                        Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
-                ExtractedText extractedText = ExtractedText.fromJson(inputTextJSON);
-                if (extractedText != null) {
-                    Log.d(TAG, "Loading extracted text.");
-                    mRecipe.initialiseWithExtractedText(extractedText);
-                } else {
-                    // Error in case ExtractedText was null.
-                    Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
-                }
+        boolean intentIsOkay = true;
 
-            } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
-                // Cached Object.
-                // TODO handle a PluginObject that was cached
-                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(
-                        Constants.PLUGIN_INPUT_OBJECT);
-                Recipe receivedObject = PluginObject.fromJson(inputTextJSON, Recipe.class);
-                // TODO catch if the receivedObject was not able to be de-JSONed.
-                // Waiting for auroralib update for this.
-                Log.d(TAG, "Loading cashed Object.");
-                mRecipe.initialiseWithRecipe(receivedObject);
-            }
+        if(intentThatStartedThisActivity.getAction() == null) {
+            Toast.makeText(this, "ERROR: The intent had no action.",
+                    Snackbar.LENGTH_LONG).show();
+            intentIsOkay = false;
+        } else if(!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+            Toast.makeText(this, "ERROR: The intent had incorrect action.",
+                    Snackbar.LENGTH_LONG).show();
+            intentIsOkay = false;
+        } else if(!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
+            Toast.makeText(this, "ERROR: The intent had no specified input type.",
+                    Snackbar.LENGTH_LONG).show();
+            intentIsOkay = false;
+        }
 
+        if (intentIsOkay){
+            handleIntentThatOpenedPlugin(intentThatStartedThisActivity);
+        }
+    }
+
+
+    /**
+     * Initializes mRecipe according to the parameters in the Intent that opened the plugin
+     *
+     * @param intentThatStartedThisActivity Intent that opened the plugin
+     */
+    private void handleIntentThatOpenedPlugin(Intent intentThatStartedThisActivity){
+        // Get the Uri to the transferred file
+        Uri fileUri = intentThatStartedThisActivity.getData();
+        if(fileUri == null) {
+            Toast.makeText(this, "ERROR: The intent had no url in the data field",
+                    Snackbar.LENGTH_LONG).show();
         } else {
-            Log.d(TAG, "Loading plain default text (getText())");
-            mRecipe.initialiseWithPlainText(getText());
+            // Get the input type
+            String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
+            // Switch on the different kinds of input types that could be in the temp file
+            switch (inputType) {
+                case Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT:
+                    // Convert the read file to an ExtractedText object
+                    convertReadFileToExtractedText(fileUri);
+                    break;
+                case Constants.PLUGIN_INPUT_TYPE_OBJECT:
+                    // Convert the read file to an PluginObject
+                    convertReadFileToRecipe(fileUri);
+                    break;
+                default:
+                    Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
+                            Snackbar.LENGTH_LONG).show();
+                    Log.d(TAG, "Loading plain default text (getText())");
+                    mRecipeViewModel.initialiseWithPlainText(getText());
+            }
+        }
+    }
+
+    /**
+     * Convert the read file to an ExtractedText object
+     *
+     * @param fileUri Uri to the file
+     */
+    private void convertReadFileToExtractedText(Uri fileUri){
+        try {
+            ExtractedText extractedText = ExtractedText.getExtractedTextFromFile( fileUri,
+                    this);
+            if (extractedText != null) {
+                Log.d(TAG, "Loading extracted text.");
+                mRecipeViewModel.initialiseWithExtractedText(extractedText);
+            } else {
+                // Error in case ExtractedText was null.
+                Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
+            }
+        } catch (IOException e) {
+            Log.e(MainActivity.class.getSimpleName(),
+                    "IOException while loading data from aurora", e);
+        }
+    }
+
+    /**
+     * Convert the read file to an PluginObject
+     *
+     * @param fileUri Uri to the file
+     */
+    private void convertReadFileToRecipe(Uri fileUri){
+        try {
+            Recipe receivedObject = Recipe.getPluginObjectFromFile(fileUri, this,
+                    Recipe.class);
+
+            Log.d(TAG, "Loading cashed Object.");
+            mRecipeViewModel.initialiseWithRecipe(receivedObject);
+
+        } catch (IOException e) {
+            Log.e(MainActivity.class.getSimpleName(),
+                    "IOException while loading data from aurora", e);
         }
     }
 
@@ -199,6 +280,7 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = findViewById(R.id.container);
         mViewPager.setVisibility(View.GONE);
 
+
         // Set up the TabLayout to follow the ViewPager.
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -207,6 +289,7 @@ public class MainActivity extends AppCompatActivity {
         ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
         cl.setVisibility(View.VISIBLE);
     }
+
 
     /**
      * Hide the progress-screen.
@@ -230,10 +313,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
+     * A {@link FragmentStatePagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);

@@ -173,7 +173,6 @@ public class IngredientUnitTest {
         }
         // Assert
         assertTrue("Only endIndex too big does not throw exception", case1Thrown);
-        ;
 
         // case 2 both too big
         // Arrange
@@ -279,4 +278,5 @@ public class IngredientUnitTest {
         assertEquals("NAME positions are not equal", namePos, namePosN);
         assertEquals("Unit positions are not equal", unitPos, unitPosN);
     }
+
 }

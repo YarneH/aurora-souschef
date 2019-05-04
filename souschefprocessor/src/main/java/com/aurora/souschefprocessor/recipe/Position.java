@@ -179,4 +179,20 @@ public class Position {
             mEndIndex = endIndex;
         }
     }
+
+    public void subtractOffset(int offset){
+        if(offset <= mBeginIndex){
+            mBeginIndex -= offset;
+            mEndIndex -= offset;
+            return;
+        }
+        throw new IllegalArgumentException("Subtracting offset should not be too big");
+
+    }
+
+    public void addOffset(int offset){
+        mEndIndex += offset;
+        mBeginIndex += offset;
+
+    }
 }

@@ -27,19 +27,12 @@ import java.util.concurrent.TimeUnit;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotator;
-import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
-import edu.stanford.nlp.pipeline.TokenizerAnnotator;
-import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
  * described in the architecture.
  */
 public class Delegator {
-    /**
-     * A constant describing 1/2
-     */
-    private static final double HALF = 0.5;
 
     /**
      * An object that serves as a lock to ensure that the pipelines are only created once
@@ -51,7 +44,6 @@ public class Delegator {
      */
     private static final List<Annotator> sBasicAnnotators = new ArrayList<>();
 
-    //TODO Maybe all threadpool stuff can be moved to ParallelizeSteps
     /**
      * The number of basic annotator, for now 3 (tokenize, words to sentence and POS)
      */
@@ -94,9 +86,6 @@ public class Delegator {
         mParallelize = parallelize;
     }
 
-    public static List<Annotator> getBasicAnnotators() {
-        return createBasicAnnotators();
-    }
 
     /**
      * Creates the annotation pipelines for the {@link DetectIngredientsInStepTask} and
@@ -113,48 +102,17 @@ public class Delegator {
             sStartedCreatingPipelines = true;
             LOCK.notifyAll();
         }
-        Thread t = new Thread(() -> {
-            createBasicAnnotators();
-            DetectTimersInStepTask.initializeAnnotationPipeline();
-            DetectIngredientsInStepTask.initializeAnnotationPipeline();
-        });
+        Thread t = new Thread(DetectTimersInStepTask::initializeAnnotationPipeline);
+
         t.start();
     }
 
-    /**
-     * Creates the basicannotators (tokenizer, words to sentence and POS), ensures that is only created
-     * once and notifies other threads if the creation is finished.
-     *
-     * @return the list of sBasicAnnotators
-     */
-    private static List<Annotator> createBasicAnnotators() {
-
-        synchronized (sBasicAnnotators) {
-
-            if (sBasicAnnotators.isEmpty()) {
-
-                sBasicAnnotators.add(new TokenizerAnnotator(false, "en"));
-                incrementProgressAnnotationPipelines(); //1
-            }
-            if (sBasicAnnotators.size() == 1) {
-                sBasicAnnotators.add(new WordsToSentencesAnnotator(false));
-                incrementProgressAnnotationPipelines(); //2
-            }
-            if (sBasicAnnotators.size() < BASIC_ANNOTATOR_SIZE) {
-                sBasicAnnotators.add(new POSTaggerAnnotator(false));
-                incrementProgressAnnotationPipelines(); //3
-            }
-            sBasicAnnotators.notifyAll();
-        }
-
-        return sBasicAnnotators;
-    }
 
     /**
-     * Increments the {@link Communicator#mProgressAnnotationPipelines} value of the communicator
+     * calls the {@link SouschefProcessorCommunicator#incrementProgressAnnotationPipelines()} function
      */
     public static void incrementProgressAnnotationPipelines() {
-        Communicator.incrementProgressAnnotationPipelines();
+        SouschefProcessorCommunicator.incrementProgressAnnotationPipelines();
         Log.d("DELEGATOR", "STEP");
 
     }
@@ -169,8 +127,7 @@ public class Delegator {
          * the processing is faster if this only half of the available cores to limit context
          * switching
          */
-        int numberOfCores = (int)
-                (Runtime.getRuntime().availableProcessors() * HALF);
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
         // A queue of Runnables
         final BlockingQueue<Runnable> decodeWorkQueue;
         // Instantiates the queue of Runnables as a LinkedBlockingQueue
@@ -190,12 +147,6 @@ public class Delegator {
                 decodeWorkQueue);
     }
 
-    public static ThreadPoolExecutor getThreadPoolExecutor() {
-        if (sThreadPoolExecutor == null) {
-            setUpThreadPool();
-        }
-        return sThreadPoolExecutor;
-    }
 
     /**
      * This is the core function of the delegator, where the text is processed by applying the filters
@@ -223,7 +174,6 @@ public class Delegator {
     }
 
 
-
     /**
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
@@ -246,4 +196,6 @@ public class Delegator {
 
         return pipeline;
     }
+
+
 }

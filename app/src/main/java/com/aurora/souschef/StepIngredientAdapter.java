@@ -66,7 +66,7 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
     }
 
     public class CardIngredientViewHolder extends RecyclerView.ViewHolder {
-        private int index;
+        private int mIndex;
         private TextView mIngredientName;
         private TextView mIngredientAmount;
         private TextView mIngredientUnit;
@@ -75,7 +75,7 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
          * Initialises views inside the layout.
          *
          * @param itemView containing view
-         * @param index    index in the array of ingredients
+         * @param index    mIndex in the array of ingredients
          */
         public CardIngredientViewHolder(@NonNull View itemView, final int index) {
             super(itemView);
@@ -90,8 +90,8 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
          * @param i what value in the list of ingredients to bind to this card.
          */
         private void bind(int i) {
-            this.index = i;
-            Ingredient ingredient = ingredients.get(this.index);
+            this.mIndex = i;
+            Ingredient ingredient = ingredients.get(this.mIndex);
 
             String nameWithoutQuantityAndUnit = ingredient.getName();
             // if it is possible to capitalize the first letter, capitalize.

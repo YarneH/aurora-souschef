@@ -1,27 +1,39 @@
 package com.aurora.souschefprocessor.task;
 
-import com.aurora.souschefprocessor.facade.Delegator;
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Position;
-import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
+import edu.stanford.nlp.pipeline.TokenizerAnnotator;
+import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
+
 public class DetectTimersInStepTaskLongTest {
+    private static ExtractedText testEmptyExtractedText = new ExtractedText("", null);
     private static Position irrelevantPosition = new Position(0, 1);
+    private static AnnotationPipeline pipeline = new AnnotationPipeline();
 
     @BeforeClass
+
     public static void initialize(){
+        pipeline.addAnnotator(new TokenizerAnnotator());
+        pipeline.addAnnotator(new WordsToSentencesAnnotator());
+        pipeline.addAnnotator(new POSTaggerAnnotator());
+
         DetectTimersInStepTask.initializeAnnotationPipeline();
     }
 
- private RecipeTimer getTimer(String label) {
+    private RecipeTimer getTimer(String label) {
         String[] amountAndUnit = label.split(" ");
         int multiplier = 1;
         switch (amountAndUnit[1]) {
@@ -566,12 +578,19 @@ public class DetectTimersInStepTaskLongTest {
             String stepString = dataSet[i - 1];
             String tag = dataSetTags[i - 1];
 
-            RecipeStep step = new RecipeStep(stepString);
-            ArrayList<RecipeStep> list = new ArrayList<>();
+            RecipeStepInProgress step = new RecipeStepInProgress(stepString);
+            ArrayList<RecipeStepInProgress> list = new ArrayList<>();
             list.add(step);
 
-            RecipeInProgress rip = new RecipeInProgress(null);
-            rip.setRecipeSteps(list);
+            for (RecipeStepInProgress s : list) {
+                Annotation a = new Annotation(s.getDescription());
+                pipeline.annotate(a);
+                s.setSentenceAnnotations(Collections.singletonList(a));
+                s.setBeginPosition(0);
+            }
+
+            RecipeInProgress rip = new RecipeInProgress(testEmptyExtractedText);
+            rip.setStepsInProgress(list);
 
             DetectTimersInStepTask detector = new DetectTimersInStepTask(rip, 0);
             detector.doTask();

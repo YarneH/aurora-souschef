@@ -105,7 +105,7 @@ public class UITimer {
         }
         mRingtone = RingtoneManager.getRingtone(mTimerCard.getContext(), alert);
 
-        this.mLiveDataTimer.getIsAlarming().observe(owner, this::setAlarm);
+        this.mLiveDataTimer.isAlarming().observe(owner, this::setAlarm);
 
     }
 
@@ -125,7 +125,7 @@ public class UITimer {
     /**
      * TODO: What happens on timer completion?
      */
-    private void onTimerFinished() {
+    private static void onTimerFinished() {
         // TODO: This function is called when the timer finishes
     }
 

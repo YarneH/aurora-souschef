@@ -1,7 +1,6 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.auroralib.Section;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask;
 
 import org.junit.After;
@@ -12,8 +11,8 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +36,7 @@ public class SplitToMainSectionsTaskUnitTest {
         try {
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream(filename), "UTF8"));
+                            new FileInputStream(filename), StandardCharsets.UTF_8));
 
             String line = reader.readLine();
             while (line != null) {
@@ -49,7 +48,7 @@ public class SplitToMainSectionsTaskUnitTest {
             System.err.print(io);
         }
 
-        return list;
+        return list.subList(0, 7);
 
 
     }
@@ -182,7 +181,9 @@ public class SplitToMainSectionsTaskUnitTest {
         /**
          * After the task the sections are not null
          */
+        int i = 0;
         for (ExtractedText text : recipeTexts) {
+            System.out.println(i);
             // Arrange
             RecipeInProgress rip = new RecipeInProgress(text);
             SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
@@ -192,6 +193,8 @@ public class SplitToMainSectionsTaskUnitTest {
             assert (rip.getStepsString() != null);
             assert (rip.getIngredientsString() != null);
             assert (rip.getDescription() != null);
+
+            i++;
         }
     }
 
@@ -216,7 +219,6 @@ public class SplitToMainSectionsTaskUnitTest {
             assertEquals("steps", fieldsList.get(i).get("STEPS"), rip.getStepsString());
             assertEquals("ingredients", fieldsList.get(i).get("INGR").toLowerCase(), rip.getIngredientsString().toLowerCase());
 
-            // assert (rip.getDescription() != null);
         }
     }
 
@@ -240,288 +242,16 @@ public class SplitToMainSectionsTaskUnitTest {
 
     }
 
-    @Test
-    public void SplitToMainSectionsTaskTest_doTask_CorrectDetectionOfSectionsWithExtractedTextObject() {
-        // parser is not needed
-
-        // Arrange
-        String json = "{\"mFilename\":\"\",\"mTitle\":\"How to make chocolate mousse\\n2 ratings\\nHow to make chocolate mousse\\nBy Lesley Waters\",\"mSections\":[{\"mBody\":\"Shopping list\"},{\"mBody\":\"Print recipe\"},{\"mBody\":\"Preparation time\"},{\"mBody\":\"30 mins to 1 hour\"},{\"mBody\":\"Cooking time\"},{\"mBody\":\"10 to 30 mins\"},{\"mBody\":\"Serves\"},{\"mBody\":\"Serves 6-8\"},{\"mBody\":\"Dietary\\n \"},{\"mBody\":\"Vegetarian\"},{\"mBody\":\"\\n    225g/8oz dark chocolate\\n    5 medium free-range eggs\\n    100g/3½oz caster sugar\\n    170g/6oz unsalted butter\\n    200ml/7fl oz crème fraîche\\n    12-16 fresh cherries\\n    cocoa powder, for dusting\"},{\"mBody\":\"Method\"},{\"mBody\":\"    Place a bowl over a pan of simmering water (the water shouldn\\u0027t touch the bottom of the bowl) and gently melt the chocolate in the bowl. Remove from the heat once melted and let it cool slightly.\"},{\"mBody\":\"    Separate the egg yolks from the egg whites. Beat the egg yolks and most of the sugar together until creamy and pale in colour (keep two teaspoons of sugar to one side for the egg whites).\"},{\"mBody\":\"    When it has cooled slightly, whisk the chocolate into the egg yolk and sugar mixture.\"},{\"mBody\":\"    Melt the butter in a pan over a low heat.\"},{\"mBody\":\"    Whisk the melted butter into the chocolate mixture. If it gets too thick, add a couple of tablespoons of water.\"},{\"mBody\":\"    In a clean bowl, whisk the egg whites and the remaining two teaspoons of sugar with an electric whisk until they\\u0027re light and fluffy and hold a soft peak. Do not over-beat. The sugar will give them a gentle sheen.\"},{\"mBody\":\"    Carefully fold the egg whites into the chocolate mixture using a metal spoon.\"},{\"mBody\":\"    Spoon the chocolate mixture into small teacups or ramekins and refrigerate for about two hours.\"},{\"mBody\":\"    Just before serving, top each marquise with a dollop of crème fraîche and two fresh cherries, then sprinkle with cocoa powder.\\n\"}]}\n";
-        ExtractedText text = ExtractedText.fromJson(json);
-        RecipeInProgress rip = new RecipeInProgress(text);
-        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
-        String description = "How to make chocolate mousse\n" +
-                "2 ratings\n" +
-                "How to make chocolate mousse\n" +
-                "By Lesley Waters\n\n" +
-                "Preparation time\n" +
-                "30 mins to 1 hour\n" +
-                "Cooking time\n" +
-                "10 to 30 mins\n" +
-                "Serves\n" +
-                "Serves 6-8\n" +
-                "Dietary\n" +
-                "Vegetarian";
-        String ingredients = "225g/8oz dark chocolate\n" +
-                "5 medium free-range eggs\n" +
-                "100g/3½oz caster sugar\n" +
-                "170g/6oz unsalted butter\n" +
-                "200ml/7fl oz crème fraîche\n" +
-                "12-16 fresh cherries\n" +
-                "cocoa powder, for dusting";
-
-        String steps = "Place a bowl over a pan of simmering water (the water shouldn't touch the bottom of the bowl) and gently melt the chocolate in the bowl. Remove from the heat once melted and let it cool slightly.\n" +
-                "\n" +
-                "Separate the egg yolks from the egg whites. Beat the egg yolks and most of the sugar together until creamy and pale in colour (keep two teaspoons of sugar to one side for the egg whites).\n" +
-                "\n" +
-                "When it has cooled slightly, whisk the chocolate into the egg yolk and sugar mixture.\n" +
-                "\n" +
-                "Melt the butter in a pan over a low heat.\n" +
-                "\n" +
-                "Whisk the melted butter into the chocolate mixture. If it gets too thick, add a couple of tablespoons of water.\n" +
-                "\n" +
-                "In a clean bowl, whisk the egg whites and the remaining two teaspoons of sugar with an electric whisk until they're light and fluffy and hold a soft peak. Do not over-beat. The sugar will give them a gentle sheen.\n" +
-                "\n" +
-                "Carefully fold the egg whites into the chocolate mixture using a metal spoon.\n" +
-                "\n" +
-                "Spoon the chocolate mixture into small teacups or ramekins and refrigerate for about two hours.\n" +
-                "\n" +
-                "Just before serving, top each marquise with a dollop of crème fraîche and two fresh cherries, then sprinkle with cocoa powder.";
 
 
-        // Act
-        task.doTask();
-        assertEquals("ingredients", ingredients, rip.getIngredientsString());
-        assertEquals("description", description, rip.getDescription());
-        assertEquals("steps", steps, rip.getStepsString());
-
-
-        // test that needs the parser
-
-        // Arrange
-        json = "{\"mFilename\":\"\",\"mTitle\":\"How to make chocolate mousse\\n2 ratings\\nHow to make chocolate mousse\\nBy Lesley Waters\",\"mSections\":[{\"mBody\":\"Shopping list\"},{\"mBody\":\"Print recipe\"},{\"mBody\":\"Preparation time\"},{\"mBody\":\"30 mins to 1 hour\"},{\"mBody\":\"Cooking time\"},{\"mBody\":\"10 to 30 mins\"},{\"mBody\":\"Serves\"},{\"mBody\":\"Serves 6-8\"},{\"mBody\":\"Dietary\\n \"},{\"mBody\":\"Vegetarian\"},{\"mBody\":\"\\n    225g/8oz dark chocolate\\n    5 medium free-range eggs\\n    100g/3½oz caster sugar\\n    170g/6oz unsalted butter\\n    200ml/7fl oz crème fraîche\\n    12-16 fresh cherries\\n    cocoa powder, for dusting\"},{\"mBody\":\"\"},{\"mBody\":\"    Place a bowl over a pan of simmering water (the water shouldn\\u0027t touch the bottom of the bowl) and gently melt the chocolate in the bowl. Remove from the heat once melted and let it cool slightly.\"},{\"mBody\":\"    Separate the egg yolks from the egg whites. Beat the egg yolks and most of the sugar together until creamy and pale in colour (keep two teaspoons of sugar to one side for the egg whites).\"},{\"mBody\":\"    When it has cooled slightly, whisk the chocolate into the egg yolk and sugar mixture.\"},{\"mBody\":\"    Melt the butter in a pan over a low heat.\"},{\"mBody\":\"    Whisk the melted butter into the chocolate mixture. If it gets too thick, add a couple of tablespoons of water.\"},{\"mBody\":\"    In a clean bowl, whisk the egg whites and the remaining two teaspoons of sugar with an electric whisk until they\\u0027re light and fluffy and hold a soft peak. Do not over-beat. The sugar will give them a gentle sheen.\"},{\"mBody\":\"    Carefully fold the egg whites into the chocolate mixture using a metal spoon.\"},{\"mBody\":\"    Spoon the chocolate mixture into small teacups or ramekins and refrigerate for about two hours.\"},{\"mBody\":\"    Just before serving, top each marquise with a dollop of crème fraîche and two fresh cherries, then sprinkle with cocoa powder.\\n\"}]}\n";
-        text = ExtractedText.fromJson(json);
-        rip = new RecipeInProgress(text);
-        task = new SplitToMainSectionsTask(rip);
-
-
-        // Act
-        task.doTask();
-
-        // Assert
-        assert (rip.getDescription().equals(description));
-        assert (rip.getIngredientsString().equals(ingredients));
-        assert (rip.getStepsString().equals(steps));
-
-
-    }
-
-    @Test
-    public void SplitToMainSectionsTask_doTask_correctWithExtractedTextWithTitlesForIngredientsAndSteps() {
-
-
-        String title = "BEEF AND RICE CASSEROLE";
-        String firstBody = "Yield: 4 servings\n" +
-                "Total Preparation Time: 60 minutes";
-        String secondBody = "Size of bake ware: 8” x 8” baking dish\n" +
-                "Cooking temperature: 350F";
-        String titleSteps = "Cooking steps";
-        String steps = "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.";
-        List<String> images = new ArrayList<>();
-
-        String titleIngredients = "Ingredients";
-        String bodyIngredients = "1 lb. lean ground beef\n" +
-                "1⁄2 c. chopped onion\n" +
-                "1⁄4 c. chopped bell pepper\n" +
-                "1⁄4 tsp. salt\n" +
-                "1⁄4 tsp. garlic salt\n" +
-                "1⁄2 tsp. ground black pepper\n" +
-                "1 c. rice\n" +
-                "1 tsp. salt\n" +
-                "1 Tbsp. of dry onion soup mix\n" +
-                "2 c. water\n" +
-                "1 10 oz. can cream of mushroom soup\n" +
-                "1⁄2 c. low-fat milk\n" +
-                "1 c. crushed potato chips";
-        Section section1 = new Section(firstBody);
-        Section section2 = new Section(secondBody);
-        Section ingredients = new Section(titleIngredients, bodyIngredients, images);
-        Section stepsSection = new Section(titleSteps, steps, images);
-
-        ExtractedText text = new ExtractedText("", new Date(System.currentTimeMillis()));
-        text.setTitle(title);
-        text.addSection(section1);
-        text.addSection(section2);
-        text.addSection(ingredients);
-        text.addSection(stepsSection);
-
-        RecipeInProgress rip = new RecipeInProgress(text);
-        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
-        task.doTask();
-        System.out.println(rip.getStepsString());
-        assertEquals("ingredients", rip.getIngredientsString(), bodyIngredients);
-        assert (rip.getIngredientsString().equals(bodyIngredients));
-
-        assert (rip.getStepsString().equals(steps));
-        assert (rip.getDescription().equals(title + "\n" + firstBody + "\n" + secondBody));
-    }
-
-    @Test
-    public void SplitToMainSectionsTask_doTask_correctWithExtractedTextWithTitlesOnlyForSteps() {
-
-
-        String title = "BEEF AND RICE CASSEROLE";
-        String firstBody = "Yield: 4 servings\n" +
-                "Total Preparation Time: 60 minutes";
-        String secondBody = "Size of bake ware: 8” x 8” baking dish\n" +
-                "Cooking temperature: 350F";
-        String titleSteps = "Cooking steps";
-        String steps = "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.";
-        List<String> images = new ArrayList<>();
-
-
-        String bodyIngredients = "1 lb. lean ground beef\n" +
-                "1⁄2 c. chopped onion\n" +
-                "1⁄4 c. chopped bell pepper\n" +
-                "1⁄4 tsp. salt\n" +
-                "1⁄4 tsp. garlic salt\n" +
-                "1⁄2 tsp. ground black pepper\n" +
-                "1 c. rice\n" +
-                "1 tsp. salt\n" +
-                "1 Tbsp. of dry onion soup mix\n" +
-                "2 c. water\n" +
-                "1 10 oz. can cream of mushroom soup\n" +
-                "1⁄2 c. low-fat milk\n" +
-                "1 c. crushed potato chips";
-        Section section1 = new Section(firstBody);
-        Section section2 = new Section(secondBody);
-        Section ingredients = new Section(bodyIngredients);
-        Section stepsSection = new Section(titleSteps, steps, images);
-
-        ExtractedText text = new ExtractedText("", new Date(System.currentTimeMillis()));
-        text.setTitle(title);
-        text.addSection(section1);
-        text.addSection(section2);
-        text.addSection(ingredients);
-        text.addSection(stepsSection);
-
-        RecipeInProgress rip = new RecipeInProgress(text);
-        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
-        task.doTask();
-
-        assertEquals("ingredients", bodyIngredients, rip.getIngredientsString());
-        assert (rip.getIngredientsString().equals(bodyIngredients));
-
-        assert (rip.getStepsString().equals(steps));
-        assert (rip.getDescription().equals(title + "\n" + firstBody + "\n" + secondBody));
-    }
-
-    @Test
-    public void SplitToMainSectionsTask_doTask_correctWithExtractedTextWithTitlesOnlyForIngredients() {
-
-
-        String title = "BEEF AND RICE CASSEROLE";
-        String firstBody = "Yield: 4 servings\n" +
-                "Total Preparation Time: 60 minutes";
-        String secondBody = "Size of bake ware: 8” x 8” baking dish\n" +
-                "Cooking temperature: 350F";
-        String titleIngredients = "Ingredients";
-        String steps = "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.";
-        List<String> images = new ArrayList<>();
-
-
-        String bodyIngredients = "1 lb. lean ground beef\n" +
-                "1⁄2 c. chopped onion\n" +
-                "1⁄4 c. chopped bell pepper\n" +
-                "1⁄4 tsp. salt\n" +
-                "1⁄4 tsp. garlic salt\n" +
-                "1⁄2 tsp. ground black pepper\n" +
-                "1 c. rice\n" +
-                "1 tsp. salt\n" +
-                "1 Tbsp. of dry onion soup mix\n" +
-                "2 c. water\n" +
-                "1 10 oz. can cream of mushroom soup\n" +
-                "1⁄2 c. low-fat milk\n" +
-                "1 c. crushed potato chips";
-        Section section1 = new Section(firstBody);
-        Section section2 = new Section(secondBody);
-        Section step = new Section(steps);
-        Section ingredients = new Section(titleIngredients, bodyIngredients, images);
-
-        ExtractedText text = new ExtractedText("", new Date(System.currentTimeMillis()));
-        text.setTitle(title);
-        text.addSection(section1);
-        text.addSection(section2);
-        text.addSection(ingredients);
-        text.addSection(step);
-
-        RecipeInProgress rip = new RecipeInProgress(text);
-        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
-        task.doTask();
-
-
-        assert (rip.getIngredientsString().equals(bodyIngredients));
-
-        assert (rip.getStepsString().equals(steps));
-        assert (rip.getDescription().equals(title + "\n" + firstBody + "\n" + secondBody));
-    }
-
-    @Test
-    public void SplitToMainSectionsTask_doTask_correctWithExtractedTextWithTitlesOnlyForDescriptionBodies() {
-
-
-        String title = "BEEF AND RICE CASSEROLE";
-        String titleFirstBody = "Yield: 4 servings";
-        String firstBody = "" +
-                "Total Preparation Time: 60 minutes";
-        String titleSecondBody = "Utensils:";
-        String secondBody = "Size of bake ware: 8” x 8” baking dish\n" +
-                "Cooking temperature: 350F";
-        String titleIngredients = "Ingredients";
-        String steps = "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.";
-        List<String> images = new ArrayList<>();
-
-
-        String bodyIngredients = "1 lb. lean ground beef\n" +
-                "1⁄2 c. chopped onion\n" +
-                "1⁄4 c. chopped bell pepper\n" +
-                "1⁄4 tsp. salt\n" +
-                "1⁄4 tsp. garlic salt\n" +
-                "1⁄2 tsp. ground black pepper\n" +
-                "1 c. rice\n" +
-                "1 tsp. salt\n" +
-                "1 Tbsp. of dry onion soup mix\n" +
-                "2 c. water\n" +
-                "1 10 oz. can cream of mushroom soup\n" +
-                "1⁄2 c. low-fat milk\n" +
-                "1 c. crushed potato chips";
-        Section section1 = new Section(titleFirstBody, firstBody, images);
-        Section section2 = new Section(titleSecondBody, secondBody, images);
-        Section step = new Section(steps);
-        Section ingredients = new Section(titleIngredients, bodyIngredients, images);
-
-        ExtractedText text = new ExtractedText("", new Date(System.currentTimeMillis()));
-        text.setTitle(title);
-        text.addSection(section1);
-        text.addSection(section2);
-        text.addSection(ingredients);
-        text.addSection(step);
-
-        RecipeInProgress rip = new RecipeInProgress(text);
-        SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
-        task.doTask();
-
-
-        assert (rip.getIngredientsString().equals(bodyIngredients));
-
-        assert (rip.getStepsString().equals(steps));
-        assert (rip.getDescription().equals(title + "\n" + titleFirstBody + "\n" + firstBody +
-                "\n" + titleSecondBody + "\n" + secondBody));
-    }
-
-
+    /**
+     * This test asserts that even if the ingredients are listed in different sections of the Extracted text, they are still all recognized and added
+     * to the ingredientssection
+     */
     @Test
     public void SplitToMainSectionsTask_doTask_NotAllIngredientsInSameSection() {
         // Arrange
+
         String json = "{\n" +
                 "   \"mFilename\": \"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3DGDPoHpBnY6%2BmsRjpbyFZ64nchB90csqZM1KpNqa1adcFQ1v9eXj7Snb0Fgo%3D\",\n" +
                 "   \"mSections\": [\n" +
@@ -631,115 +361,5 @@ public class SplitToMainSectionsTaskUnitTest {
         assertEquals("description", description, rip.getDescription());
         assertEquals("steps", steps, rip.getStepsString());
 
-    }
-
-    @Test
-    public void n() {
-        String json = "{\n" +
-                "   \"mFilename\": \"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3Du9LNZH%2B96HSRfZRiM%2BAfRmDpyt%2Fl5ToK9NDNWsv0Nxifbb58P0mFzuzD5hIQ\",\n" +
-                "   \"mSections\": [\n" +
-                "       {\n" +
-                "           \"mBody\": \"2 large apples (or 3 medium)\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1/8 tsp. nutmeg\\n1/2 c. oatmeal\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1/2 tsp. cinnamon\\n1/4 c. flour\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1/4 c. butter\\n1/2 c. brown sugar\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1 tsp. lemon juice\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Core, peel and slice the apples into thin wedges.  Place the apples in the square glass dish.\\nIn a medium mixing bowl, combine together oatmeal, flour, brown sugar, nutmeg, cinnamon, butter and lemon juice.\\nUsing a pastry blender, cut the butter into the dry ingredients until the mixture is crumbly.\\nEvenly sprinkle this mixture over the apples.\\nMicrowave on high for 8-10 minutes.\\nRemove from microwave, USING HOT PADS.\\nAllow 5 minutes for STANDING TIME.\\nServe and enjoy eating.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       }\n" +
-                "   ],\n" +
-                "   \"mTitle\": \"Apple Crisp\"\n" +
-                "}";
-
-        ExtractedText text = ExtractedText.fromJson(json);
-        RecipeInProgress rip = new RecipeInProgress(text);
-        (new SplitToMainSectionsTask(rip)).doTask();
-        System.out.println(rip);
-    }
-
-    @Test
-    public void t(){
-        String json = "{\n" +
-                "   \"mFilename\": \"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3DFr3xSHzCrT%2BQuzQqzL6JGCuSwXoQfIgnnbNN7oCOieFoOZSCsCI%2Bd1DGDGWN\",\n" +
-                "   \"mSections\": [\n" +
-                "       {\n" +
-                "           \"mBody\": \"1 /4 c. shortening\\n1/4 c. margarine\\n1 /4 c. sugar\\n1/2 c. brown sugar, packed\\n1 egg\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"1/8  tsp. salt\\n1/2  tsp. baking soda\\n1 tsp. vanilla\\n1 1/4 c. flour\\n1 c. chocolate chips\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Preheat oven to 375 degrees.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"In mixer, CREAM shortening, margarine and sugars until smooth.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Beat in egg, and mix until smooth again.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Mix in salt, baking soda, and vanilla.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Gradually stir in flour.  CHECK OFF YOUR COOKIE DOUGH WITH YOUR TEACHER BEFORE MOVING ON!\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Finally add chocolate chips; then form into small round balls and place on a greased cookie sheet.  (Allow space because they spread out while baking).\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Bake for 8-10 minutes.\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       },\n" +
-                "       {\n" +
-                "           \"mBody\": \"Let cookies cool for 1 minute; then remove with a turner onto a cooling rack.  After cooling about 5 minutes, ENJOY!\\n\",\n" +
-                "           \"mImages\": [],\n" +
-                "           \"mLevel\": 0\n" +
-                "       }\n" +
-                "   ],\n" +
-                "   \"mTitle\": \"Chocolate Chip Cookies\"\n" +
-                "}";
-        ExtractedText text = ExtractedText.fromJson(json);
-        System.out.println(text.toJSON());
-        RecipeInProgress rip = new RecipeInProgress(text);
-        (new SplitToMainSectionsTask(rip)).doTask();
-        System.out.println(rip);
     }
 }

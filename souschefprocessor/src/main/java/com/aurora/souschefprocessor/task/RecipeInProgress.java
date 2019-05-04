@@ -3,6 +3,8 @@ package com.aurora.souschefprocessor.task;
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
+import java.util.List;
+
 /**
  * A subclass of Recipe, representing a Recipe Object that is being constructed. It has three
  * additional fields:
@@ -25,14 +27,24 @@ public class RecipeInProgress extends Recipe {
 
 
     /**
-     * An extractedtet object from Aurora
+     * An extractedtext object from Aurora
      */
     private ExtractedText mExtractedText;
 
+    private List<RecipeStepInProgress> mStepsInProgress;
 
     public RecipeInProgress(ExtractedText originalText) {
-        super();
+        super(originalText.getFilename());
         this.mExtractedText = originalText;
+
+    }
+
+    public List<RecipeStepInProgress> getStepsInProgress() {
+        return mStepsInProgress;
+    }
+
+    public void setStepsInProgress(List<RecipeStepInProgress> mStepsInProgress) {
+        this.mStepsInProgress = mStepsInProgress;
     }
 
     @Override
@@ -43,7 +55,6 @@ public class RecipeInProgress extends Recipe {
                 ", DESCRIPTION='" + mDescription + "\n" +
                 '}';
     }
-
 
     public synchronized String getStepsString() {
         return mStepsString;
@@ -62,15 +73,22 @@ public class RecipeInProgress extends Recipe {
     }
 
     /**
-     * Converts the RecipeInProgress to a Recipe object by dropping the two additional fields
+     * Converts the RecipeInProgress to a Recipe object by dropping the two additional fields and
+     * converting the {@link RecipeStepInProgress} steps to {@link com.aurora.souschefprocessor.recipe.RecipeStep}
+     * steps
      *
      * @return the converted recipe
      */
     public Recipe convertToRecipe() {
-        return new Recipe(mIngredients, mRecipeSteps, mNumberOfPeople, mDescription);
+        for (RecipeStepInProgress step : mStepsInProgress) {
+            mRecipeSteps.add(step.convertToRecipeStep());
+        }
+        return new Recipe(mFileName, mIngredients, mRecipeSteps, mNumberOfPeople, mDescription);
     }
 
     public ExtractedText getExtractedText() {
         return mExtractedText;
     }
+
+
 }

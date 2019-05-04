@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -92,6 +91,22 @@ public class StepPlaceholderFragment extends Fragment {
 
         fragment.setArguments(args);
         return fragment;
+    }
+
+    /**
+     * Extract the description of the steps
+     *
+     * @param recipe the recipe of which the steps will be extracted
+     * @return a list of Strings, representing all the different descriptions of the steps
+     */
+    public static String[] extractDescriptionSteps(Recipe recipe) {
+        int stepsCount = recipe.getRecipeSteps().size();
+        String[] steps = new String[stepsCount];
+
+        for (int i = 0; i < stepsCount; i++) {
+            steps[i] = recipe.getRecipeSteps().get(i).getDescription();
+        }
+        return steps;
     }
 
     @Override
@@ -355,21 +370,5 @@ public class StepPlaceholderFragment extends Fragment {
 
         // Put ingredients back in descending beginIndex
         Collections.reverse(mRecipeStep.getIngredients());
-    }
-
-    /**
-     * Extract the description of the steps
-     *
-     * @param recipe the recipe of which the steps will be extracted
-     * @return a list of Strings, representing all the different descriptions of the steps
-     */
-    public static String[] extractDescriptionSteps(Recipe recipe) {
-        int stepsCount = recipe.getRecipeSteps().size();
-        String[] steps = new String[stepsCount];
-
-        for (int i = 0; i < stepsCount; i++) {
-            steps[i] = recipe.getRecipeSteps().get(i).getDescription();
-        }
-        return steps;
     }
 }

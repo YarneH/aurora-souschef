@@ -101,6 +101,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
      * Receives an extractedText object from the AuroraKernel that will be processed into a custom Recipe Object
      *
      * @param extractedText the text to be processed
+     * @return A Recipe object (which extends PLuginObject) that is the result of the processed text
      */
     @Override
     protected PluginObject process(ExtractedText extractedText) {

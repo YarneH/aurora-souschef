@@ -75,11 +75,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Dummy for this demo
+     * Hardcoded recipe with extracted text and annotations
      *
-     * @return a recipe json
+     * @return the json of the annotated extracted test
      */
-
     private String getText() {
 
         InputStream stream = getResources().openRawResource(R.raw.input);

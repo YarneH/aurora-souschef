@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -177,76 +178,76 @@ public class MainActivity extends AppCompatActivity {
         mRecipe.setBeingProcessed(true);
         Log.d(TAG, "setup");
         Intent intentThatStartedThisActivity = getIntent();
-        if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
-                // Get the Uri to the transferred file
-                Uri fileUri = intentThatStartedThisActivity.getData();
 
-                // Convert the read file to an ExtractedText object
-                ExtractedText extractedText = getExtractedTextFromFile(fileUri);
-                if (extractedText != null) {
-                    Log.d(TAG, "Loading extracted text.");
-                    mRecipe.initialiseWithExtractedText(extractedText);
-                } else {
-                    // Error in case ExtractedText was null.
-                    Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
-                }
 
-            } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
-                // Cached Object.
-                // TODO handle a PluginObject that was cached
-                String recipeJSON = intentThatStartedThisActivity.getStringExtra(
-                        Constants.PLUGIN_INPUT_OBJECT);
-                Recipe receivedObject = PluginObject.fromJson(recipeJSON, Recipe.class);
-                // TODO catch if the receivedObject was not able to be de-JSONed.
-                // Waiting for auroralib update for this.
-                Log.d(TAG, "Loading cashed Object.");
-                mRecipe.initialiseWithRecipe(receivedObject);
-            }
-
-        } else {
-            Log.d(TAG, "Loading plain default text (getText())");
-            mRecipe.initialiseWithPlainText(getText());
+        if(intentThatStartedThisActivity.getAction() == null) {
+            Toast.makeText(this, "ERROR: The intent had no action.",
+                    Snackbar.LENGTH_LONG).show();
+            return;
+        } else if(!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+            Toast.makeText(this, "ERROR: The intent had incorrect action.",
+                    Snackbar.LENGTH_LONG).show();
+            return;
+        } else if(!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
+            Toast.makeText(this, "ERROR: The intent had no specified input type.",
+                    Snackbar.LENGTH_LONG).show();
+            return;
         }
-    }
 
-    private ExtractedText getExtractedTextFromFile(Uri fileUri){
-        StringBuilder total = new StringBuilder();
-        ParcelFileDescriptor inputPFD = null;
-        if(fileUri != null) {
-            // Open the file
-            try {
-                inputPFD = getContentResolver().openFileDescriptor(fileUri, "r");
-            } catch (FileNotFoundException e) {
-                Log.e("MAIN", "There was a problem receiving the file from " +
-                        "the plugin", e);
-            }
+        // Get the input type
+        String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
 
-            // Read the file
-            if (inputPFD != null) {
-                InputStream fileStream = new FileInputStream(inputPFD.getFileDescriptor());
+        // Get the Uri to the transferred file
+        Uri fileUri = intentThatStartedThisActivity.getData();
+        if(fileUri == null) {
+            Toast.makeText(this, "ERROR: The intent had no url in the data field",
+                    Snackbar.LENGTH_LONG).show();
+            return;
+        }
 
-
-                try (BufferedReader r = new BufferedReader(new InputStreamReader(fileStream))) {
-                    for (String line; (line = r.readLine()) != null; ) {
-                        total.append(line).append('\n');
+        // Switch on the different kinds of input types that could be in the temp file
+        switch (inputType) {
+            case Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT:
+                // Convert the read file to an ExtractedText object
+                try {
+                    ExtractedText extractedText = ExtractedText.getExtractedTextFromFile( fileUri,
+                            this);
+                    if (extractedText != null) {
+                        Log.d(TAG, "Loading extracted text.");
+                        mRecipe.initialiseWithExtractedText(extractedText);
+                    } else {
+                        // Error in case ExtractedText was null.
+                        Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
                     }
                 } catch (IOException e) {
-                    Log.e("MAIN", "There was a problem receiving the file from " +
-                            "the plugin", e);
+                    e.printStackTrace();
+                    return;
                 }
-            } else {
-                Log.e("MAIN", "There was a problem receiving the file from " +
-                        "the plugin");
-            }
-        } else {
-            Log.e("MAIN", "There was a problem receiving the file from " +
-                    "the plugin");
+                break;
+            case Constants.PLUGIN_INPUT_TYPE_OBJECT:
+                // Convert the read file to an PluginObject
+                try {
+                    Recipe receivedObject = Recipe.getPluginObjectFromFile(fileUri, this,
+                            Recipe.class);
+
+                    Log.d(TAG, "Loading cashed Object.");
+                    mRecipe.initialiseWithRecipe(receivedObject);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return;
+                }
+                break;
+            default:
+                Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
+                        Snackbar.LENGTH_LONG).show();
+                Log.d(TAG, "Loading plain default text (getText())");
+                mRecipe.initialiseWithPlainText(getText());
+
         }
 
-        // Convert the read file to an ExtractedText object
-        return ExtractedText.fromJson(total.toString());
     }
+
 
     /**
      * Show the progress-screen.

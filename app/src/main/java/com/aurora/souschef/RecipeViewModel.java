@@ -299,7 +299,8 @@ public class RecipeViewModel extends AndroidViewModel {
                     upTime += MILLIS_BETWEEN_UPDATES;
 
                     publishProgress(SouschefProcessorCommunicator.getProgressAnnotationPipelines());
-                    if (SouschefProcessorCommunicator.getProgressAnnotationPipelines() >= DETECTION_STEPS || upTime > MAX_WAIT_TIME) {
+                    if (SouschefProcessorCommunicator.getProgressAnnotationPipelines()
+                            >= DETECTION_STEPS || upTime > MAX_WAIT_TIME) {
                         break;
                     }
                 }

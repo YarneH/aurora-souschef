@@ -1,5 +1,6 @@
 package com.aurora.souschefprocessor.task;
 
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
@@ -47,6 +48,7 @@ public class ParallelizableTaskLongTest {
 
     private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
     private static String original = "irrelevant";
+    private static ExtractedText emptyExtractedText = new ExtractedText("", null);
 
     @BeforeClass
     public static void initialize() {
@@ -54,7 +56,7 @@ public class ParallelizableTaskLongTest {
         for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantPositions.put(key, pos);
         }
-        RecipeInProgress rip = new RecipeInProgress(null);
+        RecipeInProgress rip = new RecipeInProgress(emptyExtractedText);
 
         DetectTimersInStepTask.initializeAnnotationPipeline();
 

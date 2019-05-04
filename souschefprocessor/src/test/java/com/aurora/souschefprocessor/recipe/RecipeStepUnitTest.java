@@ -1,5 +1,6 @@
 package com.aurora.souschefprocessor.recipe;
 
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschefprocessor.task.RecipeStepInProgress;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
@@ -74,9 +75,10 @@ public class RecipeStepUnitTest {
 
     @Test
     public void RecipeStep_convertUnit_correctConversion() {
-
+        // Create an empty ExtractedText for RecipeInProgress argument
+        ExtractedText emptyExtractedText = new ExtractedText("", null);
         // Add the ingredient to the recipe
-        RecipeInProgress rip = new RecipeInProgress(null);
+        RecipeInProgress rip = new RecipeInProgress(emptyExtractedText);
         EnumMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
         Position pos = new Position(0, 1);
         for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {

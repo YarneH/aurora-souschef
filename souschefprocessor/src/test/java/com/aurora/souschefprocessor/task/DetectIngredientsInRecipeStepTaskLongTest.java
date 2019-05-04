@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.task;
 
 
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
@@ -28,6 +29,8 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
     private static String originalText = "irrelevant";
     private static String originalIngredientText = "irrelevant";
     private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
+    private static ExtractedText emptyExtractedText = new ExtractedText("", null);
+
 
     // Container for the detected recipes
     private static List<RecipeInProgress> rips;
@@ -87,7 +90,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         String allIngredients = initializeIngredientsString();
         String[] ingredientsPerRecipe = allIngredients.split("\n\n");
         for (String ingredientsForOneRecipe : ingredientsPerRecipe) {
-            RecipeInProgress rip = new RecipeInProgress(null);
+            RecipeInProgress rip = new RecipeInProgress(emptyExtractedText);
             rip.setIngredientsString(ingredientsForOneRecipe);
             List<ListIngredient> listIngredients = new ArrayList<>();
 

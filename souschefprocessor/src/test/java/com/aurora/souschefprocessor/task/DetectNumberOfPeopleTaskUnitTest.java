@@ -21,12 +21,14 @@ public class DetectNumberOfPeopleTaskUnitTest {
     private static RecipeInProgress recipe;
     private static DetectNumberOfPeopleTask detectNumberOfPeopleTask;
     private static String originalText;
+    private static ExtractedText emptyExtractedText = new ExtractedText("", null);
+
 
     @BeforeClass
     public static void initialize() {
 
         originalText = initializeRecipeText();
-        recipe = new RecipeInProgress(null);
+        recipe = new RecipeInProgress(emptyExtractedText);
         recipe.setDescription(originalText);
         detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipe);
     }
@@ -104,7 +106,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
          */
         // arrange
         String originalTextNoNumber = originalText.substring(0, originalText.indexOf('\n') + 1);
-        RecipeInProgress recipeNoNumber = new RecipeInProgress(null);
+        RecipeInProgress recipeNoNumber = new RecipeInProgress(emptyExtractedText);
         recipeNoNumber.setDescription(originalTextNoNumber);
         DetectNumberOfPeopleTask detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipeNoNumber);
         // act

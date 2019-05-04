@@ -1,5 +1,6 @@
 package com.aurora.souschefprocessor.task;
 
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
@@ -28,6 +29,8 @@ public class DetectTimersInStepTaskUnitTest {
     private static RecipeInProgress recipe;
     private static ArrayList<RecipeStepInProgress> recipeSteps;
     private static Position irrelevantPosition = new Position(0, 1);
+    private static ExtractedText emptyExtractedText = new ExtractedText("", null);
+
 
     @BeforeClass
     public static void initialize() {
@@ -45,7 +48,7 @@ public class DetectTimersInStepTaskUnitTest {
         recipeSteps.add(new RecipeStepInProgress("Put in the oven for 50 minutes to 1 hour")); //9 to case
 
         String originalText = "irrelevant";
-        recipe = new RecipeInProgress(null);
+        recipe = new RecipeInProgress(emptyExtractedText);
         recipe.setStepsInProgress(recipeSteps);
 
         for (int stepIndex = 0; stepIndex < recipeSteps.size(); stepIndex++) {

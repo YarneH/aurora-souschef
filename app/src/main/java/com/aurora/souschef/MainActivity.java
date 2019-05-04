@@ -11,6 +11,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Holds the data of a recipe in a LifeCycle-friendly way.
      */
-    private RecipeViewModel mRecipe;
+    private RecipeViewModel mRecipeViewModel;
 
     public MainActivity() {
         // Default constructor
@@ -102,14 +103,14 @@ public class MainActivity extends AppCompatActivity {
      * Sets up the observation of the recipeviewmodel
      */
     private void setUpRecipeDataObject() {
-        mRecipe.getProgressStep().observe(this, (Integer step) -> {
+        mRecipeViewModel.getProgressStep().observe(this, (Integer step) -> {
                     ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                    pb.setProgress(mRecipe.getProgress());
+                    pb.setProgress(mRecipeViewModel.getProgress());
 
                     // TODO: set TextView to visualize progress
                 }
         );
-        mRecipe.getInitialised().observe(this, (Boolean isInitialised) -> {
+        mRecipeViewModel.getInitialised().observe(this, (Boolean isInitialised) -> {
             if (isInitialised == null) {
                 return;
             }
@@ -119,16 +120,16 @@ public class MainActivity extends AppCompatActivity {
             }
             hideProgress();
         });
-        mRecipe.getProcessFailed().observe(this, (Boolean failed) -> {
+        mRecipeViewModel.getProcessFailed().observe(this, (Boolean failed) -> {
             if (failed != null && failed) {
                 Toast.makeText(this, "Detection failed: " +
-                                mRecipe.getFailureMessage().getValue(),
+                                mRecipeViewModel.getFailureMessage().getValue(),
                         Toast.LENGTH_LONG).show();
                 ProgressBar pb = findViewById(R.id.pb_loading_screen);
                 pb.setProgress(0);
             }
         });
-        mRecipe.getDefaultAmountSet().observe(this, (Boolean set) -> {
+        mRecipeViewModel.getDefaultAmountSet().observe(this, (Boolean set) -> {
             if (set != null && set) {
                 Toast.makeText(this, "Amount of servings not found. Default (4) is set!",
                         Toast.LENGTH_LONG).show();
@@ -144,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mRecipe = ViewModelProviders.of(this).get(RecipeViewModel.class);
+        mRecipeViewModel = ViewModelProviders.of(this).get(RecipeViewModel.class);
 
         super.onCreate(savedInstanceState);
         // TODO: Change back to the correct view
@@ -168,10 +169,10 @@ public class MainActivity extends AppCompatActivity {
          * Each if statement calls initialise (with different paraments)
          * on the recipe data object.
          */
-        if (mRecipe.isBeingProcessed()) {
+        if (mRecipeViewModel.isBeingProcessed()) {
             return;
         }
-        mRecipe.setBeingProcessed(true);
+        mRecipeViewModel.setBeingProcessed(true);
         Log.d(TAG, "setup");
         Intent intentThatStartedThisActivity = getIntent();
 
@@ -225,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
                             Snackbar.LENGTH_LONG).show();
                     Log.d(TAG, "Loading plain default text (getText())");
-                    mRecipe.initialiseWithPlainText(getText());
+                    mRecipeViewModel.initialiseWithPlainText(getText());
             }
         }
     }
@@ -241,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
                     this);
             if (extractedText != null) {
                 Log.d(TAG, "Loading extracted text.");
-                mRecipe.initialiseWithExtractedText(extractedText);
+                mRecipeViewModel.initialiseWithExtractedText(extractedText);
             } else {
                 // Error in case ExtractedText was null.
                 Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
@@ -263,14 +264,13 @@ public class MainActivity extends AppCompatActivity {
                     Recipe.class);
 
             Log.d(TAG, "Loading cashed Object.");
-            mRecipe.initialiseWithRecipe(receivedObject);
+            mRecipeViewModel.initialiseWithRecipe(receivedObject);
 
         } catch (IOException e) {
             Log.e(MainActivity.class.getSimpleName(),
                     "IOException while loading data from aurora", e);
         }
     }
-
 
     /**
      * Show the progress-screen.
@@ -281,6 +281,7 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = findViewById(R.id.container);
         mViewPager.setVisibility(View.GONE);
 
+
         // Set up the TabLayout to follow the ViewPager.
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -289,6 +290,7 @@ public class MainActivity extends AppCompatActivity {
         ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
         cl.setVisibility(View.VISIBLE);
     }
+
 
     /**
      * Hide the progress-screen.
@@ -312,10 +314,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
+     * A {@link FragmentStatePagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);

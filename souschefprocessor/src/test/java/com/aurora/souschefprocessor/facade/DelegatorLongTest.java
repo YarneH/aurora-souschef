@@ -260,7 +260,6 @@ public class DelegatorLongTest {
         Position pos = r.getRecipeSteps().get(2).getIngredients().get(0).getQuantityPosition();
         System.out.println(r.getRecipeSteps().get(2).getDescription().substring(pos.getBeginIndex(), pos.getEndIndex()));
         System.out.println(r.getRecipeSteps().get(2).getDescription());
-
     }
 
 }

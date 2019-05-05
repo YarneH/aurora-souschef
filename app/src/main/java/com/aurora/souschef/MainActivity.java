@@ -75,28 +75,85 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Hardcoded recipe with extracted text and annotations
+     * Overwritten method of Activity
      *
-     * @return the json of the annotated extracted test
+     * @param savedInstanceState The saved state.
      */
-    private String getText() {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        mRecipeViewModel = ViewModelProviders.of(this).get(RecipeViewModel.class);
 
+        super.onCreate(savedInstanceState);
+        // TODO: Change back to the correct view
+        setContentView(R.layout.activity_main);
 
-        InputStream stream = getResources().openRawResource(R.raw.input);
-        StringBuilder bld = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-        try {
-            String line = reader.readLine();
-            while (line != null) {
-                bld.append(line);
+        // Obtain the FirebaseAnalytics instance.
+        // Most of firebase analytics is done automatically.
+        // Probably nothing more is needed.
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
-                line = reader.readLine();
-            }
-        } catch (IOException e) {
-            Log.e("MAIN", "opening default file failed", e );
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        showProgress();
+
+        // setup recipe data object (RecipeViewModel).
+        setUpRecipeDataObject();
+
+        /*
+         * Handle Aurora starting the Plugin.
+         * Each if statement calls initialise (with different paraments)
+         * on the recipe data object.
+         */
+        if (mRecipeViewModel.isBeingProcessed()) {
+            return;
         }
-        Log.d("read", bld.toString());
-        return bld.toString();
+        mRecipeViewModel.setBeingProcessed(true);
+        Log.d(TAG, "setup");
+        Intent intentThatStartedThisActivity = getIntent();
+
+        boolean intentIsOkay = true;
+
+        if (intentThatStartedThisActivity.getAction() == null) {
+            Toast.makeText(this, "ERROR: The intent had no action.",
+                    Snackbar.LENGTH_LONG).show();
+            intentIsOkay = false;
+        } else if (!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+            Toast.makeText(this, "ERROR: The intent had incorrect action.",
+                    Snackbar.LENGTH_LONG).show();
+            intentIsOkay = false;
+        } else if (!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
+            Toast.makeText(this, "ERROR: The intent had no specified input type.",
+                    Snackbar.LENGTH_LONG).show();
+            intentIsOkay = false;
+        }
+
+        if (intentIsOkay) {
+            handleIntentThatOpenedPlugin(intentThatStartedThisActivity);
+        } else {
+            //code for debugging purposes, must be deleted in production
+            mRecipeViewModel.initialiseWithPlainText(getText());
+        }
+
+    }
+
+    /**
+     * Show the progress-screen.
+     */
+    private void showProgress() {
+        ViewPager mViewPager;
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = findViewById(R.id.container);
+        mViewPager.setVisibility(View.GONE);
+
+
+        // Set up the TabLayout to follow the ViewPager.
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(mViewPager);
+        tabLayout.setVisibility(View.GONE);
+
+        ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+        cl.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -139,81 +196,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Overwritten method of Activity
-     *
-     * @param savedInstanceState The saved state.
-     */
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        mRecipeViewModel = ViewModelProviders.of(this).get(RecipeViewModel.class);
-
-        super.onCreate(savedInstanceState);
-        // TODO: Change back to the correct view
-        setContentView(R.layout.activity_main);
-
-        // Obtain the FirebaseAnalytics instance.
-        // Most of firebase analytics is done automatically.
-        // Probably nothing more is needed.
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        showProgress();
-
-        // setup recipe data object (RecipeViewModel).
-        setUpRecipeDataObject();
-
-        /*
-         * Handle Aurora starting the Plugin.
-         * Each if statement calls initialise (with different paraments)
-         * on the recipe data object.
-         */
-        if (mRecipeViewModel.isBeingProcessed()) {
-            return;
-        }
-        mRecipeViewModel.setBeingProcessed(true);
-        Log.d(TAG, "setup");
-        Intent intentThatStartedThisActivity = getIntent();
-
-        boolean intentIsOkay = true;
-
-        if(intentThatStartedThisActivity.getAction() == null) {
-            Toast.makeText(this, "ERROR: The intent had no action.",
-                    Snackbar.LENGTH_LONG).show();
-            intentIsOkay = false;
-        } else if(!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-            Toast.makeText(this, "ERROR: The intent had incorrect action.",
-                    Snackbar.LENGTH_LONG).show();
-            intentIsOkay = false;
-        } else if(!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
-            Toast.makeText(this, "ERROR: The intent had no specified input type.",
-                    Snackbar.LENGTH_LONG).show();
-            intentIsOkay = false;
-        }
-
-        if (intentIsOkay){
-            handleIntentThatOpenedPlugin(intentThatStartedThisActivity);
-        }else{
-            //code for debugging purposes, must be deleted in production
-            mRecipeViewModel.initialiseWithPlainText(getText());
-        }
-        else{
-            // code for debugging with hardcoded recipe to delete in production
-            mRecipeViewModel.initialiseWithPlainText(getText());
-        }
-    }
-
-
-    /**
      * Initializes mRecipe according to the parameters in the Intent that opened the plugin
      *
      * @param intentThatStartedThisActivity Intent that opened the plugin
      */
-    private void handleIntentThatOpenedPlugin(Intent intentThatStartedThisActivity){
+    private void handleIntentThatOpenedPlugin(Intent intentThatStartedThisActivity) {
         // Get the Uri to the transferred file
         Uri fileUri = intentThatStartedThisActivity.getData();
-        if(fileUri == null) {
+        if (fileUri == null) {
             Toast.makeText(this, "ERROR: The intent had no url in the data field",
                     Snackbar.LENGTH_LONG).show();
         } else {
@@ -239,65 +229,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Convert the read file to an ExtractedText object
+     * Hardcoded recipe with extracted text and annotations
      *
-     * @param fileUri Uri to the file
+     * @return the json of the annotated extracted test
      */
-    private void convertReadFileToExtractedText(Uri fileUri){
+    private String getText() {
+
+
+        InputStream stream = getResources().openRawResource(R.raw.input);
+        StringBuilder bld = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
         try {
-            ExtractedText extractedText = ExtractedText.getExtractedTextFromFile( fileUri,
-                    this);
-            if (extractedText != null) {
-                Log.d(TAG, "Loading extracted text.");
-                mRecipeViewModel.initialiseWithExtractedText(extractedText);
-            } else {
-                // Error in case ExtractedText was null.
-                Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
+            String line = reader.readLine();
+            while (line != null) {
+                bld.append(line);
+
+                line = reader.readLine();
             }
         } catch (IOException e) {
-            Log.e(MainActivity.class.getSimpleName(),
-                    "IOException while loading data from aurora", e);
+            Log.e("MAIN", "opening default file failed", e);
         }
+        Log.d("read", bld.toString());
+        return bld.toString();
     }
-
-    /**
-     * Convert the read file to an PluginObject
-     *
-     * @param fileUri Uri to the file
-     */
-    private void convertReadFileToRecipe(Uri fileUri){
-        try {
-            Recipe receivedObject = Recipe.getPluginObjectFromFile(fileUri, this,
-                    Recipe.class);
-
-            Log.d(TAG, "Loading cashed Object.");
-            mRecipeViewModel.initialiseWithRecipe(receivedObject);
-
-        } catch (IOException e) {
-            Log.e(MainActivity.class.getSimpleName(),
-                    "IOException while loading data from aurora", e);
-        }
-    }
-
-    /**
-     * Show the progress-screen.
-     */
-    private void showProgress() {
-        ViewPager mViewPager;
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = findViewById(R.id.container);
-        mViewPager.setVisibility(View.GONE);
-
-
-        // Set up the TabLayout to follow the ViewPager.
-        TabLayout tabLayout = findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-        tabLayout.setVisibility(View.GONE);
-
-        ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
-        cl.setVisibility(View.VISIBLE);
-    }
-
 
     /**
      * Hide the progress-screen.
@@ -318,6 +272,47 @@ public class MainActivity extends AppCompatActivity {
         appBarLayout.setVisibility(View.VISIBLE);
         mViewPager.setVisibility(View.VISIBLE);
         tabLayout.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Convert the read file to an ExtractedText object
+     *
+     * @param fileUri Uri to the file
+     */
+    private void convertReadFileToExtractedText(Uri fileUri) {
+        try {
+            ExtractedText extractedText = ExtractedText.getExtractedTextFromFile(fileUri,
+                    this);
+            if (extractedText != null) {
+                Log.d(TAG, "Loading extracted text.");
+                mRecipeViewModel.initialiseWithExtractedText(extractedText);
+            } else {
+                // Error in case ExtractedText was null.
+                Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
+            }
+        } catch (IOException e) {
+            Log.e(MainActivity.class.getSimpleName(),
+                    "IOException while loading data from aurora", e);
+        }
+    }
+
+    /**
+     * Convert the read file to an PluginObject
+     *
+     * @param fileUri Uri to the file
+     */
+    private void convertReadFileToRecipe(Uri fileUri) {
+        try {
+            Recipe receivedObject = Recipe.getPluginObjectFromFile(fileUri, this,
+                    Recipe.class);
+
+            Log.d(TAG, "Loading cashed Object.");
+            mRecipeViewModel.initialiseWithRecipe(receivedObject);
+
+        } catch (IOException e) {
+            Log.e(MainActivity.class.getSimpleName(),
+                    "IOException while loading data from aurora", e);
+        }
     }
 
     /**

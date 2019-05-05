@@ -12,8 +12,9 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
+import com.aurora.auroralib.translation.TranslationServiceCaller;
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
+import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 /**
@@ -96,6 +97,9 @@ public class RecipeViewModel extends AndroidViewModel {
      */
     private boolean isBeingProcessed = false;
 
+
+    private TranslationServiceCaller mTranslationServiceCaller;
+
     /**
      * The context of the application.
      * <p>
@@ -140,14 +144,22 @@ public class RecipeViewModel extends AndroidViewModel {
             }
         };
         sharedPreferences.registerOnSharedPreferenceChangeListener(mListener);
+        mTranslationServiceCaller = new TranslationServiceCaller(application);
 
     }
 
-    private boolean isImperial() {
-        SharedPreferences sharedPreferences = getApplication().getSharedPreferences(
-                Tab1Overview.SETTINGS_PREFERENCES,
-                Context.MODE_PRIVATE);
-        return sharedPreferences.getBoolean(Tab1Overview.IMPERIAL_SETTING, false);
+    /**
+     * Converts all the units in the recipe
+     *
+     * @param toMetric boolean that indicates if the units should be converted to metric or to US
+     */
+    public void convertRecipeUnits(boolean toMetric) {
+        // creating the recipe
+        Recipe recipe = mRecipe.getValue();
+        if (recipe != null) {
+            recipe.convertUnit(toMetric);
+        }
+        mRecipe.postValue(recipe);
     }
 
     public LiveData<String> getFailureMessage() {
@@ -218,6 +230,13 @@ public class RecipeViewModel extends AndroidViewModel {
         mInitialised.setValue(true);
     }
 
+    private boolean isImperial() {
+        SharedPreferences sharedPreferences = getApplication().getSharedPreferences(
+                Tab1Overview.SETTINGS_PREFERENCES,
+                Context.MODE_PRIVATE);
+        return sharedPreferences.getBoolean(Tab1Overview.IMPERIAL_SETTING, false);
+    }
+
     public LiveData<Boolean> getInitialised() {
         return mInitialised;
     }
@@ -264,19 +283,8 @@ public class RecipeViewModel extends AndroidViewModel {
         }
     }
 
-    /**
-     * Converts all the units in the recipe
-     *
-     * @param toMetric boolean that indicates if the units should be converted to metric or to US
-     */
-    public void convertRecipeUnits(boolean toMetric) {
-        // TODO call this function after user has chosen/changed preference and/or when first
-        // creating the recipe
-        Recipe recipe = mRecipe.getValue();
-        if (recipe != null) {
-            recipe.convertUnit(toMetric);
-        }
-        mRecipe.postValue(recipe);
+    public boolean isBeingProcessed() {
+        return isBeingProcessed;
     }
 
     public void setBeingProcessed(boolean isBeingProcessed) {
@@ -324,18 +332,14 @@ public class RecipeViewModel extends AndroidViewModel {
     @SuppressLint("StaticFieldLeak")
     class SouschefInit extends AsyncTask<Void, String, Recipe> {
 
-        private String mText;
         private ExtractedText mExtractedText;
-        private boolean mWithExtractedText = false;
 
-        public SouschefInit(String text) {
+        SouschefInit(String text) {
             this.mExtractedText = ExtractedText.fromJson(text);
-            this.mWithExtractedText = true;
         }
 
-        public SouschefInit(ExtractedText extractedText) {
+        SouschefInit(ExtractedText extractedText) {
             this.mExtractedText = extractedText;
-            mWithExtractedText = true;
         }
 
         @Override
@@ -344,17 +348,17 @@ public class RecipeViewModel extends AndroidViewModel {
 
             SouschefProcessorCommunicator comm = SouschefProcessorCommunicator.createCommunicator(mContext);
             if (comm != null) {
-                // Pick the correct type of text.
+
                 try {
-                    if (mWithExtractedText) {
-                        if (mExtractedText.getSections() == null) {
-                            throw new RecipeDetectionException("The received text from Aurora did " +
-                                    "not contain sections" +
-                                    ", make sure you can open this type of file. If the problem" +
-                                    " persists, please send feedback in Aurora");
-                        }
-                        return (Recipe) comm.pipeline(mExtractedText);
+
+                    if (mExtractedText.getSections() == null) {
+                        throw new RecipeDetectionException("The received text from Aurora did " +
+                                "not contain sections" +
+                                ", make sure you can open this type of file. If the problem" +
+                                " persists, please send feedback in Aurora");
                     }
+                    return (Recipe) comm.pipeline(mExtractedText);
+
                 } catch (RecipeDetectionException rde) {
                     Log.d("FAILURE", rde.getMessage());
                     mFailureMessage.postValue(rde.getMessage());
@@ -375,7 +379,5 @@ public class RecipeViewModel extends AndroidViewModel {
         }
     }
 
-    public boolean isBeingProcessed() {
-        return isBeingProcessed;
-    }
 }
+

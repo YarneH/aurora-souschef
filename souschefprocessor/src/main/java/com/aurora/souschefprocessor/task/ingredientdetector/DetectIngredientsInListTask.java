@@ -72,169 +72,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
     }
 
     /**
-     * This calls the removeClutter method, this makes sure that the following sort of conversion
-     * happens: 500ml/3fl oz -> 500 ml
-     * Also, adds spaces in a line, for example 250g is turned in to 250 g. This is needed because the
-     * classifier needs to see 250 and "g" as seperate tokens.
-     * It also deletes the "." character when it is not between two digits, as in "1 lb. of pasta"
-     * Adds spaces in a line, for example 250g/3oz is turned into 250 g / 3 oz so the
-     * classifier sees these as different tokens
-     *
-     * @param line The line on which to add spaces, remove clutter and delete "."
-     * @return The line with the spaces added and the points deleted
-     */
-    private static String standardizeLine(String line) {
-        line = line.trim();
-        line = removeClutter(line);
-        StringBuilder bld = new StringBuilder();
-        char[] chars = line.toCharArray();
-
-        // add the first character
-        bld.append(chars[0]);
-
-        for (int i = 1; i < chars.length - 1; i++) {
-            char previous = chars[i - 1];
-            char current = chars[i];
-            char next = chars[i + 1];
-
-            // do not append automatically if it is a point
-            if (current != '.') {
-                if (spaceNeededBetweenPreviousAndCurrent(previous, current)) {
-                    bld.append(" ");
-                    bld.append(current);
-
-                } else {
-                    bld.append(current);
-                }
-
-            } else {
-                if (pointNeededBetweenPreviousAndNext(previous, next)) {
-                    bld.append(current);
-                }
-            }
-        }
-
-        // add the last character
-        bld.append(chars[chars.length - 1]);
-
-        // return the builder
-        return bld.toString();
-    }
-
-    /**
-     * Checks if the "." is still needed between these characters, which is the case if both characters
-     * are digits
-     *
-     * @param previous The character before the "."
-     * @param next     The character after the "."
-     * @return A boolean indicating whether the "." character is needed
-     */
-    private static boolean pointNeededBetweenPreviousAndNext(char previous, char next) {
-        return Character.isDigit(previous) && Character.isDigit(next);
-    }
-
-    /**
-     * Removes clutter from an ingredient line, some examples of cluttered lines and their conversion
-     * 2.5kg/5lb 8oz turkey crown (fully thawed if frozen) => 2.5kg turkey crown (fully thawed if frozen)
-     * 750–900ml/1⅓–1⅔ pint readymade chicken gravy => 750ml readymade chicken gravy
-     * 500ml/18fl oz milk => 500ml milk
-     * 200ml/7fl oz crème frâiche => 200ml crème frâiche
-     * 350ml/12¼fl oz warm water => 350ml warm water
-     * 200ml/7fl oz fromage frais => 200ml fromage frais
-     * 100g/5½oz raisins => 100g raisins
-     *
-     * @param line The line from where to remove the clutter
-     * @return The line with the clutter removed (a string)
-     */
-    private static String removeClutter(String line) {
-        List<Pattern> patterns = new ArrayList<>();
-        patterns.add(Pattern.compile(CLUTTER_REGEX));
-        patterns.add(Pattern.compile(CLUTTER_DASH_REGEX));
-        line = removeMatchingRegexesInOrder(line, patterns);
-        return line;
-    }
-
-    /**
-     * Removes the part of the line that matches the pattern for each pattern in the list, in order,
-     * so the second pattern is mathced against the result of the operation with the first pattern.
-     *
-     * @param line     The line to match against the patterns
-     * @param patterns the patterns to match
-     * @return the line with the matching patterns removed
-     */
-    private static String removeMatchingRegexesInOrder(String line, List<Pattern> patterns) {
-        Matcher match;
-        for (Pattern pattern : patterns) {
-            match = pattern.matcher(line);
-            if (match.find()) {
-                String remove = match.group();
-                line = line.replace(remove, "");
-            }
-        }
-
-        return line;
-    }
-
-    /**
-     * Checks if a space is needed between the first and second character. this is the case if either
-     * a number is followed by a letter or a letter is followed by a dash or a slash
-     *
-     * @param first  The first character
-     * @param second The second character
-     * @return a boolean indicating if a space is needed
-     */
-    private static boolean spaceNeededBetweenPreviousAndCurrent(char first, char second) {
-        if ((Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)
-                && Character.isAlphabetic(second)) {
-            // if a number is followed by a letter, add a space
-            return true;
-
-        } else {
-            // if a letter is followed by a slash, add a space
-            return Character.isAlphabetic(first) && second == '/';
-        }
-    }
-
-    /**
-     * A private helper function for updating the line after the name component has been identiefied
-     *
-     * @param line
-     * @param beginPosition
-     * @param endPosition
-     * @param name
-     * @return
-     */
-    private static String makeNewLine(String line, int beginPosition, int endPosition, String name) {
-        if (beginPosition < 0 || endPosition < 0 || beginPosition >= line.length() || endPosition > line.length()) {
-            // the positions are not in this line
-            return line;
-        }
-
-        String newLine = line.substring(0, beginPosition) + name;
-        if (endPosition < line.length()) {
-            newLine += line.substring(endPosition);
-        }
-
-        return newLine;
-    }
-
-    /**
-     * A helper function that checks if the line is not one of the {@link #NON_INGREDIENTS}
-     *
-     * @param line the line to check
-     * @return a boolean, true -> did not contain one of the {@link #NON_INGREDIENTS}
-     */
-    private static boolean doesNotContainANonIngredientStructure(String line) {
-        line = line.toLowerCase(Locale.ENGLISH);
-        for (String nonIngredientStructure : NON_INGREDIENTS) {
-            if (line.contains(nonIngredientStructure)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Detects the ListIngredients presented in the ingredientsString and sets the mIngredients field
      * in the recipe to this set of ListIngredients.
      */
@@ -286,27 +123,69 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
     }
 
     /**
-     * Helper function for {@link #detectIngredient(String)}. Populates the map with the data of the classified list, the map will have keys that are the
-     * labels of the classifiedlist, and as values every string that was classified in to one of the
-     * classes.
+     * This calls the removeClutter method, this makes sure that the following sort of conversion
+     * happens: 500ml/3fl oz -> 500 ml
+     * Also, adds spaces in a line, for example 250g is turned in to 250 g. This is needed because the
+     * classifier needs to see 250 and "g" as seperate tokens.
+     * It also deletes the "." character when it is not between two digits, as in "1 lb. of pasta"
+     * Adds spaces in a line, for example 250g/3oz is turned into 250 g / 3 oz so the
+     * classifier sees these as different tokens
      *
-     * @param classifiedList The data for populating the map
-     * @param map            the map to populate
+     * @param line The line on which to add spaces, remove clutter and delete "."
+     * @return The line with the spaces added and the points deleted
      */
-    private void populateMapWithClassifiedData(List<List<CoreLabel>> classifiedList, Map<String, List<CoreLabel>> map) {
-        for (List<CoreLabel> l : classifiedList) {
-            for (CoreLabel cl : l) {
-                String classifiedClass = (cl.get(CoreAnnotations.AnswerAnnotation.class)).trim();
-                if (map.get(classifiedClass) == null) {
-                    // if this key is not yet in the map construct a list and add the label to the list
-                    List<CoreLabel> list = new ArrayList<>();
-                    list.add(cl);
-                    map.put(classifiedClass, list);
+    private static String standardizeLine(String line) {
+        line = line.trim();
+        line = removeClutter(line);
+        StringBuilder bld = new StringBuilder();
+        char[] chars = line.toCharArray();
+
+        // add the first character
+        bld.append(chars[0]);
+
+        for (int i = 1; i < chars.length - 1; i++) {
+            char previous = chars[i - 1];
+            char current = chars[i];
+            char next = chars[i + 1];
+
+            // do not append automatically if it is a point
+            if (current != '.') {
+                if (spaceNeededBetweenPreviousAndCurrent(previous, current)) {
+                    bld.append(" ");
+                    bld.append(current);
+
                 } else {
-                    map.get(classifiedClass).add(cl);
+                    bld.append(current);
+                }
+
+            } else {
+                if (pointNeededBetweenPreviousAndNext(previous, next)) {
+                    bld.append(current);
                 }
             }
         }
+
+        // add the last character
+        bld.append(chars[chars.length - 1]);
+
+        // return the builder
+        return bld.toString();
+    }
+
+    /**
+     * A helper function that checks if the line is not one of the {@link #NON_INGREDIENTS}
+     *
+     * @param line the line to check
+     * @return a boolean, true -> did not contain one of the {@link #NON_INGREDIENTS}
+     */
+    private static boolean doesNotContainANonIngredientStructure(String line) {
+        line = line.toLowerCase(Locale.ENGLISH);
+        for (String nonIngredientStructure : NON_INGREDIENTS) {
+            if (line.contains(nonIngredientStructure)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -360,7 +239,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             // Calculate the position and add it to the map
             // beginPosition of the first element and endPosition of the last element
             int beginPosition = line.indexOf(nameList.get(0).word());
-            int endPosition = line.indexOf(nameList.get(nameList.size() -1 ).word()) +
+            int endPosition = line.indexOf(nameList.get(nameList.size() - 1).word()) +
                     nameList.get(nameList.size() - 1).word().length();
 
             line = makeNewLine(line, beginPosition, endPosition, name);
@@ -405,43 +284,81 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
     }
 
     /**
-     * Builds the name of the ingredient using a list of tokens that were classified as NAME
+     * Removes clutter from an ingredient line, some examples of cluttered lines and their conversion
+     * 2.5kg/5lb 8oz turkey crown (fully thawed if frozen) => 2.5kg turkey crown (fully thawed if frozen)
+     * 750–900ml/1⅓–1⅔ pint readymade chicken gravy => 750ml readymade chicken gravy
+     * 500ml/18fl oz milk => 500ml milk
+     * 200ml/7fl oz crème frâiche => 200ml crème frâiche
+     * 350ml/12¼fl oz warm water => 350ml warm water
+     * 200ml/7fl oz fromage frais => 200ml fromage frais
+     * 100g/5½oz raisins => 100g raisins
      *
-     * @param nameList the list of tokens
-     * @return a string which is a concatenation of all the words in the list
+     * @param line The line from where to remove the clutter
+     * @return The line with the clutter removed (a string)
      */
-    private String buildName(List<CoreLabel> nameList) {
-        // return every entity labeled name
-        StringBuilder bld = new StringBuilder();
-        for (CoreLabel cl : nameList) {
-            if (NAME.equals(cl.get(CoreAnnotations.AnswerAnnotation.class))) {
-                bld.append(cl.word());
-                bld.append(" ");
-            }
-        }
-        // delete last added space
-        bld.deleteCharAt(bld.length() - 1);
-
-        return bld.toString();
+    private static String removeClutter(String line) {
+        List<Pattern> patterns = new ArrayList<>();
+        patterns.add(Pattern.compile(CLUTTER_REGEX));
+        patterns.add(Pattern.compile(CLUTTER_DASH_REGEX));
+        line = removeMatchingRegexesInOrder(line, patterns);
+        return line;
     }
 
     /**
-     * Builds the name of the ingredient using a list of succeeding tokens that were classified as UNIT
+     * Checks if a space is needed between the first and second character. this is the case if either
+     * a number is followed by a letter or a letter is followed by a dash or a slash
      *
-     * @param succeedingUnitList the list of succeeding tokens
-     * @return a string which is a concatenation of all the succeeding words in the list
+     * @param first  The first character
+     * @param second The second character
+     * @return a boolean indicating if a space is needed
      */
-    private String buildUnit(List<CoreLabel> succeedingUnitList) {
+    private static boolean spaceNeededBetweenPreviousAndCurrent(char first, char second) {
+        if ((Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)
+                && Character.isAlphabetic(second)) {
+            // if a number is followed by a letter, add a space
+            return true;
 
-        StringBuilder bld = new StringBuilder();
-        for (CoreLabel cl : succeedingUnitList) {
-            bld.append(UnitConversionUtils.getBase(cl.word()));
-            bld.append(" ");
+        } else {
+            // if a letter is followed by a slash, add a space
+            return Character.isAlphabetic(first) && second == '/';
         }
-        // delete last added space
-        bld.deleteCharAt(bld.length() - 1);
+    }
 
-        return bld.toString();
+    /**
+     * Checks if the "." is still needed between these characters, which is the case if both characters
+     * are digits
+     *
+     * @param previous The character before the "."
+     * @param next     The character after the "."
+     * @return A boolean indicating whether the "." character is needed
+     */
+    private static boolean pointNeededBetweenPreviousAndNext(char previous, char next) {
+        return Character.isDigit(previous) && Character.isDigit(next);
+    }
+
+    /**
+     * Helper function for {@link #detectIngredient(String)}. Populates the map with the data of the classified list,
+     * the map will have keys that are the
+     * labels of the classifiedlist, and as values every string that was classified in to one of the
+     * classes.
+     *
+     * @param classifiedList The data for populating the map
+     * @param map            the map to populate
+     */
+    private void populateMapWithClassifiedData(List<List<CoreLabel>> classifiedList, Map<String, List<CoreLabel>> map) {
+        for (List<CoreLabel> l : classifiedList) {
+            for (CoreLabel cl : l) {
+                String classifiedClass = (cl.get(CoreAnnotations.AnswerAnnotation.class)).trim();
+                if (map.get(classifiedClass) == null) {
+                    // if this key is not yet in the map construct a list and add the label to the list
+                    List<CoreLabel> list = new ArrayList<>();
+                    list.add(cl);
+                    map.put(classifiedClass, list);
+                } else {
+                    map.get(classifiedClass).add(cl);
+                }
+            }
+        }
     }
 
     /**
@@ -496,5 +413,89 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         }
 
         return tokenQuantities;
+    }
+
+    /**
+     * Builds the name of the ingredient using a list of succeeding tokens that were classified as UNIT
+     *
+     * @param succeedingUnitList the list of succeeding tokens
+     * @return a string which is a concatenation of all the succeeding words in the list
+     */
+    private String buildUnit(List<CoreLabel> succeedingUnitList) {
+
+        StringBuilder bld = new StringBuilder();
+        for (CoreLabel cl : succeedingUnitList) {
+            bld.append(UnitConversionUtils.getBase(cl.word()));
+            bld.append(" ");
+        }
+        // delete last added space
+        bld.deleteCharAt(bld.length() - 1);
+
+        return bld.toString();
+    }
+
+    /**
+     * Builds the name of the ingredient using a list of tokens that were classified as NAME
+     *
+     * @param nameList the list of tokens
+     * @return a string which is a concatenation of all the words in the list
+     */
+    private String buildName(List<CoreLabel> nameList) {
+        // return every entity labeled name
+        StringBuilder bld = new StringBuilder();
+        for (CoreLabel cl : nameList) {
+            if (NAME.equals(cl.get(CoreAnnotations.AnswerAnnotation.class))) {
+                bld.append(cl.word());
+                bld.append(" ");
+            }
+        }
+        // delete last added space
+        bld.deleteCharAt(bld.length() - 1);
+
+        return bld.toString();
+    }
+
+    /**
+     * A private helper function for updating the line after the name component has been identiefied
+     *
+     * @param line
+     * @param beginPosition
+     * @param endPosition
+     * @param name
+     * @return
+     */
+    private static String makeNewLine(String line, int beginPosition, int endPosition, String name) {
+        if (beginPosition < 0 || endPosition < 0 || beginPosition >= line.length() || endPosition > line.length()) {
+            // the positions are not in this line
+            return line;
+        }
+
+        String newLine = line.substring(0, beginPosition) + name;
+        if (endPosition < line.length()) {
+            newLine += line.substring(endPosition);
+        }
+
+        return newLine;
+    }
+
+    /**
+     * Removes the part of the line that matches the pattern for each pattern in the list, in order,
+     * so the second pattern is mathced against the result of the operation with the first pattern.
+     *
+     * @param line     The line to match against the patterns
+     * @param patterns the patterns to match
+     * @return the line with the matching patterns removed
+     */
+    private static String removeMatchingRegexesInOrder(String line, List<Pattern> patterns) {
+        Matcher match;
+        for (Pattern pattern : patterns) {
+            match = pattern.matcher(line);
+            if (match.find()) {
+                String remove = match.group();
+                line = line.replace(remove, "");
+            }
+        }
+
+        return line;
     }
 }

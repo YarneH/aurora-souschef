@@ -90,5 +90,4 @@ public class RecipeInProgress extends Recipe {
         return mExtractedText;
     }
 
-
 }

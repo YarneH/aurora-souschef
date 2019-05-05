@@ -1,12 +1,10 @@
 package com.aurora.souschefprocessor.facade;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 import org.junit.After;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -15,7 +13,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -258,9 +255,9 @@ public class DelegatorLongTest {
 
         ExtractedText text = ExtractedText.fromJson(contents);
 
-       Recipe r = delegator.processText(text);
-        System.out.println(r);
 
+        Recipe r = delegator.processText(text);
+        System.out.println(r);
 
     }
 

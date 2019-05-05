@@ -62,42 +62,6 @@ public class Position {
         return beginIndex < endIndex;
     }
 
-    public int getBeginIndex() {
-        return mBeginIndex;
-    }
-
-    public void setBeginIndex(int beginIndex) {
-        // first check if this is a legal argument and throw if illegal
-        checkLegality(beginIndex, mEndIndex);
-
-        // check if begin is still smaller than end
-        // else throw an exception
-        if (beginSmallerThanEnd(beginIndex, mEndIndex)) {
-
-            mBeginIndex = beginIndex;
-        } else {
-            throw new IllegalArgumentException("The new beginIndex cannot be bigger than the endIndex!");
-        }
-    }
-
-    public int getEndIndex() {
-        return mEndIndex;
-    }
-
-    public void setEndIndex(int endIndex) {
-        // first check if this is a legal argument and throw if illegal
-        checkLegality(mBeginIndex, endIndex);
-
-        // check if begin is still smaller than end
-        // else throw an exception
-        if (beginSmallerThanEnd(mBeginIndex, endIndex)) {
-
-            mEndIndex = endIndex;
-        } else {
-            throw new IllegalArgumentException("The new endIndex cannot be smaller than the beginIndex!");
-        }
-    }
-
     /**
      * A function that checks if this Position is legal in a String. A position is legal if the
      * beginIndex is at most the index of the last character of the string and the endIndex is at most
@@ -133,6 +97,42 @@ public class Position {
 
         }
         return false;
+    }
+
+    public int getBeginIndex() {
+        return mBeginIndex;
+    }
+
+    public void setBeginIndex(int beginIndex) {
+        // first check if this is a legal argument and throw if illegal
+        checkLegality(beginIndex, mEndIndex);
+
+        // check if begin is still smaller than end
+        // else throw an exception
+        if (beginSmallerThanEnd(beginIndex, mEndIndex)) {
+
+            mBeginIndex = beginIndex;
+        } else {
+            throw new IllegalArgumentException("The new beginIndex cannot be bigger than the endIndex!");
+        }
+    }
+
+    public int getEndIndex() {
+        return mEndIndex;
+    }
+
+    public void setEndIndex(int endIndex) {
+        // first check if this is a legal argument and throw if illegal
+        checkLegality(mBeginIndex, endIndex);
+
+        // check if begin is still smaller than end
+        // else throw an exception
+        if (beginSmallerThanEnd(mBeginIndex, endIndex)) {
+
+            mEndIndex = endIndex;
+        } else {
+            throw new IllegalArgumentException("The new endIndex cannot be smaller than the beginIndex!");
+        }
     }
 
     @Override
@@ -180,8 +180,8 @@ public class Position {
         }
     }
 
-    public void subtractOffset(int offset){
-        if(offset <= mBeginIndex){
+    public void subtractOffset(int offset) {
+        if (offset <= mBeginIndex) {
             mBeginIndex -= offset;
             mEndIndex -= offset;
             return;
@@ -190,7 +190,7 @@ public class Position {
 
     }
 
-    public void addOffset(int offset){
+    public void addOffset(int offset) {
         mEndIndex += offset;
         mBeginIndex += offset;
 

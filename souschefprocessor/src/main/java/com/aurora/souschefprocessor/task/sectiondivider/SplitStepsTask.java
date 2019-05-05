@@ -119,7 +119,8 @@ public class SplitStepsTask extends AbstractProcessingTask {
     }
 
     /**
-     * A helper function for {@link #setAnnotations(List)}. It calls the {@link RecipeStepInProgress#setBeginPosition(int)}
+     * A helper function for {@link #setAnnotations(List)}. It calls the
+     * {@link RecipeStepInProgress#setBeginPosition(int)}
      * and {@link RecipeStepInProgress#setSentenceAnnotations(List)} methods
      *
      * @param step the step whose annotations are filled in

@@ -289,4 +289,19 @@ public class Ingredient {
             mPositions.get(key).addOffset(offset);
         }
     }
+
+    /**
+     * Helper function that makes sure that after converting the ingredient the positions of the not
+     * detected elements are set to 0 and the length of the new description
+     * @param originalLength the length of the description before converting
+     * @param newLength the length of the description after converting
+     */
+    public void setPositionEndOfStringCorrect(int originalLength, int newLength){
+        for(PositionKeysForIngredients key: PositionKeysForIngredients.values()){
+            Position pos = mPositions.get(key);
+            if(pos.getEndIndex() == originalLength && pos.getBeginIndex() == 0){
+                pos.setEndIndex(newLength);
+            }
+        }
+    }
 }

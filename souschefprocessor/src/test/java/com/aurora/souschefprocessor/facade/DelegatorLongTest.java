@@ -6,6 +6,7 @@ import com.aurora.souschefprocessor.recipe.Recipe;
 
 import org.junit.After;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -236,6 +237,7 @@ public class DelegatorLongTest {
 
     }
 
+
     @Test
     public void test_with_new_auroralib() {
         String contents = null;
@@ -256,10 +258,9 @@ public class DelegatorLongTest {
 
         ExtractedText text = ExtractedText.fromJson(contents);
 
-        Recipe r = delegator.processText(text);
-        Position pos = r.getRecipeSteps().get(2).getIngredients().get(0).getQuantityPosition();
-        System.out.println(r.getRecipeSteps().get(2).getDescription().substring(pos.getBeginIndex(), pos.getEndIndex()));
-        System.out.println(r.getRecipeSteps().get(2).getDescription());
+       Recipe r = delegator.processText(text);
+        System.out.println(r);
+
 
     }
 

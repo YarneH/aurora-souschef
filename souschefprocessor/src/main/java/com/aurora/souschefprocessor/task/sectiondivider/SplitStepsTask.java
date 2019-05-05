@@ -24,21 +24,6 @@ public class SplitStepsTask extends AbstractProcessingTask {
         super(recipeInProgress);
     }
 
-    private static boolean isSentenceInDescription(CoreMap sentence, String description) {
-        List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
-        for (CoreLabel token : tokens) {
-            // only consider alpha numeric tokens
-            if (token.word().matches("[A-Za-z0-9]+") &&
-                    !description.contains(token.word())) {
-                    // this is not the wanted sentence skip to the next sentence
-                    return false;
-                }
-            }
-
-
-        return true;
-    }
-
     /**
      * This will split the stepsString in the RecipeInProgress Object into mRecipeSteps and modifies the
      * recipe object so that the mRecipeSteps are set
@@ -88,6 +73,12 @@ public class SplitStepsTask extends AbstractProcessingTask {
         return list;
     }
 
+    private void setAnnotations(List<RecipeStepInProgress> list) {
+        for (RecipeStepInProgress step : list) {
+            fillInAnnotation(step);
+        }
+    }
+
     /**
      * Splits the text on punctuation
      *
@@ -127,12 +118,6 @@ public class SplitStepsTask extends AbstractProcessingTask {
         return list;
     }
 
-    private void setAnnotations(List<RecipeStepInProgress> list) {
-        for (RecipeStepInProgress step : list) {
-            fillInAnnotation(step);
-        }
-    }
-
     /**
      * A helper function for {@link #setAnnotations(List)}. It calls the {@link RecipeStepInProgress#setBeginPosition(int)}
      * and {@link RecipeStepInProgress#setSentenceAnnotations(List)} methods
@@ -141,10 +126,13 @@ public class SplitStepsTask extends AbstractProcessingTask {
      */
     private void fillInAnnotation(RecipeStepInProgress step) {
 
+        // trim the description
+        step.setDescription(step.getDescription().trim());
+
         // the annotation of the section of the string
         Annotation annotation = findAnnotationForStep(step.getDescription());
 
-        if(annotation == null){
+        if (annotation == null) {
             throw new RecipeDetectionException("At least one section is not annotated. Please contact " +
                     "Aurora to resolve this problem");
         }
@@ -199,5 +187,20 @@ public class SplitStepsTask extends AbstractProcessingTask {
         // should not happen
         throw new IllegalStateException("no section found for step with description " + description);
 
+    }
+
+    private static boolean isSentenceInDescription(CoreMap sentence, String description) {
+        List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
+        for (CoreLabel token : tokens) {
+            // only consider alpha numeric tokens
+            if (token.word().matches("[A-Za-z0-9]+") &&
+                    !description.contains(token.word())) {
+                // this is not the wanted sentence skip to the next sentence
+                return false;
+            }
+        }
+
+
+        return true;
     }
 }

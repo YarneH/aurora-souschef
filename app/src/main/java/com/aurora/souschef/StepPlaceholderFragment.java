@@ -93,22 +93,6 @@ public class StepPlaceholderFragment extends Fragment {
         return fragment;
     }
 
-    /**
-     * Extract the description of the steps
-     *
-     * @param recipe the recipe of which the steps will be extracted
-     * @return a list of Strings, representing all the different descriptions of the steps
-     */
-    public static String[] extractDescriptionSteps(Recipe recipe) {
-        int stepsCount = recipe.getRecipeSteps().size();
-        String[] steps = new String[stepsCount];
-
-        for (int i = 0; i < stepsCount; i++) {
-            steps[i] = recipe.getRecipeSteps().get(i).getDescription();
-        }
-        return steps;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         int index = Objects.requireNonNull(getArguments()).getInt(ARG_SECTION_NUMBER);
@@ -143,6 +127,7 @@ public class StepPlaceholderFragment extends Fragment {
             return;
         }
         mDescriptionStep = extractDescriptionSteps(recipe);
+
 
         ViewGroup insertPoint = mRootView.findViewById(R.id.ll_step);
 
@@ -212,6 +197,7 @@ public class StepPlaceholderFragment extends Fragment {
             mDescriptionBase[i] = currentSubstring;
             mStartIndexDescriptionBlocks[i] = beginOfTextBlock;
 
+
             // Change all the quantities of the ingredients to the INGREDIENT_CODE
             mDescriptionBase[i] = changeQuantityToCode(mDescriptionBase[i],
                     beginOfTextBlock,
@@ -247,68 +233,6 @@ public class StepPlaceholderFragment extends Fragment {
 
         // Add dots
         this.addDots(inflater, recipe, index);
-    }
-
-    /**
-     * Changes the quantities of ingredients in description by INGREDIENT_CODE
-     *
-     * @param description       a block of text where the ingredient might be located
-     * @param beginOfTextBlock  the begin index of the block
-     * @param endOfTextBlock    the end index of the block
-     * @param descriptionLength the length of the whole description
-     */
-    private String changeQuantityToCode(String description, int beginOfTextBlock, int endOfTextBlock,
-                                        int descriptionLength) {
-        for (Ingredient ingredient : mRecipeStep.getIngredients()) {
-            // Check whether the quantity is in the description of the step
-            if (ingredient.getQuantityPosition().getBeginIndex() != 0
-                    || ingredient.getQuantityPosition().getEndIndex() != descriptionLength) {
-
-                // Check if the quantity is represent in the current block of the description
-                if (ingredient.getQuantityPosition().getBeginIndex() < beginOfTextBlock) {
-                    // The current ingredient (and all the following) is located in a text-block which
-                    // comes before the current text block
-                    break;
-                } else if (ingredient.getQuantityPosition().getEndIndex() > endOfTextBlock) {
-                    // The current ingredient is located in a text-block which comes after the current
-                    // text block. Following ingredients can still be located in this current text block
-                    continue;
-                }
-                // The quantity is in the step and needs to be replaced by INGREDIENT_CODE
-                description = description.
-                        substring(0, ingredient.getQuantityPosition().getBeginIndex() - beginOfTextBlock)
-                        + INGREDIENT_CODE
-                        + description.substring(ingredient.getQuantityPosition().getEndIndex() - beginOfTextBlock);
-            }
-        }
-
-        return description;
-    }
-
-    /**
-     * Helper-class to add the navigation dots.
-     *
-     * @param inflater Layout inflater to inflate dot-views
-     * @param recipe   used to get the amount of steps.
-     * @param index    Index of the step, to see which dots to color.
-     */
-    private void addDots(LayoutInflater inflater, Recipe recipe, int index) {
-        // Add the ImageViews to the LinearLayout for the indicator dots
-        LinearLayout linearLayout = mRootView.findViewById(R.id.ll_dots);
-        ImageView tempView;
-        for (int i = 0; i < recipe.getRecipeSteps().size(); i++) {
-            tempView = (ImageView) inflater.inflate(R.layout.dot_image_view, linearLayout, false);
-            Drawable dot;
-            if (i == index) {
-                dot = ContextCompat.getDrawable(getContext(),
-                        R.drawable.selected_dot);
-            } else {
-                dot = ContextCompat.getDrawable(getContext(),
-                        R.drawable.not_selected_dot);
-            }
-            tempView.setImageDrawable(dot);
-            linearLayout.addView(tempView);
-        }
     }
 
     /**
@@ -369,5 +293,85 @@ public class StepPlaceholderFragment extends Fragment {
 
         // Put ingredients back in descending beginIndex
         Collections.reverse(mRecipeStep.getIngredients());
+    }
+
+    /**
+     * Extract the description of the steps
+     *
+     * @param recipe the recipe of which the steps will be extracted
+     * @return a list of Strings, representing all the different descriptions of the steps
+     */
+    public static String[] extractDescriptionSteps(Recipe recipe) {
+        int stepsCount = recipe.getRecipeSteps().size();
+        String[] steps = new String[stepsCount];
+
+        for (int i = 0; i < stepsCount; i++) {
+            steps[i] = recipe.getRecipeSteps().get(i).getDescription();
+        }
+        return steps;
+    }
+
+    /**
+     * Changes the quantities of ingredients in description by INGREDIENT_CODE
+     *
+     * @param description       a block of text where the ingredient might be located
+     * @param beginOfTextBlock  the begin index of the block
+     * @param endOfTextBlock    the end index of the block
+     * @param descriptionLength the length of the whole description
+     */
+    private String changeQuantityToCode(String description, int beginOfTextBlock, int endOfTextBlock,
+                                        int descriptionLength) {
+
+        for (Ingredient ingredient : mRecipeStep.getIngredients()) {
+            // Check whether the quantity is in the description of the step
+            if (ingredient.getQuantityPosition().getBeginIndex() != 0
+                    || ingredient.getQuantityPosition().getEndIndex() != descriptionLength) {
+
+                // Check if the quantity is represent in the current block of the description
+                if (ingredient.getQuantityPosition().getBeginIndex() < beginOfTextBlock) {
+                    // The current ingredient (and all the following) is located in a text-block which
+                    // comes before the current text block
+                    break;
+                } else if (ingredient.getQuantityPosition().getEndIndex() > endOfTextBlock) {
+                    // The current ingredient is located in a text-block which comes after the current
+                    // text block. Following ingredients can still be located in this current text block
+                    continue;
+                }
+                // The quantity is in the step and needs to be replaced by INGREDIENT_CODE
+
+                description = description.
+                        substring(0, ingredient.getQuantityPosition().getBeginIndex() - beginOfTextBlock)
+                        + INGREDIENT_CODE
+                        + description.substring(ingredient.getQuantityPosition().getEndIndex() - beginOfTextBlock);
+            }
+        }
+
+        return description;
+    }
+
+    /**
+     * Helper-class to add the navigation dots.
+     *
+     * @param inflater Layout inflater to inflate dot-views
+     * @param recipe   used to get the amount of steps.
+     * @param index    Index of the step, to see which dots to color.
+     */
+    private void addDots(LayoutInflater inflater, Recipe recipe, int index) {
+        // Add the ImageViews to the LinearLayout for the indicator dots
+        LinearLayout linearLayout = mRootView.findViewById(R.id.ll_dots);
+        ImageView tempView;
+        for (int i = 0; i < recipe.getRecipeSteps().size(); i++) {
+            tempView = (ImageView) inflater.inflate(R.layout.dot_image_view, linearLayout, false);
+            Drawable dot;
+            if (i == index) {
+                dot = ContextCompat.getDrawable(getContext(),
+                        R.drawable.selected_dot);
+            } else {
+                dot = ContextCompat.getDrawable(getContext(),
+                        R.drawable.not_selected_dot);
+            }
+            tempView.setImageDrawable(dot);
+            linearLayout.addView(tempView);
+        }
     }
 }

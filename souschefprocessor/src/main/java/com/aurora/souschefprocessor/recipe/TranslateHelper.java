@@ -216,8 +216,7 @@ final class TranslateHelper {
                 List<RecipeTimer> newTimers = new ArrayList<>();
                 for (RecipeTimer oldTimer : oldStep.getRecipeTimers()) {
                     String newTimerString = translatedSentences.poll();
-
-                    int beginIndex = description.indexOf(newTimerString, startIndex) + startIndex;
+                    int beginIndex = description.indexOf(newTimerString, startIndex);
                     int endIndex = beginIndex + newTimerString.length();
                     // for next timer only start searching starting from this end
                     startIndex = endIndex - startIndex;

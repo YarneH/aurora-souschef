@@ -272,16 +272,19 @@ public class RecipeStep {
     /**
      * Converts the units in this recipe
      *
-     * @param toMetric a boolean that indicates wheter to convert to metric or to US
+     * @param toMetric a boolean that indicates whether to convert to metric or to US
      */
     public void convertUnit(boolean toMetric) {
+        // store the original length
         int originalLength = mDescription.length();
         if (mIngredientDetectionDone) {
             for (Ingredient ingredient : mIngredients) {
+                // this operation changes the length of the description
                 mDescription = ingredient.convertUnit(toMetric, mDescription);
             }
 
             for(Ingredient ingredient: mIngredients){
+                // make sure that the not detected elements point to the new length of string
                 ingredient.setPositionEndOfStringCorrect(originalLength, mDescription.length());
             }
         }

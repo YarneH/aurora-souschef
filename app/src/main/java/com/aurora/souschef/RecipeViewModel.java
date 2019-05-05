@@ -12,7 +12,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.souschefprocessor.facade.Communicator;
+import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
@@ -129,7 +129,7 @@ public class RecipeViewModel extends AndroidViewModel {
         mCurrentPeople.setValue(0);
         mProcessingFailed.setValue(false);
         mDefaultAmountSet.setValue(false);
-        Communicator.createAnnotationPipelines();
+        SouschefProcessorCommunicator.createAnnotationPipelines();
         SharedPreferences sharedPreferences = application.getSharedPreferences(
                 Tab1Overview.SETTINGS_PREFERENCES,
                 Context.MODE_PRIVATE);
@@ -298,8 +298,9 @@ public class RecipeViewModel extends AndroidViewModel {
                     Thread.sleep(MILLIS_BETWEEN_UPDATES);
                     upTime += MILLIS_BETWEEN_UPDATES;
 
-                    publishProgress(Communicator.getProgressAnnotationPipelines());
-                    if (Communicator.getProgressAnnotationPipelines() >= DETECTION_STEPS || upTime > MAX_WAIT_TIME) {
+                    publishProgress(SouschefProcessorCommunicator.getProgressAnnotationPipelines());
+                    if (SouschefProcessorCommunicator.getProgressAnnotationPipelines()
+                            >= DETECTION_STEPS || upTime > MAX_WAIT_TIME) {
                         break;
                     }
                 }
@@ -341,7 +342,7 @@ public class RecipeViewModel extends AndroidViewModel {
         protected Recipe doInBackground(Void... voids) {
             // Progressupdates are in demostate
 
-            Communicator comm = Communicator.createCommunicator(mContext);
+            SouschefProcessorCommunicator comm = SouschefProcessorCommunicator.createCommunicator(mContext);
             if (comm != null) {
                 // Pick the correct type of text.
                 try {
@@ -352,7 +353,7 @@ public class RecipeViewModel extends AndroidViewModel {
                                     ", make sure you can open this type of file. If the problem" +
                                     " persists, please send feedback in Aurora");
                         }
-                        return comm.process(mExtractedText);
+                        return (Recipe) comm.pipeline(mExtractedText);
                     }
                 } catch (RecipeDetectionException rde) {
                     Log.d("FAILURE", rde.getMessage());

@@ -109,10 +109,10 @@ public class Delegator {
 
 
     /**
-     * calls the {@link Communicator#incrementProgressAnnotationPipelines()} function
+     * calls the {@link SouschefProcessorCommunicator#incrementProgressAnnotationPipelines()} function
      */
     public static void incrementProgressAnnotationPipelines() {
-        Communicator.incrementProgressAnnotationPipelines();
+        SouschefProcessorCommunicator.incrementProgressAnnotationPipelines();
         Log.d("DELEGATOR", "STEP");
 
     }

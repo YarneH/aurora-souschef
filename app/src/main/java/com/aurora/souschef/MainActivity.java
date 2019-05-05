@@ -4,9 +4,9 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -21,13 +21,10 @@ import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.auroralib.PluginObject;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -78,89 +75,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Overwritten method of Activity
+     * Hardcoded recipe with extracted text and annotations
      *
-     * @param savedInstanceState The saved state.
+     * @return the json of the annotated extracted test
      */
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        mRecipeViewModel = ViewModelProviders.of(this).get(RecipeViewModel.class);
+    private String getText() {
 
-        super.onCreate(savedInstanceState);
-        // TODO: Change back to the correct view
-        setContentView(R.layout.activity_main);
 
-        // Obtain the FirebaseAnalytics instance.
-        // Most of firebase analytics is done automatically.
-        // Probably nothing more is needed.
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        InputStream stream = getResources().openRawResource(R.raw.input);
+        StringBuilder bld = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        try {
+            String line = reader.readLine();
+            while (line != null) {
+                bld.append(line);
 
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        showProgress();
-
-        // setup recipe data object (RecipeViewModel).
-        setUpRecipeDataObject();
-
-        /*
-         * Handle Aurora starting the Plugin.
-         * Each if statement calls initialise (with different paraments)
-         * on the recipe data object.
-         */
-        if (mRecipeViewModel.isBeingProcessed()) {
-            return;
-        }
-        mRecipeViewModel.setBeingProcessed(true);
-        Log.d(TAG, "setup");
-        Intent intentThatStartedThisActivity = getIntent();
-        if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
-                // Get the Uri to the transferred file
-                Uri fileUri = intentThatStartedThisActivity.getData();
-
-                // Convert the read file to an ExtractedText object
-                ExtractedText extractedText = getExtractedTextFromFile(fileUri);
-                Log.d("TEXT", extractedText.toJSON());
-
-                Log.d(TAG, "Loading extracted text.");
-                mRecipeViewModel.initialiseWithExtractedText(extractedText);
-
-            } else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)) {
-                // Cached Object.
-                // TODO handle a PluginObject that was cached
-                String recipeJSON = intentThatStartedThisActivity.getStringExtra(
-                        Constants.PLUGIN_INPUT_OBJECT);
-                Recipe receivedObject = PluginObject.fromJson(recipeJSON, Recipe.class);
-                // TODO catch if the receivedObject was not able to be de-JSONed.
-                // Waiting for auroralib update for this.
-                Log.d(TAG, "Loading cashed Object.");
-                mRecipeViewModel.initialiseWithRecipe(receivedObject);
+                line = reader.readLine();
             }
-
-        } else {
-            Log.d(TAG, "Loading plain default text (getText())");
-            mRecipeViewModel.initialiseWithPlainText(getText());
+        } catch (IOException e) {
+            Log.e("MAIN", "opening default file failed", e );
         }
-    }
-
-    /**
-     * Show the progress-screen.
-     */
-    private void showProgress() {
-        ViewPager mViewPager;
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = findViewById(R.id.container);
-        mViewPager.setVisibility(View.GONE);
-
-
-        // Set up the TabLayout to follow the ViewPager.
-        TabLayout tabLayout = findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-        tabLayout.setVisibility(View.GONE);
-
-        ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
-        cl.setVisibility(View.VISIBLE);
+        Log.d("read", bld.toString());
+        return bld.toString();
     }
 
     /**
@@ -202,68 +138,162 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private ExtractedText getExtractedTextFromFile(Uri fileUri) {
-        StringBuilder total = new StringBuilder();
-        ParcelFileDescriptor inputPFD = null;
-        if (fileUri != null) {
-            // Open the file
-            try {
-                inputPFD = getContentResolver().openFileDescriptor(fileUri, "r");
-            } catch (FileNotFoundException e) {
-                Log.e("MAIN", "There was a problem receiving the file from " +
-                        "the plugin", e);
-            }
+    /**
+     * Overwritten method of Activity
+     *
+     * @param savedInstanceState The saved state.
+     */
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        mRecipeViewModel = ViewModelProviders.of(this).get(RecipeViewModel.class);
 
-            // Read the file
-            if (inputPFD != null) {
-                InputStream fileStream = new FileInputStream(inputPFD.getFileDescriptor());
+        super.onCreate(savedInstanceState);
+        // TODO: Change back to the correct view
+        setContentView(R.layout.activity_main);
 
+        // Obtain the FirebaseAnalytics instance.
+        // Most of firebase analytics is done automatically.
+        // Probably nothing more is needed.
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
-                try (BufferedReader r = new BufferedReader(new InputStreamReader(fileStream))) {
-                    for (String line; (line = r.readLine()) != null; ) {
-                        total.append(line).append('\n');
-                    }
-                } catch (IOException e) {
-                    Log.e("MAIN", "There was a problem receiving the file from " +
-                            "the plugin", e);
-                }
-            } else {
-                Log.e("MAIN", "There was a problem receiving the file from " +
-                        "the plugin");
-            }
-        } else {
-            Log.e("MAIN", "There was a problem receiving the file from " +
-                    "the plugin");
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        showProgress();
+
+        // setup recipe data object (RecipeViewModel).
+        setUpRecipeDataObject();
+
+        /*
+         * Handle Aurora starting the Plugin.
+         * Each if statement calls initialise (with different paraments)
+         * on the recipe data object.
+         */
+        if (mRecipeViewModel.isBeingProcessed()) {
+            return;
+        }
+        mRecipeViewModel.setBeingProcessed(true);
+        Log.d(TAG, "setup");
+        Intent intentThatStartedThisActivity = getIntent();
+
+        boolean intentIsOkay = true;
+
+        if(intentThatStartedThisActivity.getAction() == null) {
+            Toast.makeText(this, "ERROR: The intent had no action.",
+                    Snackbar.LENGTH_LONG).show();
+            intentIsOkay = false;
+        } else if(!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+            Toast.makeText(this, "ERROR: The intent had incorrect action.",
+                    Snackbar.LENGTH_LONG).show();
+            intentIsOkay = false;
+        } else if(!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
+            Toast.makeText(this, "ERROR: The intent had no specified input type.",
+                    Snackbar.LENGTH_LONG).show();
+            intentIsOkay = false;
         }
 
-        // Convert the read file to an ExtractedText object
-        return ExtractedText.fromJson(total.toString());
+        if (intentIsOkay){
+            handleIntentThatOpenedPlugin(intentThatStartedThisActivity);
+        }else{
+            //code for debugging purposes, must be deleted in production
+            mRecipeViewModel.initialiseWithPlainText(getText());
+        }
+    }
+
+
+    /**
+     * Initializes mRecipe according to the parameters in the Intent that opened the plugin
+     *
+     * @param intentThatStartedThisActivity Intent that opened the plugin
+     */
+    private void handleIntentThatOpenedPlugin(Intent intentThatStartedThisActivity){
+        // Get the Uri to the transferred file
+        Uri fileUri = intentThatStartedThisActivity.getData();
+        if(fileUri == null) {
+            Toast.makeText(this, "ERROR: The intent had no url in the data field",
+                    Snackbar.LENGTH_LONG).show();
+        } else {
+            // Get the input type
+            String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
+            // Switch on the different kinds of input types that could be in the temp file
+            switch (inputType) {
+                case Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT:
+                    // Convert the read file to an ExtractedText object
+                    convertReadFileToExtractedText(fileUri);
+                    break;
+                case Constants.PLUGIN_INPUT_TYPE_OBJECT:
+                    // Convert the read file to an PluginObject
+                    convertReadFileToRecipe(fileUri);
+                    break;
+                default:
+                    Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
+                            Snackbar.LENGTH_LONG).show();
+                    Log.d(TAG, "Loading plain default text (getText())");
+                    mRecipeViewModel.initialiseWithPlainText(getText());
+            }
+        }
     }
 
     /**
-     * Dummy for this demo
+     * Convert the read file to an ExtractedText object
      *
-     * @return a recipe json
+     * @param fileUri Uri to the file
      */
-
-    private String getText() {
-
-        InputStream stream = getResources().openRawResource(R.raw.input);
-        StringBuilder bld = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+    private void convertReadFileToExtractedText(Uri fileUri){
         try {
-            String line = reader.readLine();
-            while (line != null) {
-                bld.append(line);
-
-                line = reader.readLine();
+            ExtractedText extractedText = ExtractedText.getExtractedTextFromFile( fileUri,
+                    this);
+            if (extractedText != null) {
+                Log.d(TAG, "Loading extracted text.");
+                mRecipeViewModel.initialiseWithExtractedText(extractedText);
+            } else {
+                // Error in case ExtractedText was null.
+                Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
             }
         } catch (IOException e) {
-            Log.e("MAIN", "opening default file failed", e);
+            Log.e(MainActivity.class.getSimpleName(),
+                    "IOException while loading data from aurora", e);
         }
-        Log.d("read", bld.toString());
-        return bld.toString();
     }
+
+    /**
+     * Convert the read file to an PluginObject
+     *
+     * @param fileUri Uri to the file
+     */
+    private void convertReadFileToRecipe(Uri fileUri){
+        try {
+            Recipe receivedObject = Recipe.getPluginObjectFromFile(fileUri, this,
+                    Recipe.class);
+
+            Log.d(TAG, "Loading cashed Object.");
+            mRecipeViewModel.initialiseWithRecipe(receivedObject);
+
+        } catch (IOException e) {
+            Log.e(MainActivity.class.getSimpleName(),
+                    "IOException while loading data from aurora", e);
+        }
+    }
+
+    /**
+     * Show the progress-screen.
+     */
+    private void showProgress() {
+        ViewPager mViewPager;
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = findViewById(R.id.container);
+        mViewPager.setVisibility(View.GONE);
+
+
+        // Set up the TabLayout to follow the ViewPager.
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(mViewPager);
+        tabLayout.setVisibility(View.GONE);
+
+        ConstraintLayout cl = findViewById(R.id.cl_loading_screen);
+        cl.setVisibility(View.VISIBLE);
+    }
+
 
     /**
      * Hide the progress-screen.

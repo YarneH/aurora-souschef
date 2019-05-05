@@ -29,6 +29,7 @@ public class SplitStepsTaskUnitTest {
     private static RecipeInProgress recipeAcrossNewline;
     private static String stepListAcrossNewline;
     private static SplitStepsTask splitStepsTaskAcrossNewline;
+    private static ExtractedText testEmptyExtractedText;
 
     private static AnnotationPipeline sPipeline;
 
@@ -70,6 +71,7 @@ public class SplitStepsTaskUnitTest {
         recipeAcrossNewline = new RecipeInProgress(ExtractedText.fromJson(json));
         recipeAcrossNewline.setStepsString(stepListAcrossNewline);
         splitStepsTaskAcrossNewline = new SplitStepsTask(recipeAcrossNewline);
+        testEmptyExtractedText = new ExtractedText("", null);
     }
 
 
@@ -154,7 +156,7 @@ public class SplitStepsTaskUnitTest {
          * If the step string is empty then this is probably not a recipe, throw an error
          */
         // Arrange
-        RecipeInProgress emptyStep = new RecipeInProgress(null);
+        RecipeInProgress emptyStep = new RecipeInProgress(testEmptyExtractedText);
         emptyStep.setStepsString("");
         SplitStepsTask task = new SplitStepsTask(emptyStep);
         boolean thrown = false;

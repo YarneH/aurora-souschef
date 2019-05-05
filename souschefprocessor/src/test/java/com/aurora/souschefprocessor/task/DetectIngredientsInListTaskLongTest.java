@@ -1,5 +1,6 @@
 package com.aurora.souschefprocessor.task;
 
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 
@@ -22,6 +23,7 @@ public class DetectIngredientsInListTaskLongTest {
     private static String originalText = "irrelevant";
     private static CRFClassifier<CoreLabel> crfClassifier;
 
+    private static ExtractedText testEmptyExtractedText;
     private static String testIngredients;
     private static String[] testIngredientsUnits;
     private static double[] testIngredientsQuantities;
@@ -33,6 +35,7 @@ public class DetectIngredientsInListTaskLongTest {
     public static void initialize() throws IOException, ClassNotFoundException {
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
         crfClassifier = CRFClassifier.getClassifier(modelName);
+        testEmptyExtractedText = new ExtractedText("", null);
     }
 
 
@@ -269,7 +272,7 @@ public class DetectIngredientsInListTaskLongTest {
             index++;
         }
 
-        testRecipe = new RecipeInProgress(null);
+        testRecipe = new RecipeInProgress(testEmptyExtractedText);
         testRecipe.setIngredientsString(listForRecipe);
         testDetector = new DetectIngredientsInListTask(testRecipe, crfClassifier);
         testIngredientsInitialized = true;

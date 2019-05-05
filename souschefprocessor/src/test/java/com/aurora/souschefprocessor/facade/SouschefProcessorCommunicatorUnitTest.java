@@ -15,11 +15,11 @@ import edu.stanford.nlp.ling.CoreLabel;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class CommunicatorUnitTest {
+public class SouschefProcessorCommunicatorUnitTest {
 
     private static List<String> validRecipes;
     private static List<String> invalidRecipes;
-    private static Communicator communicator;
+    private static SouschefProcessorCommunicator communicator;
     private static CRFClassifier<CoreLabel> crfClassifier;
 
     @BeforeClass
@@ -35,7 +35,7 @@ public class CommunicatorUnitTest {
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
         try {
             crfClassifier = CRFClassifier.getClassifier(modelName);
-            communicator = new Communicator(crfClassifier);
+            communicator = new SouschefProcessorCommunicator(null, crfClassifier);
         } catch (IOException | ClassNotFoundException e) {
         }
     }

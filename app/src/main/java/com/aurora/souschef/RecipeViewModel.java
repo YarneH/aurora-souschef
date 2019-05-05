@@ -12,9 +12,13 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
+import com.aurora.auroralib.translation.TranslationServiceCaller;
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
+import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Holds the data of a recipe. Is responsible for keeping that data up to date,
@@ -96,6 +100,9 @@ public class RecipeViewModel extends AndroidViewModel {
      */
     private boolean isBeingProcessed = false;
 
+
+    private TranslationServiceCaller mTranslationServiceCaller;
+
     /**
      * The context of the application.
      * <p>
@@ -140,14 +147,32 @@ public class RecipeViewModel extends AndroidViewModel {
             }
         };
         sharedPreferences.registerOnSharedPreferenceChangeListener(mListener);
+        mTranslationServiceCaller = new TranslationServiceCaller(application);
 
     }
 
-    private boolean isImperial() {
-        SharedPreferences sharedPreferences = getApplication().getSharedPreferences(
-                Tab1Overview.SETTINGS_PREFERENCES,
-                Context.MODE_PRIVATE);
-        return sharedPreferences.getBoolean(Tab1Overview.IMPERIAL_SETTING, false);
+    /**
+     * Converts all the units in the recipe
+     *
+     * @param toMetric boolean that indicates if the units should be converted to metric or to US
+     */
+    public void convertRecipeUnits(boolean toMetric) {
+        // TODO call this function after user has chosen/changed preference and/or when first
+        // creating the recipe
+        Recipe recipe = mRecipe.getValue();
+        if (recipe != null) {
+            //recipe.convertUnit(toMetric);
+            // just for testing translation
+           List<String> sentences = recipe.sentencesToTranslate();
+            String source = "en";
+            String target = "nl";
+            new TranslationTask(sentences, source, target,
+                    mTranslationServiceCaller).execute();
+
+
+
+        }
+        mRecipe.postValue(recipe);
     }
 
     public LiveData<String> getFailureMessage() {
@@ -218,6 +243,13 @@ public class RecipeViewModel extends AndroidViewModel {
         mInitialised.setValue(true);
     }
 
+    private boolean isImperial() {
+        SharedPreferences sharedPreferences = getApplication().getSharedPreferences(
+                Tab1Overview.SETTINGS_PREFERENCES,
+                Context.MODE_PRIVATE);
+        return sharedPreferences.getBoolean(Tab1Overview.IMPERIAL_SETTING, false);
+    }
+
     public LiveData<Boolean> getInitialised() {
         return mInitialised;
     }
@@ -264,19 +296,8 @@ public class RecipeViewModel extends AndroidViewModel {
         }
     }
 
-    /**
-     * Converts all the units in the recipe
-     *
-     * @param toMetric boolean that indicates if the units should be converted to metric or to US
-     */
-    public void convertRecipeUnits(boolean toMetric) {
-        // TODO call this function after user has chosen/changed preference and/or when first
-        // creating the recipe
-        Recipe recipe = mRecipe.getValue();
-        if (recipe != null) {
-            recipe.convertUnit(toMetric);
-        }
-        mRecipe.postValue(recipe);
+    public boolean isBeingProcessed() {
+        return isBeingProcessed;
     }
 
     public void setBeingProcessed(boolean isBeingProcessed) {
@@ -324,18 +345,14 @@ public class RecipeViewModel extends AndroidViewModel {
     @SuppressLint("StaticFieldLeak")
     class SouschefInit extends AsyncTask<Void, String, Recipe> {
 
-        private String mText;
         private ExtractedText mExtractedText;
-        private boolean mWithExtractedText = false;
 
-        public SouschefInit(String text) {
+        SouschefInit(String text) {
             this.mExtractedText = ExtractedText.fromJson(text);
-            this.mWithExtractedText = true;
         }
 
-        public SouschefInit(ExtractedText extractedText) {
+        SouschefInit(ExtractedText extractedText) {
             this.mExtractedText = extractedText;
-            mWithExtractedText = true;
         }
 
         @Override
@@ -344,17 +361,17 @@ public class RecipeViewModel extends AndroidViewModel {
 
             SouschefProcessorCommunicator comm = SouschefProcessorCommunicator.createCommunicator(mContext);
             if (comm != null) {
-                // Pick the correct type of text.
+
                 try {
-                    if (mWithExtractedText) {
-                        if (mExtractedText.getSections() == null) {
-                            throw new RecipeDetectionException("The received text from Aurora did " +
-                                    "not contain sections" +
-                                    ", make sure you can open this type of file. If the problem" +
-                                    " persists, please send feedback in Aurora");
-                        }
-                        return (Recipe) comm.pipeline(mExtractedText);
+
+                    if (mExtractedText.getSections() == null) {
+                        throw new RecipeDetectionException("The received text from Aurora did " +
+                                "not contain sections" +
+                                ", make sure you can open this type of file. If the problem" +
+                                " persists, please send feedback in Aurora");
                     }
+                    return (Recipe) comm.pipeline(mExtractedText);
+
                 } catch (RecipeDetectionException rde) {
                     Log.d("FAILURE", rde.getMessage());
                     mFailureMessage.postValue(rde.getMessage());
@@ -375,7 +392,39 @@ public class RecipeViewModel extends AndroidViewModel {
         }
     }
 
-    public boolean isBeingProcessed() {
-        return isBeingProcessed;
+     private class TranslationTask extends AsyncTask<Void, Void, List<String>> {
+        private List<String> mSentences;
+        private String mSourceLanguage;
+        private String mDestinationLanguage;
+        private TranslationServiceCaller mTranslationServiceCaller;
+
+
+
+
+        TranslationTask(List<String> sentences, String sourceLanguage, String destinationLanguage,
+                        TranslationServiceCaller translationServiceCaller){
+            this.mSentences = sentences;
+            this.mSourceLanguage = sourceLanguage;
+            this.mDestinationLanguage = destinationLanguage;
+            this.mTranslationServiceCaller = translationServiceCaller;
+
+        }
+
+
+        @Override protected List<String> doInBackground(Void... params) {
+            List<String> result = mTranslationServiceCaller.translateOperation(mSentences,
+                    mSourceLanguage, mDestinationLanguage);
+            Log.d(getClass().getSimpleName(), result.toString());
+            return result;
+        }
+
+        @Override protected void onPostExecute(List<String> translatedSentences) {
+            Log.d(getClass().getSimpleName(), translatedSentences.toString());
+
+            Recipe translated = mRecipe.getValue().getTranslatedRecipe(translatedSentences.toArray(new String[0]));
+            mRecipe.postValue(translated);
+
+        }
     }
 }
+

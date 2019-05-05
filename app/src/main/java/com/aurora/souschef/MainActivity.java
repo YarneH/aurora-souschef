@@ -194,6 +194,10 @@ public class MainActivity extends AppCompatActivity {
         if (intentIsOkay){
             handleIntentThatOpenedPlugin(intentThatStartedThisActivity);
         }
+        else{
+            // code for debugging with hardcoded recipe to delete in production
+            mRecipeViewModel.initialiseWithPlainText(getText());
+        }
     }
 
 

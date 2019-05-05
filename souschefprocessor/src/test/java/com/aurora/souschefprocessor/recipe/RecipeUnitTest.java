@@ -178,6 +178,11 @@ public class RecipeUnitTest {
 
         Recipe newRecipe = recipe.getTranslatedRecipe(translations);
         System.out.println(newRecipe);
+        for(ListIngredient ing: newRecipe.getIngredients()){
+            System.out.println(ing);
+            System.out.println(ing.getOriginalLine().substring(ing.getUnitPosition().getBeginIndex(), ing.getUnitPosition().getEndIndex()));
+            System.out.println(ing.getOriginalLine());
+        }
     }
 
 }

@@ -42,6 +42,8 @@ public class Recipe extends PluginObject {
      */
     protected String mDescription;
 
+    private final static String DIMINUTIVE = "je";
+
 
     public Recipe(String fileName, List<ListIngredient> ingredients, List<RecipeStep> recipeSteps,
                   int numberOfPeople, String description) {
@@ -194,7 +196,7 @@ public class Recipe extends PluginObject {
     public Recipe getTranslatedRecipe(String[] translatedSentences) {
 
         Queue<String> translations = new LinkedList<>(Arrays.asList(translatedSentences));
-        Recipe recipe = new Recipe();
+        Recipe recipe = new Recipe(mFileName);
 
         // set the number of people (this does not change by translating)
         recipe.setNumberOfPeople(mNumberOfPeople);
@@ -347,6 +349,11 @@ public class Recipe extends PluginObject {
             int beginIndex = newOriginalLine.indexOf(unit);
             if (beginIndex > -1) {
                 int endIndex = beginIndex + unit.length();
+                if(DIMINUTIVE.equals(newOriginalLine.substring(endIndex, endIndex + 2))){
+                    // this is in true in the case of cup -> kop but in sentence it becomes kopje
+                    endIndex +=2;
+                    unit += DIMINUTIVE;
+                }
                 map.put(Ingredient.PositionKeysForIngredients.UNIT, new Position(beginIndex, endIndex));
             }
 

@@ -17,9 +17,6 @@ import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
-import java.util.Collections;
-import java.util.List;
-
 /**
  * Holds the data of a recipe. Is responsible for keeping that data up to date,
  * and updating the UI when necessary.
@@ -381,7 +378,6 @@ public class RecipeViewModel extends AndroidViewModel {
             }
         }
     }
-
 
 }
 

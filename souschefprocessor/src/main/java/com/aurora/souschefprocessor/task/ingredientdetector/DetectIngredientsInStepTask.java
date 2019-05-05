@@ -100,7 +100,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private static Map<String, Double> sFractionMultipliers = new HashMap<>();
 
-
     /* populate the map */
     static {
         sFractionMultipliers.put(FRACTION_HALF, FRACTION_HALF_MUL);

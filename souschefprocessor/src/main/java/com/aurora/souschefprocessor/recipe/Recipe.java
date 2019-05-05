@@ -3,11 +3,8 @@ package com.aurora.souschefprocessor.recipe;
 import com.aurora.auroralib.PluginObject;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Queue;
 
 import static com.aurora.souschefprocessor.PluginConstants.UNIQUE_PLUGIN_NAME;
 
@@ -139,8 +136,8 @@ public class Recipe extends PluginObject {
      *
      * @return A list of all the sentences that should be translated
      */
-    public List<String> sentencesToTranslate() {
-        return TranslateHelper.sentencesToTranslate(this);
+    public List<String> createSentencesToTranslate() {
+        return TranslateHelper.createSentencesToTranslate(this);
 
     }
 
@@ -149,13 +146,11 @@ public class Recipe extends PluginObject {
      * Creates a new recipe object that is the translated form of this recipe
      *
      * @param translatedSentences the translated sentences, this is the response from aurora to the
-     *                            result of {@link #sentencesToTranslate()}
+     *                            result of {@link #createSentencesToTranslate()}
      * @return The new translated recipe
      */
     public Recipe getTranslatedRecipe(String[] translatedSentences) {
         return TranslateHelper.getTranslatedRecipe(this, translatedSentences);
     }
-
-
 
 }

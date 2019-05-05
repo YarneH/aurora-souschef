@@ -119,7 +119,8 @@ public class Ingredient {
     }
 
     /**
-     * This trims the positions of this ingredient to the passed string. It uses the {@link Position#trimToLengthOfString(String)}
+     * This trims the positions of this ingredient to the passed string. It uses the
+     * {@link Position#trimToLengthOfString(String)}
      * method. This ensures that the endindex of the positions is never bigger than the length of the passed string
      *
      * @param s the string to trim the positions to
@@ -275,7 +276,8 @@ public class Ingredient {
     }
 
     /**
-     * Updates the positions of the QUANTITY UNIT and name by adding an offset. Calls the {@link Position#addOffset(int)}
+     * Updates the positions of the QUANTITY UNIT and name by adding an offset. Calls the
+     * {@link Position#addOffset(int)}
      * method
      *
      * @param offset the offset to add

@@ -33,7 +33,6 @@ public class RecipeStepInProgress extends RecipeStep {
     public RecipeStepInProgress(String description) {
         super(description);
 
-
     }
 
     public List<CoreMap> getSentenceAnnotations() {
@@ -95,7 +94,6 @@ public class RecipeStepInProgress extends RecipeStep {
                 // change the position of the timer by subtrackting the offset
                 timer.getPosition().subtractOffset(mBeginPostitionOffset);
                 // this also checks if the position of the timer is valid
-
                 add(timer);
             }
         }

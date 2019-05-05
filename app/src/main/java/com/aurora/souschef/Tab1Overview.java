@@ -76,7 +76,6 @@ public class Tab1Overview extends Fragment {
 
     /**
      * Handle what happens on clicking the settings-FAB.
-     *
      */
     private void onSettingsClicked() {
         if (mSettingsCard.getVisibility() == View.VISIBLE) {

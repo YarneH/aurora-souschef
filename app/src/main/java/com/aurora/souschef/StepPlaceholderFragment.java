@@ -332,17 +332,17 @@ public class StepPlaceholderFragment extends Fragment {
                     // The current ingredient (and all the following) is located in a text-block which
                     // comes before the current text block
                     break;
-                } else if (ingredient.getQuantityPosition().getEndIndex() > endOfTextBlock) {
-                    // The current ingredient is located in a text-block which comes after the current
-                    // text block. Following ingredients can still be located in this current text block
-                    continue;
-                }
-                // The quantity is in the step and needs to be replaced by INGREDIENT_CODE
+                } else if (ingredient.getQuantityPosition().getEndIndex() <= endOfTextBlock) {
+                    // The quantity is in the step and needs to be replaced by INGREDIENT_CODE
+                    description = description.
+                            substring(0, ingredient.getQuantityPosition().getBeginIndex() - beginOfTextBlock)
+                            + INGREDIENT_CODE
+                            + description.substring(ingredient.getQuantityPosition().getEndIndex() - beginOfTextBlock);
 
-                description = description.
-                        substring(0, ingredient.getQuantityPosition().getBeginIndex() - beginOfTextBlock)
-                        + INGREDIENT_CODE
-                        + description.substring(ingredient.getQuantityPosition().getEndIndex() - beginOfTextBlock);
+                }
+                // The current ingredient is located in a text-block which comes after the current
+                // text block. Following ingredients can still be located in this current text block
+                // so continue the loop
             }
         }
 

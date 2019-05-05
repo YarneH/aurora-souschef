@@ -11,77 +11,106 @@ import java.util.Queue;
 /**
  * A helper class for translating a recipe
  */
- final class TranslateHelper {
+final class TranslateHelper {
 
 
     /**
      * The diminutive for dutch words that google sometimes adds
      */
-    private final static String DIMINUTIVE = "je";
+    private static final String DIMINUTIVE = "je";
 
     private TranslateHelper() {
         //static fields
     }
 
-    static List<String> sentencesToTranslate(Recipe recipe) {
+    /**
+     * Gets all the sentences that should be translated to translate this recipe
+     *
+     * @param recipe the recipe to translate
+     * @return A list of all the sentences of the recipe that should be translated
+     */
+    static List<String> createSentencesToTranslate(Recipe recipe) {
         // Create the sentences to translate
         // split the description
         List<String> sentences = new ArrayList<>(Arrays.asList(recipe.getDescription().split("\n")));
 
         // Add the ingredients to the sentences to translate
-        for (ListIngredient ingredient : recipe.getIngredients()) {
+        sentences.addAll(createIngredientsSentencesToTranslate(recipe.getIngredients()));
+
+        // Add the steps
+        sentences.addAll(createStepSentencesToTranslate(recipe.getRecipeSteps()));
+        return sentences;
+    }
+
+    /**
+     * Private helper method to create the sentences to translate of a list of Listingredients
+     *
+     * @param originalIngredients the list of ingredients to translate
+     * @return the list of sentences to translate
+     */
+    private static List<String> createIngredientsSentencesToTranslate(List<ListIngredient> originalIngredients) {
+        List<String> ingredientSentences = new ArrayList<>();
+        for (ListIngredient ingredient : originalIngredients) {
             String originalLine = ingredient.getOriginalLine();
-            sentences.add(originalLine);
-            sentences.add(ingredient.getName());
+            ingredientSentences.add(originalLine);
+            ingredientSentences.add(ingredient.getName());
             if (ingredient.unitDetected(originalLine)) {
-                sentences.add(ingredient.getUnit());
+                ingredientSentences.add(ingredient.getUnit());
             }
 
             if (ingredient.quantityDetected(originalLine)) {
                 Position quantityPosition = ingredient.getQuantityPosition();
-                sentences.add(ingredient.getOriginalLine().substring(quantityPosition.getBeginIndex(),
+                ingredientSentences.add(ingredient.getOriginalLine().substring(quantityPosition.getBeginIndex(),
                         quantityPosition.getEndIndex()));
             }
         }
+        return ingredientSentences;
+    }
 
-        // Add the steps
-        for (RecipeStep step : recipe.getRecipeSteps()) {
-            sentences.add(step.getDescription());
+    /**
+     * Private helper method to create the sentences to translate of a list of RecipeStep
+     *
+     * @param originalSteps the list of steps to translate
+     * @return the list of sentences to translate
+     */
+    private static List<String> createStepSentencesToTranslate(List<RecipeStep> originalSteps) {
+        List<String> stepSentences = new ArrayList<>();
+        for (RecipeStep step : originalSteps) {
+            stepSentences.add(step.getDescription());
 
             // add the ingredients
             for (Ingredient ingredient : step.getIngredients()) {
                 // name is always present
-                sentences.add(ingredient.getName());
+                stepSentences.add(ingredient.getName());
                 if (ingredient.unitDetected(step.getDescription())) {
-                    sentences.add(ingredient.getUnit());
+                    stepSentences.add(ingredient.getUnit());
                 }
                 if (ingredient.quantityDetected(step.getDescription())) {
                     Position quantityPosition = ingredient.getQuantityPosition();
-                    sentences.add(step.getDescription().substring(quantityPosition.getBeginIndex(),
+                    stepSentences.add(step.getDescription().substring(quantityPosition.getBeginIndex(),
                             quantityPosition.getEndIndex()));
                 }
                 // add the name substring =/= name because name is the name of the corresponding listingredient
                 Position namePosition = ingredient.getNamePosition();
-                sentences.add(step.getDescription().substring(namePosition.getBeginIndex(),
+                stepSentences.add(step.getDescription().substring(namePosition.getBeginIndex(),
                         namePosition.getEndIndex()));
             }
 
             // add the timers
             for (RecipeTimer timer : step.getRecipeTimers()) {
                 Position timerPosition = timer.getPosition();
-                sentences.add(step.getDescription().substring(timerPosition.getBeginIndex(),
+                stepSentences.add(step.getDescription().substring(timerPosition.getBeginIndex(),
                         timerPosition.getEndIndex()));
             }
         }
-
-        return sentences;
+        return stepSentences;
     }
 
     /**
      * Creates a new recipe object that is the translated form of this recipe
      *
      * @param translatedSentences the translated sentences, this is the response from aurora to the
-     *                            result of {@link #sentencesToTranslate(Recipe)}
+     *                            result of {@link #createSentencesToTranslate(Recipe)}
      * @return The new translated recipe
      */
     static Recipe getTranslatedRecipe(Recipe originalRecipe, String[] translatedSentences) {
@@ -115,7 +144,8 @@ import java.util.Queue;
      * @param originalRecipe      the untranslated recipe
      * @return a list with the translated list ingredients of this recipe
      */
-    private static List<ListIngredient> getTranslatedIngredients(Queue<String> translatedSentences, Recipe originalRecipe) {
+    private static List<ListIngredient> getTranslatedIngredients(Queue<String> translatedSentences,
+                                                                 Recipe originalRecipe) {
         List<ListIngredient> newIngredients = new ArrayList<>();
         for (ListIngredient ingredient : originalRecipe.getIngredients()) {
             String oldOriginalLine = ingredient.getOriginalLine();
@@ -137,7 +167,8 @@ import java.util.Queue;
     /**
      * Fills in the newSteps list with the result of the translation
      *
-     * @param translatedSentences the result of the translation of the entire recipe, this will be altered during the execution
+     * @param translatedSentences the result of the translation of the entire recipe, this will be
+     *                            altered during the execution
      * @param originalRecipe      the untranslated version of the recipe
      * @return the list with the translated steps of this recipe
      */
@@ -154,14 +185,16 @@ import java.util.Queue;
 
                 for (Ingredient oldIngredient : oldStep.getIngredients()) {
 
-                    Ingredient newIngredient = (getTranslatedIngredient(oldStep.getDescription(), oldIngredient, description, translatedSentences));
+                    Ingredient newIngredient = (getTranslatedIngredient(oldStep.getDescription(),
+                            oldIngredient, description, translatedSentences));
                     // get the name position
                     String translatedNameSubstring = translatedSentences.poll();
 
                     int beginIndex = newStep.getDescription().indexOf(translatedNameSubstring);
                     // if this substring is not found try deleting an end character that google might have added
                     if (beginIndex < 0) {
-                        translatedNameSubstring = translatedNameSubstring.substring(0, translatedNameSubstring.length() - 1);
+                        translatedNameSubstring = translatedNameSubstring.
+                                substring(0, translatedNameSubstring.length() - 1);
                         beginIndex = newStep.getDescription().indexOf(translatedNameSubstring);
                     }
                     // if it is still not found set to not detected
@@ -184,7 +217,7 @@ import java.util.Queue;
                 for (RecipeTimer oldTimer : oldStep.getRecipeTimers()) {
                     String newTimerString = translatedSentences.poll();
 
-                    int beginIndex = description.substring(startIndex).indexOf(newTimerString) + startIndex;
+                    int beginIndex = description.indexOf(newTimerString, startIndex) + startIndex;
                     int endIndex = beginIndex + newTimerString.length();
                     // for next timer only start searching starting from this end
                     startIndex = endIndex - startIndex;
@@ -209,14 +242,16 @@ import java.util.Queue;
      * @param translatedSentences the queue with the translated sentences (this will be altered during execution)
      * @return a new Ingredient that is the translated version of the oldIngredient parameter
      */
-    private static Ingredient getTranslatedIngredient(String oldOriginalLine, Ingredient oldIngredient, String newOriginalLine,
+    private static Ingredient getTranslatedIngredient(String oldOriginalLine, Ingredient oldIngredient,
+                                                      String newOriginalLine,
                                                       Queue<String> translatedSentences) {
 
 
         String name;
         String unit = "";
         double quantity = 1;
-        Map<Ingredient.PositionKeysForIngredients, Position> map = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
+        Map<Ingredient.PositionKeysForIngredients, Position> map =
+                new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
         // name
         {
             name = translatedSentences.poll();

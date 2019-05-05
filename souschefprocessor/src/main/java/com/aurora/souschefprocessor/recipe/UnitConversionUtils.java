@@ -181,20 +181,6 @@ public final class UnitConversionUtils {
     }
 
     /**
-     * @return A list of common units made up of all the baseunits and their plurals and abbreviations
-     */
-    public static List<String> getCommonUnits() {
-        List<String> list = new ArrayList<>(Arrays.asList(BASE_UNITS_METRIC));
-        list.addAll(Arrays.asList(BASE_UNITS_US));
-        list.addAll(Arrays.asList(ABBREVIATIONS_METRIC));
-        list.addAll(Arrays.asList(ABBREVIATIONS_US));
-        list.addAll(Arrays.asList(PLURALS_US));
-        list.addAll(Arrays.asList(PLURALS_METRIC));
-        return list;
-
-    }
-
-    /**
      * A private helperfunction for {@link #getBase(String)}. It tries to find the base unit as a metric unit
      * It expects is input to be in lowerCase
      *
@@ -232,5 +218,19 @@ public final class UnitConversionUtils {
 
         }
         return null;
+    }
+
+    /**
+     * @return A list of common units made up of all the baseunits and their plurals and abbreviations
+     */
+    public static List<String> getCommonUnits() {
+        List<String> list = new ArrayList<>(Arrays.asList(BASE_UNITS_METRIC));
+        list.addAll(Arrays.asList(BASE_UNITS_US));
+        list.addAll(Arrays.asList(ABBREVIATIONS_METRIC));
+        list.addAll(Arrays.asList(ABBREVIATIONS_US));
+        list.addAll(Arrays.asList(PLURALS_US));
+        list.addAll(Arrays.asList(PLURALS_METRIC));
+        return list;
+
     }
 }

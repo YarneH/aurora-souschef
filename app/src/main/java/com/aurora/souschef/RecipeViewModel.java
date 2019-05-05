@@ -157,20 +157,10 @@ public class RecipeViewModel extends AndroidViewModel {
      * @param toMetric boolean that indicates if the units should be converted to metric or to US
      */
     public void convertRecipeUnits(boolean toMetric) {
-        // TODO call this function after user has chosen/changed preference and/or when first
         // creating the recipe
         Recipe recipe = mRecipe.getValue();
         if (recipe != null) {
-            //recipe.convertUnit(toMetric);
-            // just for testing translation
-           List<String> sentences = recipe.sentencesToTranslate();
-            String source = "en";
-            String target = "nl";
-            new TranslationTask(sentences, source, target,
-                    mTranslationServiceCaller).execute();
-
-
-
+            recipe.convertUnit(toMetric);
         }
         mRecipe.postValue(recipe);
     }
@@ -392,39 +382,6 @@ public class RecipeViewModel extends AndroidViewModel {
         }
     }
 
-     private class TranslationTask extends AsyncTask<Void, Void, List<String>> {
-        private List<String> mSentences;
-        private String mSourceLanguage;
-        private String mDestinationLanguage;
-        private TranslationServiceCaller mTranslationServiceCaller;
 
-
-
-
-        TranslationTask(List<String> sentences, String sourceLanguage, String destinationLanguage,
-                        TranslationServiceCaller translationServiceCaller){
-            this.mSentences = sentences;
-            this.mSourceLanguage = sourceLanguage;
-            this.mDestinationLanguage = destinationLanguage;
-            this.mTranslationServiceCaller = translationServiceCaller;
-
-        }
-
-
-        @Override protected List<String> doInBackground(Void... params) {
-            List<String> result = mTranslationServiceCaller.translateOperation(mSentences,
-                    mSourceLanguage, mDestinationLanguage);
-            Log.d(getClass().getSimpleName(), result.toString());
-            return result;
-        }
-
-        @Override protected void onPostExecute(List<String> translatedSentences) {
-            Log.d(getClass().getSimpleName(), translatedSentences.toString());
-
-            Recipe translated = mRecipe.getValue().getTranslatedRecipe(translatedSentences.toArray(new String[0]));
-            mRecipe.postValue(translated);
-
-        }
-    }
 }
 

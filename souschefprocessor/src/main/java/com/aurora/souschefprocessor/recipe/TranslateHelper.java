@@ -19,6 +19,7 @@ final class TranslateHelper {
      */
     private static final String DIMINUTIVE = "je";
 
+
     private TranslateHelper() {
         //static fields
     }
@@ -175,58 +176,8 @@ final class TranslateHelper {
     private static List<RecipeStep> getTranslatedSteps(Queue<String> translatedSentences, Recipe originalRecipe) {
         List<RecipeStep> newSteps = new ArrayList<>();
         for (RecipeStep oldStep : originalRecipe.getRecipeSteps()) {
-            // start with the description
-            String description = translatedSentences.poll();
-            RecipeStep newStep = new RecipeStep(description);
 
-            // the ingredients
-            if (oldStep.isIngredientDetectionDone()) {
-                List<Ingredient> newIngredients = new ArrayList<>();
-
-                for (Ingredient oldIngredient : oldStep.getIngredients()) {
-
-                    Ingredient newIngredient = (getTranslatedIngredient(oldStep.getDescription(),
-                            oldIngredient, description, translatedSentences));
-                    // get the name position
-                    String translatedNameSubstring = translatedSentences.poll();
-
-                    int beginIndex = newStep.getDescription().indexOf(translatedNameSubstring);
-                    // if this substring is not found try deleting an end character that google might have added
-                    if (beginIndex < 0) {
-                        translatedNameSubstring = translatedNameSubstring.
-                                substring(0, translatedNameSubstring.length() - 1);
-                        beginIndex = newStep.getDescription().indexOf(translatedNameSubstring);
-                    }
-                    // if it is still not found set to not detected
-                    if (beginIndex < 0) {
-                        translatedNameSubstring = description;
-                        beginIndex = 0;
-                    }
-                    Position namePos = new Position(beginIndex, beginIndex + translatedNameSubstring.length());
-                    newIngredient.setNamePosition(namePos);
-                    newIngredients.add(newIngredient);
-                }
-                newStep.setIngredientDetectionDone(true);
-                newStep.setIngredients(newIngredients);
-            }
-
-            // the timers
-            if (oldStep.isTimerDetectionDone()) {
-                int startIndex = 0;
-                List<RecipeTimer> newTimers = new ArrayList<>();
-                for (RecipeTimer oldTimer : oldStep.getRecipeTimers()) {
-                    String newTimerString = translatedSentences.poll();
-                    int beginIndex = description.indexOf(newTimerString, startIndex);
-                    int endIndex = beginIndex + newTimerString.length();
-                    // for next timer only start searching starting from this end
-                    startIndex = endIndex - startIndex;
-                    newTimers.add(new RecipeTimer(oldTimer.getLowerBound(), oldTimer.getUpperBound(),
-                            new Position(beginIndex, endIndex)));
-                }
-                newStep.setTimerDetectionDone(true);
-                newStep.setRecipeTimers(newTimers);
-            }
-            newSteps.add(newStep);
+            newSteps.add(getTranslatedStep(oldStep, translatedSentences));
         }
         return newSteps;
 
@@ -275,9 +226,9 @@ final class TranslateHelper {
             int beginIndex = newOriginalLine.indexOf(unit);
             if (beginIndex > -1) {
                 int endIndex = beginIndex + unit.length();
-                if (DIMINUTIVE.equals(newOriginalLine.substring(endIndex, endIndex + 2))) {
+                if (DIMINUTIVE.equals(newOriginalLine.substring(endIndex, endIndex + DIMINUTIVE.length()))) {
                     // this is in true in the case of cup -> kop but in sentence it becomes kopje
-                    endIndex += 2;
+                    endIndex += DIMINUTIVE.length();
                     unit += DIMINUTIVE;
                 }
                 map.put(Ingredient.PositionKeysForIngredients.UNIT, new Position(beginIndex, endIndex));
@@ -304,6 +255,62 @@ final class TranslateHelper {
         map.putIfAbsent(Ingredient.PositionKeysForIngredients.QUANTITY, new Position(0, newOriginalLine.length()));
 
         return new Ingredient(name, unit, quantity, map);
+    }
+
+    private static RecipeStep getTranslatedStep(RecipeStep oldStep, Queue<String> translatedSentences) {
+        // start with the description
+        String description = translatedSentences.poll();
+        RecipeStep newStep = new RecipeStep(description);
+
+        // the ingredients
+        if (oldStep.isIngredientDetectionDone()) {
+            List<Ingredient> newIngredients = new ArrayList<>();
+
+            for (Ingredient oldIngredient : oldStep.getIngredients()) {
+
+                Ingredient newIngredient = (getTranslatedIngredient(oldStep.getDescription(),
+                        oldIngredient, description, translatedSentences));
+                // get the name position
+                String translatedNameSubstring = translatedSentences.poll();
+
+                int beginIndex = newStep.getDescription().indexOf(translatedNameSubstring);
+                // if this substring is not found try deleting an end character that google might have added
+                if (beginIndex < 0) {
+                    translatedNameSubstring = translatedNameSubstring.
+                            substring(0, translatedNameSubstring.length() - 1);
+                    beginIndex = newStep.getDescription().indexOf(translatedNameSubstring);
+                }
+                // if it is still not found set to not detected
+                if (beginIndex < 0) {
+                    translatedNameSubstring = description;
+                    beginIndex = 0;
+                }
+                Position namePos = new Position(beginIndex, beginIndex + translatedNameSubstring.length());
+                newIngredient.setNamePosition(namePos);
+                newIngredients.add(newIngredient);
+            }
+            newStep.setIngredientDetectionDone(true);
+            newStep.setIngredients(newIngredients);
+        }
+
+        // the timers
+        if (oldStep.isTimerDetectionDone()) {
+            int startIndex = 0;
+            List<RecipeTimer> newTimers = new ArrayList<>();
+            for (RecipeTimer oldTimer : oldStep.getRecipeTimers()) {
+                String newTimerString = translatedSentences.poll();
+                int beginIndex = description.indexOf(newTimerString, startIndex);
+                int endIndex = beginIndex + newTimerString.length();
+                // for next timer only start searching starting from this end
+                startIndex = endIndex - startIndex;
+                newTimers.add(new RecipeTimer(oldTimer.getLowerBound(), oldTimer.getUpperBound(),
+                        new Position(beginIndex, endIndex)));
+            }
+            newStep.setTimerDetectionDone(true);
+            newStep.setRecipeTimers(newTimers);
+        }
+        return newStep;
+
     }
 
 }

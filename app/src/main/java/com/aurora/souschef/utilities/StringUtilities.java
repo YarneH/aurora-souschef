@@ -1,5 +1,9 @@
 package com.aurora.souschef.utilities;
 
+import android.util.Log;
+
+import java.util.Locale;
+
 public final class StringUtilities {
     private static final int MIN_DENOMINATOR_OF_FRACTIONS = 2;
     private static final int MAX_DENOMINATOR_OF_FRACTIONS = 10;
@@ -20,12 +24,30 @@ public final class StringUtilities {
         if (isAlmostInteger(quantity)) {
             return "" + ((int) Math.round(quantity));
         }
+
+        String baseString = "";
+        double base = Math.floor(quantity);
+        if ((int) base != 0) {
+            baseString += "" + (int) base;
+        }
+        double remainder = quantity - base;
+
         for (int i = MIN_DENOMINATOR_OF_FRACTIONS; i <= MAX_DENOMINATOR_OF_FRACTIONS; i++) {
-            if (isAlmostInteger(quantity * i)) {
-                return "" + ((int) Math.round(quantity * i) + "/" + i);
+            if (isAlmostInteger(remainder * i)) {
+                String remainderString = "" + ((int) Math.round(remainder * i) + "/" + i);
+                if (!"".equals(baseString)) {
+                    baseString += ", ";
+                }
+                return  baseString + remainderString;
             }
         }
-        return "" + quantity;
+
+        // If all fails, just return double with 2 decimals (if needed)
+        if (quantity == (long) quantity) {
+            return String.format(Locale.ENGLISH, "%d", (long) quantity);
+        } else {
+            return String.format(Locale.ENGLISH, "%.2f", quantity);
+        }
     }
 
     /**

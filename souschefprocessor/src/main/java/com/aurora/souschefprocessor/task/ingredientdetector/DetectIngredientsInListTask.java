@@ -139,7 +139,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         // check if it should be ignored
         for (String regex : IGNORE_REGEXES) {
-            String lowercase = line.toLowerCase();
+            String lowercase = line.toLowerCase(Locale.ENGLISH);
 
             if (Pattern.compile(regex).matcher(lowercase).find()) {
                 return "";

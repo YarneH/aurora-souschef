@@ -296,6 +296,20 @@ final class TranslateHelper {
         }
 
         // the timers
+        findTranslatedTimers(oldStep, newStep, translatedSentences);
+        return newStep;
+
+    }
+
+    /**
+     * helper function for finding the  translated timers in a step
+     * @param oldStep the untranslated step
+     * @param newStep the new translated step
+     * @param translatedSentences the queue of all the translated sentences
+     */
+    private static void findTranslatedTimers(RecipeStep oldStep, RecipeStep newStep,
+                                             Queue<String> translatedSentences){
+        String description = newStep.getDescription();
         if (oldStep.isTimerDetectionDone()) {
             int startIndex = 0;
             List<RecipeTimer> newTimers = new ArrayList<>();
@@ -322,8 +336,6 @@ final class TranslateHelper {
             newStep.setTimerDetectionDone(true);
             newStep.setRecipeTimers(newTimers);
         }
-        return newStep;
-
     }
 
     private static Position findPositionImpreciseTimerString(String newString, String description, int startindex) {

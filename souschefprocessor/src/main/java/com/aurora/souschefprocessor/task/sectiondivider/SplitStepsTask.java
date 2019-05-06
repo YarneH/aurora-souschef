@@ -155,7 +155,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
             throw new IllegalStateException("No annotations were found for this step " + step.getDescription());
         }
 
-        sentenceAnnotationsForStep = findFirstToken(sentencesInAnnotation, sentenceAnnotationsForStep,
+        sentenceAnnotationsForStep = findAllSentences(sentencesInAnnotation, sentenceAnnotationsForStep,
                 step.getDescription());
 
         // Calculate the beginPositionOffset
@@ -219,11 +219,22 @@ public class SplitStepsTask extends AbstractProcessingTask {
             }
         }
 
-
         return true;
     }
 
-    private List<CoreMap> findFirstToken(List<CoreMap> allSentences, List<CoreMap> foundSentences, String description) {
+    /**
+     * finds the first token of the this description by using the already foundSentences and checking if the end of
+     * the sentence before the first found sentence is still in this description
+     *
+     * @param allSentences all the sentences from the section that this description was in
+     * @param description                      The description to find the first token of
+     * @param foundSentences             The already found sentences
+     *                                         annotation that has
+     *                                         firstToken as its first token
+     *
+     * @return the actual all the sentences that are part of this description
+     */
+    private List<CoreMap> findAllSentences(List<CoreMap> allSentences, List<CoreMap> foundSentences, String description) {
         // Calculate the current firstToken
         CoreLabel firstToken = foundSentences.get(0).get(CoreAnnotations.TokensAnnotation.class).get(0);
 
@@ -270,20 +281,6 @@ public class SplitStepsTask extends AbstractProcessingTask {
 
     }
 
-    /**
-     * Checks if the sentences before the first token do not contain a part of this description as well
-     *
-     * @param allAnnotationsForThisDescription all the sentences from the section that this description was in
-     * @param description                      The description to find the first token of
-     * @param firstAnnotationIndex             The index in the allAnnotationsForThisDescription list of the
-     *                                         annotation that has
-     *                                         firstToken as its first token
-     * @param firstToken                       The earliest token that was found for this description
-     * @return the actual firstToken
-     */
-    private CoreLabel findActualFirstToken(List<CoreMap> allAnnotationsForThisDescription, String description,
-                                           int firstAnnotationIndex,
-                                           CoreLabel firstToken) {
-        return null;
-    }
+
+
 }

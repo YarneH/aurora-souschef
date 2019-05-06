@@ -20,7 +20,14 @@ final class TranslateHelper {
      * The diminutive for dutch words that google sometimes adds
      */
     private static final String DIMINUTIVE = "je";
-    private static final Pattern default_time = Pattern.compile("[0-9]+[ ](minuten|minuut|uren|uur|seconde|seconden)");
+
+    /**
+     * A regex for translating to Dutch, if the translation of the timer is not found try to find if the part of the
+     * translation of the timer that matches this regex is found. Used in
+     * {@link #findPositionImpreciseTimerString(String, String, int)}
+     */
+    private static final Pattern DEFAULT_TIME_REGEX_DUTCH = Pattern.compile("[0-9]+[ ](minuten|minuut|uren|uur" +
+            "|seconde|seconden)");
 
     private TranslateHelper() {
         //static fields
@@ -303,12 +310,13 @@ final class TranslateHelper {
 
     /**
      * helper function for finding the  translated timers in a step
-     * @param oldStep the untranslated step
-     * @param newStep the new translated step
+     *
+     * @param oldStep             the untranslated step
+     * @param newStep             the new translated step
      * @param translatedSentences the queue of all the translated sentences
      */
     private static void findTranslatedTimers(RecipeStep oldStep, RecipeStep newStep,
-                                             Queue<String> translatedSentences){
+                                             Queue<String> translatedSentences) {
         String description = newStep.getDescription();
         if (oldStep.isTimerDetectionDone()) {
             int startIndex = 0;
@@ -338,8 +346,17 @@ final class TranslateHelper {
         }
     }
 
-    private static Position findPositionImpreciseTimerString(String newString, String description, int startindex) {
-        Matcher matcher = default_time.matcher(newString);
+    /**
+     * A helper function for when the translation of the timer is not contained in the translation of the description
+     * of the string. This checks if the new timer string matches the {@link #DEFAULT_TIME_REGEX_DUTCH}
+     * @param newTimerString the translated string for the timer
+     * @param description the translated description of the step
+     * @param startindex the index from where to start searching for this timer
+     * @return the position of the translated timer in the translated description, if it is still not found this is
+     * the position corresponding to the last character
+     */
+    private static Position findPositionImpreciseTimerString(String newTimerString, String description, int startindex) {
+        Matcher matcher = DEFAULT_TIME_REGEX_DUTCH.matcher(newTimerString);
         if (matcher.find()) {
             String matched = matcher.group();
             int beginIndex = description.indexOf(matched, startindex);

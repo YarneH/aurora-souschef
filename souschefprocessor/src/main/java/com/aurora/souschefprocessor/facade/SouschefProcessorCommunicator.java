@@ -35,25 +35,17 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
      * Create a communicator using a CRFClassifier that was loaded in and is used to classify the
      * ingredients
      *
-     * @param context               Context required by {@link com.aurora.auroralib.ProcessorCommunicator}
-     * @param ingredientsClassifier the classifier for the
-     *
-     *
-     *
-     *
-     *
-     *
-     *
-     *                       {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask}
-     *                             task
+     * @param context    Context required by {@link com.aurora.auroralib.ProcessorCommunicator}
+     * @param classifier the classifier for the
+     *                   {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask} task
      */
-    SouschefProcessorCommunicator(Context context, CRFClassifier<CoreLabel> ingredientsClassifier) {
+    SouschefProcessorCommunicator(Context context, CRFClassifier<CoreLabel> classifier) {
         /*
          * A UNIQUE_PLUGIN_NAME needs to be passed to the constructor of ProcessorCommunicator for
          * proper configuration of the cache
          */
         super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
-        mDelegator = new Delegator(ingredientsClassifier, true);
+        mDelegator = new Delegator(classifier, true);
     }
 
     /**

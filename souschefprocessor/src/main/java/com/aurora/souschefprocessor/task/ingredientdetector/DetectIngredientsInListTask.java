@@ -60,6 +60,11 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
      */
     private static final String[] NON_INGREDIENTS = {"cooking temperature", "cooking time", "baking dish",
             "preparation time"};
+
+    /**
+     * A regex for lines to ignore in the ingredients list, for example: "For the dough"
+     * should be ignored
+     */
     private static final String[] IGNORE_REGEXES = {"^(for the )"};
     /**
      * The classifier to detect ingredients

@@ -39,7 +39,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * following
      */
     private static final String STEP_STARTER_REGEX = ".*((prep(aration)?[s]?)|instruction[s]?|method|description|" +
-            "make it|step[s]?|direction[s])[: ]?$";
+            "make it|step[s]?|direction[s]?)[: ]?$";
 
     /**
      * A regex that covers most commonly used words that indicate the ingredients of the recipe are

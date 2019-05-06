@@ -24,7 +24,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
     /**
      * Minimum denominator for ingredient quantities
      */
-    private static final int MIN_DENOMINATOR_OF_FRACTIONS = 2;
+    private static final int MIN_DENOMINATOR_OF_FRACTIONS = 3;
     /**
      * Maximum denominator for ingredient quantities
      */
@@ -164,18 +164,6 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
         }
 
         /**
-         * Show a snackbar with the original text when the ingredient is clicked.
-         *
-         * @param v View registering the click.
-         */
-        @Override
-        public void onClick(View v) {
-            Snackbar.make(this.itemView,
-                    mIngredients.get(getAdapterPosition()).getOriginalLine(),
-                    Snackbar.LENGTH_LONG).show();
-        }
-
-        /**
          * Generates fraction from double
          *
          * @param quantity double to display
@@ -210,6 +198,18 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
          */
         private boolean isAlmostInteger(double quantity) {
             return Math.abs(Math.round(quantity) - quantity) < ROUND_EPSILON * quantity;
+        }
+
+        /**
+         * Show a snackbar with the original text when the ingredient is clicked.
+         *
+         * @param v View registering the click.
+         */
+        @Override
+        public void onClick(View v) {
+            Snackbar.make(this.itemView,
+                    mIngredients.get(getAdapterPosition()).getOriginalLine(),
+                    Snackbar.LENGTH_LONG).show();
         }
     }
 }

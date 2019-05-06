@@ -109,26 +109,6 @@ public class UITimer {
 
     }
 
-    private void setIconAndBackground(int timerState) {
-        ImageView imageView = mTimerCard.findViewById(R.id.iv_timer_icon);
-        View contentView = mTimerCard.findViewById(R.id.cl_timer_content);
-
-        if (timerState == LiveDataTimer.TIMER_RUNNING) {
-            imageView.setImageResource(R.drawable.ic_pause_white);
-            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimary));
-        } else if (timerState == LiveDataTimer.TIMER_PAUSED) {
-            imageView.setImageResource(R.drawable.ic_play_white);
-            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
-        }
-    }
-
-    /**
-     * TODO: What happens on timer completion?
-     */
-    private static void onTimerFinished() {
-        // TODO: This function is called when the timer finishes
-    }
-
     /**
      * Create a new onClickListener and onLongClickListener for the Timer TextView.
      * <p>
@@ -142,6 +122,36 @@ public class UITimer {
             }
             return true;
         });
+    }
+
+    /**
+     * TODO: What happens on timer completion?
+     */
+    private static void onTimerFinished() {
+        // TODO: This function is called when the timer finishes
+    }
+
+    private void setIconAndBackground(int timerState) {
+        ImageView imageView = mTimerCard.findViewById(R.id.iv_timer_icon);
+        View contentView = mTimerCard.findViewById(R.id.cl_timer_content);
+
+        if (timerState == LiveDataTimer.TIMER_RUNNING) {
+            imageView.setImageResource(R.drawable.ic_pause_white);
+            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimary));
+        } else if (timerState == LiveDataTimer.TIMER_PAUSED) {
+            imageView.setImageResource(R.drawable.ic_play_white);
+            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
+        }
+    }
+
+    private void setAlarm(boolean status) {
+        if (status) {
+            mRingtone.play();
+        } else {
+            if (mRingtone.isPlaying()) {
+                mRingtone.stop();
+            }
+        }
     }
 
     /**
@@ -202,16 +212,6 @@ public class UITimer {
                     mLiveDataTimer.setTimeSetByUser(timeSetByUser);
                 });
         alertDialogBuilder.create().show();
-    }
-
-    private void setAlarm(boolean status) {
-        if (status) {
-            mRingtone.play();
-        } else {
-            if (mRingtone.isPlaying()) {
-                mRingtone.stop();
-            }
-        }
     }
 
     /**

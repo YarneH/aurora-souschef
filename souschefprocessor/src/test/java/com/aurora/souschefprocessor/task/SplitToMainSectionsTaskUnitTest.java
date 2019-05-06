@@ -253,7 +253,7 @@ public class SplitToMainSectionsTaskUnitTest {
         // Arrange
 
         String json = "{\n" +
-                "   \"mFilename\": \"content://com.google.android.apps.docs.storage/document/acc%3D1%3Bdoc%3Dencoded%3DGDPoHpBnY6%2BmsRjpbyFZ64nchB90csqZM1KpNqa1adcFQ1v9eXj7Snb0Fgo%3D\",\n" +
+                "   \"mFilename\": \"\",\n" +
                 "   \"mSections\": [\n" +
                 "       {\n" +
                 "           \"mBody\": \"The beste chocomousse for: 4 people!\\n\",\n" +
@@ -348,8 +348,7 @@ public class SplitToMainSectionsTaskUnitTest {
                 "slagroom. Spatel het eiwit snel en luchtig in delen door het chocolademengsel.\n" +
                 "Schep de chocolademousse in glazen, potjes of coupes, dek af met vershoudfolie\n" +
                 "en laat minimaal 2 uur opstijven in de koelkast.  ;";
-        String description = "Chocomousse\n" +
-                "The beste chocomousse for: 4 people!";
+        String description = "Chocomousse";
 
         // Act
         ExtractedText text = ExtractedText.fromJson(json);

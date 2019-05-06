@@ -41,6 +41,35 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
     }
 
     /**
+     * Calculates the quantity based on list with tokens labeled quantity
+     *
+     * @param list The list on which to calculate the quantity
+     * @return a double representing the calculated value, if no value could be calculated -1.0 is
+     * returned
+     */
+    double calculateQuantity(List<CoreLabel> list) {
+
+        StringBuilder bld = new StringBuilder();
+        for (CoreLabel cl : list) {
+            bld.append(cl.word());
+            bld.append(" ");
+        }
+
+        String representation = bld.toString();
+
+        // split on all whitespace characters
+        String[] array = representation.split("[\\s\\xA0]+");
+        double result = calculateQuantity(array);
+
+        if (result == 0.0) {
+            // if no quantity value was detected return -1.0 to signal that detected quantity is
+            // not a quantity
+            return -1;
+        }
+        return result;
+    }
+
+    /**
      * Calculates the quantity based on an array of Strings that were tagged as quantity
      *
      * @param array the array of strings
@@ -136,34 +165,5 @@ abstract class DetectIngredientsTask extends AbstractProcessingTask {
         }
         // if not one of the previous cases consider wrongly labeled
         return 0.0;
-    }
-
-    /**
-     * Calculates the quantity based on list with tokens labeled quantity
-     *
-     * @param list The list on which to calculate the quantity
-     * @return a double representing the calculated value, if no value could be calculated -1.0 is
-     * returned
-     */
-    double calculateQuantity(List<CoreLabel> list) {
-
-        StringBuilder bld = new StringBuilder();
-        for (CoreLabel cl : list) {
-            bld.append(cl.word());
-            bld.append(" ");
-        }
-
-        String representation = bld.toString();
-
-        // split on all whitespace characters
-        String[] array = representation.split("[\\s\\xA0]+");
-        double result = calculateQuantity(array);
-
-        if (result == 0.0) {
-            // if no quantity value was detected return -1.0 to signal that detected quantity is
-            // not a quantity
-            return -1;
-        }
-        return result;
     }
 }

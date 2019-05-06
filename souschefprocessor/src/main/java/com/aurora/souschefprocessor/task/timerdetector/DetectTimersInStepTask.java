@@ -13,7 +13,6 @@ import com.aurora.souschefprocessor.task.RecipeStepInProgress;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -165,25 +164,23 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     }
 
     /**
-     * Converts formatted string to actual seconds
-     * e.g. PT1H to 1 * 60 * 60 (3600) seconds
+     * Creates custom annotation pipeline for timers. It uses the  {@link TimeAnnotator} using sutime.
      *
-     * @param string formatted string
-     * @return seconds from this formatted string
+     * @return Annotation pipeline
      */
-    private static int getSecondsFromFormattedString(String string) {
-        //TODO maybe this can be done less hardcoded, although for souschef I think this is good enough
-        String number = string.substring(TIMEX_NUM_POSITION, string.length() - 1);
-        int num = Integer.parseInt(number);
-        char unit = string.charAt(string.length() - 1);
+    private static AnnotationPipeline createTimerAnnotationPipeline() {
+        Properties props = new Properties();
+        // Do not use binders, these are necessary for Hollidays but those are not needed for
+        // recipesteps
+        // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
+        props.setProperty("sutime.binders", "0");
 
-        if (Character.toLowerCase(unit) == 'm') {
-            return num * MIN_TO_SECONDS;
-        } else if (Character.toLowerCase(unit) == 'h') {
-            return num * HOUR_TO_SECONDS;
-        }
+        AnnotationPipeline pipeline = new AnnotationPipeline();
 
-        return num;
+
+        pipeline.addAnnotator(new TimeAnnotator("sutime", props));
+        Delegator.incrementProgressAnnotationPipelines(); //3
+        return pipeline;
     }
 
     /**
@@ -232,252 +229,14 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     }
 
     /**
-     * Adds a durationRange (will have a different upperboune and lowerbounc
-     * with its position to the list of detected timers
-     *
-     * @param durationRange the range to add
-     * @param list          the list of detected timers
-     * @param timerPosition the position of the durationRange
+     * Detects the RecipeTimer in all the mRecipeSteps. It first adds spaces to the description so
+     * that tokens can be recognized (e.g. "4-5 minutes" should be "4 - 5 minutes"). Afterwards the
+     * timers of this step are set to the detected timers.
      */
-    private static void addDurationToList(SUTime.DurationRange durationRange, List<RecipeTimer> list,
-                                          Position timerPosition) {
-
-        //formattedstring is the only way to access private min and max fields in DurationRange object
-        String formattedString = durationRange.toString();
-        String[] minAndMax = formattedString.split("/");
-        try {
-            int lowerBound = getSecondsFromFormattedString(minAndMax[0]);
-            int upperBound = getSecondsFromFormattedString(minAndMax[1]);
-            list.add(new RecipeTimer(lowerBound, upperBound, timerPosition));
-
-        } catch (IllegalArgumentException iae) {
-            // if adding failed just log the failure
-            // TODO can this log be added to analytics?
-            Log.e(TAG, "detectTimer: ", iae);
-        }
-    }
-
-    /**
-     * Creates custom annotation pipeline for timers. It uses the  {@link TimeAnnotator} using sutime.
-     *
-     * @return Annotation pipeline
-     */
-    private static AnnotationPipeline createTimerAnnotationPipeline() {
-        Properties props = new Properties();
-        // Do not use binders, these are necessary for Hollidays but those are not needed for
-        // recipesteps
-        // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
-        props.setProperty("sutime.binders", "0");
-
-        AnnotationPipeline pipeline = new AnnotationPipeline();
-
-
-        pipeline.addAnnotator(new TimeAnnotator("sutime", props));
-        Delegator.incrementProgressAnnotationPipelines(); //3
-        return pipeline;
-    }
-
-    /**
-     * Retrieves positions of fractions in the recipe step
-     *
-     * @param allTokens tokens in a recipe step
-     * @return Mapping of fractions to their timerPosition in the recipe step
-     */
-    private static SparseArray<String> getFractionPositions(List<CoreLabel> allTokens) {
-        SparseArray<String> fractionPositions = new SparseArray<>();
-        for (CoreLabel token : allTokens) {
-            if (token.originalText().equals(FRACTION_HALF)) {
-                fractionPositions.put(token.beginPosition(), FRACTION_HALF);
-
-            } else if (token.originalText().equals(FRACTION_QUARTER)) {
-                fractionPositions.put(token.beginPosition(), FRACTION_QUARTER);
-            }
-        }
-
-        return fractionPositions;
-    }
-
-    /**
-     * Detects symbol notations for timers in the recipe step
-     * and
-     * s their timer to the list of recipeTimers
-     *
-     * @param recipeTimers list containing the recipeTimers in this recipe step
-     * @param allTokens    tokens in a recipe step
-     */
-    private static void detectSymbolPattern(List<RecipeTimer> recipeTimers, List<CoreLabel> allTokens) {
-        for (CoreLabel token : allTokens) {
-            if (token.originalText().matches("(\\d+)[hmsHMS]")) {
-                try {
-                    Position timerPosition = new Position(token.beginPosition(), token.endPosition());
-                    recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString
-                            ("PT" + token.originalText()), timerPosition));
-                } catch (IllegalArgumentException iae) {
-                    //TODO do something meaningful
-                    Log.e(TAG, "detectTimer: ", iae);
-                }
-            }
-        }
-    }
-
-    /**
-     * Constructs a RecipeTimer from a temporal that does not represent a duration to the list
-     *
-     * @param temporal          The temporal of which a timer needs to be constructed
-     * @param list              The list to add the timer to
-     * @param timerPosition     The position of the temporal
-     * @param cm                The Coremap which his the original representation of the temporal
-     * @param fractionPositions The map of fractionpositions in the entire sentence
-     */
-    private void addNonDurationToList(SUTime.Temporal temporal, List<RecipeTimer> list,
-                                      Position timerPosition, CoreMap cm,
-                                      SparseArray<String> fractionPositions) {
-        // the detected seconds
-        int recipeStepSeconds;
-        if (TIME_WORDS_NOT_TO_INCLUDE.contains(cm.toString())) {
-            // these tokens do not require a timer
-            recipeStepSeconds = 0;
-
-        } else if ((temporal.getDuration() != null)) {
-            recipeStepSeconds = (int) temporal
-                    .getDuration().getJodaTimeDuration().getStandardSeconds();
-
-        } else {
-            // duration was null, try with formatted string
-            try {
-                recipeStepSeconds = getSecondsFromFormattedString(temporal.toString());
-            } catch (NumberFormatException nfe) {
-                Log.e("TIMERS", "DetectTimer: ", nfe);
-                recipeStepSeconds = 0;
-            }
-        }
-
-        recipeStepSeconds = changeToFractions(fractionPositions, timerPosition, recipeStepSeconds);
-
-        // try adding this element to the step
-        try {
-            list.add(new RecipeTimer(recipeStepSeconds, timerPosition));
-        } catch (IllegalArgumentException iae) {
-            // timer adding failed, do not try to add it again but log the failure
-            //TODO can this failure be added to analytics?
-            Log.e(TAG, "detectTimer: ", iae);
-        }
-    }
-
-    /**
-     * Checks if fractions are in proximity to the timex token and adapts
-     * the recipeStepSeconds to these fractions
-     *
-     * @param fractionPositions timerPosition of fractions in the recipe step
-     * @param originalPosition  token representing the time in this recipe step
-     * @param recipeStepSeconds the seconds detected in this timex token
-     * @return The updated value of recipeStepSeconds
-     */
-    private int changeToFractions(SparseArray<String> fractionPositions,
-                                  Position originalPosition, int recipeStepSeconds) {
-
-        for (int index = 0; index < fractionPositions.size(); index++) {
-            int key = fractionPositions.keyAt(index);
-            String value = fractionPositions.valueAt(index);
-            int relPosition = key - originalPosition.getBeginIndex();
-            if (relPosition < 0) {
-                // no comma allowed between the fraction and the timer
-                recipeStepSeconds *= calculateMultiplierBefore(key, value, originalPosition,
-                        relPosition);
-
-
-            } else {
-                relPosition = key - originalPosition.getEndIndex();
-                if (0 < relPosition) {
-                    recipeStepSeconds *= calculateMultiplierAfter(key, value, originalPosition,
-                            relPosition);
-                }
-            }
-        }
-
-        return recipeStepSeconds;
-    }
-
-    /**
-     * Calculates the multiplier when one of fraction multipliers was detected before the timer
-     *
-     * @param beginPositionFraction the begin position of the fraction multiplier
-     * @param fractionString        the string of the multiplier
-     * @param originalPosition      the position of the timer
-     * @param positionsDistance     the distance between the end of the multiplier and the timer
-     * @return the multiplier that the fractionString represents
-     */
-    private double calculateMultiplierBefore(int beginPositionFraction, String fractionString,
-                                             Position originalPosition, int positionsDistance) {
-
-        double multiplier = 1.0;
-        String description = mRecipeStep.getDescription();
-        // if there is a comma between 'half"/'quarter' and the found value, ignore this 'half'/'quarter'
-        boolean containsComma = description.substring(
-                beginPositionFraction, originalPosition.getEndIndex()).contains(",");
-
-        if (!containsComma && -MAX_FRACTION_DISTANCE_BEFORE <= positionsDistance) {
-            Double key = FRACTION_MULTIPLIERS.get(fractionString);
-            if (key == null) {
-                // should not get here but if it does return multiplier 1.0 to not harm anythin
-                return 1.0;
-            }
-            multiplier = key;
-            // change the position so that the multiplier is included in the position
-            originalPosition.setBeginIndex(beginPositionFraction);
-        }
-
-        return multiplier;
-    }
-
-
-    /**
-     * Calculates the multiplier when one of fraction multipliers was detected after the timer
-     *
-     * @param beginPositionFraction the begin position of the fraction multiplier
-     * @param fractionString        the string of the multiplier
-     * @param originalPosition      the position of the timer
-     * @param positionsDistance     the distance between the end of the multiplier and the timer
-     * @return the multiplier that the fractionString represents
-     */
-    private double calculateMultiplierAfter(int beginPositionFraction, String fractionString,
-                                            Position originalPosition, int positionsDistance) {
-        double multiplier = 1.0;
-        String description = mRecipeStep.getDescription();
-        boolean containsComma = description.substring(
-                originalPosition.getEndIndex(), beginPositionFraction).contains(",");
-
-        if (!containsComma && positionsDistance <= MAX_FRACTION_DISTANCE_AFTER) {
-            Double key = FRACTION_MULTIPLIERS.get(fractionString);
-            if (key == null) {
-                // should not get here but if it does return multiplier 1.0 to not harm anythin
-                return 1.0;
-            }
-            // after the timer, so considered increasing
-            multiplier = 1 + key;
-            // change the position so that the multiplier is included in the position
-            originalPosition.setEndIndex(beginPositionFraction +
-                    fractionString.length());
-        }
-
-        return multiplier;
-    }
-
-    /**
-     * Waits untill the statid {@link #sAnnotationPipeline} is created
-     */
-    private void waitForCreationOfPipeline(){
-        while (sAnnotationPipeline == null) {
-            try {
-                // wait unitill the pipeline is created
-                synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
-                    LOCK_DETECT_TIMERS_IN_STEP_PIPELINE.wait();
-                }
-            } catch (InterruptedException e) {
-                Log.d("Interrupted", "detecttimer", e);
-                Thread.currentThread().interrupt();
-            }
-        }
+    public void doTask() {
+        List<RecipeTimer> recipeTimers = detectTimer(mRecipeStep);
+        recipeTimers = mergeTimers(recipeTimers);
+        mRecipeStep.setRecipeTimers(recipeTimers);
     }
 
     /**
@@ -573,76 +332,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         return listOfTimers;
     }
 
-    private boolean addWithDashStructure(List<RecipeTimer> timers, CoreMap timeAnnotations, String previous,
-                                         Position position) {
-        if (previous.matches("[0-9]+[−–—―‒-][0-9]+")) {
-            String[] bounds = previous.split("[−–—―‒-]");
-            int lower = Integer.parseInt(bounds[0]);
-            int upper = Integer.parseInt(bounds[1]);
-            SUTime.Temporal temporal = timeAnnotations.get(TimeExpression.Annotation.class).getTemporal();
-            if (!(temporal.getDuration() instanceof SUTime.DurationRange)) {
-                int seconds = (int) temporal
-                        .getDuration().getJodaTimeDuration().getStandardSeconds();
-                lower *= seconds;
-                upper *= seconds;
-                timers.add(new RecipeTimer(lower, upper, position));
-                return true;
-            }
-        }
-        return false;
-
-    }
-
-    /**
-     * Checks if the token after the lastTimexToken is the word "to"
-     *
-     * @param allTokens      the list of all tokens
-     * @param lastTimexToken the last timex token
-     * @return a boolean indicating if the next token is the word "to"
-     */
-    private boolean nextTokenIsTo(List<CoreLabel> allTokens, CoreLabel lastTimexToken) {
-        int lastIndexInOriginalList = allTokens.indexOf(lastTimexToken);
-        if (lastIndexInOriginalList < allTokens.size() - 1) {
-            CoreLabel nextToken = allTokens.get(lastIndexInOriginalList + 1);
-
-            return ("to").equalsIgnoreCase(nextToken.originalText());
-        }
-
-        return false;
-    }
-
-    /**
-     * Adds  a coremap with endindex to the list where this coremaps comes right after "to" and another
-     * coremap with timexAnnotations (e.g. "50 minutes to 1 hour", the 1 hour should be added as upperbound to
-     * the timer with "50 minutes" and not be to seperate timers)
-     *
-     * @param list     the list to add to
-     * @param cm       the new coremap to use the annotatio to add
-     * @param endIndex the endindex of the coremap
-     */
-    private void addAfterTo(List<RecipeTimer> list, CoreMap cm, int endIndex) {
-
-        if (TIME_WORDS_NOT_TO_INCLUDE.contains(cm.toString())) {
-            // these words should not be included so just return
-            return;
-        }
-        // get the previous timer
-        RecipeTimer previousTimer = list.remove(list.size() - 1);
-        int prevLowerBound = previousTimer.getLowerBound();
-        int prevStartIndex = previousTimer.getPosition().getBeginIndex();
-        // Construct the new position
-        Position position = new Position(prevStartIndex, endIndex);
-
-        // The detected annotation
-        SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();
-
-        int recipeStepSecondsAfterTo = (int) temporal
-                .getDuration().getJodaTimeDuration().getStandardSeconds();
-
-        RecipeTimer timer = new RecipeTimer(prevLowerBound, recipeStepSecondsAfterTo, position);
-        list.add(timer);
-    }
-
     /**
      * Merges timers in the list. Merging happens when two timers are only one position apart (space
      * character). When two timers are merged their values are added up. (e.g "1 minute 30 seconds" becomes
@@ -697,13 +386,321 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     }
 
     /**
-     * Detects the RecipeTimer in all the mRecipeSteps. It first adds spaces to the description so
-     * that tokens can be recognized (e.g. "4-5 minutes" should be "4 - 5 minutes"). Afterwards the
-     * timers of this step are set to the detected timers.
+     * Waits untill the statid {@link #sAnnotationPipeline} is created
      */
-    public void doTask() {
-        List<RecipeTimer> recipeTimers = detectTimer(mRecipeStep);
-        recipeTimers = mergeTimers(recipeTimers);
-        mRecipeStep.setRecipeTimers(recipeTimers);
+    private void waitForCreationOfPipeline() {
+        while (sAnnotationPipeline == null) {
+            try {
+                // wait unitill the pipeline is created
+                synchronized (LOCK_DETECT_TIMERS_IN_STEP_PIPELINE) {
+                    LOCK_DETECT_TIMERS_IN_STEP_PIPELINE.wait();
+                }
+            } catch (InterruptedException e) {
+                Log.d("Interrupted", "detecttimer", e);
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /**
+     * Detects symbol notations for timers in the recipe step
+     * and
+     * s their timer to the list of recipeTimers
+     *
+     * @param recipeTimers list containing the recipeTimers in this recipe step
+     * @param allTokens    tokens in a recipe step
+     */
+    private static void detectSymbolPattern(List<RecipeTimer> recipeTimers, List<CoreLabel> allTokens) {
+        for (CoreLabel token : allTokens) {
+            if (token.originalText().matches("(\\d+)[hmsHMS]")) {
+                try {
+                    Position timerPosition = new Position(token.beginPosition(), token.endPosition());
+                    recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString
+                            ("PT" + token.originalText()), timerPosition));
+                } catch (IllegalArgumentException iae) {
+                    //TODO do something meaningful
+                    Log.e(TAG, "detectTimer: ", iae);
+                }
+            }
+        }
+    }
+
+    /**
+     * Retrieves positions of fractions in the recipe step
+     *
+     * @param allTokens tokens in a recipe step
+     * @return Mapping of fractions to their timerPosition in the recipe step
+     */
+    private static SparseArray<String> getFractionPositions(List<CoreLabel> allTokens) {
+        SparseArray<String> fractionPositions = new SparseArray<>();
+        for (CoreLabel token : allTokens) {
+            if (token.originalText().equals(FRACTION_HALF)) {
+                fractionPositions.put(token.beginPosition(), FRACTION_HALF);
+
+            } else if (token.originalText().equals(FRACTION_QUARTER)) {
+                fractionPositions.put(token.beginPosition(), FRACTION_QUARTER);
+            }
+        }
+
+        return fractionPositions;
+    }
+
+    /**
+     * Adds  a coremap with endindex to the list where this coremaps comes right after "to" and another
+     * coremap with timexAnnotations (e.g. "50 minutes to 1 hour", the 1 hour should be added as upperbound to
+     * the timer with "50 minutes" and not be to seperate timers)
+     *
+     * @param list     the list to add to
+     * @param cm       the new coremap to use the annotatio to add
+     * @param endIndex the endindex of the coremap
+     */
+    private void addAfterTo(List<RecipeTimer> list, CoreMap cm, int endIndex) {
+
+        if (TIME_WORDS_NOT_TO_INCLUDE.contains(cm.toString())) {
+            // these words should not be included so just return
+            return;
+        }
+        // get the previous timer
+        RecipeTimer previousTimer = list.remove(list.size() - 1);
+        int prevLowerBound = previousTimer.getLowerBound();
+        int prevStartIndex = previousTimer.getPosition().getBeginIndex();
+        // Construct the new position
+        Position position = new Position(prevStartIndex, endIndex);
+
+        // The detected annotation
+        SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();
+
+        int recipeStepSecondsAfterTo = (int) temporal
+                .getDuration().getJodaTimeDuration().getStandardSeconds();
+
+        RecipeTimer timer = new RecipeTimer(prevLowerBound, recipeStepSecondsAfterTo, position);
+        list.add(timer);
+    }
+
+    private boolean addWithDashStructure(List<RecipeTimer> timers, CoreMap timeAnnotations, String previous,
+                                         Position position) {
+        if (previous.matches("[0-9]+[−–—―‒-][0-9]+")) {
+            String[] bounds = previous.split("[−–—―‒-]");
+            int lower = Integer.parseInt(bounds[0]);
+            int upper = Integer.parseInt(bounds[1]);
+            SUTime.Temporal temporal = timeAnnotations.get(TimeExpression.Annotation.class).getTemporal();
+            if (!(temporal.getDuration() instanceof SUTime.DurationRange)) {
+                int seconds = (int) temporal
+                        .getDuration().getJodaTimeDuration().getStandardSeconds();
+                lower *= seconds;
+                upper *= seconds;
+                timers.add(new RecipeTimer(lower, upper, position));
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    /**
+     * Checks if the token after the lastTimexToken is the word "to"
+     *
+     * @param allTokens      the list of all tokens
+     * @param lastTimexToken the last timex token
+     * @return a boolean indicating if the next token is the word "to"
+     */
+    private boolean nextTokenIsTo(List<CoreLabel> allTokens, CoreLabel lastTimexToken) {
+        int lastIndexInOriginalList = allTokens.indexOf(lastTimexToken);
+        if (lastIndexInOriginalList < allTokens.size() - 1) {
+            CoreLabel nextToken = allTokens.get(lastIndexInOriginalList + 1);
+
+            return ("to").equalsIgnoreCase(nextToken.originalText());
+        }
+
+        return false;
+    }
+
+    /**
+     * Constructs a RecipeTimer from a temporal that does not represent a duration to the list
+     *
+     * @param temporal          The temporal of which a timer needs to be constructed
+     * @param list              The list to add the timer to
+     * @param timerPosition     The position of the temporal
+     * @param cm                The Coremap which his the original representation of the temporal
+     * @param fractionPositions The map of fractionpositions in the entire sentence
+     */
+    private void addNonDurationToList(SUTime.Temporal temporal, List<RecipeTimer> list,
+                                      Position timerPosition, CoreMap cm,
+                                      SparseArray<String> fractionPositions) {
+        // the detected seconds
+        int recipeStepSeconds;
+        if (TIME_WORDS_NOT_TO_INCLUDE.contains(cm.toString())) {
+            // these tokens do not require a timer
+            recipeStepSeconds = 0;
+
+        } else if ((temporal.getDuration() != null)) {
+            recipeStepSeconds = (int) temporal
+                    .getDuration().getJodaTimeDuration().getStandardSeconds();
+
+        } else {
+            // duration was null, try with formatted string
+            try {
+                recipeStepSeconds = getSecondsFromFormattedString(temporal.toString());
+            } catch (NumberFormatException nfe) {
+                Log.e("TIMERS", "DetectTimer: ", nfe);
+                recipeStepSeconds = 0;
+            }
+        }
+
+        recipeStepSeconds = changeToFractions(fractionPositions, timerPosition, recipeStepSeconds);
+
+        // try adding this element to the step
+        try {
+            list.add(new RecipeTimer(recipeStepSeconds, timerPosition));
+        } catch (IllegalArgumentException iae) {
+            // timer adding failed, do not try to add it again but log the failure
+            //TODO can this failure be added to analytics?
+            Log.e(TAG, "detectTimer: ", iae);
+        }
+    }
+
+    /**
+     * Adds a durationRange (will have a different upperboune and lowerbounc
+     * with its position to the list of detected timers
+     *
+     * @param durationRange the range to add
+     * @param list          the list of detected timers
+     * @param timerPosition the position of the durationRange
+     */
+    private static void addDurationToList(SUTime.DurationRange durationRange, List<RecipeTimer> list,
+                                          Position timerPosition) {
+
+        //formattedstring is the only way to access private min and max fields in DurationRange object
+        String formattedString = durationRange.toString();
+        String[] minAndMax = formattedString.split("/");
+        try {
+            int lowerBound = getSecondsFromFormattedString(minAndMax[0]);
+            int upperBound = getSecondsFromFormattedString(minAndMax[1]);
+            list.add(new RecipeTimer(lowerBound, upperBound, timerPosition));
+
+        } catch (IllegalArgumentException iae) {
+            // if adding failed just log the failure
+            // TODO can this log be added to analytics?
+            Log.e(TAG, "detectTimer: ", iae);
+        }
+    }
+
+    /**
+     * Converts formatted string to actual seconds
+     * e.g. PT1H to 1 * 60 * 60 (3600) seconds
+     *
+     * @param string formatted string
+     * @return seconds from this formatted string
+     */
+    private static int getSecondsFromFormattedString(String string) {
+        //TODO maybe this can be done less hardcoded, although for souschef I think this is good enough
+        String number = string.substring(TIMEX_NUM_POSITION, string.length() - 1);
+        int num = Integer.parseInt(number);
+        char unit = string.charAt(string.length() - 1);
+
+        if (Character.toLowerCase(unit) == 'm') {
+            return num * MIN_TO_SECONDS;
+        } else if (Character.toLowerCase(unit) == 'h') {
+            return num * HOUR_TO_SECONDS;
+        }
+
+        return num;
+    }
+
+    /**
+     * Checks if fractions are in proximity to the timex token and adapts
+     * the recipeStepSeconds to these fractions
+     *
+     * @param fractionPositions timerPosition of fractions in the recipe step
+     * @param originalPosition  token representing the time in this recipe step
+     * @param recipeStepSeconds the seconds detected in this timex token
+     * @return The updated value of recipeStepSeconds
+     */
+    private int changeToFractions(SparseArray<String> fractionPositions,
+                                  Position originalPosition, int recipeStepSeconds) {
+
+        for (int index = 0; index < fractionPositions.size(); index++) {
+            int key = fractionPositions.keyAt(index);
+            String value = fractionPositions.valueAt(index);
+            int relPosition = key - originalPosition.getBeginIndex();
+            if (relPosition < 0) {
+                // no comma allowed between the fraction and the timer
+                recipeStepSeconds *= calculateMultiplierBefore(key, value, originalPosition,
+                        relPosition);
+
+            } else {
+                relPosition = key - originalPosition.getEndIndex();
+                if (0 < relPosition) {
+                    recipeStepSeconds *= calculateMultiplierAfter(key, value, originalPosition,
+                            relPosition);
+                }
+            }
+        }
+
+        return recipeStepSeconds;
+    }
+
+    /**
+     * Calculates the multiplier when one of fraction multipliers was detected before the timer
+     *
+     * @param beginPositionFraction the begin position of the fraction multiplier
+     * @param fractionString        the string of the multiplier
+     * @param originalPosition      the position of the timer
+     * @param positionsDistance     the distance between the end of the multiplier and the timer
+     * @return the multiplier that the fractionString represents
+     */
+    private double calculateMultiplierBefore(int beginPositionFraction, String fractionString,
+                                             Position originalPosition, int positionsDistance) {
+
+        double multiplier = 1.0;
+        String description = mRecipeStep.getDescription();
+        // if there is a comma between 'half"/'quarter' and the found value, ignore this 'half'/'quarter'
+        boolean containsComma = description.substring(
+                beginPositionFraction, originalPosition.getEndIndex()).contains(",");
+
+        if (!containsComma && -MAX_FRACTION_DISTANCE_BEFORE <= positionsDistance) {
+            Double key = FRACTION_MULTIPLIERS.get(fractionString);
+            if (key == null) {
+                // should not get here but if it does return multiplier 1.0 to not harm anythin
+                return 1.0;
+            }
+            multiplier = key;
+            // change the position so that the multiplier is included in the position
+            originalPosition.setBeginIndex(beginPositionFraction);
+        }
+
+        return multiplier;
+    }
+
+    /**
+     * Calculates the multiplier when one of fraction multipliers was detected after the timer
+     *
+     * @param beginPositionFraction the begin position of the fraction multiplier
+     * @param fractionString        the string of the multiplier
+     * @param originalPosition      the position of the timer
+     * @param positionsDistance     the distance between the end of the multiplier and the timer
+     * @return the multiplier that the fractionString represents
+     */
+    private double calculateMultiplierAfter(int beginPositionFraction, String fractionString,
+                                            Position originalPosition, int positionsDistance) {
+        double multiplier = 1.0;
+        String description = mRecipeStep.getDescription();
+        boolean containsComma = description.substring(
+                originalPosition.getEndIndex(), beginPositionFraction).contains(",");
+
+        if (!containsComma && positionsDistance <= MAX_FRACTION_DISTANCE_AFTER) {
+            Double key = FRACTION_MULTIPLIERS.get(fractionString);
+            if (key == null) {
+                // should not get here but if it does return multiplier 1.0 to not harm anythin
+                return 1.0;
+            }
+            // after the timer, so considered increasing
+            multiplier = 1 + key;
+            // change the position so that the multiplier is included in the position
+            originalPosition.setEndIndex(beginPositionFraction +
+                    fractionString.length());
+        }
+
+        return multiplier;
     }
 }

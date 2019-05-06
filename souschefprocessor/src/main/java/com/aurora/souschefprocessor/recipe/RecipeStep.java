@@ -85,6 +85,55 @@ public class RecipeStep {
         return new RecipeStep(mIngredients, mRecipeTimers, mDescription, mIngredientDetectionDone, mTimerDetectionDone);
     }
 
+    public boolean isIngredientDetectionDone() {
+        return mIngredientDetectionDone;
+    }
+
+    public void setIngredientDetectionDone(boolean ingredientDetectionDone) {
+        this.mIngredientDetectionDone = ingredientDetectionDone;
+    }
+
+    public boolean isTimerDetectionDone() {
+        return mTimerDetectionDone;
+    }
+
+    public void setTimerDetectionDone(boolean timerDetectionDone) {
+        mTimerDetectionDone = timerDetectionDone;
+    }
+
+    public String getDescription() {
+        return mDescription;
+    }
+
+    public void setDescription(String description) {
+        mDescription = description;
+    }
+
+    /**
+     * Clears {@link #mRecipeTimers} and set {@link #mTimerDetectionDone} to false. This should be called
+     * when one wants to redo the {@link com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask}
+     */
+    public synchronized void unsetTimers() {
+        mRecipeTimers.clear();
+        mTimerDetectionDone = false;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mIngredients, mRecipeTimers, mDescription);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof RecipeStep) {
+            RecipeStep rs = (RecipeStep) o;
+            return rs.getIngredients().equals(mIngredients) && rs.getRecipeTimers().equals(mRecipeTimers)
+                    && rs.mDescription.equals(mDescription);
+        }
+        return false;
+    }
+
     public synchronized List<Ingredient> getIngredients() {
         return mIngredients;
     }
@@ -188,56 +237,6 @@ public class RecipeStep {
         }
     }
 
-    public boolean isIngredientDetectionDone() {
-        return mIngredientDetectionDone;
-    }
-
-    public void setIngredientDetectionDone(boolean ingredientDetectionDone) {
-        this.mIngredientDetectionDone = ingredientDetectionDone;
-    }
-
-    public boolean isTimerDetectionDone() {
-        return mTimerDetectionDone;
-    }
-
-    public void setTimerDetectionDone(boolean timerDetectionDone) {
-        mTimerDetectionDone = timerDetectionDone;
-    }
-
-    public String getDescription() {
-        return mDescription;
-    }
-
-    public void setDescription(String description) {
-        mDescription = description;
-    }
-
-
-    /**
-     * Clears {@link #mRecipeTimers} and set {@link #mTimerDetectionDone} to false. This should be called
-     * when one wants to redo the {@link com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask}
-     */
-    public synchronized void unsetTimers() {
-        mRecipeTimers.clear();
-        mTimerDetectionDone = false;
-
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(mIngredients, mRecipeTimers, mDescription);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof RecipeStep) {
-            RecipeStep rs = (RecipeStep) o;
-            return rs.getIngredients().equals(mIngredients) && rs.getRecipeTimers().equals(mRecipeTimers)
-                    && rs.mDescription.equals(mDescription);
-        }
-        return false;
-    }
-
     @Override
     public String toString() {
         StringBuilder bld = new StringBuilder();
@@ -272,13 +271,22 @@ public class RecipeStep {
     /**
      * Converts the units in this recipe
      *
-     * @param toMetric a boolean that indicates wheter to convert to metric or to US
+     * @param toMetric a boolean that indicates whether to convert to metric or to US
      */
     public void convertUnit(boolean toMetric) {
+        // store the original length
+        int originalLength = mDescription.length();
         if (mIngredientDetectionDone) {
             for (Ingredient ingredient : mIngredients) {
+                // this operation changes the length of the description
                 mDescription = ingredient.convertUnit(toMetric, mDescription);
             }
+
+            for (Ingredient ingredient : mIngredients) {
+                // make sure that the not detected elements point to the new length of string
+                ingredient.setPositionEndOfStringCorrect(originalLength, mDescription.length());
+            }
         }
+
     }
 }

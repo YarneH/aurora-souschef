@@ -51,46 +51,6 @@ public class Recipe extends PluginObject {
         super(fileName, UNIQUE_PLUGIN_NAME);
     }
 
-    public synchronized int getNumberOfPeople() {
-        return mNumberOfPeople;
-    }
-
-    public synchronized void setNumberOfPeople(int numberOfPeople) {
-        this.mNumberOfPeople = numberOfPeople;
-    }
-
-    public synchronized String getDescription() {
-        return mDescription;
-    }
-
-    public synchronized void setDescription(String description) {
-        this.mDescription = description;
-    }
-
-    public synchronized List<RecipeStep> getRecipeSteps() {
-        return mRecipeSteps;
-    }
-
-    public synchronized void setRecipeSteps(List<RecipeStep> recipeSteps) {
-        if (recipeSteps == null) {
-            mRecipeSteps.clear();
-        } else {
-            this.mRecipeSteps = recipeSteps;
-        }
-    }
-
-    public synchronized List<ListIngredient> getIngredients() {
-        return mIngredients;
-    }
-
-    public synchronized void setIngredients(List<ListIngredient> ingredients) {
-        if (ingredients == null) {
-            mIngredients.clear();
-        } else {
-            this.mIngredients = ingredients;
-        }
-    }
-
     /**
      * Converts the units of the this recipe to metric or US
      *
@@ -120,6 +80,46 @@ public class Recipe extends PluginObject {
         return false;
     }
 
+    public synchronized List<ListIngredient> getIngredients() {
+        return mIngredients;
+    }
+
+    public synchronized int getNumberOfPeople() {
+        return mNumberOfPeople;
+    }
+
+    public synchronized void setNumberOfPeople(int numberOfPeople) {
+        this.mNumberOfPeople = numberOfPeople;
+    }
+
+    public synchronized List<RecipeStep> getRecipeSteps() {
+        return mRecipeSteps;
+    }
+
+    public synchronized String getDescription() {
+        return mDescription;
+    }
+
+    public synchronized void setDescription(String description) {
+        this.mDescription = description;
+    }
+
+    public synchronized void setRecipeSteps(List<RecipeStep> recipeSteps) {
+        if (recipeSteps == null) {
+            mRecipeSteps.clear();
+        } else {
+            this.mRecipeSteps = recipeSteps;
+        }
+    }
+
+    public synchronized void setIngredients(List<ListIngredient> ingredients) {
+        if (ingredients == null) {
+            mIngredients.clear();
+        } else {
+            this.mIngredients = ingredients;
+        }
+    }
+
     @Override
     public String toString() {
         return "Recipe{" +
@@ -128,6 +128,29 @@ public class Recipe extends PluginObject {
                 "\n mNumberOfPeople=" + mNumberOfPeople +
                 "\n mDescription='" + mDescription + '\'' +
                 '}';
+    }
+
+
+    /**
+     * Gets all the sentences that should be translated to translate this recipe
+     *
+     * @return A list of all the sentences that should be translated
+     */
+    public List<String> createSentencesToTranslate() {
+        return TranslateHelper.createSentencesToTranslate(this);
+
+    }
+
+
+    /**
+     * Creates a new recipe object that is the translated form of this recipe
+     *
+     * @param translatedSentences the translated sentences, this is the response from aurora to the
+     *                            result of {@link #createSentencesToTranslate()}
+     * @return The new translated recipe
+     */
+    public Recipe getTranslatedRecipe(String[] translatedSentences) {
+        return TranslateHelper.getTranslatedRecipe(this, translatedSentences);
     }
 
 }

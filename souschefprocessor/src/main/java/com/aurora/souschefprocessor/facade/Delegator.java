@@ -113,8 +113,33 @@ public class Delegator {
      */
     public static void incrementProgressAnnotationPipelines() {
         SouschefProcessorCommunicator.incrementProgressAnnotationPipelines();
-        Log.d("DELEGATOR", "STEP");
+        Log.i("DELEGATOR", "STEP");
 
+    }
+
+    /**
+     * This is the core function of the delegator, where the text is processed by applying the filters
+     * This function should be able to at run time decide to do certain filters or not (graceful degradation)
+     *
+     * @param text The text to be processed in to a recipe Object
+     * @return A Recipe object that was constructed from the text
+     */
+    public Recipe processText(ExtractedText text) {
+        //TODO implement this function so that at runtime it is decided which tasks should be performed
+        if (sThreadPoolExecutor == null) {
+            setUpThreadPool();
+        }
+
+        RecipeInProgress recipeInProgress = new RecipeInProgress(text);
+        List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
+        if (pipeline != null) {
+            for (AbstractProcessingTask task : pipeline) {
+                task.doTask();
+                Log.i("DELEGATOR", task.getClass().toString());
+            }
+        }
+
+        return recipeInProgress.convertToRecipe();
     }
 
     /**
@@ -147,33 +172,6 @@ public class Delegator {
                 decodeWorkQueue);
     }
 
-
-    /**
-     * This is the core function of the delegator, where the text is processed by applying the filters
-     * This function should be able to at run time decide to do certain filters or not (graceful degradation)
-     *
-     * @param text The text to be processed in to a recipe Object
-     * @return A Recipe object that was constructed from the text
-     */
-    public Recipe processText(ExtractedText text) {
-        //TODO implement this function so that at runtime it is decided which tasks should be performed
-        if (sThreadPoolExecutor == null) {
-            setUpThreadPool();
-        }
-
-        RecipeInProgress recipeInProgress = new RecipeInProgress(text);
-        List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
-        if (pipeline != null) {
-            for (AbstractProcessingTask task : pipeline) {
-                task.doTask();
-                Log.d("DELEGATOR", task.getClass().toString());
-            }
-        }
-
-        return recipeInProgress.convertToRecipe();
-    }
-
-
     /**
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
@@ -196,6 +194,5 @@ public class Delegator {
 
         return pipeline;
     }
-
 
 }

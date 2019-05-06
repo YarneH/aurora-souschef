@@ -252,6 +252,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private String findDescription() {
         StringBuilder bld = new StringBuilder();
+        ExtractedText text = mRecipeInProgress.getExtractedText();
+        // append the file name
+        bld.append(text.getFilename()).append("\n");
         // append the title
         bld.append(mRecipeInProgress.getExtractedText().getTitle());
         bld.append("\n");
@@ -259,7 +262,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             String body = s.getBody();
             if (mSections.contains(s)) {
                 String title = s.getTitle();
-                if (title != null) {
+                if (title != null ) {
                     bld.append(title);
                     bld.append("\n");
                 }
@@ -271,6 +274,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 }
             }
         }
+
+
 
         return bld.toString();
     }

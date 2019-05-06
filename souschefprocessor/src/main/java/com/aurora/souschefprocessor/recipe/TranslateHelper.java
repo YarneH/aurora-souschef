@@ -40,6 +40,11 @@ final class TranslateHelper {
 
         // Add the steps
         sentences.addAll(createStepSentencesToTranslate(recipe.getRecipeSteps()));
+
+        // replace ° by " degrees" otherwise it does not get translated
+        for (String s : sentences) {
+            sentences.set(sentences.indexOf(s), s.replace("°", " degrees"));
+        }
         return sentences;
     }
 

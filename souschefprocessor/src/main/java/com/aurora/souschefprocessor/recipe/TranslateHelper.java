@@ -349,13 +349,15 @@ final class TranslateHelper {
     /**
      * A helper function for when the translation of the timer is not contained in the translation of the description
      * of the string. This checks if the new timer string matches the {@link #DEFAULT_TIME_REGEX_DUTCH}
+     *
      * @param newTimerString the translated string for the timer
-     * @param description the translated description of the step
-     * @param startindex the index from where to start searching for this timer
+     * @param description    the translated description of the step
+     * @param startindex     the index from where to start searching for this timer
      * @return the position of the translated timer in the translated description, if it is still not found this is
      * the position corresponding to the last character
      */
-    private static Position findPositionImpreciseTimerString(String newTimerString, String description, int startindex) {
+    private static Position findPositionImpreciseTimerString(String newTimerString, String description,
+                                                             int startindex) {
         Matcher matcher = DEFAULT_TIME_REGEX_DUTCH.matcher(newTimerString);
         if (matcher.find()) {
             String matched = matcher.group();

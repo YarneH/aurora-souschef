@@ -9,14 +9,15 @@
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/tab3_step_ingredient_margin">
 
         <TextView
             android:id="@+id/tv_ingredient_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="@dimen/tab3_step_ingredient_margin"
+            android:layout_marginEnd="@dimen/tab3_step_ingredient_margin"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/tv_ingredient_unit"
             app:layout_constraintTop_toTopOf="parent" />
@@ -25,8 +26,7 @@
             android:id="@+id/tv_ingredient_amount"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginStart="@dimen/tab3_step_ingredient_margin"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -35,8 +35,8 @@
             android:id="@+id/tv_ingredient_unit"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/tv_ingredient_amount"
+            android:layout_marginStart="@dimen/tab3_step_ingredient_margin"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/tv_ingredient_amount"
             app:layout_constraintTop_toTopOf="parent" />
 

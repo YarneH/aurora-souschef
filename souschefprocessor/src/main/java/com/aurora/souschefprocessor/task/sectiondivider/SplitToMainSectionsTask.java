@@ -39,7 +39,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * following
      */
     private static final String STEP_STARTER_REGEX = ".*((prep(aration)?[s]?)|instruction[s]?|method|description|" +
-            "make it|step[s]?|direction[s])[: ]?$";
+            "make it|step[s]?|direction[s]?)[: ]?$";
 
     /**
      * A regex that covers most commonly used words that indicate the ingredients of the recipe are
@@ -64,16 +64,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
     public SplitToMainSectionsTask(RecipeInProgress recipeInProgress) {
         super(recipeInProgress);
-    }
-
-    /**
-     * Finds the mDescription of the recipe in a text
-     *
-     * @param text the text in which to search for the mDescription of the recipe
-     * @return The string representing the mDescription of the recipe
-     */
-    private static String findDescription(String text) {
-        return text;
     }
 
     /**
@@ -257,6 +247,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      */
     private String findDescription() {
         StringBuilder bld = new StringBuilder();
+        ExtractedText text = mRecipeInProgress.getExtractedText();
+        // append the file name
+        bld.append(text.getFilename()).append("\n");
         // append the title
         bld.append(mRecipeInProgress.getExtractedText().getTitle());
         bld.append("\n");
@@ -264,7 +257,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             String body = s.getBody();
             if (mSections.contains(s)) {
                 String title = s.getTitle();
-                if (title != null) {
+                if (title != null ) {
                     bld.append(title);
                     bld.append("\n");
                 }
@@ -277,7 +270,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             }
         }
 
-        return bld.toString();
+        return bld.toString().trim();
     }
 
     /**

@@ -67,16 +67,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     }
 
     /**
-     * Finds the mDescription of the recipe in a text
-     *
-     * @param text the text in which to search for the mDescription of the recipe
-     * @return The string representing the mDescription of the recipe
-     */
-    private static String findDescription(String text) {
-        return text;
-    }
-
-    /**
      * Removes the {@link #CLUTTER_STRINGS} from a section if they are present
      *
      * @param section the section to remove the clutter from
@@ -280,9 +270,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             }
         }
 
-
-
-        return bld.toString();
+        return bld.toString().trim();
     }
 
     /**

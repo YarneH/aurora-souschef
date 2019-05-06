@@ -34,17 +34,18 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
     /**
      * Create a communicator using a CRFClassifier that was loaded in and is used to classify the
      * ingredients
-     * @param context               Context required by {@link com.aurora.auroralib.ProcessorCommunicator}
-     * @param ingredientsClassifier the classifier for the
-     *                              {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask} task
+     *
+     * @param context    Context required by {@link com.aurora.auroralib.ProcessorCommunicator}
+     * @param classifier the classifier for the
+     *                   {@link com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask} task
      */
-    SouschefProcessorCommunicator(Context context, CRFClassifier<CoreLabel> ingredientsClassifier) {
+    SouschefProcessorCommunicator(Context context, CRFClassifier<CoreLabel> classifier) {
         /*
          * A UNIQUE_PLUGIN_NAME needs to be passed to the constructor of ProcessorCommunicator for
          * proper configuration of the cache
          */
         super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
-        mDelegator = new Delegator(ingredientsClassifier, true);
+        mDelegator = new Delegator(classifier, true);
     }
 
     /**
@@ -81,20 +82,20 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
     }
 
     /**
+     * Increment the progress of the creation of the pipelines
+     */
+    static void incrementProgressAnnotationPipelines() {
+        mProgressAnnotationPipelines.incrementAndGet();
+        Log.d("STEP", "" + mProgressAnnotationPipelines);
+    }
+
+    /**
      * Get the progress of the creation of the pipelines
      *
      * @return an int that shows the status of the progress of the annotation pipelines
      */
     public static int getProgressAnnotationPipelines() {
         return mProgressAnnotationPipelines.get();
-    }
-
-    /**
-     * Increment the progress of the creation of the pipelines
-     */
-    static void incrementProgressAnnotationPipelines() {
-        mProgressAnnotationPipelines.incrementAndGet();
-        Log.d("STEP", "" + mProgressAnnotationPipelines);
     }
 
     /**
@@ -106,7 +107,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
     @Override
     protected PluginObject process(ExtractedText extractedText) {
 
-        if(extractedText == null){
+        if (extractedText == null) {
             throw new RecipeDetectionException("No text was extracted. Something went wrong in Aurora!");
         }
         Recipe recipe = null;
@@ -122,7 +123,12 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
             // checks are needed somewhere in the code
             Log.e("ILLEGAL", "processText", iae);
 
+        } catch (Exception e) {
+            // something else went wrong
+            Log.e("COMMUNICATOR", "unexpected exception", e);
+            throw new RecipeDetectionException("Something unexpected happenen: " + e.getMessage());
         }
+
         return recipe;
 
     }

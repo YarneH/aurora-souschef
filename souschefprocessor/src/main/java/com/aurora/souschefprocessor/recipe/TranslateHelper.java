@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A helper class for translating a recipe
@@ -19,6 +21,13 @@ final class TranslateHelper {
      */
     private static final String DIMINUTIVE = "je";
 
+    /**
+     * A regex for translating to Dutch, if the translation of the timer is not found try to find if the part of the
+     * translation of the timer that matches this regex is found. Used in
+     * {@link #findPositionImpreciseTimerString(String, String, int)}
+     */
+    private static final Pattern DEFAULT_TIME_REGEX_DUTCH = Pattern.compile("[0-9]+[ ](minuten|minuut|uren|uur" +
+            "|seconde|seconden)");
 
     private TranslateHelper() {
         //static fields
@@ -299,22 +308,72 @@ final class TranslateHelper {
         }
 
         // the timers
+        findTranslatedTimers(oldStep, newStep, translatedSentences);
+        return newStep;
+
+    }
+
+    /**
+     * helper function for finding the  translated timers in a step
+     *
+     * @param oldStep             the untranslated step
+     * @param newStep             the new translated step
+     * @param translatedSentences the queue of all the translated sentences
+     */
+    private static void findTranslatedTimers(RecipeStep oldStep, RecipeStep newStep,
+                                             Queue<String> translatedSentences) {
+        String description = newStep.getDescription();
         if (oldStep.isTimerDetectionDone()) {
             int startIndex = 0;
             List<RecipeTimer> newTimers = new ArrayList<>();
             for (RecipeTimer oldTimer : oldStep.getRecipeTimers()) {
                 String newTimerString = translatedSentences.poll();
                 int beginIndex = description.indexOf(newTimerString, startIndex);
-                int endIndex = beginIndex + newTimerString.length();
-                // for next timer only start searching starting from this end
-                startIndex = endIndex - startIndex;
+                Position pos;
+                if (beginIndex < 0) {
+                    // string not found try to find actual time string like "20 minuten" string
+                    pos = findPositionImpreciseTimerString(newTimerString, description, startIndex);
+                } else {
+                    int endIndex = beginIndex + newTimerString.length();
+
+                    pos = new Position(beginIndex, endIndex);
+
+                }
+                // for next timer only start searching starting from this end if the end is not the end of the string
+                if (pos.getEndIndex() < description.length()) {
+                    startIndex = pos.getEndIndex();
+                }
                 newTimers.add(new RecipeTimer(oldTimer.getLowerBound(), oldTimer.getUpperBound(),
-                        new Position(beginIndex, endIndex)));
+                        pos));
             }
             newStep.setTimerDetectionDone(true);
             newStep.setRecipeTimers(newTimers);
         }
-        return newStep;
+    }
+
+    /**
+     * A helper function for when the translation of the timer is not contained in the translation of the description
+     * of the string. This checks if the new timer string matches the {@link #DEFAULT_TIME_REGEX_DUTCH}
+     *
+     * @param newTimerString the translated string for the timer
+     * @param description    the translated description of the step
+     * @param startindex     the index from where to start searching for this timer
+     * @return the position of the translated timer in the translated description, if it is still not found this is
+     * the position corresponding to the last character
+     */
+    private static Position findPositionImpreciseTimerString(String newTimerString, String description,
+                                                             int startindex) {
+        Matcher matcher = DEFAULT_TIME_REGEX_DUTCH.matcher(newTimerString);
+        if (matcher.find()) {
+            String matched = matcher.group();
+            int beginIndex = description.indexOf(matched, startindex);
+            int endIndex = beginIndex + matched.length();
+            if (beginIndex >= 0) {
+                return new Position(beginIndex, endIndex);
+            }
+        }
+        // nothing found, set timer at endinex
+        return new Position(description.length() - 1, description.length());
 
     }
 

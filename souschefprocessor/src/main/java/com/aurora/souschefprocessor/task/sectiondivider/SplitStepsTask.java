@@ -8,6 +8,7 @@ import com.aurora.souschefprocessor.task.RecipeInProgress;
 import com.aurora.souschefprocessor.task.RecipeStepInProgress;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
@@ -69,7 +70,6 @@ public class SplitStepsTask extends AbstractProcessingTask {
             // No other detection method yielded result, so just split on the sentences
             list = splitStepsBySplittingOnPunctuation(steps);
         }
-
         return list;
     }
 
@@ -127,8 +127,8 @@ public class SplitStepsTask extends AbstractProcessingTask {
      */
     private void fillInAnnotation(RecipeStepInProgress step) {
 
-        // trim the description
-        step.setDescription(step.getDescription().trim());
+        // trim the description and replace new lines by spaces
+        step.setDescription(step.getDescription().replace("\n", " ").trim());
 
         // the annotation of the section of the string
         Annotation annotation = findAnnotationForStep(step.getDescription());
@@ -155,6 +155,9 @@ public class SplitStepsTask extends AbstractProcessingTask {
             throw new IllegalStateException("No annotations were found for this step " + step.getDescription());
         }
 
+        sentenceAnnotationsForStep = findAllSentences(sentencesInAnnotation, sentenceAnnotationsForStep,
+                step.getDescription());
+
         // Calculate the beginPositionOffset
         CoreLabel firstToken = sentenceAnnotationsForStep.get(0).get(CoreAnnotations.TokensAnnotation.class).get(0);
 
@@ -163,24 +166,32 @@ public class SplitStepsTask extends AbstractProcessingTask {
         step.setSentenceAnnotations(sentenceAnnotationsForStep);
     }
 
+    /**
+     * find the Annotation object from the {@link ExtractedText} that contains the annotation for this description
+     *
+     * @param description the description to find the annotation for
+     * @return the found annotation
+     */
     private Annotation findAnnotationForStep(String description) {
-        String descriptionWithReplacedNewLines = description.replace("\n", " ").trim();
+
         ExtractedText text = mRecipeInProgress.getExtractedText();
 
         // first the title
         if (text.getTitle().replace("\n", " ").trim().contains
-                (descriptionWithReplacedNewLines)) {
+                (description)) {
             return text.getTitleAnnotation();
         }
         // sections
+
         for (Section s : text.getSections()) {
             if (s.getTitle() != null && s.getTitle().replace("\n", " ").trim().contains
-                    (descriptionWithReplacedNewLines)) {
+                    (description)) {
                 return s.getTitleAnnotation();
             }
 
             if (s.getBody() != null && s.getBody().replace("\n", " ").trim().contains
-                    (descriptionWithReplacedNewLines)) {
+                    (description)) {
+
                 return s.getBodyAnnotation();
             }
 
@@ -190,18 +201,87 @@ public class SplitStepsTask extends AbstractProcessingTask {
 
     }
 
+    /**
+     * Checks if this sentence (CoreMap) is a part of this description
+     *
+     * @param sentence    the sentence to check
+     * @param description the description to check
+     * @return true if the sentence is in the description
+     */
     private static boolean isSentenceInDescription(CoreMap sentence, String description) {
+        String spaceLessDescription = description.replace(" ", "");
         List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
+        StringBuilder bld = new StringBuilder();
         for (CoreLabel token : tokens) {
-            // only consider alpha numeric tokens
-            if (token.word().matches("[A-Za-z0-9]+") &&
-                    !description.contains(token.word())) {
-                // this is not the wanted sentence skip to the next sentence
+            bld.append(token.originalText());
+            if (!spaceLessDescription.contains(bld.toString())) {
                 return false;
             }
         }
 
-
         return true;
     }
+
+    /**
+     * finds the first token of the this description by using the already foundSentences and checking if the end of
+     * the sentence before the first found sentence is still in this description
+     *
+     * @param allSentences all the sentences from the section that this description was in
+     * @param description                      The description to find the first token of
+     * @param foundSentences             The already found sentences
+     *                                         annotation that has
+     *                                         firstToken as its first token
+     *
+     * @return the actual all the sentences that are part of this description
+     */
+    private List<CoreMap> findAllSentences(List<CoreMap> allSentences, List<CoreMap> foundSentences,
+                                           String description) {
+        // Calculate the current firstToken
+        CoreLabel firstToken = foundSentences.get(0).get(CoreAnnotations.TokensAnnotation.class).get(0);
+
+        // find the actual first token
+        int firstAnnotationIndex = allSentences.indexOf(foundSentences.get(0));
+        StringBuilder bld = new StringBuilder();
+        // get the description withoutspaces == all tokens concatenated
+        String spaceLessDescription = description.replace(" ", "");
+
+        // check if there is a previous sentence
+        if (firstAnnotationIndex > 0) {
+            // search in the description that comes before the first token
+            description = description.substring(0, description.indexOf(firstToken.originalText()));
+            // only if some string left to find in
+            if (!description.isEmpty()) {
+                //get  the sentence before
+                CoreMap sentenceBefore = allSentences.get(firstAnnotationIndex - 1);
+                List<CoreLabel> tokens = sentenceBefore.get(CoreAnnotations.TokensAnnotation.class);
+
+                //search in reverse order
+                Collections.reverse(tokens);
+                for (CoreLabel token : tokens) {
+                    bld.insert(0, token.originalText());
+
+                    if (!spaceLessDescription.contains(bld.toString())) {
+                        // found one that is not in the description, no expanding possible reverse tokens again and
+                        Collections.reverse(tokens);
+                        // create a new sentence with all the token annotations
+                        CoreMap newSentence = new Annotation("");
+                        newSentence.set(CoreAnnotations.TokensAnnotation.class,
+                                tokens.subList(tokens.indexOf(firstToken)
+                                        , tokens.size()));
+                        foundSentences.add(0, newSentence);
+                        break;
+                    } else {
+                        // found one that is in the remaining description
+                        firstToken = token;
+                    }
+
+                }
+            }
+        }
+        return foundSentences;
+
+    }
+
+
+
 }

@@ -23,6 +23,8 @@ import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
+import static org.junit.Assert.assertTrue;
+
 public class DetectIngredientsInRecipeStepTaskLongTest {
 
     // Irrelevant properties
@@ -199,7 +201,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tsalt\n" +
                 "1.0\t\tbaking soda\n" +
                 "1.0\t\twhite sugar\n" +
-                "7.0\ttablespoons\tunsalted butter\n" +
+                "7.0\ttablespoon\tunsalted butter\n" +
                 "1.0\t\tcornmeal\n" +
                 "1.0\t\tbaking powder\n" +
                 "1.0\t\tall-purpose flour\n" +
@@ -232,7 +234,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tmargarine\n" +
                 "\n" +
                 "1.0\t\teggs\n" +
-                "3.0\tcups\tall-purpose flour\n" +
+                "3.0\tcup\tall-purpose flour\n" +
                 "\n" +
                 "NO_INGREDIENTS\n" +
                 "\n" +
@@ -261,7 +263,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tactive dry yeast\n" +
                 "\n" +
                 "1.0\t\tsalt\n" +
-                "2.0\tcups\tbread flour\n" +
+                "2.0\tcup\tbread flour\n" +
                 "1.0\t\teggs\n" +
                 "0.5\tcup\twhite sugar\n" +
                 "1.0\t\torange zest\n" +
@@ -293,10 +295,10 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "NO_INGREDIENTS\n" +
                 "\n" +
                 "\n" +
-                "7.0\tcups\tall-purpose flour\n" +
+                "7.0\tcup\tall-purpose flour\n" +
                 "7.0\t\twhite sugar\n" +
                 "1.0\t\tsalt\n" +
-                "1.0\tcups\tshredded Cheddar cheese\n" +
+                "1.0\tcup\tshredded Cheddar cheese\n" +
                 "1.0\t\tminced jalapeno peppers\n" +
                 "\n" +
                 "1.0\t\twhite sugar\n" +
@@ -323,9 +325,9 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tvegetable oil\n" +
                 "1.0\t\tactive dry yeast\n" +
                 "1.0\t\tmolasses\n" +
-                "3.5\tcups\twarm water\n" +
+                "3.5\tcup\twarm water\n" +
                 "\n" +
-                "5.0\tcups\twhole wheat flour\n" +
+                "5.0\tcup\twhole wheat flour\n" +
                 "1.0\t\tflax seed\n" +
                 "1.0\t\tsunflower seeds\n" +
                 "1.0\t\tcracked wheat\n" +
@@ -345,7 +347,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tboiling water\n" +
                 "1.0\t\trolled oats\n" +
                 "\n" +
-                "2.0\tcups\tbread flour\n" +
+                "2.0\tcup\tbread flour\n" +
                 "1.0\t\teggs\n" +
                 "1.0\t\tactive dry yeast\n" +
                 "1.0\t\twhole wheat flour\n" +
@@ -731,12 +733,12 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tsalt\n" +
                 "1.0\t\tflour\n" +
                 "1.0\t\tdouble-acting baking powder\n" +
-                "3.0\tcups\tcake flour cake flour all-purpose flour can\n" +
+                "3.0\tcup\tcake flour cake flour all-purpose flour can\n" +
                 "\n" +
                 "1.0\t\tunsalted butter\n" +
                 "1.0\t\tsoftened butter\n" +
                 "\n" +
-                "2.0\tcups\tgranulated sugar\n" +
+                "2.0\tcup\tgranulated sugar\n" +
                 "1.0\t\tunsalted butter\n" +
                 "1.0\t\tsoftened butter\n" +
                 "1.0\t\tgranulated sugar\n" +
@@ -864,7 +866,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tConfectioners sugar\n" +
                 "1.0\t\tconfectioners sugar\n" +
                 "1.0\t\talmond paste\n" +
-                "2.0\ttablespoons\tlight corn syrup\n" +
+                "2.0\ttablespoon\tlight corn syrup\n" +
                 "\n" +
                 "1.0\t\tcocoa powder\n" +
                 "\n" +
@@ -879,12 +881,12 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tsalt\n" +
                 "1.0\t\twarm whole milk\n" +
                 "1.0\t\tactive dry yeast\n" +
-                "1.0\tcups\tall purpose flour\n" +
+                "1.0\tcup\tall purpose flour\n" +
                 "0.5\t\tgranulated sugar\n" +
                 "1.0\t\tlarge eggs\n" +
                 "\n" +
-                "6.0\ttablespoons\tgranulated sugar\n" +
-                "2.0\tcups\tall purpose flour\n" +
+                "6.0\ttablespoon\tgranulated sugar\n" +
+                "2.0\tcup\tall purpose flour\n" +
                 "2.0\t\tlarge eggs\n" +
                 "\n" +
                 "1.0\t\twarm whole milk\n" +
@@ -1098,7 +1100,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "\n" +
                 "NO_INGREDIENTS\n" +
                 "\n" +
-                "1.0\ttablespoons\tunsalted butter\n" +
+                "1.0\ttablespoon\tunsalted butter\n" +
                 "\n" +
                 "1.0\t\tunsalted butter\n" +
                 "1.0\t\tcooked rice\n" +
@@ -1177,7 +1179,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tvegetable shortening\n" +
                 "\n" +
                 "0.5\t\tconfectioners ' sugar\n" +
-                "2.0\ttablespoons\tmilk\n" +
+                "2.0\ttablespoon\tmilk\n" +
                 "\n" +
                 "\n" +
                 "1.0\t\tangel food cake\n" +
@@ -1191,7 +1193,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tangel food cake\n" +
                 "1.0\t\tSeven Minute Frosting\n" +
                 "1.0\t\tSmall sugar candy eyes\n" +
-                "1.0\t\tAssorted eggcups\n" +
+                "1.0\t\tAssorted eggcup\n" +
                 "1.0\t\tDisposable decorating bag\n" +
                 "\n" +
                 "\n"
@@ -2011,17 +2013,17 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
     private static String initializeIngredientsString() {
         return ("0.5\tcup\tunsalted butter\n" +
                 "1.0\tcup\tchopped onion\n" +
-                "1.75\tcups\tcornmeal\n" +
-                "1.25\tcups\tall-purpose flour\n" +
+                "1.75\tcup\tcornmeal\n" +
+                "1.25\tcup\tall-purpose flour\n" +
                 "0.25\tcup\twhite sugar\n" +
                 "1.0\ttablespoon\tbaking powder\n" +
-                "1.5\tteaspoons\tsalt\n" +
+                "1.5\tteaspoon\tsalt\n" +
                 "0.5\tteaspoon\tbaking soda\n" +
-                "1.5\tcups\tbuttermilk\n" +
+                "1.5\tcup\tbuttermilk\n" +
                 "3.0\t\teggs\n" +
-                "1.5\tcups\tshredded pepperjack cheese\n" +
-                "1.3333333333333333\tcups\tfrozen corn kernels\n" +
-                "2.0\tounces\tbell peppers\n" +
+                "1.5\tcup\tshredded pepperjack cheese\n" +
+                "1.3333333333333333\tcup\tfrozen corn kernels\n" +
+                "2.0\tounce\tbell peppers\n" +
                 "0.5\tcup\tchopped fresh basil\n" +
                 "\n" +
                 "0.5\tcup\tParmesan cheese\n" +
@@ -2030,19 +2032,19 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\tpackage\tpuff pastry\n" +
                 "1.0\tegg\twhite\n" +
                 "\n" +
-                "2.0\tcups\thot water\n" +
+                "2.0\tcup\thot water\n" +
                 "0.5\tcup\tmargarine\n" +
                 "0.3333333333333333\tcup\twhite sugar\n" +
-                "2.0\tteaspoons\tsalt\n" +
+                "2.0\tteaspoon\tsalt\n" +
                 "0.5\tcup\tcold water\n" +
                 "2.0\tpackages\tactive dry yeast\n" +
-                "5.5\tcups\tall-purpose flour\n" +
+                "5.5\tcup\tall-purpose flour\n" +
                 "2.0\t\teggs\n" +
                 "\n" +
-                "1.5\tcups\twhite sugar\n" +
+                "1.5\tcup\twhite sugar\n" +
                 "0.5\tcup\tvegetable oil\n" +
                 "2.0\t\teggs\n" +
-                "1.75\tcups\tall-purpose flour\n" +
+                "1.75\tcup\tall-purpose flour\n" +
                 "1.0\tteaspoon\tbaking soda\n" +
                 "0.25\tteaspoon\tsalt\n" +
                 "0.5\tteaspoon\tground cinnamon\n" +
@@ -2054,8 +2056,8 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "0.25\tcup\tbutter\n" +
                 "1.0\tteaspoon\twhite sugar\n" +
                 "1.0\tcup\thot milk\n" +
-                "2.0\ttablespoons\tactive dry yeast\n" +
-                "6.0\tcups\tbread flour\n" +
+                "2.0\ttablespoon\tactive dry yeast\n" +
+                "6.0\tcup\tbread flour\n" +
                 "0.5\tcup\twhite sugar\n" +
                 "2.0\t\teggs\n" +
                 "1.0\tcup\torange juice\n" +
@@ -2063,55 +2065,55 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\tteaspoon\tsalt\n" +
                 "\n" +
                 "1.0\tteaspoon\tactive dry yeast\n" +
-                "1.25\tcups\tlukewarm milk\n" +
+                "1.25\tcup\tlukewarm milk\n" +
                 "1.0\ttablespoon\twhite sugar\n" +
-                "3.0\tcups\tunbleached all-purpose flour\n" +
+                "3.0\tcup\tunbleached all-purpose flour\n" +
                 "0.25\tteaspoon\tsalt\n" +
-                "2.0\ttablespoons\tbutter\n" +
+                "2.0\ttablespoon\tbutter\n" +
                 "\n" +
-                "8.0\tcups\tall-purpose flour\n" +
-                "4.0\tcups\tshredded Cheddar cheese\n" +
+                "8.0\tcup\tall-purpose flour\n" +
+                "4.0\tcup\tshredded Cheddar cheese\n" +
                 "0.75\tcup\tminced jalapeno peppers\n" +
                 "0.5\tcup\twhite sugar\n" +
-                "1.5\tteaspoons\tsalt\n" +
-                "2.0\tcups\thot water\n" +
+                "1.5\tteaspoon\tsalt\n" +
+                "2.0\tcup\thot water\n" +
                 "3.0\tpackages\tactive dry yeast\n" +
-                "4.0\ttablespoons\tvegetable oil\n" +
+                "4.0\ttablespoon\tvegetable oil\n" +
                 "\n" +
-                "2.0\ttablespoons\tactive dry yeast\n" +
+                "2.0\ttablespoon\tactive dry yeast\n" +
                 "1.0\tteaspoon\twhite sugar\n" +
                 "0.5\tcup\twarm water\n" +
-                "3.5\tcups\twarm water\n" +
+                "3.5\tcup\twarm water\n" +
                 "0.25\tcup\thoney\n" +
                 "0.25\tcup\tmolasses\n" +
                 "0.5\tcup\tvegetable oil\n" +
                 "2.0\t\teggs\n" +
-                "2.0\ttablespoons\tlemon juice\n" +
-                "7.0\tcups\twhole wheat flour\n" +
+                "2.0\ttablespoon\tlemon juice\n" +
+                "7.0\tcup\twhole wheat flour\n" +
                 "0.25\tcup\tflax seed\n" +
                 "0.25\tcup\tcracked wheat\n" +
                 "0.25\tcup\tsunflower seeds\n" +
-                "4.0\tteaspoons\tsalt\n" +
-                "4.0\tcups\tbread flour\n" +
+                "4.0\tteaspoon\tsalt\n" +
+                "4.0\tcup\tbread flour\n" +
                 "\n" +
                 "1.0\tcup\trolled oats\n" +
                 "0.5\tcup\tmolasses\n" +
                 "0.3333333333333333\tcup\tvegetable oil\n" +
                 "1.0\tteaspoon\tsalt\n" +
-                "1.5\tcups\tboiling water\n" +
-                "2.0\ttablespoons\tactive dry yeast\n" +
+                "1.5\tcup\tboiling water\n" +
+                "2.0\ttablespoon\tactive dry yeast\n" +
                 "0.5\tcup\tlukewarm water\n" +
                 "1.0\tcup\twhole wheat flour\n" +
-                "5.0\tcups\tbread flour\n" +
+                "5.0\tcup\tbread flour\n" +
                 "2.0\t\teggs\n" +
                 "\n" +
-                "3.0\tcups\tall-purpose flour\n" +
-                "2.0\tcups\twhite sugar\n" +
+                "3.0\tcup\tall-purpose flour\n" +
+                "2.0\tcup\twhite sugar\n" +
                 "1.0\tteaspoon\tground cinnamon\n" +
                 "1.0\tteaspoon\tsalt\n" +
                 "1.0\tteaspoon\tbaking soda\n" +
                 "4.0\t\teggs\n" +
-                "1.25\tcups\tvegetable oil\n" +
+                "1.25\tcup\tvegetable oil\n" +
                 "1.0\tcup\tchopped pecans\n" +
                 "1.0\tpackage\tfrozen strawberries\n" +
                 "\n" +
@@ -2253,25 +2255,25 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tsugar\n" +
                 "\n" +
                 "1.0\ttablespoon\tsoftened butter\n" +
-                "2.0\ttablespoons\tflour\n" +
-                "3.0\tcups\tcake flour cake flour all-purpose flour can\n" +
-                "4.0\tteaspoons\tdouble-acting baking powder\n" +
+                "2.0\ttablespoon\tflour\n" +
+                "3.0\tcup\tcake flour cake flour all-purpose flour can\n" +
+                "4.0\tteaspoon\tdouble-acting baking powder\n" +
                 "0.5\tteaspoon\tsalt\n" +
-                "8.0\tounces\tunsalted butter\n" +
-                "2.0\tcups\tgranulated sugar\n" +
+                "8.0\tounce\tunsalted butter\n" +
+                "2.0\tcup\tgranulated sugar\n" +
                 "4.0\t\teggs\n" +
                 "1.0\tcup\tmilk\n" +
-                "1.0\tteaspoons\tvanilla extract\n" +
+                "1.0\tteaspoon\tvanilla extract\n" +
                 "0.75\tcup\torange juice\n" +
-                "2.0\ttablespoons\tlemon juice\n" +
+                "2.0\ttablespoon\tlemon juice\n" +
                 "0.75\tcup\tgranulated sugar\n" +
                 "1.0\ttablespoon\torange rind\n" +
                 "\n" +
                 "2.0\tgarlic\tcloves\n" +
                 "4.0\t\tscallions\n" +
                 "0.25\tcup\tchopped fresh Italian parsley\n" +
-                "4.0\tounces\tsalami\n" +
-                "8.0\tounces\tItalian Fontina\n" +
+                "4.0\tounce\tsalami\n" +
+                "8.0\tounce\tItalian Fontina\n" +
                 "0.5\tcup\tfreshly grated Parmigiano-Reggiano\n" +
                 "0.5\tcup\ttoasted bread crumbs\n" +
                 "0.25\tcup\textra virgin olive oil\n" +
@@ -2279,18 +2281,18 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tKosher black pepper\n" +
                 "\n" +
                 "1.0\tteaspoon\tcumin seeds\n" +
-                "2.0\tteaspoons\tcoriander seeds\n" +
-                "4.0\ttablespoons\tcanola oil\n" +
+                "2.0\tteaspoon\tcoriander seeds\n" +
+                "4.0\ttablespoon\tcanola oil\n" +
                 "1.5\t\tlarge onions\n" +
                 "4.0\tcloves\tgarlic\n" +
                 "1.25\t\tginger\n" +
-                "2.0\tpounds\tjuicy ripe tomatoes\n" +
+                "2.0\tpound\tjuicy ripe tomatoes\n" +
                 "1.0\ttablespoon\ttomato paste\n" +
                 "1.0\tteaspoon\tsalt\n" +
                 "1.0\tteaspoon\tsugar\n" +
                 "0.5\tteaspoon\tchili powder\n" +
                 "0.25\tteaspoon\tground turmeric\n" +
-                "1.0\tounces\tspinach\n" +
+                "1.0\tounce\tspinach\n" +
                 "6.0\t\tmedium eggs\n" +
                 "1.0\t\tGround black pepper\n" +
                 "1.0\t\tA small bunch of cilantro\n" +
@@ -2301,33 +2303,33 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "2.0\t\tlarge eggs\n" +
                 "0.5\tcup\tdried bread crumbs\n" +
                 "1.0\t\tsalt\n" +
-                "1.25\tpounds\tground pork\n" +
+                "1.25\tpound\tground pork\n" +
                 "0.5\tcup\tmint leaves\n" +
                 "1.0\tcan\tdiced tomatoes in juice\n" +
                 "1.0\t\tcanned chipotle chiles\n" +
-                "1.0\ttablespoons\tchipotle canning sauce\n" +
+                "1.0\ttablespoon\tchipotle canning sauce\n" +
                 "1.0\tteaspoon\tdried oregano\n" +
-                "1.5\tcups\tbeef chicken broth\n" +
+                "1.5\tcup\tbeef chicken broth\n" +
                 "\n" +
                 "1.0\t\trecipe Chocolate Génoise\n" +
                 "0.75\tpound\tunsalted butter\n" +
-                "0.5\tcups\tsweetened chestnut spread\n" +
-                "2.0\ttablespoons\twhite rum\n" +
-                "2.0\tteaspoons\tvanilla extract\n" +
+                "0.5\tcup\tsweetened chestnut spread\n" +
+                "2.0\ttablespoon\twhite rum\n" +
+                "2.0\tteaspoon\tvanilla extract\n" +
                 "0.25\tpound\talmond paste\n" +
                 "1.0\tcup\tconfectioners sugar\n" +
-                "2.0\ttablespoons\tlight corn syrup\n" +
+                "2.0\ttablespoon\tlight corn syrup\n" +
                 "1.0\t\tcocoa powder\n" +
                 "1.0\t\tConfectioners sugar\n" +
                 "\n" +
                 "2.0\tpackages\tactive dry yeast\n" +
                 "1.0\tcup\twarm whole milk\n" +
-                "1.5\tteaspoons\tgranulated sugar\n" +
-                "5.5\tcups\tall purpose flour\n" +
-                "2.0\tteaspoons\tsalt\n" +
-                "6.0\ttablespoons\tgranulated sugar\n" +
+                "1.5\tteaspoon\tgranulated sugar\n" +
+                "5.5\tcup\tall purpose flour\n" +
+                "2.0\tteaspoon\tsalt\n" +
+                "6.0\ttablespoon\tgranulated sugar\n" +
                 "6.0\t\tlarge eggs\n" +
-                "1.5\tcups\tunsalted butter\n" +
+                "1.5\tcup\tunsalted butter\n" +
                 "1.0\tegg\tlightly beaten milk\n" +
                 "1.0\t\tunsalted butter\n" +
                 "\n" +
@@ -2343,17 +2345,17 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "0.5\tteaspoon\tsea salt\n" +
                 "\n" +
                 "4.0\tears\tsweet corn\n" +
-                "4.0\ttablespoons\tunsalted butter\n" +
+                "4.0\ttablespoon\tunsalted butter\n" +
                 "1.0\tteaspoon\tchipotle chile powder\n" +
                 "1.0\t\tVegetable oil\n" +
                 "0.25\tcup\tolive oil\n" +
                 "0.5\tcup\tfreshly grated Parmesan cheese\n" +
                 "\n" +
                 "0.6666666666666666\tcup\tgood quality balsamic vinegar\n" +
-                "2.0\ttablespoons\tsugar\n" +
-                "2.0\tteaspoons\tfreshly ground rose other peppercorns\n" +
+                "2.0\ttablespoon\tsugar\n" +
+                "2.0\tteaspoon\tfreshly ground rose other peppercorns\n" +
                 "2.0\t\tfreestone peaches\n" +
-                "2.0\tounces\tGorgonzola cheese\n" +
+                "2.0\tounce\tGorgonzola cheese\n" +
                 "\n" +
                 "0.75\tcup\tchopped cilantro\n" +
                 "0.5\tcup\tchopped parsley\n" +
@@ -2362,47 +2364,47 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "2.0\tcloves\tgarlic\n" +
                 "1.0\t\tred onion\n" +
                 "1.0\tteaspoon\tground cumin\n" +
-                "1.5\tteaspoons\tsalt\n" +
+                "1.5\tteaspoon\tsalt\n" +
                 "2.0\t\tlimes\n" +
                 "1.0\ttablespoon\tgrated jaggery dark brown sugar\n" +
                 "1.0\t\tchicken\n" +
-                "2.0\ttablespoons\tbutter\n" +
+                "2.0\ttablespoon\tbutter\n" +
                 "\n" +
-                "1.0\ttablespoons\tyellow mustard seeds\n" +
-                "1.0\ttablespoons\tbrown mustard seeds\n" +
-                "1.5\tteaspoons\tcoriander seeds\n" +
+                "1.0\ttablespoon\tyellow mustard seeds\n" +
+                "1.0\ttablespoon\tbrown mustard seeds\n" +
+                "1.5\tteaspoon\tcoriander seeds\n" +
                 "1.0\tcup\tapple cider vinegar\n" +
                 "0.6666666666666666\tcup\tkosher salt\n" +
                 "0.3333333333333333\tcup\tsugar\n" +
                 "0.25\tcup\tdill\n" +
                 "8.0\t\tboneless chicken thighs\n" +
                 "1.0\t\tVegetable oil\n" +
-                "2.0\tcups\tbuttermilk\n" +
-                "2.0\tcups\tall-purpose flour\n" +
+                "2.0\tcup\tbuttermilk\n" +
+                "2.0\tcup\tall-purpose flour\n" +
                 "1.0\t\tKosher salt\n" +
                 "1.0\t\tHoney\n" +
                 "1.0\t\tA deep-fry thermometer\n" +
                 "\n" +
-                "3.0\tpounds\tsmall-leaved bulk spinach\n" +
+                "3.0\tpound\tsmall-leaved bulk spinach\n" +
                 "1.0\t\tsalt\n" +
                 "0.5\tcup\tdark seedless raisins\n" +
                 "1.0\tcup\tlukewarm water\n" +
-                "6.0\ttablespoons\tolive oil\n" +
+                "6.0\ttablespoon\tolive oil\n" +
                 "0.5\t\tsmall onion\n" +
                 "0.25\tcup\tpignoli\n" +
                 "1.0\t\tFreshly ground black pepper\n" +
                 "1.0\t\tDash nutmeg\n" +
                 "\n" +
-                "3.5\tcups\tall-purpose flour\n" +
+                "3.5\tcup\tall-purpose flour\n" +
                 "1.0\ttablespoon\tbaking powder\n" +
                 "1.0\tteaspoon\tbaking soda\n" +
                 "0.5\tteaspoon\tsalt\n" +
-                "4.0\tteaspoons\tground cinnamon\n" +
+                "4.0\tteaspoon\tground cinnamon\n" +
                 "0.5\tteaspoon\tground cloves\n" +
                 "0.5\tteaspoon\tground allspice\n" +
                 "1.0\tcup\tvegetable oil\n" +
                 "1.0\tcup\thoney\n" +
-                "1.5\tcups\tgranulated sugar\n" +
+                "1.5\tcup\tgranulated sugar\n" +
                 "0.5\tcup\tbrown sugar\n" +
                 "3.0\t\teggs\n" +
                 "1.0\tteaspoon\tvanilla extract\n" +
@@ -2420,17 +2422,17 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "4.0\tslices\ttomato\n" +
                 "1.0\tteaspoon\tcapers\n" +
                 "\n" +
-                "2.0\tpounds\ttomatoes\n" +
+                "2.0\tpound\ttomatoes\n" +
                 "6.0\tcloves\tgarlic\n" +
-                "2.0\tteaspoons\tsalt\n" +
+                "2.0\tteaspoon\tsalt\n" +
                 "1.0\tteaspoon\tsweet paprika\n" +
-                "2.0\tteaspoons\ttomato paste\n" +
+                "2.0\tteaspoon\ttomato paste\n" +
                 "0.25\tcup\tvegetable oil\n" +
                 "6.0\t\tlarge eggs\n" +
                 "\n" +
-                "1.5\tcups\tcooked rice\n" +
-                "2.0\tcups\theavy cream\n" +
-                "2.0\ttablespoons\tunsalted butter\n" +
+                "1.5\tcup\tcooked rice\n" +
+                "2.0\tcup\theavy cream\n" +
+                "2.0\ttablespoon\tunsalted butter\n" +
                 "2.0\t\teggs\n" +
                 "0.5\tcup\tsifted all-purpose flour\n" +
                 "1.0\tteaspoon\tground cinnamon\n" +
@@ -2439,14 +2441,14 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tSugar\n" +
                 "1.0\tslices\tOrange\n" +
                 "\n" +
-                "2.0\ttablespoons\tshortening\n" +
-                "2.0\ttablespoons\tflour\n" +
+                "2.0\ttablespoon\tshortening\n" +
+                "2.0\ttablespoon\tflour\n" +
                 "1.0\t\trecipe Chocolate Cake Batter\n" +
                 "1.0\t\trecipe Creamy White Frosting\n" +
                 "1.0\t\tGreen gel\n" +
                 "1.0\t\tOrange gel\n" +
                 "1.0\tsmall\twaffle ice cream cone\n" +
-                "4.0\tounces\tblack fondant\n" +
+                "4.0\tounce\tblack fondant\n" +
                 "1.0\t\tBlack decorating sugar\n" +
                 "2.0\t6-inch\thalf-sphere cake pans\n" +
                 "1.0\t\tbowls\n" +
@@ -2463,7 +2465,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tSmall plate\n" +
                 "1.0\t\tCompote\n" +
                 "\n" +
-                "1.5\tcups\tsugar\n" +
+                "1.5\tcup\tsugar\n" +
                 "0.3333333333333333\tcup\tcold water\n" +
                 "2.0\t\tegg whites\n" +
                 "0.25\tteaspoon\tcream light-colored corn syrup\n" +
@@ -2473,10 +2475,10 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tSpoon rubber spatula\n" +
                 "\n" +
                 "1.0\tcup\tvegetable shortening\n" +
-                "1.5\tteaspoons\tvanilla extract\n" +
+                "1.5\tteaspoon\tvanilla extract\n" +
                 "0.5\tteaspoon\tlemon extract\n" +
                 "1.0\tpound\tconfectioners ' sugar\n" +
-                "3.0\ttablespoons\tmilk\n" +
+                "3.0\ttablespoon\tmilk\n" +
                 "1.0\t\tElectric mixer\n" +
                 "\n" +
                 "1.0\t\tangel food cake\n" +
@@ -2485,7 +2487,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tcake plate\n" +
                 "1.0\t\tSmall offset spatula\n" +
                 "1.0\t\tDisposable decorating bag\n" +
-                "1.0\t\tAssorted eggcups");
+                "1.0\t\tAssorted eggcup");
     }
 
     @Test
@@ -2514,6 +2516,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
 
     @Test
     public void DetectIngredientsInStepTask_doTask_AccuracyForUnitThreshold() {
+        // TODO sometimes detection is correct but this test sets it as incorrect
         // Arrange
         int correctUnits = 0;
         for (int r = 0; r < rips.size(); r++) {
@@ -2532,7 +2535,9 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
 
         // Assert
         double accuracy = (double) correctUnits / totalIngredients;
-        assert (accuracy > 0.85);
+        System.out.println(accuracy);
+        assertTrue(accuracy>0.85);
+
     }
 
 }

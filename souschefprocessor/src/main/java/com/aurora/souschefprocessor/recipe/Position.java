@@ -153,7 +153,7 @@ public class Position {
         int length = s.length();
         if (mBeginIndex >= length) {
             throw new IllegalArgumentException("This string is shorter than the beginIndex of " +
-                    "this position, trimming is impossible");
+                    "this position, trimming is impossible " + s);
         }
         if (mEndIndex > length) {
             mEndIndex = length;

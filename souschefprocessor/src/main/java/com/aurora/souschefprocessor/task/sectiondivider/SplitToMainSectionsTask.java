@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.AnnotationPipeline;
+import edu.stanford.nlp.pipeline.ProtobufAnnotationSerializer;
 import edu.stanford.nlp.util.CoreMap;
 
 
@@ -56,16 +56,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
 
     /**
-     * An annotation pipeline specific for parsing of sentences
-     */
-
-    private AnnotationPipeline mAnnotationPipeline;
-
-    /**
      * A copy of the list of sections that was included in the {@link ExtractedText} object in
      * the recipe, this list will be altered during the task
      */
-
     private List<Section> mSections = new ArrayList<>();
 
 
@@ -113,7 +106,17 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 }
             }
         }
-        return section;
+        //create a copy of the cleaned section annotations are not needed for this task
+        Section copy = new Section(section.getBody());
+        copy.setTitle(section.getTitle());
+        ProtobufAnnotationSerializer annotationSerializer = new ProtobufAnnotationSerializer(true);
+        if (section.getTitleAnnotation() != null) {
+            copy.setTitleAnnotationProto(annotationSerializer.toProto(section.getTitleAnnotation()));
+        }
+        if (section.getBodyAnnotation() != null) {
+            copy.setBodyAnnotationProto(annotationSerializer.toProto(section.getBodyAnnotation()));
+        }
+        return copy;
     }
 
     /**
@@ -196,12 +199,14 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             mSections.add(removeClutter(sec));
         }
 
+
         steps = findSteps();
         ingredients = findIngredients();
         description = findDescription();
 
 
         modifyRecipe(trimNewLines(ingredients), trimNewLines(steps), trimNewLines(description));
+
     }
 
     /**
@@ -426,6 +431,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 String title = s.getTitle();
                 if (title != null && Pattern.compile(regex).matcher(
                         title.toLowerCase(Locale.ENGLISH)).find()) {
+                    //only get out the part that matches..
                     bld = new StringBuilder(s.getBody());
                     foundSections.add(s);
                 }
@@ -442,14 +448,14 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
     }
 
     /**
-     * Find the steps or ingredients based on their regex using {@link Section#getTitle()} field.
+     * Find the steps or ingredients based on their regex
      * If steps are searched the {@link #STEP_STARTER_REGEX} is used, if ingredients are searched
      * the {@link #INGREDIENT_STARTER_REGEX} is used
      *
      * @param regex the regex to match
      * @return the found steps, if nothing is found the empty string is returned
      */
-    public String findStepsOrIngredientsRegexBasedWithoutTitles(String regex) {
+    private String findStepsOrIngredientsRegexBasedWithoutTitles(String regex) {
 
         boolean found = false;
         int sectionIndex = -1;

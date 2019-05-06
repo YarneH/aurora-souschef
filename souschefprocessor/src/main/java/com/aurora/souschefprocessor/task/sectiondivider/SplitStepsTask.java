@@ -234,7 +234,8 @@ public class SplitStepsTask extends AbstractProcessingTask {
      *
      * @return the actual all the sentences that are part of this description
      */
-    private List<CoreMap> findAllSentences(List<CoreMap> allSentences, List<CoreMap> foundSentences, String description) {
+    private List<CoreMap> findAllSentences(List<CoreMap> allSentences, List<CoreMap> foundSentences,
+                                           String description) {
         // Calculate the current firstToken
         CoreLabel firstToken = foundSentences.get(0).get(CoreAnnotations.TokensAnnotation.class).get(0);
 

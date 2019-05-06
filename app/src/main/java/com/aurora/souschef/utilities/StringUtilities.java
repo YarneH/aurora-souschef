@@ -1,7 +1,5 @@
 package com.aurora.souschef.utilities;
 
-import android.util.Log;
-
 import java.util.Locale;
 
 public final class StringUtilities {
@@ -28,7 +26,7 @@ public final class StringUtilities {
         String baseString = "";
         double base = Math.floor(quantity);
         if ((int) base != 0) {
-            baseString += "" + (int) base;
+            baseString = "" + (int) base;
         }
         double remainder = quantity - base;
 
@@ -38,16 +36,19 @@ public final class StringUtilities {
                 if (!"".equals(baseString)) {
                     baseString += ", ";
                 }
-                return  baseString + remainderString;
+                return baseString + remainderString;
             }
         }
 
         // If all fails, just return double with 2 decimals (if needed)
+        String doubleRepresentation;
         if (quantity == (long) quantity) {
-            return String.format(Locale.ENGLISH, "%d", (long) quantity);
+            doubleRepresentation = String.format(Locale.ENGLISH, "%d", (long) quantity);
         } else {
-            return String.format(Locale.ENGLISH, "%.2f", quantity);
+            doubleRepresentation = String.format(Locale.ENGLISH, "%.2f", quantity);
         }
+
+        return doubleRepresentation;
     }
 
     /**

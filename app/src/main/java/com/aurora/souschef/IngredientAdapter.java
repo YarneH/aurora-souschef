@@ -163,7 +163,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
             // Set checkboxes correctly
             mCheckbox.setChecked(mChecked[getAdapterPosition()]);
         }
-        
+
         /**
          * Show a snackbar with the original text when the ingredient is clicked.
          *

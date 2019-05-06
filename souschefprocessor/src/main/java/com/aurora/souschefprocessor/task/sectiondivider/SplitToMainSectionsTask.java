@@ -106,7 +106,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 }
             }
         }
-        //create a copy of the cleaned section annotations are not needed for this task
+        //create a copy of the cleaned section
         Section copy = new Section(section.getBody());
         copy.setTitle(section.getTitle());
         ProtobufAnnotationSerializer annotationSerializer = new ProtobufAnnotationSerializer(true);

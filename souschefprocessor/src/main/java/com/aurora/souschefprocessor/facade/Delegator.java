@@ -113,7 +113,7 @@ public class Delegator {
      */
     public static void incrementProgressAnnotationPipelines() {
         SouschefProcessorCommunicator.incrementProgressAnnotationPipelines();
-        Log.d("DELEGATOR", "STEP");
+        Log.i("DELEGATOR", "STEP");
 
     }
 
@@ -135,7 +135,7 @@ public class Delegator {
         if (pipeline != null) {
             for (AbstractProcessingTask task : pipeline) {
                 task.doTask();
-                Log.d("DELEGATOR", task.getClass().toString());
+                Log.i("DELEGATOR", task.getClass().toString());
             }
         }
 

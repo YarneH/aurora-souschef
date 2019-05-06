@@ -1,7 +1,9 @@
 package com.aurora.souschefprocessor.facade;
 
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.Recipe;
+import com.aurora.souschefprocessor.recipe.RecipeStep;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -16,9 +18,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
+import edu.stanford.nlp.pipeline.TokenizerAnnotator;
+import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -260,5 +269,42 @@ public class DelegatorLongTest {
         System.out.println(r);
 
     }
+
+    @Test
+    public void n(){
+        String contents = null;
+        try {
+            System.out.println(Paths.get("").toAbsolutePath().toString());
+            BufferedReader reader = new BufferedReader(new FileReader("src/test/java/com/aurora/souschefprocessor/facade/hulp.txt"));
+            StringBuilder bld = new StringBuilder();
+            String line = reader.readLine();
+            while (line != null) {
+                bld.append(line);
+                line = reader.readLine();
+
+            }
+            contents = bld.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ExtractedText text = ExtractedText.fromJson(contents);
+
+        Recipe r = delegator.processText(text);
+        System.out.println(r);
+        RecipeStep s = r.getRecipeSteps().get(2);
+        System.out.println(s.getDescription());
+
+        for(Ingredient ing: s.getIngredients()){
+            System.out.println(ing);
+            System.out.println(ing.getNamePosition());
+            System.out.println(ing.getUnitPosition());
+            System.out.println(ing.getQuantityPosition());
+        }
+
+
+    }
+
+
 
 }

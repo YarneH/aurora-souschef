@@ -62,6 +62,11 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             "preparation time"};
 
     /**
+     * A regex for lines to ignore in the ingredients list, for example: "For the dough"
+     * should be ignored
+     */
+    private static final String[] IGNORE_REGEXES = {"^(for the )"};
+    /**
      * The classifier to detect ingredients
      */
     private CRFClassifier<CoreLabel> mCRFClassifier;
@@ -105,7 +110,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         for (String ingredient : list) {
             if (ingredient != null && ingredient.length() > 0) {
                 String standardizedLine = standardizeLine(ingredient);
-                if (doesNotContainANonIngredientStructure(standardizedLine)) {
+                if (!standardizedLine.isEmpty() && doesNotContainANonIngredientStructure(standardizedLine)) {
                     ListIngredient listIngredient = (detectIngredient(standardizedLine));
                     if ("".equals(listIngredient.getName())) {
                         // If the name was not detected just set the original line without unit and quantity
@@ -136,9 +141,20 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
      */
     private static String standardizeLine(String line) {
         line = line.trim();
+
+        // check if it should be ignored
+        for (String regex : IGNORE_REGEXES) {
+            String lowercase = line.toLowerCase(Locale.ENGLISH);
+
+            if (Pattern.compile(regex).matcher(lowercase).find()) {
+                return "";
+            }
+        }
+
         line = removeClutter(line);
         StringBuilder bld = new StringBuilder();
         char[] chars = line.toCharArray();
+
 
         // add the first character
         bld.append(chars[0]);

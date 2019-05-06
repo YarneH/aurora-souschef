@@ -84,14 +84,13 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * An array of strings that should be ignored when looking for matches between the ingredientlist and
      * the step description
      */
-    private static final String[] STRINGS_TO_IGNORE = {"to", "all", "or", "and", "with", ".", ",",
-            "(", ")", "warm", "cold", "!"};
+    private static final String[] STRINGS_TO_IGNORE = {".", ",", "(", ")", "!"};
     /**
      * An array of tags that should be ignored when looking for matches between the ingredientlist and
      * the step description. For the meaning of these tags checkout
      * <a href="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">The PennTreeBankProject</a>
      */
-    private static final String[] TAGS_TO_IGNORE = {"TO", "IN", "JJ", "JJR", "JJS"};
+    private static final String[] TAGS_TO_IGNORE = {"TO", "IN", "JJ", "JJR", "JJS", "VBG", "PDT", "CC", "DT"};
 
 
     /**

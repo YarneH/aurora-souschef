@@ -348,8 +348,7 @@ public class SplitToMainSectionsTaskUnitTest {
                 "slagroom. Spatel het eiwit snel en luchtig in delen door het chocolademengsel.\n" +
                 "Schep de chocolademousse in glazen, potjes of coupes, dek af met vershoudfolie\n" +
                 "en laat minimaal 2 uur opstijven in de koelkast.  ;";
-        String description = "Chocomousse\n" +
-                "The beste chocomousse for: 4 people!";
+        String description = "Chocomousse";
 
         // Act
         ExtractedText text = ExtractedText.fromJson(json);

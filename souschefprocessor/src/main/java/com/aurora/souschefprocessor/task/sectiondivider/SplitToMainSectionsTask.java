@@ -249,24 +249,22 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
         StringBuilder bld = new StringBuilder();
         ExtractedText text = mRecipeInProgress.getExtractedText();
         // append the file name
-        bld.append(text.getFilename()).append("\n");
+        bld.append("Filename: ").append(text.getFilename()).append("\n\n");
         // append the title
         bld.append(mRecipeInProgress.getExtractedText().getTitle());
-        bld.append("\n");
-        for (Section s : mRecipeInProgress.getExtractedText().getSections()) {
-            String body = s.getBody();
-            if (mSections.contains(s)) {
-                String title = s.getTitle();
-                if (title != null ) {
-                    bld.append(title);
-                    bld.append("\n");
-                }
+        bld.append("\n\n");
+        for (Section s : mSections) {
+            String title = s.getTitle();
+            if (title != null) {
+                bld.append(title);
+                bld.append("\n");
+            }
 
-                if (body != null) {
-                    bld.append(body.trim());
-                    // append a new line between the sections for readability
-                    bld.append("\n");
-                }
+            String body = s.getBody();
+            if (body != null) {
+                bld.append(body.trim());
+                // append a new line between the sections for readability
+                bld.append("\n\n");
             }
         }
 

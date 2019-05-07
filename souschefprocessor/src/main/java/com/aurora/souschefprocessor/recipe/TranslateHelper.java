@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.recipe;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -299,6 +301,7 @@ final class TranslateHelper {
                     translatedNameSubstring = description;
                     beginIndex = 0;
                 }
+                Log.d("index", beginIndex + "");
                 Position namePos = new Position(beginIndex, beginIndex + translatedNameSubstring.length());
                 newIngredient.setNamePosition(namePos);
                 newIngredients.add(newIngredient);

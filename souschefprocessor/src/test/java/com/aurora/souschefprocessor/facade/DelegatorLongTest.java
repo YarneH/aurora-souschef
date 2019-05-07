@@ -138,6 +138,7 @@ public class DelegatorLongTest {
                 // Act
                 Recipe recipe = delegator.processText(text);
                 System.out.println(recipe + "\n--------------------------------");
+                System.out.println(recipe.getDescription());
             } catch (Exception e) {
                 // set thrown to true, this should not happen
                 thrown = true;

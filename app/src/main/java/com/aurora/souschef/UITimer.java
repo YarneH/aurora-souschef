@@ -7,6 +7,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -31,6 +32,11 @@ public class UITimer {
     private static final int AMOUNT_SEC_IN_QUARTER = 900;
     private static final int AMOUNT_SEC_IN_MIN = 60;
     private static final int CHANGE_COLOR_MILLISEC_DELAY = 250;
+    /**
+     * The amount of milliseconds in a second. Needed to convert
+     * RecipeTimers (which are in seconds) to actual timers.
+     */
+    private static final int MILLIS = 1000;
     /**
      * Time constant: seconds in a minute.
      */
@@ -85,10 +91,10 @@ public class UITimer {
             }
         });
 
-        setOnClickListeners(mTimerCard);
+        setOnClickListeners();
         this.mLiveDataTimer.getIsFinished().observe(owner, aBoolean -> onTimerFinished());
 
-        this.mLiveDataTimer.getTimerState().observe(owner, this::setIconAndBackground);
+        this.mLiveDataTimer.getTimerState().observe(owner, this::setIconsAndBackground);
 
         // Preparing the ringtone for the alarm
         Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
@@ -114,14 +120,18 @@ public class UITimer {
      * <p>
      * Uses toggleTimer.
      */
-    private void setOnClickListeners(View clickableView) {
-        clickableView.setOnClickListener((View v) -> mLiveDataTimer.toggleTimer());
-        clickableView.setOnLongClickListener((View v) -> {
-            if (mLiveDataTimer.canChangeTimer()) {
-                setTimerPopup();
-            }
+    private void setOnClickListeners() {
+
+        mTimerCard.setOnClickListener((View v) -> mLiveDataTimer.toggleTimer());
+        mTimerCard.setOnLongClickListener((View v) -> {
+            mLiveDataTimer.resetTimer();
             return true;
         });
+        if (mLiveDataTimer.canChangeTimer()) {
+            mTimerCard.findViewById(R.id.iv_edit_icon).setOnClickListener((View v) -> {
+                setTimerPopup();
+            });
+        }
     }
 
     /**
@@ -131,19 +141,36 @@ public class UITimer {
         // TODO: This function is called when the timer finishes
     }
 
-    private void setIconAndBackground(int timerState) {
+    private void setIconsAndBackground(int timerState) {
         ImageView imageView = mTimerCard.findViewById(R.id.iv_timer_icon);
         View contentView = mTimerCard.findViewById(R.id.cl_timer_content);
 
+        // Check whether the edit icon has to be displayed
+        if (mLiveDataTimer.canChangeTimer()) {
+            if (timerState == LiveDataTimer.TIMER_INITIALISED) {
+                mTimerCard.findViewById(R.id.iv_edit_icon).setVisibility(View.VISIBLE);
+            } else {
+                mTimerCard.findViewById(R.id.iv_edit_icon).setVisibility(View.GONE);
+            }
+        }
+
+        // Change color and icon according to the timer state
         if (timerState == LiveDataTimer.TIMER_RUNNING) {
             imageView.setImageResource(R.drawable.ic_pause_white);
             contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimary));
         } else if (timerState == LiveDataTimer.TIMER_PAUSED) {
             imageView.setImageResource(R.drawable.ic_play_white);
             contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
+        } else if (timerState == LiveDataTimer.TIMER_INITIALISED) {
+            imageView.setImageResource(R.drawable.ic_timer_white);
+            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
         }
     }
 
+    /**
+     * Sets alarm of the timer TODO: Fix bug!
+     * @param status
+     */
     private void setAlarm(boolean status) {
         if (status) {
             mRingtone.play();
@@ -178,18 +205,26 @@ public class UITimer {
         @SuppressLint("InflateParams")
         View promptView = li.inflate(R.layout.prompt_timer_card, null);
         SeekBar seekBar = promptView.findViewById(R.id.sk_timer);
+        if (mLiveDataTimer.getMillisLeft().getValue() != null) {
+            Log.d("Seekbar", "Max: " + seekBar.getMax());
+            Log.d("Seekbar", "Progress before: " + seekBar.getProgress());
+            int currentProgress = convertSecondsToProgress((int) (mLiveDataTimer.getMillisLeft().getValue() / MILLIS));
+            Log.d("Seekbar", "Current: " + currentProgress);
+            seekBar.setProgress(currentProgress, true);
+        }
+        Log.d("Seekbar", "Progress after: " + seekBar.getProgress());
 
         // Get the TextView of the popup and set to the initial value
         final TextView seekBarValue = promptView.findViewById(R.id.tv_timer);
-        seekBarValue.setText(LiveDataTimer.convertTimeToString(mLiveDataTimer.getLowerBound()));
+        seekBarValue.setText(LiveDataTimer.convertTimeToString(mLiveDataTimer.getMillisLeft().getValue()));
 
         // Set the listener of the SeekBar
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                Log.d("Seekbar", "Progress: " + progress);
                 int newValue = convertProgressToSeconds(progress, step);
-
-                seekBarValue.setText(LiveDataTimer.convertTimeToString(newValue));
+                seekBarValue.setText(LiveDataTimer.convertTimeToString(newValue * MILLIS));
             }
 
             @Override
@@ -223,8 +258,20 @@ public class UITimer {
     private int convertProgressToSeconds(int progress, int step) {
         int difference = mLiveDataTimer.getUpperBound() - mLiveDataTimer.getLowerBound();
         double progressValue = ((double) (difference)) * progress / PERCENT;
-        int incrementValue = (int) Math.floor(progressValue / step) * step;
+        int incrementValue = (int) Math.floor(progressValue / (float) step) * step;
 
         return mLiveDataTimer.getLowerBound() + incrementValue;
+    }
+
+    /**
+     * Calculate the progress of the SeekBar using an amount of seconds
+     *
+     * @param seconds The amount of seconds currently chosen by the user
+     * @return The amount of progress of the SeekBar
+     */
+    private int convertSecondsToProgress(int seconds) {
+        int difference = mLiveDataTimer.getUpperBound() - mLiveDataTimer.getLowerBound();
+        int relativeDifference = seconds - mLiveDataTimer.getLowerBound();
+        return (int) ((relativeDifference / (float) difference) * PERCENT);
     }
 }

@@ -3,6 +3,7 @@ package com.aurora.souschef;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.os.CountDownTimer;
+import android.util.Log;
 
 import com.aurora.souschefprocessor.recipe.RecipeTimer;
 
@@ -106,12 +107,18 @@ public class LiveDataTimer {
      */
     public static String convertTimeToString(long amountMilliSeconds) {
         int amountSeconds = (int) (amountMilliSeconds / MILLIS);
+        Log.d("Convert", "" + amountMilliSeconds);
+        Log.d("Convert", "" + amountSeconds);
         // seconds / 3600, or divide twice by 60.
         int amountHours = amountSeconds / TIME_BABIES / TIME_BABIES;
+        Log.d("Convert", "----");
+        Log.d("Convert", "" + amountHours);
         // subtract the amount of hours first, then divide seconds by 60 to get minutes.
         int amountMins = (amountSeconds % (TIME_BABIES * TIME_BABIES)) / TIME_BABIES;
+        Log.d("Convert", "" + amountMins);
         // remaining time in seconds.
         int amountSec = amountSeconds % TIME_BABIES;
+        Log.d("Convert", "" + amountSec);
 
         String timerText = "";
 
@@ -182,7 +189,11 @@ public class LiveDataTimer {
 
     public void resetTimer() {
         mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));
+        mTimerState.setValue(TIMER_INITIALISED);
         mRunning = false;
+        if (mCountDownTimer != null) {
+            mCountDownTimer.cancel();
+        }
     }
 
     /**
@@ -191,7 +202,7 @@ public class LiveDataTimer {
      * @return true if timer is changeable.
      */
     public boolean canChangeTimer() {
-        return mRunning && (mRecipeTimer.getLowerBound() != mRecipeTimer.getUpperBound());
+        return mRecipeTimer.getLowerBound() != mRecipeTimer.getUpperBound();
     }
 
     /**

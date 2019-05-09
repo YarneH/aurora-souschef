@@ -7,7 +7,6 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -128,9 +127,7 @@ public class UITimer {
             return true;
         });
         if (mLiveDataTimer.canChangeTimer()) {
-            mTimerCard.findViewById(R.id.iv_edit_icon).setOnClickListener((View v) -> {
-                setTimerPopup();
-            });
+            mTimerCard.findViewById(R.id.iv_edit_icon).setOnClickListener((View v) -> setTimerPopup());
         }
     }
 
@@ -206,13 +203,9 @@ public class UITimer {
         View promptView = li.inflate(R.layout.prompt_timer_card, null);
         SeekBar seekBar = promptView.findViewById(R.id.sk_timer);
         if (mLiveDataTimer.getMillisLeft().getValue() != null) {
-            Log.d("Seekbar", "Max: " + seekBar.getMax());
-            Log.d("Seekbar", "Progress before: " + seekBar.getProgress());
             int currentProgress = convertSecondsToProgress((int) (mLiveDataTimer.getMillisLeft().getValue() / MILLIS));
-            Log.d("Seekbar", "Current: " + currentProgress);
             seekBar.setProgress(currentProgress, true);
         }
-        Log.d("Seekbar", "Progress after: " + seekBar.getProgress());
 
         // Get the TextView of the popup and set to the initial value
         final TextView seekBarValue = promptView.findViewById(R.id.tv_timer);
@@ -222,7 +215,6 @@ public class UITimer {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Log.d("Seekbar", "Progress: " + progress);
                 int newValue = convertProgressToSeconds(progress, step);
                 seekBarValue.setText(LiveDataTimer.convertTimeToString(newValue * MILLIS));
             }
@@ -258,7 +250,7 @@ public class UITimer {
     private int convertProgressToSeconds(int progress, int step) {
         int difference = mLiveDataTimer.getUpperBound() - mLiveDataTimer.getLowerBound();
         double progressValue = ((double) (difference)) * progress / PERCENT;
-        int incrementValue = (int) Math.floor(progressValue / (float) step) * step;
+        int incrementValue = (int) Math.floor(progressValue / (double) step) * step;
 
         return mLiveDataTimer.getLowerBound() + incrementValue;
     }
@@ -272,6 +264,6 @@ public class UITimer {
     private int convertSecondsToProgress(int seconds) {
         int difference = mLiveDataTimer.getUpperBound() - mLiveDataTimer.getLowerBound();
         int relativeDifference = seconds - mLiveDataTimer.getLowerBound();
-        return (int) ((relativeDifference / (float) difference) * PERCENT);
+        return (int) ((relativeDifference / (double) difference) * PERCENT);
     }
 }

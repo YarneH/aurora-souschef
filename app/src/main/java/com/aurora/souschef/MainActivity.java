@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Hardcoded recipe with extracted text and annotations
      *
-     * @return the json of the annotated extracted test
+     * @return the json of the annotated extracted text
      */
     private String getText() {
 

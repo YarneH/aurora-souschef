@@ -98,8 +98,6 @@ public class RecipeViewModel extends AndroidViewModel {
     private boolean isBeingProcessed = false;
 
 
-    private TranslationServiceCaller mTranslationServiceCaller;
-
     /**
      * The context of the application.
      * <p>
@@ -144,8 +142,6 @@ public class RecipeViewModel extends AndroidViewModel {
             }
         };
         sharedPreferences.registerOnSharedPreferenceChangeListener(mListener);
-        mTranslationServiceCaller = new TranslationServiceCaller(application);
-
     }
 
     /**

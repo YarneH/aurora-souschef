@@ -126,7 +126,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
         } catch (Exception e) {
             // something else went wrong
             Log.e("COMMUNICATOR", "unexpected exception", e);
-            throw new RecipeDetectionException("Something unexpected happenen: " + e.getMessage());
+            throw new RecipeDetectionException("Something unexpected happened: " + e.getMessage());
         }
 
         return recipe;

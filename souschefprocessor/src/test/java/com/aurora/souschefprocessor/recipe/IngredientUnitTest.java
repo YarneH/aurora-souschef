@@ -188,7 +188,7 @@ public class IngredientUnitTest {
             case2Thrown = true;
         }
         // Assert
-        assertTrue("Both begin- and endIndex too big does not throw exception", case1Thrown);
+        assertTrue("Both begin- and endIndex too big does not throw exception", case2Thrown);
     }
 
 
@@ -224,24 +224,29 @@ public class IngredientUnitTest {
 
     @Test
     public void Ingredient_HashCode_SameOnlyForObjectsThatAreEqual() {
-        String[] ingredients = {"spaghetti", "sauce", "meatballs"};
+        /*
+         * A small check that checks if the hashcode of equal objects is the same
+         */
+        // arrange create som elements
+        String[] names = {"spaghetti", "sauce", "meatballs"};
         String[] units = {"gram", "kilogram"};
         double[] amounts = {500, 1};
-        ArrayList<Ingredient> iuas = new ArrayList<>();
-        while (iuas.size() < 20) {
-            for (String ing : ingredients) {
-                for (String uni : units) {
-                    for (double a : amounts) {
-                        iuas.add(new Ingredient(ing, uni, a, irrelevantPositions));
+        ArrayList<Ingredient> ingredients = new ArrayList<>();
+        // create the the elements repeatedly
+        while (ingredients.size() < 20) {
+            for (String name : names) {
+                for (String unit : units) {
+                    for (double value : amounts) {
+                        ingredients.add(new Ingredient(name, unit, value, irrelevantPositions));
                     }
                 }
             }
         }
 
-        for (int i = 0; i < iuas.size(); i++) {
-            for (int j = i + 1; j < iuas.size(); j++) {
-                boolean equal = iuas.get(i).equals(iuas.get(j));
-                boolean hash = (iuas.get(i).hashCode() == iuas.get(j).hashCode());
+        for (int i = 0; i < ingredients.size(); i++) {
+            for (int j = i + 1; j < ingredients.size(); j++) {
+                boolean equal = ingredients.get(i).equals(ingredients.get(j));
+                boolean hash = (ingredients.get(i).hashCode() == ingredients.get(j).hashCode());
                 assertTrue("hashcodes are different for equal objects, or are equal for unequal objects", equal == hash);
             }
         }

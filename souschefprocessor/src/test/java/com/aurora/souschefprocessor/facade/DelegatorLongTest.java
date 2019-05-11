@@ -11,6 +11,7 @@ import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -90,8 +91,8 @@ public class DelegatorLongTest {
     }
 
 
-    @Test
-    public void Delegator_processText_NoExceptionsInDelegatorForValidRecipesJSON() {
+ @Test
+public void Delegator_processText_NoExceptionsInDelegatorForValidRecipesJSON() {
         /**
          * Check that no exceptions are thrown when these recipes are read in
          */
@@ -125,8 +126,8 @@ public class DelegatorLongTest {
     }
 
 
-    @Test
-    public void Delegator_processText_ExceptionsInDelegatorForInvalidRecipesJSON() {
+ @Test
+public void Delegator_processText_ExceptionsInDelegatorForInvalidRecipesJSON() {
         /**
          * Check that exceptions are thrown when these recipes are read in
          */
@@ -154,8 +155,8 @@ public class DelegatorLongTest {
 
     }
 
-    @Test
-    public void Delegator_processText_timeForDoingTasksNonParallelIsLowerThanThreshold() {
+ @Test
+public void Delegator_processText_timeForDoingTasksNonParallelIsLowerThanThreshold() {
         /**
          * Check that the average time on the test suite for doing the processing non parallel is lower than a
          * certain threshold
@@ -225,7 +226,7 @@ public class DelegatorLongTest {
 
 
         // Assert
-        int threshold = 300;
+        int threshold = 400;
         System.out.println(average_para + "  PARALLEL TIME");
         assertTrue("The average time is not smaller than the threshold, average time: " + average_para + ", threshold" +
                         " " + threshold,

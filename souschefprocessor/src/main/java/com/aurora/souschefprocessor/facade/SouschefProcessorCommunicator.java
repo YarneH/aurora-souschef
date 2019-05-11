@@ -86,7 +86,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
      */
     static void incrementProgressAnnotationPipelines() {
         mProgressAnnotationPipelines.incrementAndGet();
-        Log.v("STEP", "" + mProgressAnnotationPipelines);
+        Log.i("STEP", "" + mProgressAnnotationPipelines);
     }
 
     /**

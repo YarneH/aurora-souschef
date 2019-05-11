@@ -18,17 +18,17 @@ public class TimerRingtone {
     /**
      * The Ringtone used as TimerRingtone
      */
-    private static Ringtone mRingtone = null;
+    private Ringtone mRingtone = null;
 
     /**
      * The amount of timers going off
      */
-    private static int mAmountGoingOff = 0;
+    private int mAmountGoingOff = 0;
 
     /**
      * A boolean representing whether the TimerRingtone has been initiated
      */
-    private static boolean mInitiated = false;
+    private boolean mInitiated = false;
 
     private TimerRingtone() {
         // Private constructor for singleton

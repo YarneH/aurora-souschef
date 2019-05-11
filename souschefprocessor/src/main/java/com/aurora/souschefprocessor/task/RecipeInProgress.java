@@ -4,6 +4,7 @@ import com.aurora.auroralib.ExtractedText;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A subclass of Recipe, representing a Recipe Object that is being constructed. It has three
@@ -101,6 +102,11 @@ public class RecipeInProgress extends Recipe {
                     r.getDescription().equals(mDescription);
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mIngredients, mNumberOfPeople, mStepsInProgress, mDescription);
     }
 
 }

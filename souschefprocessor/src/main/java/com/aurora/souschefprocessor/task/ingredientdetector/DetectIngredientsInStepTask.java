@@ -12,7 +12,6 @@ import com.aurora.souschefprocessor.task.RecipeStepInProgress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -94,8 +93,10 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private static final String[] TAGS_TO_IGNORE = {"TO", "IN", "JJ", "JJR", "JJS", "VBG", "PDT", "CC", "DT", "VBN",
             "RB"};
-
-
+    /**
+     * An array of tokens not tagged as noun but that are nouns in a cooking context most of the time
+     */
+    private static final String[] COOKING_NOUNS = {"shortening", "orange", "mint"};
     /**
      * A static map that matches the {@link #FRACTION_HALF} and {@link #FRACTION_QUARTER} strings to
      * their numerical values
@@ -112,7 +113,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * The step on which to do the detecting of ingredients
      */
     private RecipeStepInProgress mRecipeStep;
-
     /**
      * A set containing the names of the listingredients of the recipeInProgress
      */
@@ -202,35 +202,24 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
 
         return false;
-/*
-        // a boolean to indicate if one difference has been found
-        boolean difFound = false;
-        // the character of the shortest string
-        char shortChar;
-        // the character of the longest string
-        char longChar;
-        for (int i = 0; i < shortLength; i++) {
-            shortChar = shortest.charAt(i);
-            if (!difFound) {
-                // if no difference found yet check the character at the same index
-                longChar = longest.charAt(i);
-                // if they are unequal a difference has been found
-                difFound = longChar != shortChar;
-                if(difFound && i==0){
-                    return false;
-                }
-            }
-            if (difFound) {
-                // if one difference has been found check the character after this character
-                longChar = longest.charAt(i + 1);
-                if (longChar != shortChar) {
-                    // second difference found
-                    return false;
-                }
+
+    }
+
+    private static void mergeElement(String commonString, List<String> list) {
+        int index = list.indexOf(commonString);
+        if (index > 0) {
+            // merge with previous
+            list.set(index - 1, list.get(index - 1) + " " + commonString);
+
+            list.remove(index);
+
+        } else {
+            if (index < list.size() - 1 && index > -1) {
+                // merge with next
+                list.set(index + 1, commonString + " " + list.get(index + 1));
+                list.remove(index);
             }
         }
-
-        return true;*/
     }
 
     /**
@@ -290,7 +279,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
         // keeps track of the tokens and string combinations already used to identify an ingredient
         List<CoreLabel> usedTokens = new ArrayList<>();
-        List<String> usedCombinations = new ArrayList<>();
 
         List<CoreMap> stepSentences = recipeStep.getSentenceAnnotations();
 
@@ -307,7 +295,12 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
                 }
             }
-            for(CoreLabel token: tokens){
+
+            // sonar does not want me to loop through the tokens twice, but it should be like this for correct
+            // detection, first all the tokens are searched using the merged map and afterwards the tokens are
+            // searched using the unmerged map
+            //NOSONAR
+            for (CoreLabel token : tokens) {
                 if (!usedTokens.contains(token)) {
                     searchInMap(ingredientListMap, tokens, token, foundIngredients, detectedIngredients);
                 }
@@ -317,7 +310,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         return order(detectedIngredients);
     }
 
-    private List<Ingredient> order(List<Ingredient> list){
+    private List<Ingredient> order(List<Ingredient> list) {
 
         // order by beginindex of the name position
         Collections.sort(list, (Ingredient i1, Ingredient i2) ->
@@ -330,7 +323,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private List<CoreLabel> searchInMap(Map<ListIngredient, List<String>> map, List<CoreLabel> tokens,
                                         CoreLabel token,
                                         List<Ingredient> foundIngredients, List<Ingredient> detectedIngredients
-                                        ) {
+    ) {
 
         // if found stop searching through the other ingredients
         boolean foundName = false;
@@ -411,28 +404,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
     }
 
-    private void mergeElement(String commonString, List<String> list) {
-        int index = list.indexOf(commonString);
-        if (index > 0) {
-            // merge with previous
-            list.set(index - 1, list.get(index - 1) + " " + commonString);
-
-            list.remove(index);
-
-        } else {
-            if (index < list.size() - 1 && index > -1) {
-                // merge with next
-                list.set(index + 1, commonString + " " + list.get(index + 1));
-                list.remove(index);
-            }
-        }
-    }
-
-    /**
-     * An array of tokens not tagged as noun but that are nouns in a cooking context most of the time
-     */
-    private static final String[] COOKING_NOUNS = {"shortening", "orange", "mint"};
-
     /**
      * Checks if a string should be ignored (if it is contained in the {@link #STRINGS_TO_IGNORE}
      * list or it is an adjective
@@ -449,8 +420,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             return false;
         }
 
-        for(String continuousVerb: COOKING_NOUNS){
-            if(continuousVerb.equalsIgnoreCase(tokenText)){
+        for (String cookingNoun : COOKING_NOUNS) {
+            if (cookingNoun.equalsIgnoreCase(tokenText)) {
                 return true;
             }
         }
@@ -554,7 +525,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                             break;
                         }
                     } else {
-                        if(!part.equals(remainingTokensText.get(++foundIndex))){
+                        if (!part.equals(remainingTokensText.get(++foundIndex))) {
                             // not found again
                             refoundTokens.clear();
                             break;
@@ -816,7 +787,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * Finds the position of unit tokens in the recipe step
      *
      * @param precedingTokens Tokens in front of detected name of an ingredient
-     * @param ingredient           the list ingredient tied to this detected ingredient name
+     * @param ingredient      the list ingredient tied to this detected ingredient name
      * @return The start and end position of the unit of this detected ingredient
      */
     private String findUnit(List<CoreLabel> precedingTokens, Ingredient ingredient) {

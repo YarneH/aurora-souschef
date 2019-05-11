@@ -3,15 +3,15 @@ package com.aurora.souschef;
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.LifecycleOwner;
 import android.content.DialogInterface;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import com.aurora.souschef.utilities.TimerRingtone;
 
 /**
  * A UI class responsible for filling in the UI with timer data.
@@ -56,7 +56,6 @@ public class UITimer {
      * Maximum percentage. Preventing magic numbers.
      */
     private static final int PERCENT = 100;
-
     /**
      * Data container for timers.
      */
@@ -66,9 +65,13 @@ public class UITimer {
      */
     private View mTimerCard;
     /**
-     * Ringtone for the alarm of the timer
+     * A handler for the flickering of the card, when the timer is alarming
      */
-    private Ringtone mRingtone;
+    private Handler mHandler = null;
+    /**
+     * A boolean representing whether the color of the card is dark
+     */
+    private boolean mColorDark = true;
 
     /**
      * Sets up text and timer views.
@@ -91,26 +94,10 @@ public class UITimer {
         });
 
         setOnClickListeners();
-        this.mLiveDataTimer.getIsFinished().observe(owner, aBoolean -> onTimerFinished());
-
-        this.mLiveDataTimer.getTimerState().observe(owner, this::setIconsAndBackground);
-
-        // Preparing the ringtone for the alarm
-        Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-        if (alert == null) {
-            // alert is null, using backup
-            alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-            // I can't see this ever being null (as always have a default notification)
-            // but just in case
-            if (alert == null) {
-                // alert backup is null, using 2nd backup
-                alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-            }
-        }
-        mRingtone = RingtoneManager.getRingtone(mTimerCard.getContext(), alert);
 
         this.mLiveDataTimer.isAlarming().observe(owner, this::setAlarm);
+
+        this.mLiveDataTimer.getTimerState().observe(owner, this::setIconsAndBackground);
 
     }
 
@@ -129,13 +116,6 @@ public class UITimer {
         if (mLiveDataTimer.canChangeTimer()) {
             mTimerCard.findViewById(R.id.iv_edit_icon).setOnClickListener((View v) -> setTimerPopup());
         }
-    }
-
-    /**
-     * TODO: What happens on timer completion?
-     */
-    private static void onTimerFinished() {
-        // TODO: This function is called when the timer finishes
     }
 
     private void setIconsAndBackground(int timerState) {
@@ -165,15 +145,48 @@ public class UITimer {
     }
 
     /**
-     * Sets alarm of the timer TODO: Fix bug!
-     * @param status
+     * Sets alarm of the timer
+     *
+     * @param alarming a boolean representing the timer going off
      */
-    private void setAlarm(boolean status) {
-        if (status) {
-            mRingtone.play();
+    private void setAlarm(boolean alarming) {
+        setFlickering(alarming);
+
+        if (alarming && !mLiveDataTimer.isRinging()) {
+            TimerRingtone.getInstance().addTimerGoingOff();
+            mLiveDataTimer.setRinging(true);
+        } else if (!alarming && mLiveDataTimer.isRinging()) {
+            TimerRingtone.getInstance().removeTimerGoingOff();
+            mLiveDataTimer.setRinging(false);
+        }
+    }
+
+    private void setFlickering(boolean flicker) {
+        View contentView = mTimerCard.findViewById(R.id.cl_timer_content);
+
+        if (flicker) {
+            if (mHandler == null) {
+                mHandler = new Handler();
+            }
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (mColorDark) {
+                        contentView.setBackgroundColor(
+                                mTimerCard.getResources().getColor(R.color.colorPrimary));
+                        mColorDark = false;
+                    } else {
+                        contentView.setBackgroundColor(
+                                mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
+                        mColorDark = true;
+                    }
+                    mHandler.postDelayed(this, CHANGE_COLOR_MILLISEC_DELAY);
+                }
+            }, CHANGE_COLOR_MILLISEC_DELAY);
+
         } else {
-            if (mRingtone.isPlaying()) {
-                mRingtone.stop();
+            if (mHandler != null) {
+                mHandler.removeCallbacksAndMessages(null);
             }
         }
     }

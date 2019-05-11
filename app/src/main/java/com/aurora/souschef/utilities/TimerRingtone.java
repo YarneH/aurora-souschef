@@ -21,15 +21,18 @@ public class TimerRingtone {
     private Ringtone mRingtone = null;
 
     /**
-     * The amount of timers going off
+     * The amount of timers ringing
      */
-    private int mAmountGoingOff = 0;
+    private int mAmountRinging = 0;
 
     /**
      * A boolean representing whether the TimerRingtone has been initiated
      */
     private boolean mInitiated = false;
 
+    /**
+     * The private constructor for the TimerRingtone-singleton
+     */
     private TimerRingtone() {
         // Private constructor for singleton
     }
@@ -43,6 +46,10 @@ public class TimerRingtone {
         return mInstance;
     }
 
+    /**
+     * Initiate the TimerRingtone with a Context
+     * @param context The context to which the Ringtone is connected
+     */
     public void initiate(Context context) {
         if (!mInitiated) {
             // Preparing the ringtone for the alarm
@@ -66,20 +73,29 @@ public class TimerRingtone {
         }
     }
 
-    public void addTimerGoingOff() {
-        mAmountGoingOff++;
+    /**
+     * Add a ringing timer to the Ringtone
+     */
+    public void addRingingTimer() {
+        mAmountRinging++;
         updateRingtone();
     }
 
-    public void removeTimerGoingOff() {
-        mAmountGoingOff--;
+    /**
+     * Remove a ringing timer from the Ringtone
+     */
+    public void removeRingingTimer() {
+        mAmountRinging--;
         updateRingtone();
     }
 
+    /**
+     * Update the Ringtone according to the amount of ringing timers
+     */
     private void updateRingtone() {
-        if (mAmountGoingOff > 0 && !mRingtone.isPlaying()) {
+        if (mAmountRinging > 0 && !mRingtone.isPlaying()) {
             mRingtone.play();
-        } else if (mAmountGoingOff == 0 && mRingtone.isPlaying()) {
+        } else if (mAmountRinging == 0 && mRingtone.isPlaying()) {
             mRingtone.stop();
         }
     }

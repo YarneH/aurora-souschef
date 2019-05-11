@@ -29,7 +29,13 @@ public class UITimer {
      * Time constant: seconds in a quarter hour.
      */
     private static final int AMOUNT_SEC_IN_QUARTER = 900;
+    /**
+     * Time constant: seconds in a minute.
+     */
     private static final int AMOUNT_SEC_IN_MIN = 60;
+    /**
+     * The time it takes before the color of a timer changes when it is alarming.
+     */
     private static final int CHANGE_COLOR_MILLISEC_DELAY = 250;
     /**
      * The amount of milliseconds in a second. Needed to convert
@@ -118,6 +124,10 @@ public class UITimer {
         }
     }
 
+    /**
+     * Set the icons and background according to the state of the timer
+     * @param timerState The current state of the timer
+     */
     private void setIconsAndBackground(int timerState) {
         ImageView imageView = mTimerCard.findViewById(R.id.iv_timer_icon);
         View contentView = mTimerCard.findViewById(R.id.cl_timer_content);
@@ -153,14 +163,18 @@ public class UITimer {
         setFlickering(alarming);
 
         if (alarming && !mLiveDataTimer.isRinging()) {
-            TimerRingtone.getInstance().addTimerGoingOff();
+            TimerRingtone.getInstance().addRingingTimer();
             mLiveDataTimer.setRinging(true);
         } else if (!alarming && mLiveDataTimer.isRinging()) {
-            TimerRingtone.getInstance().removeTimerGoingOff();
+            TimerRingtone.getInstance().removeRingingTimer();
             mLiveDataTimer.setRinging(false);
         }
     }
 
+    /**
+     * Set the flickering of a timer on or off
+     * @param flicker a boolean, true if flickering must be turned on, false otherwise
+     */
     private void setFlickering(boolean flicker) {
         View contentView = mTimerCard.findViewById(R.id.cl_timer_content);
 

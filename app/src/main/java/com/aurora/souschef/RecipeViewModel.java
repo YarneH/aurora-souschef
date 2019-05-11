@@ -39,7 +39,7 @@ public class RecipeViewModel extends AndroidViewModel {
     /**
      * The maximum amount of people you can cook for.
      */
-    private static final int MAX_PEOPLE = 80;
+    private static final int MAX_PEOPLE = 99;
 
     /**
      * Stop actively updating the progressbar after MAX_WAIT_TIME.

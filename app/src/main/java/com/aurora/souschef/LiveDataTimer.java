@@ -180,6 +180,9 @@ public class LiveDataTimer {
         resetTimer();
     }
 
+    /**
+     * Resets the timer to it's original time
+     */
     public void resetTimer() {
         mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));
         mRunning = false;

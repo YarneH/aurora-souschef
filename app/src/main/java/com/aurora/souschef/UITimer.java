@@ -86,7 +86,6 @@ public class UITimer {
         });
 
         setOnClickListeners(mTimerCard);
-        this.mLiveDataTimer.getIsFinished().observe(owner, aBoolean -> onTimerFinished());
 
         this.mLiveDataTimer.getTimerState().observe(owner, this::setIconAndBackground);
 
@@ -122,13 +121,6 @@ public class UITimer {
             }
             return true;
         });
-    }
-
-    /**
-     * TODO: What happens on timer completion?
-     */
-    private static void onTimerFinished() {
-        // TODO: This function is called when the timer finishes
     }
 
     private void setIconAndBackground(int timerState) {

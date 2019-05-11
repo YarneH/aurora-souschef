@@ -11,10 +11,12 @@ import com.aurora.souschefprocessor.task.RecipeStepInProgress;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -84,13 +86,14 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * An array of strings that should be ignored when looking for matches between the ingredientlist and
      * the step description
      */
-    private static final String[] STRINGS_TO_IGNORE = {".", ",", "(", ")", "!"};
+    private static final String[] STRINGS_TO_IGNORE = {".", ",", "(", ")", "!", "icing"};
     /**
      * An array of tags that should be ignored when looking for matches between the ingredientlist and
      * the step description. For the meaning of these tags checkout
      * <a href="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">The PennTreeBankProject</a>
      */
-    private static final String[] TAGS_TO_IGNORE = {"TO", "IN", "JJ", "JJR", "JJS", "VBG", "PDT", "CC", "DT"};
+    private static final String[] TAGS_TO_IGNORE = {"TO", "IN", "JJ", "JJR", "JJS", "VBG", "PDT", "CC", "DT", "VBN",
+            "RB"};
 
 
     /**
@@ -129,7 +132,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         this.mRecipeStep = recipeInProgress.getStepsInProgress().get(stepIndex);
     }
 
-
     /**
      * Checks if a string should be ignored (if it is contained in the {@link #STRINGS_TO_IGNORE}
      * list
@@ -143,49 +145,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 // if the string is contained in de STRINGS_TO_IGNORE array then ignore this string
                 // and return false
                 return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Checks if the difference is just in one erased character and not a completely different word
-     *
-     * @param shortest the shortest string (its length is smaller than the longest)
-     * @param longest  the longest string
-     * @return a boolean indicating if the difference is one erased character or not
-     */
-    private static boolean differenceIsOneErasedCharacter(String shortest, String longest) {
-        int shortLength = shortest.length();
-
-        // check if longest just contains an extra character at the back
-        // to bypass the loop
-        if (longest.substring(0, shortLength).equalsIgnoreCase(shortest)) {
-            return true;
-        }
-
-        // a boolean to indicate if one difference has been found
-        boolean difFound = false;
-        // the character of the shortest string
-        char shortChar;
-        // the character of the longest string
-        char longChar;
-        for (int i = 0; i < shortLength; i++) {
-            shortChar = shortest.charAt(i);
-            if (!difFound) {
-                // if no difference found yet check the character at the same index
-                longChar = longest.charAt(i);
-                // if they are unequal a difference has been found
-                difFound = longChar != shortChar;
-            }
-            if (difFound) {
-                // if one difference has been found check the character after this character
-                longChar = longest.charAt(i + 1);
-                if (longChar != shortChar) {
-                    // second difference found
-                    return false;
-                }
             }
         }
 
@@ -222,6 +181,56 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
 
         return false;
+
+    }
+
+    /**
+     * Checks if the difference is just in one erased character and not a completely different word
+     *
+     * @param shortest the shortest string (its length is smaller than the longest)
+     * @param longest  the longest string
+     * @return a boolean indicating if the difference is one erased character or not
+     */
+    private static boolean differenceIsOneErasedCharacter(String shortest, String longest) {
+        int shortLength = shortest.length();
+
+        // check if longest just contains an extra character at the back
+        // to bypass the loop
+        if (longest.substring(0, shortLength).equalsIgnoreCase(shortest)) {
+            // make sure the last character wasn't a d since this is conjugated verb
+            return longest.charAt(longest.length() - 1) != 'd';
+        }
+
+        return false;
+/*
+        // a boolean to indicate if one difference has been found
+        boolean difFound = false;
+        // the character of the shortest string
+        char shortChar;
+        // the character of the longest string
+        char longChar;
+        for (int i = 0; i < shortLength; i++) {
+            shortChar = shortest.charAt(i);
+            if (!difFound) {
+                // if no difference found yet check the character at the same index
+                longChar = longest.charAt(i);
+                // if they are unequal a difference has been found
+                difFound = longChar != shortChar;
+                if(difFound && i==0){
+                    return false;
+                }
+            }
+            if (difFound) {
+                // if one difference has been found check the character after this character
+                longChar = longest.charAt(i + 1);
+                if (longChar != shortChar) {
+                    // second difference found
+                    return false;
+                }
+            }
+        }
+
+        return true;*/
     }
 
     /**
@@ -247,7 +256,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
     }
 
-
     /**
      * Detects the set of mIngredients in a recipeStep. It also checks if this corresponds with the mIngredients of the
      * recipe.
@@ -258,59 +266,172 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      */
     private List<Ingredient> detectIngredients(RecipeStepInProgress recipeStep,
                                                List<ListIngredient> ingredientListRecipe) {
-        List<Ingredient> set = new ArrayList<>();
+        List<Ingredient> detectedIngredients = new ArrayList<>();
 
 
         // Maps list ingredients to a an array of words in their name for matching the name in the step
         // Necessary in case only a certain word of the list ingredient is used to describe it in the step
-        HashMap<ListIngredient, List<String>> ingredientListMap = new HashMap<>();
+        Map<ListIngredient, List<String>> ingredientListMap = new HashMap<>();
         for (ListIngredient listIngr : ingredientListRecipe) {
-            ingredientListMap.put(listIngr, Arrays.asList(listIngr.getName().toLowerCase(Locale.ENGLISH)
-                    .replace(",", "").split(" ")));
+            ingredientListMap.put(listIngr, new LinkedList<>(
+                    Arrays.asList(listIngr.getName().toLowerCase(Locale.ENGLISH)
+                            .replace(",", "").split(" "))));
+        }
+        Map<ListIngredient, List<String>> mergedCommonPartsMap = createCommonPartsMergedMap(ingredientListRecipe);
+
+        for (ListIngredient listIngr : ingredientListRecipe) {
+            // remove the doubles so every string is only searche once
+            ingredientListMap.get(listIngr).removeAll(mergedCommonPartsMap.get(listIngr));
         }
 
         // Keeps track of already found ListIngredients in case the ingredient
         // is mentioned multiple times in the recipe step
         List<Ingredient> foundIngredients = new ArrayList<>();
 
+        // keeps track of the tokens and string combinations already used to identify an ingredient
+        List<CoreLabel> usedTokens = new ArrayList<>();
+        List<String> usedCombinations = new ArrayList<>();
+
         List<CoreMap> stepSentences = recipeStep.getSentenceAnnotations();
 
         for (CoreMap sentence : stepSentences) {
             List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
 
-            int tokenIndex = 0;
-            int size = tokens.size();
+            // first search the map with the merged common parts so that if there are common parts it is more
+            // likely that the correct ingredient is selected as found ingredient
+            for (CoreLabel token : tokens) {
+                if (!usedTokens.contains(token)) {
 
-            while (tokenIndex < size) {
+                    usedTokens.addAll(searchInMap(mergedCommonPartsMap, tokens, token, foundIngredients,
+                            detectedIngredients));
 
-                // This boolean eliminates unnecessary searching of the token in other ingredients of the list
-                boolean foundName = false;
-                Iterator<Map.Entry<ListIngredient, List<String>>> it = ingredientListMap.entrySet().iterator();
-                while (it.hasNext() && !foundName) {
-                    Map.Entry<ListIngredient, List<String>> entry = it.next();
-                    List<String> nameParts = entry.getValue();
-                    Ingredient listIngredient = entry.getKey();
-
-                    // Found name of an ingredient from the list of ingredients
-                    if (tokenIsContainedInNameParts(tokens.get(tokenIndex), nameParts)
-                            && !foundIngredients.contains(listIngredient)) {
-
-                        foundIngredients.add(listIngredient);
-                        set.add(getStepIngredient(tokenIndex, nameParts, listIngredient, tokens));
-                        foundName = true;
-
-
-                        // Check if the mentioned ingredient is being described by multiple words in the step
-                        // Skip these words for further analysis of the recipe step
-                        tokenIndex += succeedingNameLength(tokenIndex, tokens, entry.getValue());
-                    }
                 }
-                tokenIndex++;
+            }
+            for(CoreLabel token: tokens){
+                if (!usedTokens.contains(token)) {
+                    searchInMap(ingredientListMap, tokens, token, foundIngredients, detectedIngredients);
+                }
             }
         }
 
-        return set;
+        return order(detectedIngredients);
     }
+
+    private List<Ingredient> order(List<Ingredient> list){
+
+        // order by beginindex of the name position
+        Collections.sort(list, (Ingredient i1, Ingredient i2) ->
+                Integer.compare(i1.getNamePosition().getBeginIndex(), i2.getNamePosition().getBeginIndex()));
+
+        return list;
+
+    }
+
+    private List<CoreLabel> searchInMap(Map<ListIngredient, List<String>> map, List<CoreLabel> tokens,
+                                        CoreLabel token,
+                                        List<Ingredient> foundIngredients, List<Ingredient> detectedIngredients
+                                        ) {
+
+        // if found stop searching through the other ingredients
+        boolean foundName = false;
+        List<CoreLabel> usedLabels = new ArrayList<>();
+
+
+        for (ListIngredient listIngredient : map.keySet()) {
+            List<String> nameParts = map.get(listIngredient);
+
+            int tokenIndex = tokens.indexOf(token);
+            // Found name of an ingredient from the list of ingredients
+            if (tokenIsContainedInNameParts(tokens.subList(tokenIndex,
+                    tokens.size()), nameParts)
+                    && !foundIngredients.contains(listIngredient)) {
+
+                foundIngredients.add(listIngredient);
+
+                detectedIngredients.add(getStepIngredient(tokenIndex, nameParts, listIngredient, tokens));
+                foundName = true;
+
+
+                // Check if the mentioned ingredient is being described by multiple words in the step
+                // Skip these words for further analysis of the recipe step
+                usedLabels.addAll(getAllUsedTokens(tokenIndex, tokens, nameParts));
+
+            }
+
+            if (foundName) {
+                break;
+            }
+        }
+        return usedLabels;
+
+    }
+
+    private Map<ListIngredient, List<String>> createCommonPartsMergedMap(List<ListIngredient> ingredients) {
+
+        Map<ListIngredient, List<String>> commonPartsMerged = new HashMap<>();
+        for (ListIngredient listIngr : ingredients) {
+            commonPartsMerged.put(listIngr, new LinkedList<>(
+                    Arrays.asList(listIngr.getName().toLowerCase(Locale.ENGLISH)
+                            .replace(",", "").split(" "))));
+        }
+
+
+        // if a word is present in several lists, merge it with the previous or next word
+        for (int i = 0; i < ingredients.size(); i++) {
+            List<String> listI = commonPartsMerged.get(ingredients.get(i));
+            for (int j = i + 1; j < ingredients.size(); j++) {
+                List<String> listJ = commonPartsMerged.get(ingredients.get(j));
+                mergeCommonElements(listI, listJ);
+            }
+
+        }
+
+        return commonPartsMerged;
+    }
+
+    private void mergeCommonElements(List<String> list1, List<String> list2) {
+
+
+        List<String> commonList = (new ArrayList<>(list1));
+        commonList.retainAll(list2);
+        boolean stop = false;
+        // while there are still common elements but they still
+        while (!commonList.isEmpty() && !stop) {
+            for (String commonString : commonList) {
+                // list 1
+                mergeElement(commonString, list1);
+                mergeElement(commonString, list2);
+            }
+            commonList = (new ArrayList<>(list1));
+            commonList.retainAll(list2);
+            if (list1.size() == 1 && list2.size() == 1) {
+                stop = true;
+            }
+        }
+
+    }
+
+    private void mergeElement(String commonString, List<String> list) {
+        int index = list.indexOf(commonString);
+        if (index > 0) {
+            // merge with previous
+            list.set(index - 1, list.get(index - 1) + " " + commonString);
+
+            list.remove(index);
+
+        } else {
+            if (index < list.size() - 1 && index > -1) {
+                // merge with next
+                list.set(index + 1, commonString + " " + list.get(index + 1));
+                list.remove(index);
+            }
+        }
+    }
+
+    /**
+     * An array of tokens not tagged as noun but that are nouns in a cooking context most of the time
+     */
+    private static final String[] COOKING_NOUNS = {"shortening", "orange", "mint"};
 
     /**
      * Checks if a string should be ignored (if it is contained in the {@link #STRINGS_TO_IGNORE}
@@ -328,6 +449,11 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             return false;
         }
 
+        for(String continuousVerb: COOKING_NOUNS){
+            if(continuousVerb.equalsIgnoreCase(tokenText)){
+                return true;
+            }
+        }
         for (String tagToIgnore : TAGS_TO_IGNORE) {
             if (token.tag().equals(tagToIgnore)) {
                 return false;
@@ -338,27 +464,110 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     }
 
     /**
-     * Checks if the token is contained in the nameParts and if this is relevant (not part of the
+     * Checks if the sublist of tokens is contained in the nameParts and if this is relevant (not part of the
      * {@link #TAGS_TO_IGNORE} or {@link #STRINGS_TO_IGNORE} arrays). It will also be contained
      * if the token differs with a namePart in one erasure see {@link #differInOneErasure(String, String)}
      * this is needed to detect that "onion" refers to "onions" and to correct some spelling mistakes
      *
-     * @param token     the token to check
+     * @param tokens    the sublist of tokens to check
      * @param nameParts the list of nameStrings to check
      * @return true if the token is contained
      */
-    private boolean tokenIsContainedInNameParts(CoreLabel token, List<String> nameParts) {
-        String tokenText = token.originalText().toLowerCase(Locale.ENGLISH);
-        if (doNotIgnoreToken((token))) {
-            for (String part : nameParts) {
-                if (doNotIgnoreString(part) &&
-                        (part.equalsIgnoreCase(tokenText) || differInOneErasure(tokenText, part))) {
+    private boolean tokenIsContainedInNameParts(List<CoreLabel> tokens, List<String> nameParts) {
+        for (String namePart : nameParts) {
+            int partLength = namePart.split(" ").length;
+
+            if (tokens.size() >= partLength) {
+                boolean namePartOkay = false;
+
+                for (int i = 0; i < partLength; i++) {
+                    CoreLabel token = tokens.get(i);
+                    String part = namePart.split(" ")[i];
+
+                    if (partLength > 1 || (doNotIgnoreString(part) && doNotIgnoreToken(token))) {
+                        String tokenText = token.originalText().toLowerCase(Locale.ENGLISH);
+
+                        if (!(part.equalsIgnoreCase(tokenText) || differInOneErasure(tokenText, part))) {
+                            namePartOkay = false;
+
+                            break;
+                        } else {
+                            namePartOkay = true;
+                        }
+                    }
+
+                }
+                if (namePartOkay) {
                     return true;
                 }
+
+            }
+        }
+        return false;
+
+    }
+
+    /**
+     * Checks if there are multiple words used to represent the ingredient
+     * in the recipeStep and returns the amount of used words
+     *
+     * @param tokens    Tokens in in the recipe step
+     * @param nameParts Separated words of the list ingredient's name
+     * @return a list of tokens that is used to define this ingredient
+     */
+    private List<CoreLabel> getAllUsedTokens(int tokenIndex, List<CoreLabel> tokens, List<String> nameParts) {
+        List<CoreLabel> usedLabels = new ArrayList<>();
+
+        for (String namePart : nameParts) {
+            for (String part : namePart.split(" ")) {
+                if (tokens.get(tokenIndex).originalText().equals(part)) {
+                    usedLabels.add(tokens.get(tokenIndex));
+                    tokenIndex++;
+                }
+                if (tokenIndex == tokens.size()) {
+                    // reached the end
+                    return usedLabels;
+                }
+
             }
         }
 
-        return false;
+        List<String> remainingTokensText = new ArrayList<>();
+
+        for (CoreLabel token : tokens.subList(tokenIndex, tokens.size())) {
+            remainingTokensText.add(token.originalText());
+        }
+
+        int foundIndex = remainingTokensText.size();
+
+        // check if a namepart with a space can be found another time in the list of tokens
+        for (String namePart : nameParts) {
+            String[] split = namePart.split(" ");
+            if (split.length > 1) {
+                boolean firstPart = true;
+                List<CoreLabel> refoundTokens = new ArrayList<>();
+                for (String part : split) {
+                    if (firstPart) {
+                        foundIndex = remainingTokensText.indexOf(part);
+                        if (foundIndex < 0 || foundIndex > remainingTokensText.size() - split.length) {
+                            // not found again or no space left to find the whole part
+                            break;
+                        }
+                    } else {
+                        if(!part.equals(remainingTokensText.get(++foundIndex))){
+                            // not found again
+                            refoundTokens.clear();
+                            break;
+                        }
+                    }
+                    refoundTokens.add(tokens.get(tokenIndex + foundIndex));
+                    firstPart = false;
+                }
+                usedLabels.addAll(refoundTokens);
+            }
+        }
+
+        return usedLabels;
     }
 
     /**
@@ -419,23 +628,28 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         // Check if a quantity or unit can be found for this ingredient in the step
         int unitLength = listIngredient.getUnit().split(" ").length;
         int precedingLength = unitLength + PREPOSITION_LENGTH + FRACTIONS_LENGTH + MAX_QUANTITY_LENGTH;
-        List<CoreLabel> precedingTokens = new ArrayList<>();
 
-        for (CoreLabel token : tokens.subList(Math.max(0, nameIndex - (precedingLength)), nameIndex)) {
-            precedingTokens.add(token);
-        }
+
+        List<CoreLabel> precedingTokens = new ArrayList<>(tokens.subList(Math.max(0, nameIndex - (precedingLength)),
+                nameIndex));
 
         if (!precedingTokens.isEmpty()) {
-            String foundUnit = findUnit(precedingTokens, listIngredient.getUnit());
+            String foundUnit = findUnit(precedingTokens, listIngredient);
 
             if (!foundUnit.isEmpty()) {
 
                 // create the position
+
+                // get the base unit
+                String baseUnit = UnitConversionUtils.getBase(foundUnit);
                 int beginIndex = mRecipeStep.getDescription().indexOf(foundUnit);
+                if (beginIndex < 0) {
+                    beginIndex = mRecipeStep.getDescription().indexOf(baseUnit);
+                }
+
                 Position unitPos = new Position(beginIndex, beginIndex + foundUnit.length());
                 stepIngredient.setUnitPosition(unitPos);
-                // Get the base unit
-                String baseUnit = UnitConversionUtils.getBase(foundUnit);
+
 
                 //update the description with the baseUnit
                 mRecipeStep.setDescription(mRecipeStep.getDescription().replace(foundUnit, baseUnit));
@@ -496,20 +710,21 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @return A pair with both the start and end position of the quantity of this detected ingredient
      * and the quantity detected in the ingredient step
      */
-    private Pair<Position, Double> findQuantityPositionAndValue(List<CoreLabel> precedingTokens, Double listQuantity) {
+    private Pair<Position, Double> findQuantityPositionAndValue(List<CoreLabel> precedingTokens, Double
+            listQuantity) {
         double stepQuantity = 1.0;
         boolean foundQuantities = false;
 
         int beginPos = precedingTokens.get(precedingTokens.size() - 1).endPosition();
         int endPos = 0;
 
-        List<String> ingredientSeparators = new ArrayList<>();
-        ingredientSeparators.add(",");
+        List<String> ingredientSeparators = Arrays.asList(",", ".");
+
 
         // Stop when another ingredient is found to prevent quantity overlap
         // CC means Coordinating conjunction, such as "and"
         int i = precedingTokens.size() - 1;
-        while (i > 0 && !ingredientSeparators.contains(precedingTokens.get(i).originalText())
+        while (i >= 0 && !ingredientSeparators.contains(precedingTokens.get(i).originalText())
                 && !"CC".equals(precedingTokens.get(i).tag())) {
             // Detect verbose fractions
             Pair<Boolean, Double> quantityVerbose = detectVerboseFractions(i, precedingTokens, listQuantity);
@@ -581,6 +796,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         return new Pair<>(tokenIsQuantity, quantityMultiplier);
     }
 
+
     /**
      * A function that indicates if a the search for a unit should stop. Currently this is when a comma
      * is encountered
@@ -588,23 +804,24 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @param token the current token, where the search is at
      * @return a boolean that indicates if the search should be stopped
      */
-    private boolean stopSearchingForUnit(CoreLabel token) {
+    private boolean stopSearchingForUnit(CoreLabel token, String nameOf) {
         if (token.originalText().contains(",")) {
             return true;
         }
 
-        return mNamesOfListIngredients.contains(token.originalText().replace(",", ""));
+        return mNamesOfListIngredients.contains(token.originalText().replace(",", "")) && !nameOf.contains(token.originalText());
     }
 
     /**
      * Finds the position of unit tokens in the recipe step
      *
      * @param precedingTokens Tokens in front of detected name of an ingredient
-     * @param unit            The unit name of the list ingredient tied to this detected ingredient name
+     * @param ingredient           the list ingredient tied to this detected ingredient name
      * @return The start and end position of the unit of this detected ingredient
      */
-    private String findUnit(List<CoreLabel> precedingTokens, String unit) {
+    private String findUnit(List<CoreLabel> precedingTokens, Ingredient ingredient) {
 
+        String unitOfIngredientInList = ingredient.getUnit();
         List<CoreLabel> unitTokens = new ArrayList<>();
         if (precedingTokens.get(precedingTokens.size() - 1).originalText().equals(OF_PREPOSITION)) {
             precedingTokens.remove(precedingTokens.size() - 1);
@@ -612,7 +829,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
         // Add singulars to the possible unit names
         Morphology singularMorph = new Morphology();
-        String[] unitParts = unit.split(" ");
+        String[] unitParts = unitOfIngredientInList.split(" ");
         List<String> unitPartsWithSingulars = new ArrayList<>();
         for (String unitPart : unitParts) {
             unitPartsWithSingulars.add(unitPart);
@@ -626,7 +843,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         int i = precedingTokens.size() - 1;
         while (i > 0) {
 
-            if (stopSearchingForUnit(precedingTokens.get(i))) {
+            if (stopSearchingForUnit(precedingTokens.get(i), ingredient.getName())) {
                 i = 0;
 
             } else if (doNotIgnoreToken(precedingTokens.get(i)) &&

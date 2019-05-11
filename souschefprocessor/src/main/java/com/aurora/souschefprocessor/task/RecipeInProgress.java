@@ -27,7 +27,7 @@ public class RecipeInProgress extends Recipe {
 
 
     /**
-     * An extractedtext object from Aurora
+     * An extractedText object from Aurora
      */
     private ExtractedText mExtractedText;
 
@@ -36,6 +36,8 @@ public class RecipeInProgress extends Recipe {
     public RecipeInProgress(ExtractedText originalText) {
         super(originalText.getFilename());
         this.mExtractedText = originalText;
+        this.mDescription = "";
+        this.mNumberOfPeople = -1;
 
     }
 
@@ -88,6 +90,17 @@ public class RecipeInProgress extends Recipe {
 
     public ExtractedText getExtractedText() {
         return mExtractedText;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof RecipeInProgress) {
+            RecipeInProgress r = (RecipeInProgress) o;
+            return r.getIngredients().equals(mIngredients) && r.getNumberOfPeople() == mNumberOfPeople
+                    && r.getStepsInProgress().equals(mStepsInProgress) &&
+                    r.getDescription().equals(mDescription);
+        }
+        return false;
     }
 
 }

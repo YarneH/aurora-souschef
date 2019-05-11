@@ -11,7 +11,6 @@ import com.aurora.souschefprocessor.recipe.RecipeTimer;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -91,8 +90,8 @@ public class DelegatorLongTest {
     }
 
 
- @Test
-public void Delegator_processText_NoExceptionsInDelegatorForValidRecipesJSON() {
+    @Test
+    public void Delegator_processText_NoExceptionsInDelegatorForValidRecipesJSON() {
         /**
          * Check that no exceptions are thrown when these recipes are read in
          */
@@ -126,8 +125,8 @@ public void Delegator_processText_NoExceptionsInDelegatorForValidRecipesJSON() {
     }
 
 
- @Test
-public void Delegator_processText_ExceptionsInDelegatorForInvalidRecipesJSON() {
+    @Test
+    public void Delegator_processText_ExceptionsInDelegatorForInvalidRecipesJSON() {
         /**
          * Check that exceptions are thrown when these recipes are read in
          */
@@ -155,8 +154,8 @@ public void Delegator_processText_ExceptionsInDelegatorForInvalidRecipesJSON() {
 
     }
 
- @Test
-public void Delegator_processText_timeForDoingTasksNonParallelIsLowerThanThreshold() {
+    @Test
+    public void Delegator_processText_timeForDoingTasksNonParallelIsLowerThanThreshold() {
         /**
          * Check that the average time on the test suite for doing the processing non parallel is lower than a
          * certain threshold
@@ -226,7 +225,7 @@ public void Delegator_processText_timeForDoingTasksNonParallelIsLowerThanThresho
 
 
         // Assert
-        int threshold = 400;
+        int threshold = 500;
         System.out.println(average_para + "  PARALLEL TIME");
         assertTrue("The average time is not smaller than the threshold, average time: " + average_para + ", threshold" +
                         " " + threshold,
@@ -372,9 +371,9 @@ public void Delegator_processText_timeForDoingTasksNonParallelIsLowerThanThresho
         // positions are irrelevant in equals operation
         Position pos = new Position(0, 1);
 
-        assertThat("The timers for the third step are not correct",step2.getRecipeTimers(),
+        assertThat("The timers for the third step are not correct", step2.getRecipeTimers(),
                 CoreMatchers.hasItem(new RecipeTimer(3 * 60, pos)));
-        assertThat("The timers for the fourth step are not correct",step3.getRecipeTimers(), CoreMatchers.hasItems(
+        assertThat("The timers for the fourth step are not correct", step3.getRecipeTimers(), CoreMatchers.hasItems(
                 new RecipeTimer(2 * 60, pos),
                 new RecipeTimer(5 * 60, pos),
                 new RecipeTimer(5 * 60, pos)
@@ -393,18 +392,18 @@ public void Delegator_processText_timeForDoingTasksNonParallelIsLowerThanThresho
         for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantpositions.put(key, pos);
         }
-        assertThat("The ingredients for the first step are not correct",step0.getIngredients(), CoreMatchers.hasItems(
+        assertThat("The ingredients for the first step are not correct", step0.getIngredients(), CoreMatchers.hasItems(
                 new Ingredient("linguine or other long pasta", "", 1, irrelevantpositions)
         ));
-        assertThat("The ingredients for the second step are not correct",step1.getIngredients(), CoreMatchers.hasItems(
+        assertThat("The ingredients for the second step are not correct", step1.getIngredients(), CoreMatchers.hasItems(
                 new Ingredient("linguine or other long pasta", "", 1, irrelevantpositions),
                 new Ingredient("can diced tomatoes", "", 1, irrelevantpositions)
         ));
-        assertThat("The ingredients for the third step are not correct",step2.getIngredients(), CoreMatchers.hasItems(
+        assertThat("The ingredients for the third step are not correct", step2.getIngredients(), CoreMatchers.hasItems(
                 new Ingredient("extra-virgin olive oil", "cup", 0.25, irrelevantpositions),
                 new Ingredient("capers", "", 1, irrelevantpositions)
         ));
-        assertThat("The ingredients for the fourth step are not correct",step3.getIngredients(), CoreMatchers.hasItems(
+        assertThat("The ingredients for the fourth step are not correct", step3.getIngredients(), CoreMatchers.hasItems(
                 new Ingredient("linguine or other long pasta", "", 1, irrelevantpositions),
                 new Ingredient("extra-virgin olive oil", "", 1, irrelevantpositions),
                 new Ingredient("tomato paste", "", 1, irrelevantpositions),
@@ -414,7 +413,7 @@ public void Delegator_processText_timeForDoingTasksNonParallelIsLowerThanThresho
                 new Ingredient("oil-packed tuna", "", 1, irrelevantpositions)
 
         ));
-        assertThat("The ingredients for the fifth step are not correct",step4.getIngredients(), CoreMatchers.hasItems(
+        assertThat("The ingredients for the fifth step are not correct", step4.getIngredients(), CoreMatchers.hasItems(
                 new Ingredient("linguine or other long pasta", "", 1, irrelevantpositions),
                 new Ingredient("capers", "", 1, irrelevantpositions)
         ));

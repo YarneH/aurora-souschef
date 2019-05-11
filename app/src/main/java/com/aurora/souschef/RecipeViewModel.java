@@ -12,7 +12,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.auroralib.translation.TranslationServiceCaller;
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.recipe.Recipe;

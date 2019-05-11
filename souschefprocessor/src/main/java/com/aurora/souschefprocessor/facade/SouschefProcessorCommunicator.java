@@ -62,7 +62,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
                 openRawResource(R.raw.detect_ingr_list_model))) {
             // log for the opening
             incrementProgressAnnotationPipelines(); // 1
-            Log.d("COMMUNICATOR", "start loading model");
+            Log.i("COMMUNICATOR", "start loading model");
             CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
             incrementProgressAnnotationPipelines(); // 2
             return new SouschefProcessorCommunicator(context, crf);
@@ -86,7 +86,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
      */
     static void incrementProgressAnnotationPipelines() {
         mProgressAnnotationPipelines.incrementAndGet();
-        Log.d("STEP", "" + mProgressAnnotationPipelines);
+        Log.v("STEP", "" + mProgressAnnotationPipelines);
     }
 
     /**

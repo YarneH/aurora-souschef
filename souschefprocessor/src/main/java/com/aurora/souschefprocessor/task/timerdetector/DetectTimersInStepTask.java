@@ -386,7 +386,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     }
 
     /**
-     * Waits untill the statid {@link #sAnnotationPipeline} is created
+     * Waits untill the static {@link #sAnnotationPipeline} is created
      */
     private void waitForCreationOfPipeline() {
         while (sAnnotationPipeline == null) {
@@ -396,7 +396,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     LOCK_DETECT_TIMERS_IN_STEP_PIPELINE.wait();
                 }
             } catch (InterruptedException e) {
-                Log.d("Interrupted", "detecttimer", e);
+                Log.e("Interrupted", "detecttimer", e);
                 Thread.currentThread().interrupt();
             }
         }
@@ -554,7 +554,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
             list.add(new RecipeTimer(recipeStepSeconds, timerPosition));
         } catch (IllegalArgumentException iae) {
             // timer adding failed, do not try to add it again but log the failure
-            //TODO can this failure be added to analytics?
             Log.e(TAG, "detectTimer: ", iae);
         }
     }

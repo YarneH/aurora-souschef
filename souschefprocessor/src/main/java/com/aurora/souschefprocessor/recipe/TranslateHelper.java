@@ -217,16 +217,15 @@ final class TranslateHelper {
         Map<Ingredient.PositionKeysForIngredients, Position> map =
                 new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
         // name
-        {
-            name = translatedSentences.poll();
-            // get the position
-            int beginIndex = newOriginalLine.indexOf(name);
-            if (beginIndex > -1) {
-                int endIndex = beginIndex + name.length();
-                map.put(Ingredient.PositionKeysForIngredients.NAME, new Position(beginIndex, endIndex));
-            }
 
+        name = translatedSentences.poll();
+        // get the position
+        int beginIndex = newOriginalLine.indexOf(name);
+        if (beginIndex > -1) {
+            int endIndex = beginIndex + name.length();
+            map.put(Ingredient.PositionKeysForIngredients.NAME, new Position(beginIndex, endIndex));
         }
+
 
         // set name position to nothing detected if nothing detected or the nameposition is irrelevant
         map.putIfAbsent(Ingredient.PositionKeysForIngredients.NAME, new Position(0, newOriginalLine.length()));
@@ -237,7 +236,7 @@ final class TranslateHelper {
             unit = translatedSentences.poll();
 
             // get the position
-            int beginIndex = newOriginalLine.indexOf(unit);
+            beginIndex = newOriginalLine.indexOf(unit);
             if (beginIndex > -1) {
                 int endIndex = beginIndex + unit.length();
                 if (DIMINUTIVE.equals(newOriginalLine.substring(endIndex, endIndex + DIMINUTIVE.length()))) {
@@ -259,7 +258,7 @@ final class TranslateHelper {
             // set the quantity to the original quantity (double does not change by translating)
             quantity = oldIngredient.getQuantity();
             // get the position
-            int beginIndex = newOriginalLine.indexOf(quantityString);
+            beginIndex = newOriginalLine.indexOf(quantityString);
             if (beginIndex > -1) {
                 int endIndex = beginIndex + quantityString.length();
                 map.put(Ingredient.PositionKeysForIngredients.QUANTITY, new Position(beginIndex, endIndex));

@@ -152,7 +152,8 @@ public class StepPlaceholderFragment extends Fragment {
 
         // Feed Adapter
         StepIngredientAdapter ingredientAdapter =
-                new StepIngredientAdapter(mRecipeStep.getIngredients(), recipe.getNumberOfPeople(), mCurrentAmount);
+                new StepIngredientAdapter(mRecipeStep.getIngredients(), recipe.getNumberOfPeople(), mCurrentAmount,
+                        mRecipeStep.getDescription().length());
         mIngredientList.setAdapter(ingredientAdapter);
 
         // Disable the line if there are no ingredients listed

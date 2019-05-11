@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.text.method.ScrollingMovementMethod;
 import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -70,6 +71,7 @@ public class Tab1Overview extends Fragment {
                 return;
             }
             mDescriptionTextView.setText(recipe.getDescription());
+            mDescriptionTextView.setMovementMethod(new ScrollingMovementMethod());
         });
         return rootView;
     }

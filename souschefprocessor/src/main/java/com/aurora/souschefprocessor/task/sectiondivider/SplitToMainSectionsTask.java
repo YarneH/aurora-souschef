@@ -492,7 +492,6 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @return a boolean that indicates if a verb was detected
      */
     private boolean verbDetected(Section section) {
-        // TODO adapt this method to new input of aurora
         Annotation annotatedText = getAnnotatedText(section);
         List<CoreMap> sentences = annotatedText.get(CoreAnnotations.SentencesAnnotation.class);
 

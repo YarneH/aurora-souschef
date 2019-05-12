@@ -209,12 +209,12 @@ public class SplitStepsTask extends AbstractProcessingTask {
      * @return true if the sentence is in the description
      */
     private static boolean isSentenceInDescription(CoreMap sentence, String description) {
-        String spaceLessDescription = description.replace(" ", "");
+        String spacelessDescription = description.replace(" ", "");
         List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
         StringBuilder bld = new StringBuilder();
         for (CoreLabel token : tokens) {
             bld.append(token.originalText());
-            if (!spaceLessDescription.contains(bld.toString())) {
+            if (!spacelessDescription.contains(bld.toString())) {
                 return false;
             }
         }

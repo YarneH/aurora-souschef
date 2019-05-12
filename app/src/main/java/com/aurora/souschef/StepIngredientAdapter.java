@@ -18,9 +18,21 @@ import java.util.Locale;
  * Adapter for populating the ingredient list.
  */
 public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAdapter.CardIngredientViewHolder> {
+    /**
+     * A list of all the ingredients needed for the current step
+     */
     private final List<Ingredient> ingredients;
+    /**
+     * The current amount of servings, set by the user
+     */
     private int mCurrentAmount = 0;
+    /**
+     * The original amount of servings, extracted from the recipe
+     */
     private int mOriginalAmount = 0;
+    /**
+     * The length of the description of the current step
+     */
     private int mStepDescriptionLength = 0;
 
     /**

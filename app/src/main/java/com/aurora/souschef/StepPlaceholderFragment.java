@@ -351,7 +351,7 @@ public class StepPlaceholderFragment extends Fragment {
     }
 
     /**
-     * Helper-class to add the navigation dots.
+     * Helper-function to add the navigation dots.
      *
      * @param inflater Layout inflater to inflate dot-views
      * @param recipe   used to get the amount of steps.

@@ -62,7 +62,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
                 openRawResource(R.raw.detect_ingr_list_model))) {
             // log for the opening
             incrementProgressAnnotationPipelines(); // 1
-            Log.d("COMMUNICATOR", "start loading model");
+            Log.i("COMMUNICATOR", "start loading model");
             CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
             incrementProgressAnnotationPipelines(); // 2
             return new SouschefProcessorCommunicator(context, crf);
@@ -86,7 +86,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
      */
     static void incrementProgressAnnotationPipelines() {
         mProgressAnnotationPipelines.incrementAndGet();
-        Log.d("STEP", "" + mProgressAnnotationPipelines);
+        Log.i("STEP", "" + mProgressAnnotationPipelines);
     }
 
     /**
@@ -126,7 +126,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
         } catch (Exception e) {
             // something else went wrong
             Log.e("COMMUNICATOR", "unexpected exception", e);
-            throw new RecipeDetectionException("Something unexpected happenen: " + e.getMessage());
+            throw new RecipeDetectionException("Something unexpected happened: " + e.getMessage());
         }
 
         return recipe;

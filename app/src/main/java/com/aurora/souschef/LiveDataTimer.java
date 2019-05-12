@@ -185,6 +185,9 @@ public class LiveDataTimer {
         resetTimer();
     }
 
+    /**
+     * Resets the timer to it's original time
+     */
     public void resetTimer() {
         mFinished.setValue(false);
         mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));

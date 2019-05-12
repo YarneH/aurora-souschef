@@ -49,38 +49,6 @@ public class Ingredient {
         this.mPositions = positions;
     }
 
-    public Position getNamePosition() {
-        return mPositions.get(PositionKeysForIngredients.NAME);
-    }
-
-    public void setNamePosition(Position namePosition) {
-        mPositions.put(PositionKeysForIngredients.NAME, namePosition);
-    }
-
-    public Position getQuantityPosition() {
-        return mPositions.get(PositionKeysForIngredients.QUANTITY);
-    }
-
-    public void setQuantityPosition(Position quantityPosition) {
-        mPositions.put(PositionKeysForIngredients.QUANTITY, quantityPosition);
-    }
-
-    public Position getUnitPosition() {
-        return mPositions.get(PositionKeysForIngredients.UNIT);
-    }
-
-    public void setUnitPosition(Position unitPosition) {
-        mPositions.put(PositionKeysForIngredients.UNIT, unitPosition);
-    }
-
-    public String getName() {
-        return mName;
-    }
-
-    public void setName(String name) {
-        this.mName = name;
-    }
-
     public String getUnit() {
         return mAmount.getUnit();
     }
@@ -97,10 +65,6 @@ public class Ingredient {
         mAmount.setValue(q);
     }
 
-    public Amount getAmount() {
-        return mAmount;
-    }
-
     @Override
     public int hashCode() {
         return Objects.hash(mAmount, mName);
@@ -113,6 +77,18 @@ public class Ingredient {
             return (ingredient.getAmount().equals(mAmount) && ingredient.getName().equalsIgnoreCase(mName));
         }
         return false;
+    }
+
+    public Amount getAmount() {
+        return mAmount;
+    }
+
+    public String getName() {
+        return mName;
+    }
+
+    public void setName(String name) {
+        this.mName = name;
     }
 
     @Override
@@ -143,7 +119,8 @@ public class Ingredient {
     }
 
     /**
-     * This trims the positions of this ingredient to the passed string. It uses the {@link Position#trimToLengthOfString(String)}
+     * This trims the positions of this ingredient to the passed string. It uses the
+     * {@link Position#trimToLengthOfString(String)}
      * method. This ensures that the endindex of the positions is never bigger than the length of the passed string
      *
      * @param s the string to trim the positions to
@@ -155,53 +132,6 @@ public class Ingredient {
                 position.trimToLengthOfString(s);
             }
         }
-    }
-
-    /**
-     * Gets the order of the positions, it checks in which order the QUANTITY UNIT and name are mentioned
-     *
-     * @return a list, where the first element is the element that is stated first in the sentence, in case of
-     * ex aequo the list is ordered with the following priority: 1 QUANTITY, 2 UNIT, 3 NAME
-     */
-    private List<PositionKeysForIngredients> getOrderOfPositions() {
-
-        int qEnd = getQuantityPosition().getEndIndex();
-
-        int uEnd = getUnitPosition().getEndIndex();
-
-        int nEnd = getNamePosition().getEndIndex();
-        List<PositionKeysForIngredients> list = new ArrayList<>();
-        if (qEnd < nEnd && qEnd < uEnd) {
-            list.add(PositionKeysForIngredients.QUANTITY);
-            if (uEnd < nEnd) {
-                list.add(PositionKeysForIngredients.UNIT);
-                list.add(PositionKeysForIngredients.NAME);
-            } else {
-                list.add(PositionKeysForIngredients.NAME);
-                list.add(PositionKeysForIngredients.UNIT);
-
-            }
-        } else if (uEnd < qEnd && uEnd < nEnd) {
-            list.add(PositionKeysForIngredients.UNIT);
-            if (qEnd < nEnd) {
-                list.add(PositionKeysForIngredients.QUANTITY);
-                list.add(PositionKeysForIngredients.NAME);
-            } else {
-                list.add(PositionKeysForIngredients.NAME);
-                list.add(PositionKeysForIngredients.QUANTITY);
-            }
-
-        } else {
-            list.add(PositionKeysForIngredients.NAME);
-            if (qEnd < uEnd) {
-                list.add(PositionKeysForIngredients.QUANTITY);
-                list.add(PositionKeysForIngredients.UNIT);
-            } else {
-                list.add(PositionKeysForIngredients.NAME);
-                list.add(PositionKeysForIngredients.UNIT);
-            }
-        }
-        return list;
     }
 
     String convertUnit(boolean toMetric, String description) {
@@ -274,6 +204,111 @@ public class Ingredient {
                 getQuantityPosition().getEndIndex() == description.length());
     }
 
+    /**
+     * Gets the order of the positions, it checks in which order the QUANTITY UNIT and name are mentioned
+     *
+     * @return a list, where the first element is the element that is stated first in the sentence, in case of
+     * ex aequo the list is ordered with the following priority: 1 QUANTITY, 2 UNIT, 3 NAME
+     */
+    private List<PositionKeysForIngredients> getOrderOfPositions() {
+
+        int qEnd = getQuantityPosition().getEndIndex();
+
+        int uEnd = getUnitPosition().getEndIndex();
+
+        int nEnd = getNamePosition().getEndIndex();
+        List<PositionKeysForIngredients> list = new ArrayList<>();
+        if (qEnd < nEnd && qEnd < uEnd) {
+            list.add(PositionKeysForIngredients.QUANTITY);
+            if (uEnd < nEnd) {
+                list.add(PositionKeysForIngredients.UNIT);
+                list.add(PositionKeysForIngredients.NAME);
+            } else {
+                list.add(PositionKeysForIngredients.NAME);
+                list.add(PositionKeysForIngredients.UNIT);
+
+            }
+        } else if (uEnd < qEnd && uEnd < nEnd) {
+            list.add(PositionKeysForIngredients.UNIT);
+            if (qEnd < nEnd) {
+                list.add(PositionKeysForIngredients.QUANTITY);
+                list.add(PositionKeysForIngredients.NAME);
+            } else {
+                list.add(PositionKeysForIngredients.NAME);
+                list.add(PositionKeysForIngredients.QUANTITY);
+            }
+
+        } else {
+            list.add(PositionKeysForIngredients.NAME);
+            if (qEnd < uEnd) {
+                list.add(PositionKeysForIngredients.QUANTITY);
+                list.add(PositionKeysForIngredients.UNIT);
+            } else {
+                list.add(PositionKeysForIngredients.NAME);
+                list.add(PositionKeysForIngredients.UNIT);
+            }
+        }
+        return list;
+    }
+
+    public Position getUnitPosition() {
+        return mPositions.get(PositionKeysForIngredients.UNIT);
+    }
+
+    public Position getQuantityPosition() {
+        return mPositions.get(PositionKeysForIngredients.QUANTITY);
+    }
+
+    public Position getNamePosition() {
+        return mPositions.get(PositionKeysForIngredients.NAME);
+    }
+
+    public void setNamePosition(Position namePosition) {
+        mPositions.put(PositionKeysForIngredients.NAME, namePosition);
+    }
+
+    public void setQuantityPosition(Position quantityPosition) {
+        mPositions.put(PositionKeysForIngredients.QUANTITY, quantityPosition);
+    }
+
+    public void setUnitPosition(Position unitPosition) {
+        mPositions.put(PositionKeysForIngredients.UNIT, unitPosition);
+    }
+
+    /**
+     * Updates the positions of the QUANTITY UNIT and name by adding an offset. Calls the
+     * {@link Position#addOffset(int)}
+     * method
+     *
+     * @param offset the offset to add
+     */
+    public void addOffsetToPositions(int offset) {
+        for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
+            mPositions.get(key).addOffset(offset);
+        }
+    }
+
+
+    public Map<PositionKeysForIngredients, Position> getPositions() {
+        return mPositions;
+    }
+
+    /**
+     * Helper function that makes sure that after converting the ingredient the positions of the not
+     * detected elements are set to 0 and the length of the new description
+     *
+     * @param originalLength the length of the description before converting
+     * @param newLength      the length of the description after converting
+     */
+    public void setPositionEndOfStringCorrect(int originalLength, int newLength) {
+        for (PositionKeysForIngredients key : PositionKeysForIngredients.values()) {
+            Position pos = mPositions.get(key);
+            if (pos.getEndIndex() == originalLength && pos.getBeginIndex() == 0) {
+                pos.setEndIndex(newLength);
+            }
+        }
+
+    }
 
     public enum PositionKeysForIngredients {
         NAME, QUANTITY, UNIT

@@ -82,14 +82,6 @@ public class RecipeTimer {
         this.mPosition = position;
     }
 
-    public int getUpperBound() {
-        return mUpperBound;
-    }
-
-    public int getLowerBound() {
-        return mLowerBound;
-    }
-
     public Position getPosition() {
         return mPosition;
     }
@@ -107,6 +99,14 @@ public class RecipeTimer {
 
         }
         return false;
+    }
+
+    public int getLowerBound() {
+        return mLowerBound;
+    }
+
+    public int getUpperBound() {
+        return mUpperBound;
     }
 
     @Override

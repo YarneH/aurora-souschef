@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ExampleLongTest {
-    @Test
+     @Test
     public void exampleTest() {
         Assert.assertEquals(4, 2 + 2);
     }

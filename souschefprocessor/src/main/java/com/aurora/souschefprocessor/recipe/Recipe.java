@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static com.aurora.souschefprocessor.PluginConstants.UNIQUE_PLUGIN_NAME;
+
 /**
  * A data class representing a recipe. It has 4 fields:
  * mIngredients: a list of ListIngredient objecs, this represents the ListIngredients needed for
@@ -36,55 +38,17 @@ public class Recipe extends PluginObject {
     protected String mDescription;
 
 
-    public Recipe(List<ListIngredient> ingredients, List<RecipeStep> recipeSteps,
+    public Recipe(String fileName, List<ListIngredient> ingredients, List<RecipeStep> recipeSteps,
                   int numberOfPeople, String description) {
+        super(fileName, UNIQUE_PLUGIN_NAME);
         this.mIngredients = ingredients;
         this.mRecipeSteps = recipeSteps;
         this.mNumberOfPeople = numberOfPeople;
         this.mDescription = description;
     }
 
-    public Recipe() {
-    }
-
-    public synchronized int getNumberOfPeople() {
-        return mNumberOfPeople;
-    }
-
-    public synchronized void setNumberOfPeople(int numberOfPeople) {
-        this.mNumberOfPeople = numberOfPeople;
-    }
-
-    public synchronized String getDescription() {
-        return mDescription;
-    }
-
-    public synchronized void setDescription(String description) {
-        this.mDescription = description;
-    }
-
-    public synchronized List<RecipeStep> getRecipeSteps() {
-        return mRecipeSteps;
-    }
-
-    public synchronized void setRecipeSteps(List<RecipeStep> recipeSteps) {
-        if (recipeSteps == null) {
-            mRecipeSteps.clear();
-        } else {
-            this.mRecipeSteps = recipeSteps;
-        }
-    }
-
-    public synchronized List<ListIngredient> getIngredients() {
-        return mIngredients;
-    }
-
-    public synchronized void setIngredients(List<ListIngredient> ingredients) {
-        if (ingredients == null) {
-            mIngredients.clear();
-        } else {
-            this.mIngredients = ingredients;
-        }
+    public Recipe(String fileName) {
+        super(fileName, UNIQUE_PLUGIN_NAME);
     }
 
     /**
@@ -116,6 +80,46 @@ public class Recipe extends PluginObject {
         return false;
     }
 
+    public synchronized List<ListIngredient> getIngredients() {
+        return mIngredients;
+    }
+
+    public synchronized int getNumberOfPeople() {
+        return mNumberOfPeople;
+    }
+
+    public synchronized void setNumberOfPeople(int numberOfPeople) {
+        this.mNumberOfPeople = numberOfPeople;
+    }
+
+    public synchronized List<RecipeStep> getRecipeSteps() {
+        return mRecipeSteps;
+    }
+
+    public synchronized String getDescription() {
+        return mDescription;
+    }
+
+    public synchronized void setDescription(String description) {
+        this.mDescription = description;
+    }
+
+    public synchronized void setRecipeSteps(List<RecipeStep> recipeSteps) {
+        if (recipeSteps == null) {
+            mRecipeSteps.clear();
+        } else {
+            this.mRecipeSteps = recipeSteps;
+        }
+    }
+
+    public synchronized void setIngredients(List<ListIngredient> ingredients) {
+        if (ingredients == null) {
+            mIngredients.clear();
+        } else {
+            this.mIngredients = ingredients;
+        }
+    }
+
     @Override
     public String toString() {
         return "Recipe{" +
@@ -124,6 +128,29 @@ public class Recipe extends PluginObject {
                 "\n mNumberOfPeople=" + mNumberOfPeople +
                 "\n mDescription='" + mDescription + '\'' +
                 '}';
+    }
+
+
+    /**
+     * Gets all the sentences that should be translated to translate this recipe
+     *
+     * @return A list of all the sentences that should be translated
+     */
+    public List<String> createSentencesToTranslate() {
+        return TranslateHelper.createSentencesToTranslate(this);
+
+    }
+
+
+    /**
+     * Creates a new recipe object that is the translated form of this recipe
+     *
+     * @param translatedSentences the translated sentences, this is the response from aurora to the
+     *                            result of {@link #createSentencesToTranslate()}
+     * @return The new translated recipe
+     */
+    public Recipe getTranslatedRecipe(String[] translatedSentences) {
+        return TranslateHelper.getTranslatedRecipe(this, translatedSentences);
     }
 
 }

@@ -49,6 +49,26 @@ class Amount {
         this.mUnit = unit;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(mUnit, mValue);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Amount) {
+            Amount a = (Amount) o;
+            return (a.getUnit().equalsIgnoreCase(mUnit) &&
+                    doublesEqual(a.getValue(), mValue));
+
+        }
+        return false;
+    }
+
+    String getUnit() {
+        return mUnit;
+    }
+
     /**
      * A private function that checks if two doubles are equal using the {@link #EQUALITY_THRESHOLD_DOUBLE}
      * value
@@ -70,33 +90,30 @@ class Amount {
         this.mValue = value;
     }
 
-    String getUnit() {
-        return mUnit;
-    }
-
     void setUnit(String unit) {
         this.mUnit = unit;
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(mUnit, mValue);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof Amount) {
-            Amount a = (Amount) o;
-            return (a.getUnit().equalsIgnoreCase(mUnit) &&
-                    doublesEqual(a.getValue(), mValue));
-
-        }
-        return false;
-    }
-
-    @Override
     public String toString() {
         return "QUANTITY " + mValue + " UNIT " + mUnit;
+    }
+
+    /**
+     * Converts the amount to either metric or US
+     *
+     * @param toMetric a boolean that indicates if it should be converted to metric if true, or to US if false
+     */
+    void convert(boolean toMetric) {
+
+        if (toMetric) {
+            convertToMetric();
+
+        } else {
+            convertToUS();
+        }
+        // round to three decimals
+        mValue = Math.round(1e3 * mValue) / 1e3;
     }
 
     /**
@@ -140,23 +157,6 @@ class Amount {
             default:
                 break;
         }
-    }
-
-    /**
-     * Converts the amount to either metric or US
-     *
-     * @param toMetric a boolean that indicates if it should be converted to metric if true, or to US if false
-     */
-    void convert(boolean toMetric) {
-
-        if (toMetric) {
-            convertToMetric();
-
-        } else {
-            convertToUS();
-        }
-        // round to three decimals
-        mValue = Math.round(1e3 * mValue) / 1e3;
     }
 
     /**
@@ -215,7 +215,8 @@ class Amount {
     }
 
     /**
-     * A private helperfunction for {@link #changeMilliliter()} that indicates if this factor could be used for the conversion.
+     * A private helperfunction for {@link #changeMilliliter()} that indicates if this factor could be used for the
+     * conversion.
      * This is the case when the {@link #mValue} is bigger than the factor or is
      * equal to the factor {@link #doublesEqual(double, double)}.
      *

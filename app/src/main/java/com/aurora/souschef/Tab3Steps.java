@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,9 +21,9 @@ import java.util.Objects;
  */
 public class Tab3Steps extends Fragment {
     /**
-     * Array with the text in every step.
+     * The amount of steps in the ingredient
      */
-    private String[] mDescriptionSteps = null;
+    private int mAmountSteps = 0;
     /**
      * Adapter for filling the different step cards.
      */
@@ -57,9 +58,9 @@ public class Tab3Steps extends Fragment {
             if (recipe == null) {
                 return;
             }
-            mDescriptionSteps = extractDescriptionSteps(recipe);
+            mStepsPagerAdapter.notifyDataSetChanged();
+            mAmountSteps = recipe.getRecipeSteps().size();
             mViewPager.setAdapter(mStepsPagerAdapter);
-
         });
 
         return rootView;
@@ -69,41 +70,36 @@ public class Tab3Steps extends Fragment {
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    public class StepsPagerAdapter extends FragmentPagerAdapter {
+    public class StepsPagerAdapter extends FragmentStatePagerAdapter {
 
         public StepsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Fragment getItem(int position) {
             return StepPlaceholderFragment.newInstance(position);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int getCount() {
             // Return total pages.
-            if (mDescriptionSteps == null) {
-                return 0;
-            }
-            return mDescriptionSteps.length;
+            return mAmountSteps;
         }
-    }
 
-    /**
-     * Extracts the descriptions of the different steps.
-     *
-     * @param recipe where to extract the steps from.
-     * @return Array with extracted descriptions. Holds as much elements as there are steps.
-     */
-    public static String[] extractDescriptionSteps(Recipe recipe) {
-        int stepsCount = recipe.getRecipeSteps().size();
-        String[] steps = new String[stepsCount];
-
-        for (int i = 0; i < stepsCount; i++) {
-            steps[i] = recipe.getRecipeSteps().get(i).getDescription();
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int getItemPosition(@NonNull Object object) {
+            return POSITION_NONE;
         }
-        return steps;
     }
 
 }

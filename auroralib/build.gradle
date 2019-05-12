@@ -1,4 +1,2 @@
 configurations.maybeCreate("default")
-artifacts.add("default", file('auroralib.jar'))
-dependencies {
-}
+artifacts.add("default", file('auroralib.aar'))

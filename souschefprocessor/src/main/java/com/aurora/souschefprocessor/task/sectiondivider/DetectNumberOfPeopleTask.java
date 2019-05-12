@@ -82,6 +82,14 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
     }
 
     /**
+     * Detects the number of people in the original text of the recipe that is being processed
+     */
+    public void doTask() {
+        int number = findNumberOfPeople();
+        this.mRecipeInProgress.setNumberOfPeople(number);
+    }
+
+    /**
      * Finds the amount of the people the recipe is for in the description of the {@link #mRecipeInProgress}
      * It also alter the description of the this recipe so that a user does not see how many people
      * it was originally for
@@ -107,13 +115,5 @@ public class DetectNumberOfPeopleTask extends AbstractProcessingTask {
         }
 
         return DEFAULT_NO_NUMBER;
-    }
-
-    /**
-     * Detects the number of people in the original text of the recipe that is being processed
-     */
-    public void doTask() {
-        int number = findNumberOfPeople();
-        this.mRecipeInProgress.setNumberOfPeople(number);
     }
 }

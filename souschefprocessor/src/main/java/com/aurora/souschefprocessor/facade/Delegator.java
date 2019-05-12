@@ -27,9 +27,6 @@ import java.util.concurrent.TimeUnit;
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotator;
-import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
-import edu.stanford.nlp.pipeline.TokenizerAnnotator;
-import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
@@ -89,9 +86,6 @@ public class Delegator {
         mParallelize = parallelize;
     }
 
-    public static List<Annotator> getBasicAnnotators() {
-        return createBasicAnnotators();
-    }
 
     /**
      * Creates the annotation pipelines for the {@link DetectIngredientsInStepTask} and
@@ -108,50 +102,44 @@ public class Delegator {
             sStartedCreatingPipelines = true;
             LOCK.notifyAll();
         }
-        Thread t = new Thread(() -> {
-            createBasicAnnotators();
-            DetectTimersInStepTask.initializeAnnotationPipeline();
-            DetectIngredientsInStepTask.initializeAnnotationPipeline();
-        });
+        Thread t = new Thread(DetectTimersInStepTask::initializeAnnotationPipeline);
+
         t.start();
     }
 
+
     /**
-     * Creates the basicannotators (tokenizer, words to sentence and POS), ensures that is only created
-     * once and notifies other threads if the creation is finished.
-     *
-     * @return the list of sBasicAnnotators
+     * calls the {@link SouschefProcessorCommunicator#incrementProgressAnnotationPipelines()} function
      */
-    private static List<Annotator> createBasicAnnotators() {
+    public static void incrementProgressAnnotationPipelines() {
+        SouschefProcessorCommunicator.incrementProgressAnnotationPipelines();
+        Log.i("DELEGATOR", "STEP");
 
-        synchronized (sBasicAnnotators) {
-
-            if (sBasicAnnotators.isEmpty()) {
-
-                sBasicAnnotators.add(new TokenizerAnnotator(false, "en"));
-                incrementProgressAnnotationPipelines(); //1
-            }
-            if (sBasicAnnotators.size() == 1) {
-                sBasicAnnotators.add(new WordsToSentencesAnnotator(false));
-                incrementProgressAnnotationPipelines(); //2
-            }
-            if (sBasicAnnotators.size() < BASIC_ANNOTATOR_SIZE) {
-                sBasicAnnotators.add(new POSTaggerAnnotator(false));
-                incrementProgressAnnotationPipelines(); //3
-            }
-            sBasicAnnotators.notifyAll();
-        }
-
-        return sBasicAnnotators;
     }
 
     /**
-     * calls the {@link Communicator#incrementProgressAnnotationPipelines()} function
+     * This is the core function of the delegator, where the text is processed by applying the filters
+     * This function should be able to at run time decide to do certain filters or not (graceful degradation)
+     *
+     * @param text The text to be processed in to a recipe Object
+     * @return A Recipe object that was constructed from the text
      */
-    public static void incrementProgressAnnotationPipelines() {
-        Communicator.incrementProgressAnnotationPipelines();
-        Log.d("DELEGATOR", "STEP");
+    public Recipe processText(ExtractedText text) {
+        //TODO implement this function so that at runtime it is decided which tasks should be performed
+        if (sThreadPoolExecutor == null) {
+            setUpThreadPool();
+        }
 
+        RecipeInProgress recipeInProgress = new RecipeInProgress(text);
+        List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
+        if (pipeline != null) {
+            for (AbstractProcessingTask task : pipeline) {
+                task.doTask();
+                Log.i("DELEGATOR", task.getClass().toString());
+            }
+        }
+
+        return recipeInProgress.convertToRecipe();
     }
 
     /**
@@ -184,39 +172,6 @@ public class Delegator {
                 decodeWorkQueue);
     }
 
-    public static ThreadPoolExecutor getThreadPoolExecutor() {
-        if (sThreadPoolExecutor == null) {
-            setUpThreadPool();
-        }
-        return sThreadPoolExecutor;
-    }
-
-    /**
-     * This is the core function of the delegator, where the text is processed by applying the filters
-     * This function should be able to at run time decide to do certain filters or not (graceful degradation)
-     *
-     * @param text The text to be processed in to a recipe Object
-     * @return A Recipe object that was constructed from the text
-     */
-    public Recipe processText(ExtractedText text) {
-        //TODO implement this function so that at runtime it is decided which tasks should be performed
-        if (sThreadPoolExecutor == null) {
-            setUpThreadPool();
-        }
-
-        RecipeInProgress recipeInProgress = new RecipeInProgress(text);
-        List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
-        if (pipeline != null) {
-            for (AbstractProcessingTask task : pipeline) {
-                task.doTask();
-                Log.d("DELEGATOR", task.getClass().toString());
-            }
-        }
-
-        return recipeInProgress.convertToRecipe();
-    }
-
-
     /**
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
@@ -239,4 +194,5 @@ public class Delegator {
 
         return pipeline;
     }
+
 }

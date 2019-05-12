@@ -14,16 +14,6 @@ import java.util.Locale;
  */
 public class LiveDataTimer {
     /**
-     * The amount of milliseconds in a second. Needed to convert
-     * RecipeTimers (which are in seconds) to actual timers.
-     */
-    private static final int MILLIS = 1000;
-    /**
-     * Amount of time units in a bigger time unit :)
-     * (why is there no name for that? I propose time-babies.)
-     */
-    private static final int TIME_BABIES = 60;
-    /**
      * One of the states of the timer
      */
     protected static final int TIMER_INITIALISED = 0;
@@ -35,6 +25,16 @@ public class LiveDataTimer {
      * One of the states of the timer
      */
     protected static final int TIMER_PAUSED = 2;
+    /**
+     * The amount of milliseconds in a second. Needed to convert
+     * RecipeTimers (which are in seconds) to actual timers.
+     */
+    private static final int MILLIS = 1000;
+    /**
+     * Amount of time units in a bigger time unit :)
+     * (why is there no name for that? I propose time-babies.)
+     */
+    private static final int TIME_BABIES = 60;
     /**
      * The actual timer that can count down.
      */
@@ -98,9 +98,30 @@ public class LiveDataTimer {
         mRunning = false;
     }
 
-    public void resetTimer() {
-        mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));
-        mRunning = false;
+    /**
+     * Convert an amount of seconds into a string representation
+     *
+     * @param amountMilliSeconds long representing the amount of milliseconds
+     * @return a String representation of the time
+     */
+    public static String convertTimeToString(long amountMilliSeconds) {
+        int amountSeconds = (int) (amountMilliSeconds / MILLIS);
+        // seconds / 3600, or divide twice by 60.
+        int amountHours = amountSeconds / TIME_BABIES / TIME_BABIES;
+        // subtract the amount of hours first, then divide seconds by 60 to get minutes.
+        int amountMins = (amountSeconds % (TIME_BABIES * TIME_BABIES)) / TIME_BABIES;
+        // remaining time in seconds.
+        int amountSec = amountSeconds % TIME_BABIES;
+
+        String timerText = "";
+
+        // Only add hours when there are hours.
+        if (amountHours != 0) {
+            timerText += amountHours + ":";
+        }
+        timerText += String.format(Locale.getDefault(), "%02d:%02d", amountMins, amountSec);
+
+        return timerText;
     }
 
     /**
@@ -160,29 +181,11 @@ public class LiveDataTimer {
     }
 
     /**
-     * Convert an amount of seconds into a string representation
-     *
-     * @param amountMilliSeconds long representing the amount of milliseconds
-     * @return a String representation of the time
+     * Resets the timer to it's original time
      */
-    public static String convertTimeToString(long amountMilliSeconds) {
-        int amountSeconds = (int) (amountMilliSeconds / MILLIS);
-        // seconds / 3600, or divide twice by 60.
-        int amountHours = amountSeconds / TIME_BABIES / TIME_BABIES;
-        // subtract the amount of hours first, then divide seconds by 60 to get minutes.
-        int amountMins = (amountSeconds % (TIME_BABIES * TIME_BABIES)) / TIME_BABIES;
-        // remaining time in seconds.
-        int amountSec = amountSeconds % TIME_BABIES;
-
-        String timerText = "";
-
-        // Only add hours when there are hours.
-        if (amountHours != 0) {
-            timerText += amountHours + ":";
-        }
-        timerText += String.format(Locale.getDefault(), "%02d:%02d", amountMins, amountSec);
-
-        return timerText;
+    public void resetTimer() {
+        mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));
+        mRunning = false;
     }
 
     /**
@@ -196,6 +199,7 @@ public class LiveDataTimer {
 
     /**
      * Get the upper bound on the timer.
+     *
      * @return upper bound in seconds
      */
     public int getUpperBound() {
@@ -204,6 +208,7 @@ public class LiveDataTimer {
 
     /**
      * Get the lower bound on the timer.
+     *
      * @return lower bound in seconds
      */
     public int getLowerBound() {
@@ -212,6 +217,7 @@ public class LiveDataTimer {
 
     /**
      * LiveData with a boolean whether or not the timer is finished.
+     *
      * @return LiveData with boolean
      */
     public LiveData<Boolean> getIsFinished() {
@@ -220,6 +226,7 @@ public class LiveDataTimer {
 
     /**
      * LiveData with alarming state.
+     *
      * @return Livedata with boolean whether or not alarming
      */
     public LiveData<Boolean> isAlarming() {
@@ -228,6 +235,7 @@ public class LiveDataTimer {
 
     /**
      * Get the timer state as Live data.
+     *
      * @return LiveData with the state-ID of the timer
      */
     public LiveData<Integer> getTimerState() {

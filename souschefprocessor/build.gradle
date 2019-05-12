@@ -8,8 +8,8 @@ android {
     defaultConfig {
         minSdkVersion 26
         targetSdkVersion 28
-        versionCode 8
-        versionName "0.5"
+        versionCode 9
+        versionName "0.5.1"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -59,12 +59,13 @@ dependencies {
         exclude group: 'com.sun.xml.bind'
         exclude group: 'org.apache.lucene'
     }
-    implementation('edu.stanford.nlp:stanford-corenlp:3.9.2:models') {
-        exclude group: 'com.sun.xml.bind'
-        exclude group: 'org.apache.lucene'
-    }
+    implementation files('libs/stanford-corenlp-3.9.2-models.jar-small')
 
+    // Required by auroralib
+    implementation 'com.google.code.gson:gson:2.8.5'
 
+    // Required by auroralib for running tests
+    implementation group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.7.1'
 
 
 }

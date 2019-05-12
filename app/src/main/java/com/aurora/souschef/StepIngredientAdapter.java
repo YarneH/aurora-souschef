@@ -18,19 +18,34 @@ import java.util.Locale;
  * Adapter for populating the ingredient list.
  */
 public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAdapter.CardIngredientViewHolder> {
+    /**
+     * A list of all the ingredients needed for the current step
+     */
     private final List<Ingredient> ingredients;
+    /**
+     * The current amount of servings, set by the user
+     */
     private int mCurrentAmount = 0;
+    /**
+     * The original amount of servings, extracted from the recipe
+     */
     private int mOriginalAmount = 0;
+    /**
+     * The length of the description of the current step
+     */
+    private int mStepDescriptionLength = 0;
 
     /**
      * Constructs the adapter with a list
      *
      * @param ingredients list for construction
      */
-    public StepIngredientAdapter(List<Ingredient> ingredients, int originalAmount, int currentAmount) {
+    public StepIngredientAdapter(List<Ingredient> ingredients, int originalAmount, int currentAmount,
+                                 int descriptionLength) {
         this.ingredients = ingredients;
         this.mCurrentAmount = currentAmount;
         this.mOriginalAmount = originalAmount;
+        this.mStepDescriptionLength = descriptionLength;
     }
 
     @NonNull
@@ -99,8 +114,23 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
             double newQuantity = ingredient.getQuantity() * mCurrentAmount / mOriginalAmount;
 
             mIngredientName.setText(nameWithoutQuantityAndUnit);
-            mIngredientAmount.setText(StringUtilities.toDisplayQuantity(newQuantity));
-            mIngredientUnit.setText(ingredient.getUnit());
+
+            // Only display quantity in list if the quantity is in the current step description
+            if (ingredient.getQuantityPosition().getBeginIndex() != 0
+                    || ingredient.getQuantityPosition().getEndIndex() != mStepDescriptionLength) {
+                mIngredientAmount.setText(StringUtilities.toDisplayQuantity(newQuantity));
+                mIngredientAmount.setVisibility(View.VISIBLE);
+            } else {
+                mIngredientAmount.setVisibility(View.GONE);
+            }
+
+            // Set TextView of unit to GONE when it has no unit
+            if ("".equals(ingredient.getUnit())) {
+                mIngredientUnit.setVisibility(View.GONE);
+            } else {
+                mIngredientUnit.setText(ingredient.getUnit());
+                mIngredientUnit.setVisibility(View.VISIBLE);
+            }
         }
     }
 }

@@ -6,6 +6,8 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * A singleton class for the Ringtone playing when one or multiple timers finishes
  */
@@ -23,12 +25,12 @@ public class TimerRingtone {
     /**
      * The amount of timers ringing
      */
-    private int mAmountRinging = 0;
+    private AtomicInteger mAmountRinging = new AtomicInteger(0);
 
     /**
      * A boolean representing whether the TimerRingtone has been initiated
      */
-    private boolean mInitiated = false;
+    private boolean mInitialized = false;
 
     /**
      * The private constructor for the TimerRingtone-singleton
@@ -50,8 +52,8 @@ public class TimerRingtone {
      * Initiate the TimerRingtone with a Context
      * @param context The context to which the Ringtone is connected
      */
-    public void initiate(Context context) {
-        if (!mInitiated) {
+    public void initialize(Context context) {
+        if (!mInitialized) {
             // Preparing the ringtone for the alarm
             Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
             if (alert == null) {
@@ -69,7 +71,7 @@ public class TimerRingtone {
                 mRingtone.setLooping(true);
             }
 
-            mInitiated = true;
+            mInitialized = true;
         }
     }
 
@@ -77,7 +79,7 @@ public class TimerRingtone {
      * Add a ringing timer to the Ringtone
      */
     public void addRingingTimer() {
-        mAmountRinging++;
+        mAmountRinging.incrementAndGet();
         updateRingtone();
     }
 
@@ -85,7 +87,7 @@ public class TimerRingtone {
      * Remove a ringing timer from the Ringtone
      */
     public void removeRingingTimer() {
-        mAmountRinging--;
+        mAmountRinging.decrementAndGet();
         updateRingtone();
     }
 
@@ -93,9 +95,9 @@ public class TimerRingtone {
      * Update the Ringtone according to the amount of ringing timers
      */
     private void updateRingtone() {
-        if (mAmountRinging > 0 && !mRingtone.isPlaying()) {
+        if (mAmountRinging.get() > 0 && !mRingtone.isPlaying()) {
             mRingtone.play();
-        } else if (mAmountRinging == 0 && mRingtone.isPlaying()) {
+        } else if (mAmountRinging.get() == 0 && mRingtone.isPlaying()) {
             mRingtone.stop();
         }
     }

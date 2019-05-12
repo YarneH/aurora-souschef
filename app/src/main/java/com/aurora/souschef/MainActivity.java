@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Initiate the TimerRingtone with the application context
-        TimerRingtone.getInstance().initiate(getApplicationContext());
+        TimerRingtone.getInstance().initialize(getApplicationContext());
 
         // Obtain the FirebaseAnalytics instance.
         // Most of firebase analytics is done automatically.

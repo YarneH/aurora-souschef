@@ -182,6 +182,7 @@ public class UITimer {
             if (mHandler == null) {
                 mHandler = new Handler();
             }
+
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {

@@ -347,34 +347,30 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
             List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
 
             for (CoreLabel token : tokens) {
-                // if the token is already used this can be skipped (see if maybe this line can be removed since the
-                // check might already be done somewhere else;
-                if (!usedTokens.contains(token)) {
 
-                    // iterate over the listIngredients
-                    for (ListIngredient listIngredient : map.keySet()) {
+                // iterate over the listIngredients
+                for (ListIngredient listIngredient : map.keySet()) {
 
-                        // get all the nameparts
-                        List<String> nameParts = map.get(listIngredient);
+                    // get all the nameparts
+                    List<String> nameParts = map.get(listIngredient);
 
-                        // the index of the token used needed vor constructIngredient
-                        int tokenIndex = tokens.indexOf(token);
+                    // the index of the token used needed vor constructIngredient
+                    int tokenIndex = tokens.indexOf(token);
 
-                        // the sublist starting with the current token
-                        List<CoreLabel> subListTokens = tokens.subList(tokenIndex, tokens.size());
+                    // the sublist starting with the current token
+                    List<CoreLabel> subListTokens = tokens.subList(tokenIndex, tokens.size());
 
-                        if (!usedListIngredients.contains(listIngredient) &&
-                                tokensContainedInNameParts(subListTokens, nameParts, usedTokens)) {
+                    if (!usedListIngredients.contains(listIngredient) &&
+                            tokensContainedInNameParts(subListTokens, nameParts, usedTokens)) {
 
-                            // add the listIngredient to the list of used ingredients so that if it is mentioned further
-                            // in the description it is not used again
-                            usedListIngredients.add(listIngredient);
-                            // construct and add the detected ingredient
-                            detectedIngredients.add(constructIngredient(tokenIndex, nameParts, listIngredient, tokens));
-                            // stop iterating for this token
-                            break;
+                        // add the listIngredient to the list of used ingredients so that if it is mentioned further
+                        // in the description it is not used again
+                        usedListIngredients.add(listIngredient);
+                        // construct and add the detected ingredient
+                        detectedIngredients.add(constructIngredient(tokenIndex, nameParts, listIngredient, tokens));
+                        // stop iterating for this token
+                        break;
 
-                        }
                     }
                 }
             }
@@ -498,6 +494,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     /**
      * Construct a map which matches the listingredients with their nameparts, but if multiple ingredients have
      * common parts the parts are merged with preceding or suceeding parts to create unique identifiers
+     *
      * @param ingredients the listingredients that will be the keys for the map
      * @return a map wich maps the ingredients with the unique name pars
      */

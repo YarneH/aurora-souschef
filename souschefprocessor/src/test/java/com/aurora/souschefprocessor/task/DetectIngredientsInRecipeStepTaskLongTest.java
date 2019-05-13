@@ -2609,12 +2609,10 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
      */
     private static int equalQuantities(List<Ingredient> correctIngredients,
                                        Collection<Ingredient> detectedIngredients) {
-        // System.out.println(correctIngredients);
-        //System.out.println(detectedIngredients);
+
         int equalQuantities = 0;
 
-        // the counter in the correct ingredients
-        int counter = 0;
+
         for (Ingredient detected : detectedIngredients) {
             for (Ingredient correct : correctIngredients) {
                 if (detected.getName().equals(correct.getName())) {
@@ -2634,7 +2632,6 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
 
     @Test
     public void DetectIngredientsInStepTask_doTask_AccuracyForUnitThreshold() {
-        // TODO sometimes detection is correct but this test sets it as incorrect
         // Arrange
         int correctUnits = 0;
         for (int r = 0; r < rips.size(); r++) {
@@ -2643,8 +2640,10 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
             for (int s = 0; s < rips.get(r).getStepsInProgress().size(); s++) {
 
                 List<Ingredient> correctStepIngredients = correctRecipe.get(s);
+
                 Collection<Ingredient> detectedStepIngredients =
                         rips.get(r).getStepsInProgress().get(s).getIngredients();
+
                 System.out.println("Recipe: " + r + ", step: " + s);
                 // Compare detected ingredients with correct ingredients
                 correctUnits += equalUnits(correctStepIngredients, detectedStepIngredients);
@@ -2659,20 +2658,23 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
 
     }
 
+    /*
+    Helper function that checks if the detected and expected unit match
+     */
     private static int equalUnits(List<Ingredient> correctIngredients, Collection<Ingredient> detectedIngredients) {
         int equalUnits = 0;
-        int index = 0;
-        for (Ingredient detectedIngr : detectedIngredients) {
-            for (Ingredient correctIngr : correctIngredients) {
-                if (correctIngr.getName().equals(detectedIngr.getName()) &&
-                        correctIngr.getUnit().equals(detectedIngr.getUnit())) {
 
-                    equalUnits += 1;
-                } else if (correctIngr.getName().equals(detectedIngr.getName())) {
-                    System.out.println(index + ": " + correctIngr + "  " + detectedIngr);
-
+        for (Ingredient detected : detectedIngredients) {
+            for (Ingredient correct : correctIngredients) {
+                if (detected.getName().equals(correct.getName())) {
+                    if (detected.getUnit().equals(correct.getUnit())) {
+                        equalUnits++;
+                    }
+                    else{
+                        System.err.println("CORRECT: " +correct.getUnit()+ ", DETECTED: "+ detected.getUnit());
+                    }
                 }
-                index++;
+
             }
         }
         return equalUnits;

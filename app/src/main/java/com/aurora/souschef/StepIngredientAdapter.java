@@ -3,7 +3,6 @@ package com.aurora.souschef;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +18,21 @@ import java.util.Locale;
  * Adapter for populating the ingredient list.
  */
 public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAdapter.CardIngredientViewHolder> {
+    /**
+     * A list of all the ingredients needed for the current step
+     */
     private final List<Ingredient> ingredients;
+    /**
+     * The current amount of servings, set by the user
+     */
     private int mCurrentAmount = 0;
+    /**
+     * The original amount of servings, extracted from the recipe
+     */
     private int mOriginalAmount = 0;
+    /**
+     * The length of the description of the current step
+     */
     private int mStepDescriptionLength = 0;
 
     /**
@@ -114,7 +125,7 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
             }
 
             // Set TextView of unit to GONE when it has no unit
-            if ("".equals(ingredient.getUnit())){
+            if ("".equals(ingredient.getUnit())) {
                 mIngredientUnit.setVisibility(View.GONE);
             } else {
                 mIngredientUnit.setText(ingredient.getUnit());

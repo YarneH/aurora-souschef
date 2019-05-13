@@ -177,7 +177,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
         ExtractedText text = mRecipeInProgress.getExtractedText();
 
         // first the title
-        if (text.getTitle().replace("\n", " ").trim().contains
+        if (text.getTitle() != null && text.getTitle().replace("\n", " ").trim().contains
                 (description)) {
             return text.getTitleAnnotation();
         }
@@ -209,12 +209,12 @@ public class SplitStepsTask extends AbstractProcessingTask {
      * @return true if the sentence is in the description
      */
     private static boolean isSentenceInDescription(CoreMap sentence, String description) {
-        String spaceLessDescription = description.replace(" ", "");
+        String spacelessDescription = description.replace(" ", "");
         List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
         StringBuilder bld = new StringBuilder();
         for (CoreLabel token : tokens) {
             bld.append(token.originalText());
-            if (!spaceLessDescription.contains(bld.toString())) {
+            if (!spacelessDescription.contains(bld.toString())) {
                 return false;
             }
         }
@@ -226,12 +226,11 @@ public class SplitStepsTask extends AbstractProcessingTask {
      * finds the first token of the this description by using the already foundSentences and checking if the end of
      * the sentence before the first found sentence is still in this description
      *
-     * @param allSentences all the sentences from the section that this description was in
-     * @param description                      The description to find the first token of
-     * @param foundSentences             The already found sentences
-     *                                         annotation that has
-     *                                         firstToken as its first token
-     *
+     * @param allSentences   all the sentences from the section that this description was in
+     * @param description    The description to find the first token of
+     * @param foundSentences The already found sentences
+     *                       annotation that has
+     *                       firstToken as its first token
      * @return the actual all the sentences that are part of this description
      */
     private List<CoreMap> findAllSentences(List<CoreMap> allSentences, List<CoreMap> foundSentences,
@@ -281,7 +280,5 @@ public class SplitStepsTask extends AbstractProcessingTask {
         return foundSentences;
 
     }
-
-
 
 }

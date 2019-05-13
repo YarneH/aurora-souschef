@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.souschef.utilities.TimerRingtone;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
@@ -87,6 +88,9 @@ public class MainActivity extends AppCompatActivity {
         // TODO: Change back to the correct view
         setContentView(R.layout.activity_main);
 
+        // Initiate the TimerRingtone with the application context
+        TimerRingtone.getInstance().initialize(getApplicationContext());
+
         // Obtain the FirebaseAnalytics instance.
         // Most of firebase analytics is done automatically.
         // Probably nothing more is needed.
@@ -130,9 +134,6 @@ public class MainActivity extends AppCompatActivity {
 
         if (intentIsOkay) {
             handleIntentThatOpenedPlugin(intentThatStartedThisActivity);
-        } else {
-            //code for debugging purposes, must be deleted in production
-            mRecipeViewModel.initialiseWithPlainText(getText());
         }
 
     }
@@ -231,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Hardcoded recipe with extracted text and annotations
      *
-     * @return the json of the annotated extracted test
+     * @return the json of the annotated extracted text
      */
     private String getText() {
 
@@ -284,14 +285,14 @@ public class MainActivity extends AppCompatActivity {
             ExtractedText extractedText = ExtractedText.getExtractedTextFromFile(fileUri,
                     this);
             if (extractedText != null) {
-                Log.d(TAG, "Loading extracted text.");
+                Log.i(TAG, "Loading extracted text.");
                 mRecipeViewModel.initialiseWithExtractedText(extractedText);
             } else {
                 // Error in case ExtractedText was null.
-                Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
+                Log.e(TAG, "ExtractedText-object was null.");
             }
         } catch (IOException e) {
-            Log.e(MainActivity.class.getSimpleName(),
+            Log.e(TAG,
                     "IOException while loading data from aurora", e);
         }
     }
@@ -306,12 +307,11 @@ public class MainActivity extends AppCompatActivity {
             Recipe receivedObject = Recipe.getPluginObjectFromFile(fileUri, this,
                     Recipe.class);
 
-            Log.d(TAG, "Loading cashed Object.");
+            Log.i(TAG, "Loading cashed Object.");
             mRecipeViewModel.initialiseWithRecipe(receivedObject);
 
         } catch (IOException e) {
-            Log.e(MainActivity.class.getSimpleName(),
-                    "IOException while loading data from aurora", e);
+            Log.e(TAG, "IOException while loading data from aurora", e);
         }
     }
 

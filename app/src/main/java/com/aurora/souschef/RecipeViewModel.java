@@ -12,7 +12,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.auroralib.translation.TranslationServiceCaller;
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
@@ -39,7 +38,7 @@ public class RecipeViewModel extends AndroidViewModel {
     /**
      * The maximum amount of people you can cook for.
      */
-    private static final int MAX_PEOPLE = 80;
+    private static final int MAX_PEOPLE = 99;
 
     /**
      * Stop actively updating the progressbar after MAX_WAIT_TIME.
@@ -98,8 +97,6 @@ public class RecipeViewModel extends AndroidViewModel {
     private boolean isBeingProcessed = false;
 
 
-    private TranslationServiceCaller mTranslationServiceCaller;
-
     /**
      * The context of the application.
      * <p>
@@ -144,8 +141,6 @@ public class RecipeViewModel extends AndroidViewModel {
             }
         };
         sharedPreferences.registerOnSharedPreferenceChangeListener(mListener);
-        mTranslationServiceCaller = new TranslationServiceCaller(application);
-
     }
 
     /**

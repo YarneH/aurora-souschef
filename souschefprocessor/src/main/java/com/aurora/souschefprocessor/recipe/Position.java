@@ -180,6 +180,10 @@ public class Position {
         }
     }
 
+    /**
+     * subtracts an offset form both begin and endindex
+     * @param offset the offset to subtract, this cannot be higher than the beginindex
+     */
     public void subtractOffset(int offset) {
         if (offset <= mBeginIndex) {
             mBeginIndex -= offset;
@@ -190,6 +194,10 @@ public class Position {
 
     }
 
+    /**
+     * Adds an offset to both begin and endindex
+     * @param offset the offste to add
+     */
     public void addOffset(int offset) {
         mEndIndex += offset;
         mBeginIndex += offset;

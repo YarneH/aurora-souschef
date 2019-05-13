@@ -133,6 +133,55 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     }
 
     /**
+     * If two lists share some identical elements then these elements will be merged with the element that comes
+     * before them in the list (or afterwards if before is not possible) if possible
+     *
+     * @param list1 the first list
+     * @param list2 the second list
+     */
+    private static void mergeCommonElements(List<String> list1, List<String> list2) {
+
+        // make a new list that has all the common elements
+        List<String> commonList = (new ArrayList<>(list1));
+        commonList.retainAll(list2);
+        // a boolean that indicates wheter the while loop should stop
+        boolean stop = false;
+        // while there are still common elements and the lists have more than 1 element (otherwise merging is not
+        // possible anymore)
+        while (!commonList.isEmpty() && !stop) {
+            for (String commonString : commonList) {
+                // list 1
+                mergeElement(commonString, list1);
+                mergeElement(commonString, list2);
+            }
+            commonList.clear();
+            commonList.addAll(list1);
+            commonList.retainAll(list2);
+            if (list1.size() == 1 && list2.size() == 1) {
+                stop = true;
+            }
+        }
+
+    }
+
+    private static void mergeElement(String commonString, List<String> list) {
+        int index = list.indexOf(commonString);
+        if (index > 0) {
+            // merge with previous
+            list.set(index - 1, list.get(index - 1) + " " + commonString);
+
+            list.remove(index);
+
+        } else {
+            if (index < list.size() - 1 && index > -1) {
+                // merge with next
+                list.set(index + 1, commonString + " " + list.get(index + 1));
+                list.remove(index);
+            }
+        }
+    }
+
+    /**
      * Checks if a string should be ignored (if it is contained in the {@link #STRINGS_TO_IGNORE}
      * list
      *
@@ -153,13 +202,13 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
     /**
      * Checks if two strings only differ in the fact that one character is not present to catch
-     * plurals (e.g "onion" and "onions" and spelling mistakes "fettuccine" and "fettucine"
+     * plurals (e.g "onion" and "onions" )
      *
      * @param string1 the first string
      * @param string2 the second string
      * @return a boolean indicating whether these strings differ in one erasure
      */
-    private static boolean differInOneErasure(String string1, String string2) {
+    private static boolean differInLastCharacter(String string1, String string2) {
         // check for one erasure
 
         int string2Length = string2.length();
@@ -177,7 +226,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
                 longest = string1;
                 shortest = string2;
             }
-            return differenceIsOneErasedCharacter(shortest, longest);
+            return extraCharachterAtTheBack(shortest, longest);
         }
 
         return false;
@@ -185,41 +234,24 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     }
 
     /**
-     * Checks if the difference is just in one erased character and not a completely different word
+     * Checks if the difference is an extra character at the back which is not a d (since this is conjugated verb and
+     * this means that it is not a description of the ingredient of the shortest string)
      *
      * @param shortest the shortest string (its length is smaller than the longest)
      * @param longest  the longest string
-     * @return a boolean indicating if the difference is one erased character or not
+     * @return a boolean indicating if the difference is only the character at the back
      */
-    private static boolean differenceIsOneErasedCharacter(String shortest, String longest) {
+    private static boolean extraCharachterAtTheBack(String shortest, String longest) {
         int shortLength = shortest.length();
 
-        // check if longest just contains an extra character at the back
-        // to bypass the loop
         if (longest.substring(0, shortLength).equalsIgnoreCase(shortest)) {
-            // make sure the last character wasn't a d since this is conjugated verb
+            // make sure the last character wasn't a d since this is conjugated verb and this means that it is not a
+            // description of the ingredient with the noun
             return longest.charAt(longest.length() - 1) != 'd';
         }
 
         return false;
 
-    }
-
-    private static void mergeElement(String commonString, List<String> list) {
-        int index = list.indexOf(commonString);
-        if (index > 0) {
-            // merge with previous
-            list.set(index - 1, list.get(index - 1) + " " + commonString);
-
-            list.remove(index);
-
-        } else {
-            if (index < list.size() - 1 && index > -1) {
-                // merge with next
-                list.set(index + 1, commonString + " " + list.get(index + 1));
-                list.remove(index);
-            }
-        }
     }
 
     /**
@@ -268,140 +300,166 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
         Map<ListIngredient, List<String>> mergedCommonPartsMap = createCommonPartsMergedMap(ingredientListRecipe);
 
-        for (ListIngredient listIngr : ingredientListRecipe) {
-            // remove the doubles so every string is only searche once
-            ingredientListMap.get(listIngr).removeAll(mergedCommonPartsMap.get(listIngr));
+        for (ListIngredient listIngredient : ingredientListRecipe) {
+            // remove the doubles so every string is only searched once
+            mergedCommonPartsMap.get(listIngredient).removeAll(ingredientListMap.get(listIngredient));
         }
 
         // Keeps track of already found ListIngredients in case the ingredient
         // is mentioned multiple times in the recipe step
-        List<Ingredient> foundIngredients = new ArrayList<>();
+        List<ListIngredient> foundIngredients = new ArrayList<>();
 
         // keeps track of the tokens and string combinations already used to identify an ingredient
         List<CoreLabel> usedTokens = new ArrayList<>();
 
         List<CoreMap> stepSentences = recipeStep.getSentenceAnnotations();
 
-        for (CoreMap sentence : stepSentences) {
-            List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
 
-            // first search the map with the merged common parts so that if there are common parts it is more
-            // likely that the correct ingredient is selected as found ingredient
-            for (CoreLabel token : tokens) {
-                if (!usedTokens.contains(token)) {
+        // first search the map with the merged common parts so that if there are common parts it is more
+        // likely that the correct ingredient is selected as found ingredient
+        searchInMap(stepSentences, usedTokens, foundIngredients, detectedIngredients, mergedCommonPartsMap);
+        searchInMap(stepSentences, usedTokens, foundIngredients, detectedIngredients, ingredientListMap);
 
-                    usedTokens.addAll(searchInMap(mergedCommonPartsMap, tokens, token, foundIngredients,
-                            detectedIngredients));
-
-                }
-            }
-
-            // sonar does not want me to loop through the tokens twice, but it should be like this for correct
-            // detection, first all the tokens are searched using the merged map and afterwards the tokens are
-            // searched using the unmerged map
-            //NOSONAR
-            for (CoreLabel token : tokens) {
-                if (!usedTokens.contains(token)) {
-                    searchInMap(ingredientListMap, tokens, token, foundIngredients, detectedIngredients);
-                }
-            }
-        }
-
+        // order the ingredients and return
         return order(detectedIngredients);
     }
 
-    private List<Ingredient> order(List<Ingredient> list) {
+    /**
+     * private helper function it searches for matches between tokens and name parts (parts of the names of the
+     * listIngredients in the recipe). If a match is found an ingredient is constructed by also searching the unit
+     * and quantity {@link #constructIngredient(int, List, Ingredient, List)}. It keeps track of all the usedTokens
+     * and usedListIngredients as to not reuse them
+     *
+     * @param stepSentences       The list of sentences to find matches in
+     * @param usedTokens          the list of used Tokens before execution, this list is updated if more tokens are used
+     * @param usedListIngredients the list of used ListIngredients before execution, this list is updated if more
+     *                            tokens
+     *                            are used
+     * @param detectedIngredients the list of detected Ingredients, this list will be updated if new ingredients are
+     *                            constructed
+     * @param map                 A map that maps ListIngredients to their NameParts
+     */
+    private void searchInMap(List<CoreMap> stepSentences, List<CoreLabel> usedTokens,
+                             List<ListIngredient> usedListIngredients,
+                             List<Ingredient> detectedIngredients, Map<ListIngredient, List<String>> map) {
 
-        // order by beginindex of the name position
-        Collections.sort(list, (Ingredient i1, Ingredient i2) ->
-                Integer.compare(i1.getNamePosition().getBeginIndex(), i2.getNamePosition().getBeginIndex()));
+        for (CoreMap sentence : stepSentences) {
+            List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
 
-        return list;
+            for (CoreLabel token : tokens) {
+                // if the token is already used this can be skipped (see if maybe this line can be removed since the
+                // check might already be done somewhere else;
+                if (!usedTokens.contains(token)) {
+
+                    // iterate over the listIngredients
+                    for (ListIngredient listIngredient : map.keySet()) {
+
+                        // get all the nameparts
+                        List<String> nameParts = map.get(listIngredient);
+
+                        // the index of the token used needed vor constructIngredient
+                        int tokenIndex = tokens.indexOf(token);
+
+                        // the sublist starting with the current token
+                        List<CoreLabel> subListTokens = tokens.subList(tokenIndex, tokens.size());
+
+                        if (!usedListIngredients.contains(listIngredient) &&
+                                tokensContainedInNameParts(subListTokens, nameParts, usedTokens)) {
+
+                            // add the listIngredient to the list of used ingredients so that if it is mentioned further
+                            // in the description it is not used again
+                            usedListIngredients.add(listIngredient);
+                            // construct and add the detected ingredient
+                            detectedIngredients.add(constructIngredient(tokenIndex, nameParts, listIngredient, tokens));
+                            // stop iterating for this token
+                            break;
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if the sublist of tokens is contained in the nameParts and if this is relevant (not part of the
+     * {@link #TAGS_TO_IGNORE} or {@link #STRINGS_TO_IGNORE} arrays). It will also be contained
+     * if the token differs with a namePart in one erasure see {@link #differInLastCharacter(String, String)}
+     * this is needed to detect that "onion" refers to "onions" and to correct some spelling mistakes
+     *
+     * @param tokens    the sublist of tokens to check, starts with the first token that sould be contained in the
+     *                  nameParts
+     * @param nameParts the list of nameStrings to check
+     * @return true if the token is contained
+     */
+    private boolean tokensContainedInNameParts(List<CoreLabel> tokens, List<String> nameParts,
+                                               List<CoreLabel> usedLabels) {
+        // go over all the strings
+        for (String namePart : nameParts) {
+            // check how many words are in the string
+            String[] words = namePart.split(" ");
+            int numberOfWords = words.length;
+
+
+            // if the sublist is long enough to contain all the words of this namepart and the
+            if (tokens.size() >= numberOfWords) {
+                // get a sublist with the length of the words
+                List<CoreLabel> subListTokens = tokens.subList(0, numberOfWords);
+                // check if none of these tokens is already used
+                if (usedLabels.isEmpty() || Collections.disjoint(subListTokens, usedLabels)) {
+                    // do the words match with the tokens?
+                    List<CoreLabel> tokensUsedForNamePart = tokensContainedInWords(words, subListTokens);
+                    // if it is not empty then we have found a match, add all the used tokens to the used labels and
+                    // return true
+                    if (!tokensUsedForNamePart.isEmpty()) {
+                        usedLabels.addAll(tokensUsedForNamePart);
+                        return true;
+                    }
+                }
+
+            }
+        }
+        return false;
 
     }
 
-    private List<CoreLabel> searchInMap(Map<ListIngredient, List<String>> map, List<CoreLabel> tokens,
-                                        CoreLabel token,
-                                        List<Ingredient> foundIngredients, List<Ingredient> detectedIngredients
-    ) {
+    /**
+     * private helper function for {@link #tokensContainedInNameParts(List, List, List)}
+     *
+     * @param words  the words of a specific namePart to be checked
+     * @param tokens the tokens to be checked (starting with the first token to be checked) it has the same size as
+     *               the length of the words array
+     * @return true the tokens that have been used to confirm the words are contained, if the tokens are not found in
+     * these words than this will be an empty list
+     */
+    private List<CoreLabel> tokensContainedInWords(String[] words, List<CoreLabel> tokens) {
+        List<CoreLabel> usedTokens = new ArrayList<>();
+        int numberOfWords = words.length;
+        // go over all the words in this namePart
+        for (int i = 0; i < numberOfWords; i++) {
+            // get the corresponding token and word
+            CoreLabel token = tokens.get(i);
+            String word = words[i];
 
-        // if found stop searching through the other ingredients
-        boolean foundName = false;
-        List<CoreLabel> usedLabels = new ArrayList<>();
+            // check if we do not want to ignore this word or token, if the number of words is larger than 1
+            // it means that we do not want to ignore since this is a result of a needed merging operation to
+            // differentiate between the different ingredients
+            if (numberOfWords > 1 || (doNotIgnoreString(word) && doNotIgnoreToken(token))) {
+                String tokenText = token.originalText().toLowerCase(Locale.ENGLISH);
 
-
-        for (ListIngredient listIngredient : map.keySet()) {
-            List<String> nameParts = map.get(listIngredient);
-
-            int tokenIndex = tokens.indexOf(token);
-            // Found name of an ingredient from the list of ingredients
-            if (tokenIsContainedInNameParts(tokens.subList(tokenIndex,
-                    tokens.size()), nameParts)
-                    && !foundIngredients.contains(listIngredient)) {
-
-                foundIngredients.add(listIngredient);
-
-                detectedIngredients.add(getStepIngredient(tokenIndex, nameParts, listIngredient, tokens));
-                foundName = true;
-
-
-                // Check if the mentioned ingredient is being described by multiple words in the step
-                // Skip these words for further analysis of the recipe step
-                usedLabels.addAll(getAllUsedTokens(tokenIndex, tokens, nameParts));
-
-            }
-
-            if (foundName) {
-                break;
-            }
-        }
-        return usedLabels;
-
-    }
-
-    private Map<ListIngredient, List<String>> createCommonPartsMergedMap(List<ListIngredient> ingredients) {
-
-        Map<ListIngredient, List<String>> commonPartsMerged = new HashMap<>();
-        for (ListIngredient listIngr : ingredients) {
-            commonPartsMerged.put(listIngr, new LinkedList<>(
-                    Arrays.asList(listIngr.getName().toLowerCase(Locale.ENGLISH)
-                            .replace(",", "").split(" "))));
-        }
-
-
-        // if a word is present in several lists, merge it with the previous or next word
-        for (int i = 0; i < ingredients.size(); i++) {
-            List<String> listI = commonPartsMerged.get(ingredients.get(i));
-            for (int j = i + 1; j < ingredients.size(); j++) {
-                List<String> listJ = commonPartsMerged.get(ingredients.get(j));
-                mergeCommonElements(listI, listJ);
+                // check if the tokentext is equal to the word or the difference is small enough to consider
+                // it a match, if not return the empty list since this is not a match
+                if (!(word.equalsIgnoreCase(tokenText) || differInLastCharacter(tokenText, word))) {
+                    return Collections.emptyList();
+                }
+                // if we get here add the token to the usedTokens list
+                usedTokens.add(token);
             }
 
         }
-
-        return commonPartsMerged;
-    }
-
-    private void mergeCommonElements(List<String> list1, List<String> list2) {
-
-
-        List<String> commonList = (new ArrayList<>(list1));
-        commonList.retainAll(list2);
-        boolean stop = false;
-        // while there are still common elements but they still
-        while (!commonList.isEmpty() && !stop) {
-            for (String commonString : commonList) {
-                // list 1
-                mergeElement(commonString, list1);
-                mergeElement(commonString, list2);
-            }
-            commonList = (new ArrayList<>(list1));
-            commonList.retainAll(list2);
-            if (list1.size() == 1 && list2.size() == 1) {
-                stop = true;
-            }
-        }
-
+        // if we get through the list then all of the not ignored tokens matched with the words so return a list with
+        // these tokens
+        return usedTokens;
     }
 
     /**
@@ -414,168 +472,90 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private boolean doNotIgnoreToken(CoreLabel token) {
         String tokenText = token.originalText();
 
-        if (!doNotIgnoreString(tokenText)) {
-            // if the string of the token should be ignored, the whole token should be ignored
-            // so return false
-            return false;
-        }
-
-        for (String cookingNoun : COOKING_NOUNS) {
-            if (cookingNoun.equalsIgnoreCase(tokenText)) {
-                return true;
-            }
-        }
-        for (String tagToIgnore : TAGS_TO_IGNORE) {
-            if (token.tag().equals(tagToIgnore)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Checks if the sublist of tokens is contained in the nameParts and if this is relevant (not part of the
-     * {@link #TAGS_TO_IGNORE} or {@link #STRINGS_TO_IGNORE} arrays). It will also be contained
-     * if the token differs with a namePart in one erasure see {@link #differInOneErasure(String, String)}
-     * this is needed to detect that "onion" refers to "onions" and to correct some spelling mistakes
-     *
-     * @param tokens    the sublist of tokens to check
-     * @param nameParts the list of nameStrings to check
-     * @return true if the token is contained
-     */
-    private boolean tokenIsContainedInNameParts(List<CoreLabel> tokens, List<String> nameParts) {
-        for (String namePart : nameParts) {
-            int partLength = namePart.split(" ").length;
-
-            if (tokens.size() >= partLength) {
-                boolean namePartOkay = false;
-
-                for (int i = 0; i < partLength; i++) {
-                    CoreLabel token = tokens.get(i);
-                    String part = namePart.split(" ")[i];
-
-                    if (partLength > 1 || (doNotIgnoreString(part) && doNotIgnoreToken(token))) {
-                        String tokenText = token.originalText().toLowerCase(Locale.ENGLISH);
-
-                        if (!(part.equalsIgnoreCase(tokenText) || differInOneErasure(tokenText, part))) {
-                            namePartOkay = false;
-
-                            break;
-                        } else {
-                            namePartOkay = true;
-                        }
-                    }
-
-                }
-                if (namePartOkay) {
+        boolean doNotIgnore = false;
+        // if the string of the token should be ignored, the whole token should be ignored
+        if (doNotIgnoreString(tokenText)) {
+            // check all the known cooking nouns first, if it is one of these then do not ignore
+            for (String cookingNoun : COOKING_NOUNS) {
+                if (cookingNoun.equalsIgnoreCase(tokenText)) {
                     return true;
                 }
-
             }
-        }
-        return false;
 
+            // check if this token is tagged with a tag to ignore in terms of name searching for ingredients
+            for (String tagToIgnore : TAGS_TO_IGNORE) {
+                if (token.tag().equals(tagToIgnore)) {
+                    return false;
+                }
+            }
+            // we got here so do not ignore
+            doNotIgnore = true;
+        }
+
+        return doNotIgnore;
     }
 
     /**
-     * Checks if there are multiple words used to represent the ingredient
-     * in the recipeStep and returns the amount of used words
-     *
-     * @param tokens    Tokens in in the recipe step
-     * @param nameParts Separated words of the list ingredient's name
-     * @return a list of tokens that is used to define this ingredient
+     * Construct a map which matches the listingredients with their nameparts, but if multiple ingredients have
+     * common parts the parts are merged with preceding or suceeding parts to create unique identifiers
+     * @param ingredients the listingredients that will be the keys for the map
+     * @return a map wich maps the ingredients with the unique name pars
      */
-    private List<CoreLabel> getAllUsedTokens(int tokenIndex, List<CoreLabel> tokens, List<String> nameParts) {
-        List<CoreLabel> usedLabels = new ArrayList<>();
+    private Map<ListIngredient, List<String>> createCommonPartsMergedMap(List<ListIngredient> ingredients) {
 
-        for (String namePart : nameParts) {
-            for (String part : namePart.split(" ")) {
-                if (tokens.get(tokenIndex).originalText().equals(part)) {
-                    usedLabels.add(tokens.get(tokenIndex));
-                    tokenIndex++;
-                }
-                if (tokenIndex == tokens.size()) {
-                    // reached the end
-                    return usedLabels;
-                }
+        // first create the map with all the elements (these could be common for different keys)
+        Map<ListIngredient, List<String>> commonPartsMerged = new HashMap<>();
+        for (ListIngredient listIngredient : ingredients) {
+            commonPartsMerged.put(listIngredient, new LinkedList<>(
+                    Arrays.asList(listIngredient.getName().toLowerCase(Locale.ENGLISH)
+                            .replace(",", "").split(" "))));
+        }
 
+
+        // if a word is present in several lists, merge it with the previous or next word
+        // go over the ingredients
+        for (int i = 0; i < ingredients.size(); i++) {
+            List<String> listI = commonPartsMerged.get(ingredients.get(i));
+            // go over the other ingredients as to only search each pair once
+            for (int j = i + 1; j < ingredients.size(); j++) {
+                List<String> listJ = commonPartsMerged.get(ingredients.get(j));
+                mergeCommonElements(listI, listJ);
             }
+
         }
 
-        List<String> remainingTokensText = new ArrayList<>();
-
-        for (CoreLabel token : tokens.subList(tokenIndex, tokens.size())) {
-            remainingTokensText.add(token.originalText());
-        }
-
-        int foundIndex = remainingTokensText.size();
-
-        // check if a namepart with a space can be found another time in the list of tokens
-        for (String namePart : nameParts) {
-            String[] split = namePart.split(" ");
-            if (split.length > 1) {
-                boolean firstPart = true;
-                List<CoreLabel> refoundTokens = new ArrayList<>();
-                for (String part : split) {
-                    if (firstPart) {
-                        foundIndex = remainingTokensText.indexOf(part);
-                        if (foundIndex < 0 || foundIndex > remainingTokensText.size() - split.length) {
-                            // not found again or no space left to find the whole part
-                            break;
-                        }
-                    } else {
-                        if (!part.equals(remainingTokensText.get(++foundIndex))) {
-                            // not found again
-                            refoundTokens.clear();
-                            break;
-                        }
-                    }
-                    refoundTokens.add(tokens.get(tokenIndex + foundIndex));
-                    firstPart = false;
-                }
-                usedLabels.addAll(refoundTokens);
-            }
-        }
-
-        return usedLabels;
+        return commonPartsMerged;
     }
 
     /**
-     * Checks if there are multiple words used to represent the ingredient
-     * in the recipeStep and returns the amount of used words
+     * Sorts the list on the beginIndex of the namePosition, since a name is always found this ordering feels
+     * natural in a step
      *
-     * @param tokens    Tokens in in the recipe step
-     * @param nameParts Separated words of the list ingredient's name
-     * @return the amount of additional separated words used in the recipe step
+     * @param list the list to sort
+     * @return the sorted list
      */
-    private int succeedingNameLength(int tokenIndex, List<CoreLabel> tokens, List<String> nameParts) {
-        int succeedingLength = 0;
+    private List<Ingredient> order(List<Ingredient> list) {
 
-        if ((tokens.size() - 1) > tokenIndex) {
-            int maxNameIndex = Math.max(tokens.size() - 1, nameParts.size() - 1);
-            List<CoreLabel> succeedingTokens = tokens.subList(tokenIndex + 1, maxNameIndex);
-            for (CoreLabel token : succeedingTokens) {
-                if (nameParts.contains(token.originalText())) {
-                    succeedingLength += 1;
-                }
-            }
-        }
+        // order by beginindex of the name position
+        Collections.sort(list, (Ingredient i1, Ingredient i2) ->
+                Integer.compare(i1.getNamePosition().getBeginIndex(), i2.getNamePosition().getBeginIndex()));
 
-        return succeedingLength;
+        return list;
+
     }
+
 
     /**
      * Finds the attributes (name, unit and quantity) of the step ingredient in the recipe step sentence
-     * If some attributes can't be found they are set to their default absent value
+     * If some attributes can'searchInMap be found they are set to their default absent value
      *
      * @param nameIndex      Index of the found ingredient name in the list of tokens
      * @param listIngredient ListIngredient corresponding to this found ingredient name
      * @param tokens         List of tokens representing this sentence
      * @return Step Ingredient
      */
-    private Ingredient getStepIngredient(int nameIndex, List<String> nameParts,
-                                         Ingredient listIngredient, List<CoreLabel> tokens) {
+    private Ingredient constructIngredient(int nameIndex, List<String> nameParts,
+                                           Ingredient listIngredient, List<CoreLabel> tokens) {
 
         int beginPosOffset = mRecipeStep.getBeginPosition();
         Ingredient stepIngredient = defaultStepIngredient();
@@ -676,111 +656,42 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     }
 
     /**
+     * Checks if there are multiple words used to represent the ingredient
+     * in the recipeStep and returns the amount of used words
+     *
+     * @param tokens    Tokens in in the recipe step
+     * @param nameParts Separated words of the list ingredient's name
+     * @return the amount of additional separated words used in the recipe step
+     */
+    private int succeedingNameLength(int tokenIndex, List<CoreLabel> tokens, List<String> nameParts) {
+        int succeedingLength = 0;
+
+        if ((tokens.size() - 1) > tokenIndex) {
+            int maxNameIndex = Math.max(tokens.size() - 1, nameParts.size() - 1);
+            List<CoreLabel> succeedingTokens = tokens.subList(tokenIndex + 1, maxNameIndex);
+            for (CoreLabel token : succeedingTokens) {
+                if (nameParts.contains(token.originalText())) {
+                    succeedingLength += 1;
+                }
+            }
+        }
+
+        return succeedingLength;
+    }
+
+    /**
+     * Checks whether there can be quantities or unit's found in front of the ingredient it's name
+     * For verbs before a name e.g. 'put' celery or 'add' celery there will be no unit
+     *
      * @param precedingTokens Tokens in front of detected name of an ingredient
-     * @param listQuantity    The quantity of the list ingredient tied to this detected ingredient name
-     * @return A pair with both the start and end position of the quantity of this detected ingredient
-     * and the quantity detected in the ingredient step
+     * @return True if quantity tokens or unit tokens might be present
      */
-    private Pair<Position, Double> findQuantityPositionAndValue(List<CoreLabel> precedingTokens, Double
-            listQuantity) {
-        double stepQuantity = 1.0;
-        boolean foundQuantities = false;
-
-        int beginPos = precedingTokens.get(precedingTokens.size() - 1).endPosition();
-        int endPos = 0;
-
-        List<String> ingredientSeparators = Arrays.asList(",", ".");
-
-
-        // Stop when another ingredient is found to prevent quantity overlap
-        // CC means Coordinating conjunction, such as "and"
-        int i = precedingTokens.size() - 1;
-        while (i >= 0 && !ingredientSeparators.contains(precedingTokens.get(i).originalText())
-                && !"CC".equals(precedingTokens.get(i).tag())) {
-            // Detect verbose fractions
-            Pair<Boolean, Double> quantityVerbose = detectVerboseFractions(i, precedingTokens, listQuantity);
-            // Detect cardinal numbers: fractions, numbers and verbose numbers
-            Pair<Boolean, Double> quantityCardinal = detectCardinalFractions(i, precedingTokens);
-            stepQuantity *= quantityVerbose.second * quantityCardinal.second;
-
-            if (quantityVerbose.first || quantityCardinal.first) {
-                if (precedingTokens.get(i).beginPosition() < beginPos) {
-                    beginPos = precedingTokens.get(i).beginPosition();
-                }
-                if (precedingTokens.get(i).endPosition() > endPos) {
-                    endPos = precedingTokens.get(i).endPosition();
-                }
-                foundQuantities = true;
-            }
-            i--;
+    private boolean isIsolatedName(List<CoreLabel> precedingTokens) {
+        if (!precedingTokens.isEmpty()) {
+            return ("VB".equals(precedingTokens.get(precedingTokens.size() - 1).tag()));
         }
-
-        if (foundQuantities) {
-            return new Pair<>(new Position(beginPos, endPos), stepQuantity);
-        }
-
-        return null;
-    }
-
-    /**
-     * checks whether the passed token is verbose notation of a fraction quantity
-     * e.g. 'half' an apple is 0.5 of an apple
-     * but 'half' the apples means it should be half of the initial apples in the ingredient list
-     *
-     * @param tokenIndex      current token to check if it is a quantity fraction
-     * @param precedingTokens tokens preceding the detectec name of the ingredient
-     * @return Pair with a boolean indicating whether a verbose quantity was detected and the quantity itself
-     */
-    private Pair<Boolean, Double> detectCardinalFractions(int tokenIndex, List<CoreLabel> precedingTokens) {
-        double quantityMultiplier = 1.0;
-        boolean tokenIsQuantity = false;
-        if ("CD".equals(precedingTokens.get(tokenIndex).tag())) {
-            quantityMultiplier *= calculateQuantity(Arrays.asList(precedingTokens.get(tokenIndex)));
-            tokenIsQuantity = true;
-        }
-
-        return new Pair<>(tokenIsQuantity, quantityMultiplier);
-    }
-
-    /**
-     * checks whether the passed token is a cardinal quantity
-     * this includes a numerical, fraction and verbose description of the quantity
-     * e.g. '1/5' cup of salt OR '15' cups of salt or 'five' cups of salt
-     *
-     * @param tokenIndex      current token to check if it is a quantity fraction
-     * @param precedingTokens tokens preceding the detectec name of the ingredient
-     * @param listQuantity    the initial quantity detected in the ingredient list
-     * @return Pair with a boolean indicating whether a cardinal quantity was detected and the quantity itself
-     */
-    private Pair<Boolean, Double> detectVerboseFractions(int tokenIndex,
-                                                         List<CoreLabel> precedingTokens, Double listQuantity) {
-        double quantityMultiplier = 1.0;
-        boolean tokenIsQuantity = false;
-        if (sFractionMultipliers.keySet().contains(precedingTokens.get(tokenIndex).originalText())) {
-            quantityMultiplier *= sFractionMultipliers.get(precedingTokens.get(tokenIndex).originalText());
-            if ("DT".equals(precedingTokens.get(precedingTokens.size() - 1).tag())) {
-                quantityMultiplier *= listQuantity;
-            }
-            tokenIsQuantity = true;
-        }
-
-        return new Pair<>(tokenIsQuantity, quantityMultiplier);
-    }
-
-
-    /**
-     * A function that indicates if a the search for a unit should stop. Currently this is when a comma
-     * is encountered
-     *
-     * @param token the current token, where the search is at
-     * @return a boolean that indicates if the search should be stopped
-     */
-    private boolean stopSearchingForUnit(CoreLabel token, String nameOf) {
-        if (token.originalText().contains(",")) {
-            return true;
-        }
-
-        return mNamesOfListIngredients.contains(token.originalText().replace(",", "")) && !nameOf.contains(token.originalText());
+        // In case the ingredient name is the first word in the step
+        return true;
     }
 
     /**
@@ -848,17 +759,110 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     }
 
     /**
-     * Checks whether there can be quantities or unit's found in front of the ingredient it's name
-     * For verbs before a name e.g. 'put' celery or 'add' celery there will be no unit
-     *
      * @param precedingTokens Tokens in front of detected name of an ingredient
-     * @return True if quantity tokens or unit tokens might be present
+     * @param listQuantity    The quantity of the list ingredient tied to this detected ingredient name
+     * @return A pair with both the start and end position of the quantity of this detected ingredient
+     * and the quantity detected in the ingredient step
      */
-    private boolean isIsolatedName(List<CoreLabel> precedingTokens) {
-        if (!precedingTokens.isEmpty()) {
-            return ("VB".equals(precedingTokens.get(precedingTokens.size() - 1).tag()));
+    private Pair<Position, Double> findQuantityPositionAndValue(List<CoreLabel> precedingTokens, Double
+            listQuantity) {
+        double stepQuantity = 1.0;
+        boolean foundQuantities = false;
+
+        int beginPos = precedingTokens.get(precedingTokens.size() - 1).endPosition();
+        int endPos = 0;
+
+        List<String> ingredientSeparators = Arrays.asList(",", ".");
+
+
+        // Stop when another ingredient is found to prevent quantity overlap
+        // CC means Coordinating conjunction, such as "and"
+        int i = precedingTokens.size() - 1;
+        while (i >= 0 && !ingredientSeparators.contains(precedingTokens.get(i).originalText())
+                && !"CC".equals(precedingTokens.get(i).tag())) {
+            // Detect verbose fractions
+            Pair<Boolean, Double> quantityVerbose = detectVerboseFractions(i, precedingTokens, listQuantity);
+            // Detect cardinal numbers: fractions, numbers and verbose numbers
+            Pair<Boolean, Double> quantityCardinal = detectCardinalFractions(i, precedingTokens);
+            stepQuantity *= quantityVerbose.second * quantityCardinal.second;
+
+            if (quantityVerbose.first || quantityCardinal.first) {
+                if (precedingTokens.get(i).beginPosition() < beginPos) {
+                    beginPos = precedingTokens.get(i).beginPosition();
+                }
+                if (precedingTokens.get(i).endPosition() > endPos) {
+                    endPos = precedingTokens.get(i).endPosition();
+                }
+                foundQuantities = true;
+            }
+            i--;
         }
-        // In case the ingredient name is the first word in the step
-        return true;
+
+        if (foundQuantities) {
+            return new Pair<>(new Position(beginPos, endPos), stepQuantity);
+        }
+
+        return null;
+    }
+
+    /**
+     * A function that indicates if a the search for a unit should stop. Currently this is when a comma
+     * is encountered
+     *
+     * @param token the current token, where the search is at
+     * @return a boolean that indicates if the search should be stopped
+     */
+    private boolean stopSearchingForUnit(CoreLabel token, String nameOf) {
+        if (token.originalText().contains(",")) {
+            return true;
+        }
+
+        return mNamesOfListIngredients.contains(token.originalText().replace(",", ""))
+                && !nameOf.contains(token.originalText());
+    }
+
+    /**
+     * checks whether the passed token is a cardinal quantity
+     * this includes a numerical, fraction and verbose description of the quantity
+     * e.g. '1/5' cup of salt OR '15' cups of salt or 'five' cups of salt
+     *
+     * @param tokenIndex      current token to check if it is a quantity fraction
+     * @param precedingTokens tokens preceding the detectec name of the ingredient
+     * @param listQuantity    the initial quantity detected in the ingredient list
+     * @return Pair with a boolean indicating whether a cardinal quantity was detected and the quantity itself
+     */
+    private Pair<Boolean, Double> detectVerboseFractions(int tokenIndex,
+                                                         List<CoreLabel> precedingTokens, Double listQuantity) {
+        double quantityMultiplier = 1.0;
+        boolean tokenIsQuantity = false;
+        if (sFractionMultipliers.keySet().contains(precedingTokens.get(tokenIndex).originalText())) {
+            quantityMultiplier *= sFractionMultipliers.get(precedingTokens.get(tokenIndex).originalText());
+            if ("DT".equals(precedingTokens.get(precedingTokens.size() - 1).tag())) {
+                quantityMultiplier *= listQuantity;
+            }
+            tokenIsQuantity = true;
+        }
+
+        return new Pair<>(tokenIsQuantity, quantityMultiplier);
+    }
+
+    /**
+     * checks whether the passed token is verbose notation of a fraction quantity
+     * e.g. 'half' an apple is 0.5 of an apple
+     * but 'half' the apples means it should be half of the initial apples in the ingredient list
+     *
+     * @param tokenIndex      current token to check if it is a quantity fraction
+     * @param precedingTokens tokens preceding the detectec name of the ingredient
+     * @return Pair with a boolean indicating whether a verbose quantity was detected and the quantity itself
+     */
+    private Pair<Boolean, Double> detectCardinalFractions(int tokenIndex, List<CoreLabel> precedingTokens) {
+        double quantityMultiplier = 1.0;
+        boolean tokenIsQuantity = false;
+        if ("CD".equals(precedingTokens.get(tokenIndex).tag())) {
+            quantityMultiplier *= calculateQuantity(Arrays.asList(precedingTokens.get(tokenIndex)));
+            tokenIsQuantity = true;
+        }
+
+        return new Pair<>(tokenIsQuantity, quantityMultiplier);
     }
 }

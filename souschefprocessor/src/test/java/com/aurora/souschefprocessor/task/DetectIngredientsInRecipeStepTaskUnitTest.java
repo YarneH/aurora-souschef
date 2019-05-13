@@ -63,25 +63,26 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         ListIngredient basilIngredient = new ListIngredient("basil leaves", DEFAULT_UNIT, 20.0, "irrelevant", irrelevantPositions);
         ListIngredient saltIngredient = new ListIngredient("salt", "cup", DEFAULT_QUANTITY, "irrelevant", irrelevantPositions);
         ListIngredient butterIngredient = new ListIngredient("butter", "", 1.0, "  ", irrelevantPositions);
-        listIngredients.add(spaghettiIngredient);
-        listIngredients.add(sauceIngredient);
-        listIngredients.add(meatIngredient);
-        listIngredients.add(garlicIngredient);
-        listIngredients.add(basilIngredient);
-        listIngredients.add(saltIngredient);
-        listIngredients.add(butterIngredient);
+        ListIngredient warmWaterIngredient = new ListIngredient("warm water", "cup", 1.0, "  ", irrelevantPositions);
+        ListIngredient coldWaterIngredient = new ListIngredient("cold water", "cup", 1.0, "  ", irrelevantPositions);
+
+        listIngredients.addAll(Arrays.asList(spaghettiIngredient,saltIngredient,sauceIngredient, meatIngredient,
+                warmWaterIngredient, coldWaterIngredient, butterIngredient, basilIngredient, garlicIngredient));
         recipe.setIngredients(listIngredients);
 
         descriptions = new ArrayList<>(Arrays.asList("Cook spaghetti according to package directions.", "Combine meat and a clove of garlic in a large saucepan, and cook over medium-high heat until browned.",
-                "Stir in 250 ounces of the sauce and five basil leaves. Add a cup of salt.", "No ingredients are in this recipe step.", "Add one tablespoon of melted butter"));
+                "Stir in 250 ounces of the sauce and five basil leaves. Add a cup of salt.", "No ingredients are in " +
+                        "this recipe step.", "Add one tablespoon of melted butter", "Mix cold water with half a cup " +
+                        "of the warm water"));
         RecipeStepInProgress s0 = new RecipeStepInProgress(descriptions.get(0));
         RecipeStepInProgress s1 = new RecipeStepInProgress(descriptions.get(1));
         RecipeStepInProgress s2 = new RecipeStepInProgress(descriptions.get(2));
         RecipeStepInProgress s3 = new RecipeStepInProgress(descriptions.get(3));
         RecipeStepInProgress s4 = new RecipeStepInProgress(descriptions.get(4));
+        RecipeStepInProgress s5 = new RecipeStepInProgress(descriptions.get(5));
 
 
-        recipeSteps = new ArrayList<>(Arrays.asList(s0, s1, s2, s3, s4));
+        recipeSteps = new ArrayList<>(Arrays.asList(s0, s1, s2, s3, s4, s5));
         recipe.setStepsInProgress(recipeSteps);
 
         // annotate the steps
@@ -272,6 +273,21 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
 
         assertEquals("Tablespoon unit was not detected", "tablespoon", recipeSteps.get(stepIndex).getIngredients().get(0).getUnit());
+
+    }
+
+    @Test
+    public void DetectIngredientsInRecipeStepTask_doTask_correctDetectionIfCommonNameParts(){
+        int stepIndex = 5;
+
+        ( new DetectIngredientsInStepTask(recipe, stepIndex)).doTask();
+
+        RecipeStepInProgress step = recipeSteps.get(stepIndex);
+        assert (step.getIngredients().size() == 2);
+        // cold water is mentioned first in the description so should be the first element of the list
+        assertEquals (" cold is the problem", "cold water", step.getIngredients().get(0).getName());
+        assertEquals (" warm is the problem", "warm water", step.getIngredients().get(0).getName());
+
 
     }
 

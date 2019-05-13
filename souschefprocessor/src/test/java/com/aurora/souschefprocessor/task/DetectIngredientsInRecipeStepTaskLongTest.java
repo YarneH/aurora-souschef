@@ -2599,7 +2599,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         // Assert
         double accuracy = (double) correctQuantities / totalIngredients;
         double threshold = 0.85;
-        // System.out.println(accuracy);
+        System.out.println(accuracy);
         assertTrue("Accuracy: " + accuracy + ", threshold" + threshold, accuracy > threshold);
 
     }

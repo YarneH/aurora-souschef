@@ -286,7 +286,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         assert (step.getIngredients().size() == 2);
         // cold water is mentioned first in the description so should be the first element of the list
         assertEquals (" cold is the problem", "cold water", step.getIngredients().get(0).getName());
-        assertEquals (" warm is the problem", "warm water", step.getIngredients().get(0).getName());
+        assertEquals (" warm is the problem", "warm water", step.getIngredients().get(1).getName());
 
 
     }

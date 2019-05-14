@@ -187,19 +187,20 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         (new DetectIngredientsInStepTask(recipe, 5)).doTask();
 
         // Assert
+        System.out.println(recipeSteps.get(0));
         assertEquals("Step has incorrect number of ingredients\n" + recipeSteps.get(0).getDescription(), 1,
-                recipeSteps.get(2).getIngredients().size());
+                recipeSteps.get(0).getIngredients().size());
         assertEquals("Step has incorrect number of ingredients\n" + recipeSteps.get(1).getDescription(), 2,
-                recipeSteps.get(2).getIngredients().size());
+                recipeSteps.get(1).getIngredients().size());
         assertEquals("Step has incorrect number of ingredients\n" + recipeSteps.get(2).getDescription(), 3,
                 recipeSteps.get(2).getIngredients().size());
         assertEquals("Step has incorrect number of ingredients\n" + recipeSteps.get(3).getDescription(), 0,
-                recipeSteps.get(2).getIngredients().size());
+                recipeSteps.get(3).getIngredients().size());
         assertEquals("Step has incorrect number of ingredients\n" + recipeSteps.get(4).getDescription(), 1,
-                recipeSteps.get(2).getIngredients().size());
+                recipeSteps.get(4).getIngredients().size());
         assertEquals("Step has incorrect number of ingredients\n" + recipeSteps.get(5).getDescription(), 2,
-                recipeSteps.get(2).getIngredients().size());
-        //TODO other steps
+                recipeSteps.get(5).getIngredients().size());
+
 
     }
 
@@ -223,6 +224,9 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnit() {
+        /*
+        The detection of an ingredient with a unit but no quantity should be correct
+         */
         // Arrange
         int stepIndex = 1;
         Ingredient stepIngredient = new Ingredient("garlic", "clove", DEFAULT_QUANTITY, irrelevantPositions);
@@ -230,14 +234,16 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         // Act
         (new DetectIngredientsInStepTask(recipe, stepIndex)).doTask();
 
-        Collection<Ingredient> stepIngredients = recipeSteps.get(stepIndex).getIngredients();
 
         // Assert
-        assert (stepIngredients.contains(stepIngredient));
+        assertThat(recipeSteps.get(stepIndex).getIngredients(), CoreMatchers.hasItem(stepIngredient));
     }
 
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndVerboseQuantity() {
+        /*
+        The detection of an ingredient with a verbose quantity (e.g. five) should be correct
+         */
         // Arrange
         int stepIndex = 2;
         Ingredient stepIngredient = new Ingredient("basil leaves", DEFAULT_UNIT, 5.0, irrelevantPositions);
@@ -245,14 +251,17 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         // Act
         (new DetectIngredientsInStepTask(recipe, stepIndex)).doTask();
 
-        Collection<Ingredient> stepIngredients = recipeSteps.get(stepIndex).getIngredients();
+
 
         // Assert
-        assert (stepIngredients.contains(stepIngredient));
+        assertThat(recipeSteps.get(stepIndex).getIngredients(), CoreMatchers.hasItem(stepIngredient));
     }
 
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndNumericalQuantity() {
+        /*
+        The detection of an ingredient with numerical quantity should be correct
+         */
         // Arrange
         int stepIndex = 2;
         Ingredient stepIngredient = new Ingredient("sauce", "ounce", 250.0, irrelevantPositions);
@@ -272,6 +281,9 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndQuantityAndPosition() {
+        /*
+        The positions of the detected ingredients should be correct
+         */
         // Arrange
         int stepIndex = 2;
         HashMap<Ingredient.PositionKeysForIngredients, Position> positions = new HashMap<>();
@@ -304,9 +316,9 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     @Test
     public void DetectIngredientsInRecipeStepTask_doTask_CorrectDetectionOfUnitIfAdjectiveBetweenUnitAndName() {
-        /**
+        /*
          * stepdescription = "Add one tablespoon of melted butter"
-         * Check if the tablespoon is correclty detected
+         * Check if the tablespoon is correctly detected even if an adjective is between the name and the unit
          */
         int stepIndex = 4;
 
@@ -320,12 +332,16 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     @Test
     public void DetectIngredientsInRecipeStepTask_doTask_correctDetectionIfCommonNameParts() {
+        /*
+        If two ingredient share some common name parts they should be correctly detected even if the order they
+        appear in the list is not the same order as in the description of the step
+         */
         int stepIndex = 5;
 
         (new DetectIngredientsInStepTask(recipe, stepIndex)).doTask();
 
         RecipeStepInProgress step = recipeSteps.get(stepIndex);
-        assert (step.getIngredients().size() == 2);
+
         // cold water is mentioned first in the description so should be the first element of the list
         assertEquals(" cold is the problem", "cold water", step.getIngredients().get(0).getName());
         assertEquals(" warm is the problem", "warm water", step.getIngredients().get(1).getName());

@@ -85,10 +85,9 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 // Execute the detection for each recipe step in this RecipeInProgress
                 DetectIngredientsInStepTask detector = new DetectIngredientsInStepTask(r,
                         r.getStepsInProgress().indexOf(s));
-                // System.out.println(s);
 
                 detector.doTask();
-                //System.out.println(s);
+
             }
 
         }
@@ -241,7 +240,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "\n" +
                 "\n" +
                 "1.0\t\tbutter\n" +
-                "1.0\t\twhite sugar\n" +
+                "1.0\tteaspoon\twhite sugar\n" +
                 "1.0\t\thot milk\n" +
                 "1.0\t\tactive dry yeast\n" +
                 "\n" +
@@ -279,14 +278,14 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "\n" +
                 "\n" +
                 "7.0\tcup\tall-purpose flour\n" +
-                "1.0\tcup\tshredded Cheddar cheese\n" +
+                "1.0\t\tshredded Cheddar cheese\n" +
                 "1.0\t\tminced jalapeno peppers\n" +
-                "7.0\t\twhite sugar\n" +
+                "7.0\ttablespoon\twhite sugar\n" +
                 "1.0\t\tsalt\n" +
                 "\n" +
                 "1.0\t\thot water\n" +
                 "1.0\t\tactive dry yeast\n" +
-                "1.0\t\twhite sugar\n" +
+                "1.0\ttablespoon\twhite sugar\n" +
                 "\n" +
                 "1.0\t\tvegetable oil\n" +
                 "1.0\t\tall-purpose flour\n" +
@@ -650,7 +649,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "\n" +
                 "1.0\t\tmascarpone\n" +
                 "1.0\t\tfromage frais\n" +
-                "1.0\tdessertspoon\tgolden caster sugar\n" +
+                "1.0\t\tgolden caster sugar\n" +
                 "1.0\t\tvanilla extract\n" +
                 "1.0\t\tpassion fruit\n" +
                 "\n" +
@@ -1078,8 +1077,8 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\thalf-sphere cake pans\n" +
                 "\n" +
                 "1.0\t\twaffle ice cream cone\n" +
+                "1.0\t\trecipe Creamy White Frosting\n" +
                 "1.0\t\tSmall offset spatula\n" +
-                "1.0\tcup\trecipe Creamy White Frosting\n" +
                 "1.0\t\trecipe Chocolate Cake Batter\n" +
                 "\n" +
                 "1.0\t\tbags\n" +
@@ -1165,7 +1164,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "0.75\tteaspoon\tground black pepper\n" +
                 "0.5\tteaspoon\tgarlic powder\n" +
                 "1.0\tpackage\tpuff pastry\n" +
-                "1.0\tegg\twhite\n" +
+                "1.0\t\tegg white\n" +
                 "\n" +
                 "2.0\tcup\thot water\n" +
                 "0.5\tcup\tmargarine\n" +
@@ -2645,8 +2644,17 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                         rips.get(r).getStepsInProgress().get(s).getIngredients();
 
                 System.out.println("Recipe: " + r + ", step: " + s);
+                System.out.println(detectedStepIngredients);
+                System.out.println(correctStepIngredients);
+                System.out.println(rips.get(r).getStepsInProgress().get(s));
                 // Compare detected ingredients with correct ingredients
                 correctUnits += equalUnits(correctStepIngredients, detectedStepIngredients);
+                System.out.println("Not detected ingredients ");
+                for(Ingredient i: correctStepIngredients){
+                    if(!detectedStepIngredients.contains(i)){
+                        System.out.println("NOT DETECTED " + i);
+                    }
+                }
                 System.out.println("------------------------------------");
             }
         }
@@ -2654,6 +2662,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         // Assert
         double accuracy = (double) correctUnits / totalIngredients;
         System.out.println(accuracy);
+        System.out.println("CORRECT "+ correctUnits +" out of " + totalIngredients + " ingredients");
         assertTrue(accuracy > 0.85);
 
     }
@@ -2671,13 +2680,14 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                         equalUnits++;
                     }
                     else{
-                        System.err.println("CORRECT: " +correct.getUnit()+ ", DETECTED: "+ detected.getUnit());
+                        System.out.println("CORRECT: " +correct.getUnit()+ ", DETECTED: "+ detected.getUnit());
                     }
                 }
 
             }
         }
         return equalUnits;
+
     }
 
 }

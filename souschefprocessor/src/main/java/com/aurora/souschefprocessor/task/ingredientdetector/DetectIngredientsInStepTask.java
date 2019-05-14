@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -96,7 +95,8 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     /**
      * An array of tokens not tagged as noun but that are nouns in a cooking context most of the time
      */
-    private static final String[] COOKING_NOUNS = {"shortening", "orange", "mint"};
+    private static final String[] INGREDIENT_IDENTIFIERS = {"shortening", "orange", "mint"};
+
     /**
      * A static map that matches the {@link #FRACTION_HALF} and {@link #FRACTION_QUARTER} strings to
      * their numerical values
@@ -132,54 +132,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         this.mRecipeStep = recipeInProgress.getStepsInProgress().get(stepIndex);
     }
 
-    /**
-     * If two lists share some identical elements then these elements will be merged with the element that comes
-     * before them in the list (or afterwards if before is not possible) if possible
-     *
-     * @param list1 the first list
-     * @param list2 the second list
-     */
-    private static void mergeCommonElements(List<String> list1, List<String> list2) {
-
-        // make a new list that has all the common elements
-        List<String> commonList = (new ArrayList<>(list1));
-        commonList.retainAll(list2);
-        // a boolean that indicates wheter the while loop should stop
-        boolean stop = false;
-        // while there are still common elements and the lists have more than 1 element (otherwise merging is not
-        // possible anymore)
-        while (!commonList.isEmpty() && !stop) {
-            for (String commonString : commonList) {
-                // list 1
-                mergeElement(commonString, list1);
-                mergeElement(commonString, list2);
-            }
-            commonList.clear();
-            commonList.addAll(list1);
-            commonList.retainAll(list2);
-            if (list1.size() == 1 && list2.size() == 1) {
-                stop = true;
-            }
-        }
-
-    }
-
-    private static void mergeElement(String commonString, List<String> list) {
-        int index = list.indexOf(commonString);
-        if (index > 0) {
-            // merge with previous
-            list.set(index - 1, list.get(index - 1) + " " + commonString);
-
-            list.remove(index);
-
-        } else {
-            if (index < list.size() - 1 && index > -1) {
-                // merge with next
-                list.set(index + 1, commonString + " " + list.get(index + 1));
-                list.remove(index);
-            }
-        }
-    }
 
     /**
      * Checks if a string should be ignored (if it is contained in the {@link #STRINGS_TO_IGNORE}
@@ -277,6 +229,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         }
     }
 
+
     /**
      * Detects the set of mIngredients in a recipeStep. It also checks if this corresponds with the mIngredients of the
      * recipe.
@@ -292,18 +245,10 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
         // Maps list ingredients to a an array of words in their name for matching the name in the step
         // Necessary in case only a certain word of the list ingredient is used to describe it in the step
-        Map<ListIngredient, List<String>> ingredientListMap = new HashMap<>();
-        for (ListIngredient listIngr : ingredientListRecipe) {
-            ingredientListMap.put(listIngr, new LinkedList<>(
-                    Arrays.asList(listIngr.getName().toLowerCase(Locale.ENGLISH)
-                            .replace(",", "").split(" "))));
-        }
-        Map<ListIngredient, List<String>> mergedCommonPartsMap = createCommonPartsMergedMap(ingredientListRecipe);
+        Map<ListIngredient, List<String>> ingredientListMap = mRecipeInProgress.getNamePartsMap();
+        Map<ListIngredient, List<String>> mergedCommonPartsMap =
+                mRecipeInProgress.getNamePartsCommonElementsMergedMap();
 
-        for (ListIngredient listIngredient : ingredientListRecipe) {
-            // remove the doubles so every string is only searched once
-            mergedCommonPartsMap.get(listIngredient).removeAll(ingredientListMap.get(listIngredient));
-        }
 
         // Keeps track of already found ListIngredients in case the ingredient
         // is mentioned multiple times in the recipe step
@@ -472,7 +417,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         // if the string of the token should be ignored, the whole token should be ignored
         if (doNotIgnoreString(tokenText)) {
             // check all the known cooking nouns first, if it is one of these then do not ignore
-            for (String cookingNoun : COOKING_NOUNS) {
+            for (String cookingNoun : INGREDIENT_IDENTIFIERS) {
                 if (cookingNoun.equalsIgnoreCase(tokenText)) {
                     return true;
                 }
@@ -491,38 +436,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         return doNotIgnore;
     }
 
-    /**
-     * Construct a map which matches the listingredients with their nameparts, but if multiple ingredients have
-     * common parts the parts are merged with preceding or suceeding parts to create unique identifiers
-     *
-     * @param ingredients the listingredients that will be the keys for the map
-     * @return a map wich maps the ingredients with the unique name pars
-     */
-    private Map<ListIngredient, List<String>> createCommonPartsMergedMap(List<ListIngredient> ingredients) {
-
-        // first create the map with all the elements (these could be common for different keys)
-        Map<ListIngredient, List<String>> commonPartsMerged = new HashMap<>();
-        for (ListIngredient listIngredient : ingredients) {
-            commonPartsMerged.put(listIngredient, new LinkedList<>(
-                    Arrays.asList(listIngredient.getName().toLowerCase(Locale.ENGLISH)
-                            .replace(",", "").split(" "))));
-        }
-
-
-        // if a word is present in several lists, merge it with the previous or next word
-        // go over the ingredients
-        for (int i = 0; i < ingredients.size(); i++) {
-            List<String> listI = commonPartsMerged.get(ingredients.get(i));
-            // go over the other ingredients as to only search each pair once
-            for (int j = i + 1; j < ingredients.size(); j++) {
-                List<String> listJ = commonPartsMerged.get(ingredients.get(j));
-                mergeCommonElements(listI, listJ);
-            }
-
-        }
-
-        return commonPartsMerged;
-    }
 
     /**
      * Sorts the list on the beginIndex of the namePosition, since a name is always found this ordering feels

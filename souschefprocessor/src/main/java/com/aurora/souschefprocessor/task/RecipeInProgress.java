@@ -1,9 +1,16 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -33,6 +40,17 @@ public class RecipeInProgress extends Recipe {
     private ExtractedText mExtractedText;
 
     private List<RecipeStepInProgress> mStepsInProgress;
+    /**
+     * Maps ListIngredients to a an array of words in their name for matching the name in the step
+     * Necessary in case only a certain word of the list ingredient is used to describe it in the step
+     */
+    private Map<ListIngredient, List<String>> mNamePartsMap;
+    /**
+     * Maps ListIngredients to a an array of words in their name for matching the name in the step
+     * Necessary in case only a certain word of the list ingredient is used to describe it in the step. However here
+     * all lists contain unique elements so some elements are multiple words
+     */
+    private Map<ListIngredient, List<String>> mNamePartsCommonElementsMergedMap;
 
     public RecipeInProgress(ExtractedText originalText) {
         super(originalText.getFilename());
@@ -40,23 +58,6 @@ public class RecipeInProgress extends Recipe {
         this.mDescription = "";
         this.mNumberOfPeople = -1;
 
-    }
-
-    public List<RecipeStepInProgress> getStepsInProgress() {
-        return mStepsInProgress;
-    }
-
-    public void setStepsInProgress(List<RecipeStepInProgress> mStepsInProgress) {
-        this.mStepsInProgress = mStepsInProgress;
-    }
-
-    @Override
-    public String toString() {
-        return "RECIPE{" +
-                "INGREDIENTS='" + mIngredientsString + "\n" +
-                ", STEPS='" + mStepsString + "\n" +
-                ", DESCRIPTION='" + mDescription + "\n" +
-                '}';
     }
 
     public synchronized String getStepsString() {
@@ -73,6 +74,12 @@ public class RecipeInProgress extends Recipe {
 
     public synchronized void setIngredientsString(String ingredientsString) {
         this.mIngredientsString = ingredientsString;
+    }
+
+    @Override
+    public void setIngredients(List<ListIngredient> ingredients){
+        super.setIngredients(ingredients);
+        initializeListIngredientAndNamePartsMaps();
     }
 
     /**
@@ -94,6 +101,11 @@ public class RecipeInProgress extends Recipe {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(mIngredients, mNumberOfPeople, mStepsInProgress, mDescription);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o instanceof RecipeInProgress) {
             RecipeInProgress r = (RecipeInProgress) o;
@@ -104,9 +116,143 @@ public class RecipeInProgress extends Recipe {
         return false;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(mIngredients, mNumberOfPeople, mStepsInProgress, mDescription);
+    public List<RecipeStepInProgress> getStepsInProgress() {
+        return mStepsInProgress;
     }
 
+    public void setStepsInProgress(List<RecipeStepInProgress> mStepsInProgress) {
+        this.mStepsInProgress = mStepsInProgress;
+    }
+
+    @Override
+    public String toString() {
+        return "RECIPE{" +
+                "INGREDIENTS='" + mIngredientsString + "\n" +
+                ", STEPS='" + mStepsString + "\n" +
+                ", DESCRIPTION='" + mDescription + "\n" +
+                '}';
+    }
+
+    public Map<ListIngredient, List<String>> getNamePartsMap() {
+        return mNamePartsMap;
+    }
+
+
+    public Map<ListIngredient, List<String>> getNamePartsCommonElementsMergedMap() {
+        return mNamePartsCommonElementsMergedMap;
+    }
+
+
+    /**
+     * creates the {@link #mNamePartsCommonElementsMergedMap} and {@link #mNamePartsCommonElementsMergedMap} maps
+     */
+    private void initializeListIngredientAndNamePartsMaps() {
+
+
+        Map<ListIngredient, List<String>> ingredientListMap = new HashMap<>();
+        for (ListIngredient listIngr : mIngredients) {
+            ingredientListMap.put(listIngr, new LinkedList<>(
+                    Arrays.asList(listIngr.getName().toLowerCase(Locale.ENGLISH)
+                            .replace(",", "").split(" "))));
+        }
+        mNamePartsMap = (ingredientListMap);
+
+        Map<ListIngredient, List<String>> mergedCommonPartsMap = (createCommonPartsMergedMap(mIngredients));
+        for (ListIngredient listIngredient : mIngredients) {
+            // remove the doubles so every string is only searched once
+            mergedCommonPartsMap.get(listIngredient).removeAll(ingredientListMap.get(listIngredient));
+        }
+        mNamePartsCommonElementsMergedMap = (mergedCommonPartsMap);
+
+    }
+
+    /**
+     * Construct a map which matches the listingredients with their nameparts, but if multiple ingredients have
+     * common parts the parts are merged with preceding or suceeding parts to create unique identifiers
+     *
+     * @param ingredients the listingredients that will be the keys for the map
+     * @return a map wich maps the ingredients with the unique name pars
+     */
+    private static Map<ListIngredient, List<String>> createCommonPartsMergedMap(List<ListIngredient> ingredients) {
+
+        // first create the map with all the elements (these could be common for different keys)
+        Map<ListIngredient, List<String>> commonPartsMerged = new HashMap<>();
+        for (ListIngredient listIngredient : ingredients) {
+            commonPartsMerged.put(listIngredient, new LinkedList<>(
+                    Arrays.asList(listIngredient.getName().toLowerCase(Locale.ENGLISH)
+                            .replace(",", "").split(" "))));
+        }
+
+
+        // if a word is present in several lists, merge it with the previous or next word
+        // go over the ingredients
+        for (int i = 0; i < ingredients.size(); i++) {
+            List<String> listI = commonPartsMerged.get(ingredients.get(i));
+            // go over the other ingredients as to only search each pair once
+            for (int j = i + 1; j < ingredients.size(); j++) {
+                List<String> listJ = commonPartsMerged.get(ingredients.get(j));
+                mergeCommonElements(listI, listJ);
+            }
+
+        }
+
+        return commonPartsMerged;
+    }
+
+
+    /**
+     * If two lists share some identical elements then these elements will be merged with the element that comes
+     * before them in the list (or afterwards if before is not possible) if possible
+     *
+     * @param list1 the first list
+     * @param list2 the second list
+     */
+    private static void mergeCommonElements(List<String> list1, List<String> list2) {
+
+        // make a new list that has all the common elements
+        List<String> commonList = (new ArrayList<>(list1));
+        commonList.retainAll(list2);
+        // a boolean that indicates wheter the while loop should stop
+        boolean stop = false;
+        // while there are still common elements and the lists have more than 1 element (otherwise merging is not
+        // possible anymore)
+        while (!commonList.isEmpty() && !stop) {
+            for (String commonString : commonList) {
+                // list 1
+                mergeElement(commonString, list1);
+                mergeElement(commonString, list2);
+            }
+            commonList.clear();
+            commonList.addAll(list1);
+            commonList.retainAll(list2);
+            if (list1.size() == 1 && list2.size() == 1) {
+                stop = true;
+            }
+        }
+
+    }
+
+    /**
+     * Merges an element of the list with the previous (if possible) or next (if possible element) by concatenating
+     * them and adding a space between
+     *
+     * @param elementToBeMerged the element to be merged
+     * @param list              the list where the element is in
+     */
+    private static void mergeElement(String elementToBeMerged, List<String> list) {
+        int index = list.indexOf(elementToBeMerged);
+        if (index > 0) {
+            // merge with previous
+            list.set(index - 1, list.get(index - 1) + " " + elementToBeMerged);
+
+            list.remove(index);
+
+        } else {
+            if (index < list.size() - 1 && index > -1) {
+                // merge with next
+                list.set(index + 1, elementToBeMerged + " " + list.get(index + 1));
+                list.remove(index);
+            }
+        }
+    }
 }

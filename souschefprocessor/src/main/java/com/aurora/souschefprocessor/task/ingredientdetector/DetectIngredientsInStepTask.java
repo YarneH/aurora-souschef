@@ -212,7 +212,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     public void doTask() {
         List<ListIngredient> ingredientListRecipe = mRecipeInProgress.getIngredients();
         initializeNamesOfListIngredientsSet(ingredientListRecipe);
-        List<Ingredient> ingredientSet = detectIngredients(mRecipeStep, ingredientListRecipe);
+        List<Ingredient> ingredientSet = detectIngredients(mRecipeStep);
         for (Ingredient ing : ingredientSet) {
             // make sure all the positions are legal and not longer than the length of the description
             ing.trimPositionsToString(mRecipeStep.getDescription());
@@ -238,8 +238,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * @param ingredientListRecipe The set of mIngredients contained in the recipe of which the recipeStep is a part
      * @return A set of Ingredient objects that represent the mIngredients contained in the recipeStep
      */
-    private List<Ingredient> detectIngredients(RecipeStepInProgress recipeStep,
-                                               List<ListIngredient> ingredientListRecipe) {
+    private List<Ingredient> detectIngredients(RecipeStepInProgress recipeStep) {
         List<Ingredient> detectedIngredients = new ArrayList<>();
 
 

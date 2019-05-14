@@ -8,10 +8,8 @@ import com.aurora.souschefprocessor.recipe.UnitConversionUtils;
 import com.aurora.souschefprocessor.task.RecipeInProgress;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -516,7 +514,5 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         return line;
     }
-
-
 
 }

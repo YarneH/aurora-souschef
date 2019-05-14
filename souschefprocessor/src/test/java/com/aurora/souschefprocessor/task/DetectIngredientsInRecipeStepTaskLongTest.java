@@ -578,6 +578,9 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "\n" +
                 "1.0\t\tdried goji berries\n" +
                 "\n" +
+                "1.0\t\tswede\n" +
+                "1.0\t\tdried goji berries\n" +
+                "\n" +
                 "1.0\t\twhole sea bass\n" +
                 "1.0\t\tcracked sea salt\n" +
                 "1.0\t\twhite pepper\n" +
@@ -1070,7 +1073,6 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\trecipe Chocolate Cake Batter\n" +
                 "1.0\t\thalf-sphere cake pans\n" +
                 "1.0\t\tcake plate\n" +
-                "1.0\t\tSmall plate\n" +
                 "\n" +
                 "1.0\t\tPlastic straw\n" +
                 "1.0\t\trecipe Chocolate Cake Batter\n" +
@@ -1084,7 +1086,6 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
                 "1.0\t\tbags\n" +
                 "1.0\t\tGlass measuring cup\n" +
                 "1.0\t\trecipe Creamy White Frosting\n" +
-                "1.0\t\tBlack decorating sugar\n" +
                 "\n" +
                 "1.0\t\trecipe Creamy White Frosting\n" +
                 "\n" +

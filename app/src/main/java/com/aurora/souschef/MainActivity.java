@@ -16,7 +16,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
@@ -161,13 +160,6 @@ public class MainActivity extends AppCompatActivity {
      * Sets up the observation of the recipeviewmodel
      */
     private void setUpRecipeDataObject() {
-        mRecipeViewModel.getProgressStep().observe(this, (Integer step) -> {
-                    ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                    pb.setProgress(mRecipeViewModel.getProgress());
-
-                    // TODO: set TextView to visualize progress
-                }
-        );
         mRecipeViewModel.getInitialised().observe(this, (Boolean isInitialised) -> {
             if (isInitialised == null) {
                 return;
@@ -183,8 +175,6 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Detection failed: " +
                                 mRecipeViewModel.getFailureMessage().getValue(),
                         Toast.LENGTH_LONG).show();
-                ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                pb.setProgress(0);
             }
         });
         mRecipeViewModel.getDefaultAmountSet().observe(this, (Boolean set) -> {

@@ -225,7 +225,7 @@ public class DelegatorLongTest {
 
 
         // Assert
-        int threshold = 500;
+        int threshold = 10000;
         System.out.println(average_para + "  PARALLEL TIME");
         assertTrue("The average time is not smaller than the threshold, average time: " + average_para + ", threshold" +
                         " " + threshold,
@@ -440,6 +440,7 @@ public class DelegatorLongTest {
 
             }
             contents = bld.toString();
+            System.out.println(contents);
         } catch (IOException e) {
             e.printStackTrace();
         }

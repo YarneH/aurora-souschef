@@ -7,6 +7,7 @@ import com.aurora.souschefprocessor.recipe.Position;
 import com.aurora.souschefprocessor.recipe.RecipeStep;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInStepTask;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -44,7 +45,6 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @BeforeClass
     public static void initialize() {
         // Initialize recipe in progress
-        String originalText = "irrelevant";
         recipe = new RecipeInProgress(emptyExtractedText);
 
         // Initialize positions with dummy values
@@ -56,21 +56,29 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
         recipe.setIngredientsString("irrelevant");
         List<ListIngredient> listIngredients = new ArrayList<>();
-        ListIngredient spaghettiIngredient = new ListIngredient("spaghetti", "gram", 500, "irrelevant", irrelevantPositions);
+        // create the list of ingredients
+        ListIngredient spaghettiIngredient = new ListIngredient("spaghetti", "gram", 500, "irrelevant",
+                irrelevantPositions);
         ListIngredient sauceIngredient = new ListIngredient("sauce", "ounce", 500, "irrelevant", irrelevantPositions);
-        ListIngredient meatIngredient = new ListIngredient("minced meat", "pound", 1.5, "irrelevant", irrelevantPositions);
-        ListIngredient garlicIngredient = new ListIngredient("garlic", "clove", DEFAULT_QUANTITY, "irrelevant", irrelevantPositions);
-        ListIngredient basilIngredient = new ListIngredient("basil leaves", DEFAULT_UNIT, 20.0, "irrelevant", irrelevantPositions);
-        ListIngredient saltIngredient = new ListIngredient("salt", "cup", DEFAULT_QUANTITY, "irrelevant", irrelevantPositions);
+        ListIngredient meatIngredient = new ListIngredient("minced meat", "pound", 1.5, "irrelevant",
+                irrelevantPositions);
+        ListIngredient garlicIngredient = new ListIngredient("garlic", "clove", DEFAULT_QUANTITY, "irrelevant",
+                irrelevantPositions);
+        ListIngredient basilIngredient = new ListIngredient("basil leaves", DEFAULT_UNIT, 20.0, "irrelevant",
+                irrelevantPositions);
+        ListIngredient saltIngredient = new ListIngredient("salt", "cup", DEFAULT_QUANTITY, "irrelevant",
+                irrelevantPositions);
         ListIngredient butterIngredient = new ListIngredient("butter", "", 1.0, "  ", irrelevantPositions);
         ListIngredient warmWaterIngredient = new ListIngredient("warm water", "cup", 1.0, "  ", irrelevantPositions);
         ListIngredient coldWaterIngredient = new ListIngredient("cold water", "cup", 1.0, "  ", irrelevantPositions);
 
-        listIngredients.addAll(Arrays.asList(spaghettiIngredient,saltIngredient,sauceIngredient, meatIngredient,
+        listIngredients.addAll(Arrays.asList(spaghettiIngredient, saltIngredient, sauceIngredient, meatIngredient,
                 warmWaterIngredient, coldWaterIngredient, butterIngredient, basilIngredient, garlicIngredient));
         recipe.setIngredients(listIngredients);
 
-        descriptions = new ArrayList<>(Arrays.asList("Cook spaghetti according to package directions.", "Combine meat and a clove of garlic in a large saucepan, and cook over medium-high heat until browned.",
+        // create the steps with some descriptions that have ingredients from the list
+        descriptions = new ArrayList<>(Arrays.asList("Cook spaghetti according to package directions.", "Combine meat" +
+                        " and a clove of garlic in a large saucepan, and cook over medium-high heat until browned.",
                 "Stir in 250 ounces of the sauce and five basil leaves. Add a cup of salt.", "No ingredients are in " +
                         "this recipe step.", "Add one tablespoon of melted butter", "Mix cold water with half a cup " +
                         "of the warm water"));
@@ -102,6 +110,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     @After
     public void wipeRecipeSteps() {
+        // after the execution revert the set ingredients and description
         for (RecipeStep s : recipeSteps) {
             s.setIngredients(null);
             s.setDescription(descriptions.get(recipeSteps.indexOf(s)));
@@ -110,38 +119,52 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     @Test
     public void DetectIngredientsInStep_doTask_ingredientDetectedWithAbsentFields() {
+        /*
+        The detection where either the unit or quantity is missing is correct
+        description:  "Stir in 250 ounces of the sauce and five basil leaves. Add a cup of salt."
+         */
+        // Arrange
         int stepIndex = 2;
-        (new DetectIngredientsInStepTask(recipe, stepIndex)).doTask();
+
         Ingredient stepIngredientNoQuantity = new Ingredient("salt", "cup", DEFAULT_QUANTITY, irrelevantPositions);
         Ingredient stepIngredientNoUnit = new Ingredient("basil leaves", DEFAULT_UNIT, 5.0, irrelevantPositions);
 
-        Ingredient ingredientNoQuantity = null;
-        Ingredient ingredientNoUnit = null;
-        Collection<Ingredient> stepIngredients = recipeSteps.get(stepIndex).getIngredients();
-        for (Ingredient ingr : stepIngredients) {
-            if (ingr.getName().equals(stepIngredientNoQuantity.getName())) {
-                ingredientNoQuantity = ingr;
+        Ingredient detectedIngredientNoQuantity = null;
+        Ingredient dedectecIngredientNoUnit = null;
+
+        // Act
+        (new DetectIngredientsInStepTask(recipe, stepIndex)).doTask();
+
+        // fill in the detected ingredients
+        for (Ingredient ingredient : recipeSteps.get(stepIndex).getIngredients()) {
+            if (ingredient.getName().equals(stepIngredientNoQuantity.getName())) {
+                detectedIngredientNoQuantity = ingredient;
             }
-            if (ingr.getName().equals(stepIngredientNoUnit.getName())) {
-                ingredientNoUnit = ingr;
+            if (ingredient.getName().equals(stepIngredientNoUnit.getName())) {
+                dedectecIngredientNoUnit = ingredient;
             }
         }
 
         // Asserts the correct absence of both the quantity and the unit equality
-        assertEquals("The detection of the ingredient with no unit failed", stepIngredientNoUnit, ingredientNoUnit);
-        assertEquals("The detection of the ingredient with no quantity failed", stepIngredientNoQuantity, ingredientNoQuantity);
-
+        assertEquals("The detection of the ingredient with no unit failed", stepIngredientNoUnit,
+                dedectecIngredientNoUnit);
+        assertEquals("The detection of the ingredient with no quantity failed", stepIngredientNoQuantity,
+                detectedIngredientNoQuantity);
 
     }
 
     @Test
     public void IngredientDetectorStep_doTask_setHasBeenSetForAllSteps() {
+        /*
+        For all steps the detection should have been done
+         */
         // Act
         (new DetectIngredientsInStepTask(recipe, 0)).doTask();
         (new DetectIngredientsInStepTask(recipe, 1)).doTask();
         (new DetectIngredientsInStepTask(recipe, 2)).doTask();
         (new DetectIngredientsInStepTask(recipe, 3)).doTask();
         (new DetectIngredientsInStepTask(recipe, 4)).doTask();
+        (new DetectIngredientsInStepTask(recipe, 5)).doTask();
 
         // Assert
         for (RecipeStep s : recipe.getRecipeSteps()) {
@@ -152,22 +175,39 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
     @Test
     public void DetectIngredientsInStep_doTask_setHasCorrectSize() {
+        /*
+         * After detection each description has the correct amount of detected ingredients
+         */
         // Act
         (new DetectIngredientsInStepTask(recipe, 0)).doTask();
         (new DetectIngredientsInStepTask(recipe, 1)).doTask();
         (new DetectIngredientsInStepTask(recipe, 2)).doTask();
         (new DetectIngredientsInStepTask(recipe, 3)).doTask();
         (new DetectIngredientsInStepTask(recipe, 4)).doTask();
+        (new DetectIngredientsInStepTask(recipe, 5)).doTask();
 
         // Assert
-        assert (recipeSteps.get(0).getIngredients().size() == 1);
-        assert (recipeSteps.get(1).getIngredients().size() == 2);
+        assertEquals("Step has incorrect number of ingredients\n" + recipeSteps.get(0).getDescription(), 1,
+                recipeSteps.get(2).getIngredients().size());
+        assertEquals("Step has incorrect number of ingredients\n" + recipeSteps.get(1).getDescription(), 2,
+                recipeSteps.get(2).getIngredients().size());
+        assertEquals("Step has incorrect number of ingredients\n" + recipeSteps.get(2).getDescription(), 3,
+                recipeSteps.get(2).getIngredients().size());
+        assertEquals("Step has incorrect number of ingredients\n" + recipeSteps.get(3).getDescription(), 0,
+                recipeSteps.get(2).getIngredients().size());
+        assertEquals("Step has incorrect number of ingredients\n" + recipeSteps.get(4).getDescription(), 1,
+                recipeSteps.get(2).getIngredients().size());
+        assertEquals("Step has incorrect number of ingredients\n" + recipeSteps.get(5).getDescription(), 2,
+                recipeSteps.get(2).getIngredients().size());
         //TODO other steps
 
     }
 
     @Test
-    public void IngredientDetectorStep_doTask_ingredientDetectedWithoutUnit() {
+    public void IngredientDetectorStep_doTask_ingredientDetectedWithoutUnitAndQuantity() {
+        /*
+        The detection should be correct if there is no unit and quantity detected in the step
+         */
         // Arrange
         int stepIndex = 0;
         Ingredient stepIngredient = new Ingredient("spaghetti", DEFAULT_UNIT, DEFAULT_QUANTITY, irrelevantPositions);
@@ -175,10 +215,10 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         // Act
         (new DetectIngredientsInStepTask(recipe, stepIndex)).doTask();
 
-        Collection<Ingredient> stepIngredients = recipeSteps.get(stepIndex).getIngredients();
 
         // Assert
-        assert (stepIngredients.contains(stepIngredient));
+
+        assertThat(recipeSteps.get(stepIndex).getIngredients(), CoreMatchers.hasItem(stepIngredient));
     }
 
     @Test
@@ -225,7 +265,8 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
 
         // Assert
 
-        assertThat("The detection of ingredient with numerical quantity failed", stepIngredients, hasItem(stepIngredient));
+        assertThat("The detection of ingredient with numerical quantity failed", stepIngredients,
+                hasItem(stepIngredient));
 
     }
 
@@ -272,24 +313,23 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         (new DetectIngredientsInStepTask(recipe, stepIndex)).doTask();
 
 
-        assertEquals("Tablespoon unit was not detected", "tablespoon", recipeSteps.get(stepIndex).getIngredients().get(0).getUnit());
+        assertEquals("Tablespoon unit was not detected", "tablespoon",
+                recipeSteps.get(stepIndex).getIngredients().get(0).getUnit());
 
     }
 
     @Test
-    public void DetectIngredientsInRecipeStepTask_doTask_correctDetectionIfCommonNameParts(){
+    public void DetectIngredientsInRecipeStepTask_doTask_correctDetectionIfCommonNameParts() {
         int stepIndex = 5;
 
-        ( new DetectIngredientsInStepTask(recipe, stepIndex)).doTask();
+        (new DetectIngredientsInStepTask(recipe, stepIndex)).doTask();
 
         RecipeStepInProgress step = recipeSteps.get(stepIndex);
         assert (step.getIngredients().size() == 2);
         // cold water is mentioned first in the description so should be the first element of the list
-        assertEquals (" cold is the problem", "cold water", step.getIngredients().get(0).getName());
-        assertEquals (" warm is the problem", "warm water", step.getIngredients().get(1).getName());
-
+        assertEquals(" cold is the problem", "cold water", step.getIngredients().get(0).getName());
+        assertEquals(" warm is the problem", "warm water", step.getIngredients().get(1).getName());
 
     }
-
 
 }

@@ -45,7 +45,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
          * proper configuration of the cache
          */
         super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
-        mDelegator = new Delegator(classifier, true);
+        mDelegator = new Delegator(classifier, false);
     }
 
     /**

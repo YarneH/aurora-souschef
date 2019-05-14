@@ -8,6 +8,8 @@ import java.util.Objects;
  * Two fields:
  * value: a double that is the value
  * unit: a string that is the unit
+ *
+ * It has the extra functionality of converting the amount to metric or US using {@link UnitConversionUtils}
  */
 class Amount {
     /**
@@ -41,6 +43,11 @@ class Amount {
      */
     private String mUnit;
 
+    /**
+     * Create an amount
+     * @param mValue the value of this amount
+     * @param unit the unit of this amount
+     */
     Amount(double mValue, String unit) {
         if (mValue < 0.0) {
             throw new IllegalArgumentException("Value is negative");
@@ -65,6 +72,10 @@ class Amount {
         return false;
     }
 
+    /**
+     * Default getter
+     * @return the unit of this amount
+     */
     String getUnit() {
         return mUnit;
     }
@@ -82,14 +93,26 @@ class Amount {
         return Math.abs(a - b) < EQUALITY_THRESHOLD_DOUBLE;
     }
 
+    /**
+     * Default getter
+     * @return the value of this amount
+     */
     double getValue() {
         return mValue;
     }
 
+    /**
+     * Default setter
+     * @param value this will be the new value of this amount
+     */
     void setValue(double value) {
         this.mValue = value;
     }
 
+    /**
+     * Default setter
+     * @param unit this will be the new unit of this amount
+     */
     void setUnit(String unit) {
         this.mUnit = unit;
     }

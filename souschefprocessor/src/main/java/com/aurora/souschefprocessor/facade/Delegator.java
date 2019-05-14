@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotator;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
@@ -38,16 +37,8 @@ public class Delegator {
      * An object that serves as a lock to ensure that the pipelines are only created once
      */
     private static final Object LOCK = new Object();
-    /**
-     * A list of basic annotators needed for every step that has a pipeline (tokenizer, wordstosentence
-     * and POS)
-     */
-    private static final List<Annotator> sBasicAnnotators = new ArrayList<>();
 
-    /**
-     * The number of basic annotator, for now 3 (tokenize, words to sentence and POS)
-     */
-    private static final int BASIC_ANNOTATOR_SIZE = 3;
+
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
@@ -74,6 +65,11 @@ public class Delegator {
      * A boolean that indicates whether the processing should be parallelized
      */
     private boolean mParallelize;
+
+    /**
+     * The tag for logging purposes
+     */
+    private static final String TAG = Delegator.class.getSimpleName();
 
     /**
      * Creating the delegator
@@ -113,7 +109,7 @@ public class Delegator {
      */
     public static void incrementProgressAnnotationPipelines() {
         SouschefProcessorCommunicator.incrementProgressAnnotationPipelines();
-        Log.i("DELEGATOR", "STEP");
+        Log.i(TAG, "STEP");
 
     }
 
@@ -135,7 +131,7 @@ public class Delegator {
         if (pipeline != null) {
             for (AbstractProcessingTask task : pipeline) {
                 task.doTask();
-                Log.i("DELEGATOR", task.getClass().toString());
+                Log.i(TAG, task.getClass().toString());
             }
         }
 

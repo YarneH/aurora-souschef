@@ -41,6 +41,9 @@ public class Tab1Overview extends Fragment {
     private CardView mSettingsCard = null;
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -57,6 +60,7 @@ public class Tab1Overview extends Fragment {
 
         // Switch for changing the units.
         Switch mToggleImperial = rootView.findViewById(R.id.switch_toggle_imperial);
+
         // Change the settings in sharedPreferences.
         SharedPreferences sharedPreferences = requireActivity()
                 .getSharedPreferences(SETTINGS_PREFERENCES, Context.MODE_PRIVATE);

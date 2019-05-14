@@ -7,10 +7,11 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <!-- Text view for showing the description -->
     <TextView
         android:id="@+id/tv_recipe_description"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_marginStart="@dimen/tab1_text_margin"
         android:layout_marginTop="@dimen/tab1_text_margin"
         android:scrollbars="vertical"

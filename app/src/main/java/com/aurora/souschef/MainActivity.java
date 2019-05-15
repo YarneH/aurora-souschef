@@ -111,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
          * on the recipe data object.
          */
         if (mRecipeViewModel.isBeingProcessed()) {
-            Log.d("MAINNNN", "being processed is true");
             return;
         }
         mRecipeViewModel.setBeingProcessed(true);
@@ -162,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Sets up the observation of the recipeviewmodel
      */
-    private void setUpRecipeDataObject() {
+    private void  setUpRecipeDataObject() {
         mRecipeViewModel.getInitialised().observe(this, (Boolean isInitialised) -> {
             if (isInitialised == null) {
                 return;
@@ -258,10 +257,12 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 // Error in case ExtractedText was null.
                 Log.e(TAG, "ExtractedText-object was null.");
+                showGoBackToAuroraBox();
             }
         } catch (IOException e) {
             Log.e(TAG,
                     "IOException while loading data from aurora", e);
+            showGoBackToAuroraBox();
         }
     }
 

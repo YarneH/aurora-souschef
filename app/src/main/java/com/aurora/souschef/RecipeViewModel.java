@@ -191,7 +191,6 @@ public class RecipeViewModel extends AndroidViewModel {
         if (mInitialised != null && mInitialised.getValue() != null && mInitialised.getValue()) {
             return;
         }
-        (new ProgressUpdate()).execute();
         (new SouschefInit(plainText)).execute();
     }
 
@@ -204,7 +203,6 @@ public class RecipeViewModel extends AndroidViewModel {
         if (mInitialised != null && mInitialised.getValue() != null && mInitialised.getValue()) {
             return;
         }
-        (new ProgressUpdate()).execute();
         (new SouschefInit(extractedText)).execute();
 
     }
@@ -286,40 +284,6 @@ public class RecipeViewModel extends AndroidViewModel {
         this.isBeingProcessed = isBeingProcessed;
     }
 
-    /**
-     * Async task executing the logic for the progress bar.
-     * If leaked, it will stop after {@value MAX_WAIT_TIME} milliseconds.
-     */
-    @SuppressLint("StaticFieldLeak")
-    class ProgressUpdate extends AsyncTask<Void, Integer, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            int upTime = 0;
-            try {
-                while (!mInitialised.getValue()) {
-                    Thread.sleep(MILLIS_BETWEEN_UPDATES);
-                    upTime += MILLIS_BETWEEN_UPDATES;
-
-                    publishProgress(SouschefProcessorCommunicator.getProgressAnnotationPipelines());
-                    if (SouschefProcessorCommunicator.getProgressAnnotationPipelines()
-                            >= DETECTION_STEPS || upTime > MAX_WAIT_TIME) {
-                        break;
-                    }
-                }
-            } catch (InterruptedException e) {
-                Log.e(RecipeViewModel.class.getSimpleName(), "Caught interruptedException");
-                Thread.currentThread().interrupt();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-            mProgressStep.setValue(values[0]);
-        }
-    }
 
     /**
      * Async taks executing the Souschef initialisation.
@@ -346,10 +310,9 @@ public class RecipeViewModel extends AndroidViewModel {
 
                 try {
 
-                    if (mExtractedText.getSections() == null) {
-                        throw new RecipeDetectionException("The received text from Aurora did not contain sections, " +
-                                "make sure you can open this type of file. If the problem persists, please send " +
-                                "feedback in Aurora");
+                    if (mExtractedText == null) {
+                        throw new RecipeDetectionException("null object. This will be replaced by throwing exception " +
+                                "in the pipeline and processing function, waiting voor the lib");
                     }
                     return (Recipe) comm.pipeline(mExtractedText);
 
@@ -367,7 +330,7 @@ public class RecipeViewModel extends AndroidViewModel {
         @Override
         protected void onPostExecute(Recipe recipe) {
             // only initialize if the processing has not failed
-            if (!mProcessingFailed.getValue()) {
+            if (!mProcessingFailed.getValue() && recipe != null) {
                 initialiseWithRecipe(recipe);
             }
         }

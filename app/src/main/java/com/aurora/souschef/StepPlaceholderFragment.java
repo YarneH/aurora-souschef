@@ -242,6 +242,10 @@ public class StepPlaceholderFragment extends Fragment {
      * @param newAmount the new set amount of people
      */
     protected void update(int newAmount) {
+        if(mIngredientList == null){
+            // got here without a valid ingredientList just return
+            return;
+        }
         ((StepIngredientAdapter) mIngredientList.getAdapter()).setCurrentAmount(newAmount);
         mIngredientList.getAdapter().notifyDataSetChanged();
 

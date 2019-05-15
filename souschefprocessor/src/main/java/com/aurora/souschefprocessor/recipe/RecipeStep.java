@@ -19,7 +19,7 @@ public class RecipeStep {
     /**
      * A set of {@link Ingredient}s that were detected in this step
      */
-    protected List<Ingredient> mIngredients;
+    protected List<Ingredient> mIngredients = new ArrayList<>();
 
     /**
      * A list of {@link RecipeTimer}s that were detected in this step (in order)
@@ -46,19 +46,19 @@ public class RecipeStep {
      */
     protected boolean mTimerDetectionDone;
 
-    /**
-     * A private constructor for converting one of the subclasses
-     *
-     * @param mIngredients
-     * @param mRecipeTimers
-     * @param mDescription
-     * @param mIngredientDetectionDone
-     * @param mTimerDetectionDone
-     */
-    private RecipeStep(List<Ingredient> mIngredients, List<RecipeTimer> mRecipeTimers, String mDescription,
+
+    private RecipeStep(List<Ingredient> ingredients, List<RecipeTimer> recipeTimers, String mDescription,
                        boolean mIngredientDetectionDone, boolean mTimerDetectionDone) {
-        this.mIngredients = mIngredients;
-        this.mRecipeTimers = mRecipeTimers;
+        if (ingredients == null) {
+            this.mIngredients = new ArrayList<>();
+        } else {
+            this.mIngredients = ingredients;
+        }
+        if (recipeTimers == null) {
+            this.mRecipeTimers = new ArrayList<>();
+        } else {
+            this.mRecipeTimers = recipeTimers;
+        }
         this.mDescription = mDescription;
         this.mIngredientDetectionDone = mIngredientDetectionDone;
         this.mTimerDetectionDone = mTimerDetectionDone;

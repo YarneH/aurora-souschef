@@ -68,9 +68,12 @@ public class Tab2Ingredients extends Fragment {
                     if (numberOfPeople == null) {
                         return;
                     }
+
                     mAmountTextView.setText(String.valueOf(numberOfPeople));
-                    mIngredientAdapter.setChoseAmountOfServings(numberOfPeople);
-                    mIngredientAdapter.notifyDataSetChanged();
+                    if (mIngredientAdapter != null) {
+                        mIngredientAdapter.setChoseAmountOfServings(numberOfPeople);
+                        mIngredientAdapter.notifyDataSetChanged();
+                    }
                 }
         );
         return rootView;

@@ -6,6 +6,7 @@ import com.aurora.auroralib.Section;
 import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitStepsTask;
 
+import org.apache.xerces.impl.xpath.regex.REUtil;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;

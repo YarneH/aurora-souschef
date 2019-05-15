@@ -9,10 +9,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
@@ -348,21 +346,7 @@ public class RecipeViewModel extends AndroidViewModel {
 
             SouschefProcessorCommunicator comm = SouschefProcessorCommunicator.createCommunicator(mContext);
             if (comm != null) {
-
-                try {
-
-                    if (mExtractedText == null) {
-                        throw new RecipeDetectionException("null object. This will be replaced by throwing exception " +
-                                "in the pipeline and processing function, waiting voor the lib");
-                    }
-                    return (Recipe) comm.pipeline(mExtractedText);
-
-                } catch (RecipeDetectionException rde) {
-                    Log.d("FAILURE", rde.getMessage());
-                    mFailureMessage.postValue(rde.getMessage());
-                    mProcessingFailed.postValue(true);
-
-                }
+                return (Recipe) comm.pipeline(mExtractedText);
             }
             return null;
         }

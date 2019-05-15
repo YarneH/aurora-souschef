@@ -7,6 +7,8 @@ import android.util.Log;
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
 
+
+
 import com.aurora.auroralib.ProcessorCommunicator;
 import com.aurora.souschefprocessor.PluginConstants;
 import com.aurora.souschefprocessor.R;

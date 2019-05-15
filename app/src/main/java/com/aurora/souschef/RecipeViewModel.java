@@ -21,11 +21,7 @@ import com.aurora.souschefprocessor.recipe.Recipe;
  * and updating the UI when necessary.
  */
 public class RecipeViewModel extends AndroidViewModel {
-    /**
-     * When initialising Souschef, poll every MILLIS_BETWEEN_UPDATES milliseconds
-     * for updates on the progressbar. This could also be done with an observable.
-     */
-    private static final int MILLIS_BETWEEN_UPDATES = 500;
+
 
     /**
      * The amount of steps it takes to detect a recipe.
@@ -40,10 +36,6 @@ public class RecipeViewModel extends AndroidViewModel {
      */
     private static final int MAX_PEOPLE = 99;
 
-    /**
-     * Stop actively updating the progressbar after MAX_WAIT_TIME.
-     */
-    private static final int MAX_WAIT_TIME = 15000;
 
     /**
      * Percentages in 100%
@@ -157,6 +149,11 @@ public class RecipeViewModel extends AndroidViewModel {
         mRecipe.postValue(recipe);
     }
 
+    /**
+     * Get the failure message observable .
+     *
+     * @return LiveData that updates failure messages
+     */
     public LiveData<String> getFailureMessage() {
         return mFailureMessage;
     }
@@ -223,6 +220,13 @@ public class RecipeViewModel extends AndroidViewModel {
         mInitialised.setValue(true);
     }
 
+    /**
+     * Returns whether or not the settings are set to imperial or not.
+     * <p>
+     * Accesses shared preferences.
+     *
+     * @return True if imperial
+     */
     private boolean isImperial() {
         SharedPreferences sharedPreferences = getApplication().getSharedPreferences(
                 Tab1Overview.SETTINGS_PREFERENCES,
@@ -230,22 +234,49 @@ public class RecipeViewModel extends AndroidViewModel {
         return sharedPreferences.getBoolean(Tab1Overview.IMPERIAL_SETTING, false);
     }
 
+    /**
+     * Get whether or not the recipe is initialized yet.
+     *
+     * @return true if initialized
+     */
     public LiveData<Boolean> getInitialised() {
         return mInitialised;
     }
 
+    /**
+     * Get the <b>current</b> number of people that is being cooked for
+     *
+     * @return number of people the user is cooking for
+     */
     public LiveData<Integer> getNumberOfPeople() {
         return mCurrentPeople;
     }
 
+    /**
+     * Get the Observable of the recipe object.
+     * <p>
+     * Updates when the recipe is loaded.
+     *
+     * @return LiveData with the recipe object
+     */
     public LiveData<Recipe> getRecipe() {
         return mRecipe;
     }
 
+    /**
+     * Observable with boolean whether or not the default amount of guests is set.
+     *
+     * @return LiveData with boolean
+     */
     public LiveData<Boolean> getProcessFailed() {
         return mProcessingFailed;
     }
 
+    /**
+     * Observable with boolean whether or not the default amount of guests is set.
+     *
+     * @return LiveData with boolean
+     */
     public LiveData<Boolean> getDefaultAmountSet() {
         return mDefaultAmountSet;
     }
@@ -276,10 +307,20 @@ public class RecipeViewModel extends AndroidViewModel {
         }
     }
 
+    /**
+     * Whether or not the recipe is being processed.
+     *
+     * @return true if processing
+     */
     public boolean isBeingProcessed() {
         return isBeingProcessed;
     }
 
+    /**
+     * Sets whether or not a recipe is being processed.
+     *
+     * @param isBeingProcessed boolean
+     */
     public void setBeingProcessed(boolean isBeingProcessed) {
         this.isBeingProcessed = isBeingProcessed;
     }

@@ -3,6 +3,7 @@ package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitStepsTask;
 
 import org.junit.After;
@@ -44,7 +45,7 @@ public class SplitStepsTaskUnitTest {
         }
         sPipeline.annotate(annotatedList);
         ProtobufAnnotationSerializer serializer = new ProtobufAnnotationSerializer(true);
-        ExtractedText aurora = new ExtractedText("");
+        ExtractedText aurora = new ExtractedText("", Collections.emptyList());
         aurora.setTitle("");
         Section s = new Section();
         s.setBody(stepList);
@@ -100,7 +101,7 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
-    public void SplitStepsTask_doTask_setHasBeenSet() {
+    public void SplitStepsTask_doTask_setHasBeenSet() throws RecipeDetectionException {
         /**
          * After doing the tasks the recipeSteps list cannot be null
          */
@@ -111,7 +112,7 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
-    public void SplitStepsTask_doTask_setHasCorrectSize() {
+    public void SplitStepsTask_doTask_setHasCorrectSize() throws RecipeDetectionException {
         /**
          * The correct amount of steps is detected
          */
@@ -123,7 +124,7 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
-    public void SplitStepsTask_doTask_setHasCorrectValues() {
+    public void SplitStepsTask_doTask_setHasCorrectValues() throws RecipeDetectionException {
         /**
          * The correct steps are detected
          */
@@ -140,7 +141,7 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
-    public void SplitStepsTask_doTask_setHasCorrectSizeAcrossNewline() {
+    public void SplitStepsTask_doTask_setHasCorrectSizeAcrossNewline() throws RecipeDetectionException{
         /**
          * If the steps have a new line in the middle of a sentence, the correct amount of steps
          * is detected
@@ -172,7 +173,7 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
-    public void SplitStepsTask_doTask_setHasCorrectValuesAcrossNewline() {
+    public void SplitStepsTask_doTask_setHasCorrectValuesAcrossNewline() throws RecipeDetectionException{
         /**
          * If the steps have a new line in the middle of a sentence, the correct steps are detected
          */

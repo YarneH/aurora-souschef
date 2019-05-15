@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInListTask;
 
@@ -283,7 +284,7 @@ public class DetectIngredientsInListTaskLongTest {
     }
 
     @Test
-    public void DetectIngredientsInListTask_doTask_AccuracyForQuantityThreshold() {
+    public void DetectIngredientsInListTask_doTask_AccuracyForQuantityThreshold() throws RecipeDetectionException {
         /**
          * The accuracy of the quantities detected of ingredients is at least 95%
          */
@@ -319,7 +320,7 @@ public class DetectIngredientsInListTaskLongTest {
 
 
     @Test
-    public void DetectIngredientsInListTask_doTask_AccuracyForUnitThreshold() {
+    public void DetectIngredientsInListTask_doTask_AccuracyForUnitThreshold() throws RecipeDetectionException{
         /**
          * The accuracy for the unit should be higher than 80% and at most 5% can differ in one
          * character

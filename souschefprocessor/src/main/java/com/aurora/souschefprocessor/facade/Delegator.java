@@ -116,7 +116,7 @@ public class Delegator {
      * @param text The text to be processed in to a recipe Object
      * @return A Recipe object that was constructed from the text
      */
-    public Recipe processText(ExtractedText text) {
+    public Recipe processText(ExtractedText text) throws RecipeDetectionException {
         //TODO implement this function so that at runtime it is decided which tasks should be performed
         if (sThreadPoolExecutor == null) {
             setUpThreadPool();

@@ -169,7 +169,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * representing the amount of people the original recipe is for. It will then modify the recipe
      * with these fields
      */
-    public void doTask() {
+    public void doTask() throws RecipeDetectionException{
         String ingredients;
         String steps;
         String description;
@@ -197,7 +197,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      *
      * @return The string representing the mRecipeSteps
      */
-    private String findSteps() {
+    private String findSteps() throws RecipeDetectionException{
         String steps = findStepsRegexBased();
 
         if (steps.isEmpty()) {
@@ -303,7 +303,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      *
      * @return A string representing the steps
      */
-    private String findStepsNLP() {
+    private String findStepsNLP() throws RecipeDetectionException{
 
         StringBuilder bld = new StringBuilder();
         List<Section> sectionsToRemove = new ArrayList<>();
@@ -486,7 +486,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * @param section The section to analyze
      * @return a boolean that indicates if a verb was detected
      */
-    private boolean verbDetected(Section section) {
+    private boolean verbDetected(Section section) throws RecipeDetectionException {
         Annotation annotatedText = getAnnotatedText(section);
         List<CoreMap> sentences = annotatedText.get(CoreAnnotations.SentencesAnnotation.class);
 
@@ -515,7 +515,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      *
      * @return the annotated text
      */
-    private Annotation getAnnotatedText(Section section) {
+    private Annotation getAnnotatedText(Section section) throws RecipeDetectionException {
         if (section.getBodyAnnotation() == null) {
             throw new RecipeDetectionException("At least one section was not annotated for this text. " +
                     "Please contact Aurora to resolve this");

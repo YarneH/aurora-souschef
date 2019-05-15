@@ -50,7 +50,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
      * each {@link RecipeStep} in {@link #mRecipeInProgress}. If no steps are detected this throws a
      * RecipeDetectionException
      */
-    public void doTask() {
+    public void doTask() throws RecipeDetectionException {
 
         List<RecipeStepInProgress> recipeSteps = mRecipeInProgress.getStepsInProgress();
         if (recipeSteps.isEmpty()) {
@@ -70,7 +70,14 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
         }
         // wait unitl all threads have finished
         waitForThreads(latch);
+
+        if(mRecipeDetectionException != null){
+            // something went wrong in at least one of the threads
+            throw mRecipeDetectionException;
+        }
     }
+
+    private RecipeDetectionException mRecipeDetectionException = null;
 
     /**
      * Creates a StepTaskThread for a step and task
@@ -138,7 +145,12 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
          */
         @Override
         public void run() {
-            task.doTask();
+            try {
+                task.doTask();
+            } catch (RecipeDetectionException rde) {
+                // set the exception to this one to let the caller know something went wrong
+                mRecipeDetectionException = rde;
+            }
             latch.countDown();
         }
     }

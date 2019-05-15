@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
@@ -36,7 +37,7 @@ public class DetectIngredientsInListTaskLongTest {
     public static void initialize() throws IOException, ClassNotFoundException {
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
         crfClassifier = CRFClassifier.getClassifier(modelName);
-        testEmptyExtractedText = new ExtractedText("", null);
+        testEmptyExtractedText = new ExtractedText("", Collections.emptyList());
     }
 
 

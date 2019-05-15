@@ -13,6 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class DetectIngredientsInListTaskUnitTest {
 
 
     private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
-    private static ExtractedText emptyExtractedText = new ExtractedText("", null);
+    private static ExtractedText emptyExtractedText = new ExtractedText("", Collections.emptyList());
 
 
     @BeforeClass

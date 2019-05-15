@@ -29,7 +29,7 @@ public class DetectTimersInStepTaskUnitTest {
     private static RecipeInProgress recipe;
     private static ArrayList<RecipeStepInProgress> recipeSteps;
     private static Position irrelevantPosition = new Position(0, 1);
-    private static ExtractedText emptyExtractedText = new ExtractedText("", null);
+    private static ExtractedText emptyExtractedText = new ExtractedText("", Collections.emptyList());
 
 
     @BeforeClass

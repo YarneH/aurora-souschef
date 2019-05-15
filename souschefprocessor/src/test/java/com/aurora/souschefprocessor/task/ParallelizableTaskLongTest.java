@@ -48,7 +48,7 @@ public class ParallelizableTaskLongTest {
 
     private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
     private static String original = "irrelevant";
-    private static ExtractedText emptyExtractedText = new ExtractedText("", null);
+    private static ExtractedText emptyExtractedText = new ExtractedText("", Collections.emptyList());
 
     @BeforeClass
     public static void initialize() {

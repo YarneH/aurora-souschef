@@ -19,7 +19,7 @@ import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
 public class DetectTimersInStepTaskLongTest {
-    private static ExtractedText testEmptyExtractedText = new ExtractedText("", null);
+    private static ExtractedText testEmptyExtractedText = new ExtractedText("", Collections.emptyList());
     private static Position irrelevantPosition = new Position(0, 1);
     private static AnnotationPipeline pipeline = new AnnotationPipeline();
 

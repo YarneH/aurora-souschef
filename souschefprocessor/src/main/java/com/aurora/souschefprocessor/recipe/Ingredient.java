@@ -294,7 +294,7 @@ public class Ingredient {
         return list;
     }
 
-    /***
+    /**
      * Gets the unit position of this ingredient
      * @return the unit of this ingredient
      */
@@ -302,7 +302,7 @@ public class Ingredient {
         return mPositions.get(PositionKeysForIngredients.UNIT);
     }
 
-    /***
+    /**
      * Gets the quantity position of this ingredient
      * @return the quantity of this ingredient
      */
@@ -310,7 +310,7 @@ public class Ingredient {
         return mPositions.get(PositionKeysForIngredients.QUANTITY);
     }
 
-    /***
+    /**
      * Gets the name position of this ingredient
      * @return the name of this ingredient
      */

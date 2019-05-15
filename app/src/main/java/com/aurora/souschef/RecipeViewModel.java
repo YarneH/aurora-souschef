@@ -22,6 +22,7 @@ import com.aurora.souschefprocessor.recipe.Recipe;
  */
 public class RecipeViewModel extends AndroidViewModel {
 
+
     /**
      * The amount of steps it takes to detect a recipe.
      * This is used to pick the interval updates of the progress bar.
@@ -34,6 +35,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * The maximum amount of people you can cook for.
      */
     private static final int MAX_PEOPLE = 99;
+
 
     /**
      * Percentages in 100%
@@ -262,9 +264,9 @@ public class RecipeViewModel extends AndroidViewModel {
     }
 
     /**
-     * Get an observable on whether or not the processing failed.
+     * Observable with boolean whether or not the default amount of guests is set.
      *
-     * @return true if failed
+     * @return LiveData with boolean
      */
     public LiveData<Boolean> getProcessFailed() {
         return mProcessingFailed;
@@ -323,6 +325,7 @@ public class RecipeViewModel extends AndroidViewModel {
         this.isBeingProcessed = isBeingProcessed;
     }
 
+
     /**
      * Async taks executing the Souschef initialisation.
      */
@@ -348,11 +351,9 @@ public class RecipeViewModel extends AndroidViewModel {
 
                 try {
 
-                    if (mExtractedText.getSections() == null) {
-                        throw new RecipeDetectionException("The received text from Aurora did " +
-                                "not contain sections" +
-                                ", make sure you can open this type of file. If the problem" +
-                                " persists, please send feedback in Aurora");
+                    if (mExtractedText == null) {
+                        throw new RecipeDetectionException("null object. This will be replaced by throwing exception " +
+                                "in the pipeline and processing function, waiting voor the lib");
                     }
                     return (Recipe) comm.pipeline(mExtractedText);
 
@@ -370,7 +371,7 @@ public class RecipeViewModel extends AndroidViewModel {
         @Override
         protected void onPostExecute(Recipe recipe) {
             // only initialize if the processing has not failed
-            if (!mProcessingFailed.getValue()) {
+            if (!mProcessingFailed.getValue() && recipe != null) {
                 initialiseWithRecipe(recipe);
             }
         }

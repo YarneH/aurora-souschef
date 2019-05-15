@@ -20,7 +20,7 @@ import edu.stanford.nlp.util.CoreMap;
 
 
 /**
- * A AbstractProcessingTask that divides the original text into usable sections. It uses some domain knowledge by
+ * An AbstractProcessingTask that divides the original text into usable sections. It uses some domain knowledge by
  * first trying if some common words are present and if that fails by analyzing the grammatical structure of some
  * parts to identify the correct sections
  */

@@ -39,7 +39,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     private static ArrayList<RecipeStepInProgress> recipeSteps;
     private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
     private static List<String> descriptions;
-    private static ExtractedText emptyExtractedText = new ExtractedText("", null);
+    private static ExtractedText emptyExtractedText = new ExtractedText("", Collections.emptyList());
 
 
     @BeforeClass

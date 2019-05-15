@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.recipe.Ingredient;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 import com.aurora.souschefprocessor.recipe.Position;
@@ -157,7 +158,7 @@ public class ParallelizableTaskLongTest {
     }
 
     @Test
-    public void ParrallelizableStepTask_doTask_TimersDetectedForAllSteps() {
+    public void ParrallelizableStepTask_doTask_TimersDetectedForAllSteps() throws RecipeDetectionException {
         // The parallel tasks set the timers for all steps
         // check if this is done for all the steps
 
@@ -177,7 +178,7 @@ public class ParallelizableTaskLongTest {
     }
 
     @Test
-    public void ParrallelizableStepTask_doTask_IngredientsDetectedForAllSteps() {
+    public void ParrallelizableStepTask_doTask_IngredientsDetectedForAllSteps() throws RecipeDetectionException {
         // The parallel tasks set the ingredients for all steps
         // check if the ingredients are detected for all the steps
 
@@ -199,7 +200,7 @@ public class ParallelizableTaskLongTest {
     }
 
     @Test
-    public void ParrallelizableStepTask_doTask_BothTimersAndIngredientsDetectedForAllSteps() {
+    public void ParrallelizableStepTask_doTask_BothTimersAndIngredientsDetectedForAllSteps() throws RecipeDetectionException {
         // The parallel tasks set the ingredients for all steps
         // check if both timers and ingredients are detected for all the steps
 

@@ -63,7 +63,7 @@ public class DetectIngredientsInListTaskUnitTest {
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_setHasBeenSet() {
+    public void DetectIngredientsInList_doTask_setHasBeenSet() throws RecipeDetectionException {
         /*
          * After doing the detectingredientinlisttask the ingredients of the recipe cannot be empty
          */
@@ -84,7 +84,7 @@ public class DetectIngredientsInListTaskUnitTest {
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_setHasCorrectSize() {
+    public void DetectIngredientsInList_doTask_setHasCorrectSize() throws RecipeDetectionException {
         /**
          * After doing the detectingredientinlisttask the number of detected ingredients is correct
          */
@@ -108,7 +108,7 @@ public class DetectIngredientsInListTaskUnitTest {
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForOuncesSimplestCase() {
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForOuncesSimplestCase() throws RecipeDetectionException{
         /*
         For a simplste case of QUANTITY UNIT NAME the detection is correct
          */
@@ -124,7 +124,7 @@ public class DetectIngredientsInListTaskUnitTest {
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForNoSpaceBetweenQuantityAndUnit() {
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForNoSpaceBetweenQuantityAndUnit() throws RecipeDetectionException{
         /*
         If no space is between the value and unit the detection is still correct.
          */
@@ -140,7 +140,7 @@ public class DetectIngredientsInListTaskUnitTest {
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityFractions() {
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityFractions() throws RecipeDetectionException {
         /*
         The detection is correct for ingredients with fractions and sums of fractions
          */
@@ -168,7 +168,7 @@ public class DetectIngredientsInListTaskUnitTest {
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForUnusualUnit() {
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForUnusualUnit() throws RecipeDetectionException{
        /*
        The detection is correct for more unusual units
         */
@@ -193,7 +193,7 @@ public class DetectIngredientsInListTaskUnitTest {
 
 
     @Test
-    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForSpelledOutQuantityAndNoUnit() {
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForSpelledOutQuantityAndNoUnit() throws RecipeDetectionException {
         /*
         The detection is correct for a spelled out quantity
          */
@@ -209,7 +209,7 @@ public class DetectIngredientsInListTaskUnitTest {
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForUnitWithPoint() {
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForUnitWithPoint() throws RecipeDetectionException{
        /*
        The detection is correct for abbreviated units
         */
@@ -234,7 +234,7 @@ public class DetectIngredientsInListTaskUnitTest {
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForNoUnitAndNoQuantity() {
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForNoUnitAndNoQuantity() throws RecipeDetectionException {
        /*
        The detection is correct if quantity and unit are not present
         */
@@ -259,7 +259,7 @@ public class DetectIngredientsInListTaskUnitTest {
 
 
     @Test
-    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForCaseMultiplication() {
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForCaseMultiplication() throws RecipeDetectionException{
 /*
 The detection is correct in case of a multiplication sign in the quantity
  */
@@ -282,7 +282,7 @@ The detection is correct in case of a multiplication sign in the quantity
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForSecondWordIsNotUnit() {
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForSecondWordIsNotUnit() throws RecipeDetectionException{
 
         /*
         The detection is correct if the second word is not the unit
@@ -309,7 +309,7 @@ The detection is correct in case of a multiplication sign in the quantity
 
 
     @Test
-    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForClutteredIngredientWithDash() {
+    public void DetectIngredientsInList_doTask_correctDetectionOfNameUnitAndQuantityForClutteredIngredientWithDash() throws RecipeDetectionException{
 
         /*
         The detection is correct for a cluttered description with dashes
@@ -333,7 +333,7 @@ The detection is correct in case of a multiplication sign in the quantity
 
 
     @Test
-    public void DetectIngredientsInListTask_doTask_ClutterExamplesCorrect() {
+    public void DetectIngredientsInListTask_doTask_ClutterExamplesCorrect() throws RecipeDetectionException{
         /*
         The detection is correct for a cluttered description
          */
@@ -378,7 +378,7 @@ The detection is correct in case of a multiplication sign in the quantity
     }
 
     @Test
-    public void DetectIngredientsInList_CorrectPositons() {
+    public void DetectIngredientsInList_CorrectPositons() throws RecipeDetectionException{
 
         /*
         The positions are correctly detected for the ingredients
@@ -451,7 +451,7 @@ The detection is correct in case of a multiplication sign in the quantity
     }
 
     @Test(expected = RecipeDetectionException.class)
-    public void DetectIngredientsInList_doTask_ifNoIngredientsRaiseException() {
+    public void DetectIngredientsInList_doTask_ifNoIngredientsRaiseException() throws RecipeDetectionException {
         /*
         An empty ingredientsString should  throw an error if processed
          */
@@ -462,7 +462,7 @@ The detection is correct in case of a multiplication sign in the quantity
     }
 
     @Test
-    public void DetectIngredientsInList_doTask_randomInputStringDoesNotThrowError() {
+    public void DetectIngredientsInList_doTask_randomInputStringDoesNotThrowError() throws RecipeDetectionException {
         /*
         A jibberish ingredientsstring does not throw an exception
          */
@@ -475,7 +475,7 @@ The detection is correct in case of a multiplication sign in the quantity
 
 
     @Test
-    public void DetectIngredientsInListTask_doTask_IngredientsWithWeirdBackslashForFraction() {
+    public void DetectIngredientsInListTask_doTask_IngredientsWithWeirdBackslashForFraction() throws RecipeDetectionException{
         /*
         Ingredients with a weird backslash are detected correctly
          */

@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask;
 
 import org.junit.After;
@@ -177,7 +178,7 @@ public class SplitToMainSectionsTaskUnitTest {
     }
 
     @Test
-    public void SplitToMainSections_doTask_sectionsAreSet() {
+    public void SplitToMainSections_doTask_sectionsAreSet() throws RecipeDetectionException {
         /**
          * After the task the sections are not null
          */
@@ -199,7 +200,7 @@ public class SplitToMainSectionsTaskUnitTest {
     }
 
     @Test
-    public void SplitToMainSections_doTask_sectionsHaveCorrectValues() {
+    public void SplitToMainSections_doTask_sectionsHaveCorrectValues() throws RecipeDetectionException {
         recipeTexts = initializeRecipeText();
         /**
          * The correct sections are detected
@@ -223,7 +224,7 @@ public class SplitToMainSectionsTaskUnitTest {
     }
 
     @Test
-    public void SplitToMainSectionsTaskTest_doTask_NoExceptionsAreThrown() {
+    public void SplitToMainSectionsTaskTest_doTask_NoExceptionsAreThrown() throws RecipeDetectionException {
         List<ExtractedText> array = initializeRecipeText();
         boolean thrown = false;
         try {
@@ -249,7 +250,7 @@ public class SplitToMainSectionsTaskUnitTest {
      * to the ingredientssection
      */
     @Test
-    public void SplitToMainSectionsTask_doTask_NotAllIngredientsInSameSection() {
+    public void SplitToMainSectionsTask_doTask_NotAllIngredientsInSameSection() throws RecipeDetectionException{
         // Arrange
 
         String json = "{\n" +

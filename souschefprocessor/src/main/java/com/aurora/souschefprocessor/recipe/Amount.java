@@ -8,7 +8,7 @@ import java.util.Objects;
  * Two fields:
  * value: a double that is the value
  * unit: a string that is the unit
- *
+ * <p>
  * It has the extra functionality of converting the amount to metric or US using {@link UnitConversionUtils}
  */
 class Amount {
@@ -45,8 +45,9 @@ class Amount {
 
     /**
      * Create an amount
+     *
      * @param mValue the value of this amount
-     * @param unit the unit of this amount
+     * @param unit   the unit of this amount
      */
     Amount(double mValue, String unit) {
         if (mValue < 0.0) {
@@ -74,6 +75,7 @@ class Amount {
 
     /**
      * Default getter
+     *
      * @return the unit of this amount
      */
     String getUnit() {
@@ -95,6 +97,7 @@ class Amount {
 
     /**
      * Default getter
+     *
      * @return the value of this amount
      */
     double getValue() {
@@ -103,6 +106,7 @@ class Amount {
 
     /**
      * Default setter
+     *
      * @param value this will be the new value of this amount
      */
     void setValue(double value) {
@@ -111,6 +115,7 @@ class Amount {
 
     /**
      * Default setter
+     *
      * @param unit this will be the new unit of this amount
      */
     void setUnit(String unit) {

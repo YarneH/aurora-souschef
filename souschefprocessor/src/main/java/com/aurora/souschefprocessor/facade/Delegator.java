@@ -37,8 +37,10 @@ public class Delegator {
      * An object that serves as a lock to ensure that the pipelines are only created once
      */
     private static final Object LOCK = new Object();
-
-
+    /**
+     * The tag for logging purposes
+     */
+    private static final String TAG = Delegator.class.getSimpleName();
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
@@ -60,16 +62,10 @@ public class Delegator {
      * The classifier to classify ingredients
      */
     private CRFClassifier<CoreLabel> mIngredientClassifier;
-
     /**
      * A boolean that indicates whether the processing should be parallelized
      */
     private boolean mParallelize;
-
-    /**
-     * The tag for logging purposes
-     */
-    private static final String TAG = Delegator.class.getSimpleName();
 
     /**
      * Creating the delegator
@@ -180,7 +176,7 @@ public class Delegator {
         pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));
         pipeline.add(new SplitStepsTask(recipeInProgress));
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));
-        StepTaskNames[] taskNames = {StepTaskNames.INGR, StepTaskNames.TIMER};
+        StepTaskNames[] taskNames = {StepTaskNames.INGREDIENT, StepTaskNames.TIMER};
         if (mParallelize) {
             pipeline.add(new ParallelizeStepsTask(recipeInProgress, sThreadPoolExecutor, taskNames));
 

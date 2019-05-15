@@ -29,7 +29,7 @@ import edu.stanford.nlp.pipeline.POSTaggerAnnotator;
 import edu.stanford.nlp.pipeline.TokenizerAnnotator;
 import edu.stanford.nlp.pipeline.WordsToSentencesAnnotator;
 
-import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.INGR;
+import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.INGREDIENT;
 import static com.aurora.souschefprocessor.task.helpertasks.StepTaskNames.TIMER;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -40,8 +40,8 @@ public class ParallelizableTaskLongTest {
     private static ThreadPoolExecutor mThreadPoolExecutor;
     private static List<RecipeStepInProgress> recipeSteps = new ArrayList<>();
     private static StepTaskNames[] onlyTimerName = {TIMER};
-    private static StepTaskNames[] onlyIngrName = {INGR};
-    private static StepTaskNames[] both = {TIMER, INGR};
+    private static StepTaskNames[] onlyIngrName = {INGREDIENT};
+    private static StepTaskNames[] both = {TIMER, INGREDIENT};
     private static ParallelizeStepsTask onlyTimerstask;
     private static ParallelizeStepsTask onlyIngrtask;
     private static ParallelizeStepsTask bothtasks;

@@ -82,6 +82,11 @@ public class RecipeTimer {
         this.mPosition = position;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the position of this timer
+     */
     public Position getPosition() {
         return mPosition;
     }
@@ -101,10 +106,20 @@ public class RecipeTimer {
         return false;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the smallest time of this timer
+     */
     public int getLowerBound() {
         return mLowerBound;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the largest time of this timer
+     */
     public int getUpperBound() {
         return mUpperBound;
     }

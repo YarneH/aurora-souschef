@@ -14,11 +14,16 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * A subclass of Recipe, representing a Recipe Object that is being constructed. It has three
+ * A subclass of Recipe, representing a Recipe Object that is being constructed. It has
  * additional fields:
  * mIngredientsString: a string representing the mIngredients list
  * mStepsString: a string representing the different mRecipeSteps in the recipe
- * mOriginalText: a string that is the original text that was extracted by Aurora
+ * mExtractedText: the ExtractedText that was extracted by Aurora
+ * mStepsInProgress: a list of recipeSteps that are in the progress of being built
+ * mNamePartsMap: A map that maps all the listIngredients of this recipe to a list of words that make up the name of
+ * this listingredient
+ * mNamePartsCommonElementsMergedMap: A map that does the same as the aforementioned, but all the words in the lists
+ * are unique, by making wordgroups if two lists would have had the same elements
  */
 public class RecipeInProgress extends Recipe {
     /**
@@ -39,7 +44,11 @@ public class RecipeInProgress extends Recipe {
      */
     private ExtractedText mExtractedText;
 
-    private List<RecipeStepInProgress> mStepsInProgress;
+    /**
+     * A list of steps that are in progress of being built, in the {@link #convertToRecipe()} method these steps are
+     * converted to {@link com.aurora.souschefprocessor.recipe.RecipeStep}
+     */
+    private List<RecipeStepInProgress> mStepsInProgress = new ArrayList<>();
     /**
      * Maps ListIngredients to a an array of words in their name for matching the name in the step
      * Necessary in case only a certain word of the list ingredient is used to describe it in the step
@@ -60,26 +69,40 @@ public class RecipeInProgress extends Recipe {
 
     }
 
+    /**
+     * Default getter
+     *
+     * @return the string describing the steps
+     */
     public synchronized String getStepsString() {
         return mStepsString;
     }
 
+    /**
+     * Default setter
+     *
+     * @param stepsString the new string describing the steps of this recipe
+     */
     public synchronized void setStepsString(String stepsString) {
         this.mStepsString = stepsString;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the string describing the ingredients
+     */
     public synchronized String getIngredientsString() {
         return mIngredientsString;
     }
 
+    /**
+     * Default setter
+     *
+     * @param ingredientsString the new string describing the ingredients of this recipe
+     */
     public synchronized void setIngredientsString(String ingredientsString) {
         this.mIngredientsString = ingredientsString;
-    }
-
-    @Override
-    public void setIngredients(List<ListIngredient> ingredients){
-        super.setIngredients(ingredients);
-        initializeListIngredientAndNamePartsMaps();
     }
 
     /**
@@ -96,6 +119,11 @@ public class RecipeInProgress extends Recipe {
         return new Recipe(mFileName, mIngredients, mRecipeSteps, mNumberOfPeople, mDescription);
     }
 
+    /**
+     * Default getter
+     *
+     * @return the extracted text
+     */
     public ExtractedText getExtractedText() {
         return mExtractedText;
     }
@@ -116,12 +144,17 @@ public class RecipeInProgress extends Recipe {
         return false;
     }
 
-    public List<RecipeStepInProgress> getStepsInProgress() {
-        return mStepsInProgress;
-    }
-
-    public void setStepsInProgress(List<RecipeStepInProgress> mStepsInProgress) {
-        this.mStepsInProgress = mStepsInProgress;
+    /**
+     * Executes the {@link Recipe#setIngredients(List)} and also call
+     * {@link #initializeListIngredientAndNamePartsMaps()}
+     * for setting the {@link #mNamePartsCommonElementsMergedMap} and {@link #mNamePartsMap} maps
+     *
+     * @param ingredients the new ingredients, if this is null then the existing list is cleared
+     */
+    @Override
+    public void setIngredients(List<ListIngredient> ingredients) {
+        super.setIngredients(ingredients);
+        initializeListIngredientAndNamePartsMaps();
     }
 
     @Override
@@ -132,16 +165,6 @@ public class RecipeInProgress extends Recipe {
                 ", DESCRIPTION='" + mDescription + "\n" +
                 '}';
     }
-
-    public Map<ListIngredient, List<String>> getNamePartsMap() {
-        return mNamePartsMap;
-    }
-
-
-    public Map<ListIngredient, List<String>> getNamePartsCommonElementsMergedMap() {
-        return mNamePartsCommonElementsMergedMap;
-    }
-
 
     /**
      * creates the {@link #mNamePartsCommonElementsMergedMap} and {@link #mNamePartsCommonElementsMergedMap} maps
@@ -175,7 +198,8 @@ public class RecipeInProgress extends Recipe {
      */
     private static Map<ListIngredient, List<String>> createCommonPartsMergedMap(List<ListIngredient> ingredients) {
 
-        // first create the map with all the elements (these could be common for different keys)
+        // first create the map with all the elements (these could be common for different keys), each element has
+        // its own list of which they are currently the only element
         Map<ListIngredient, List<String>> commonPartsMerged = new HashMap<>();
         for (ListIngredient listIngredient : ingredients) {
             commonPartsMerged.put(listIngredient, new LinkedList<>(
@@ -198,7 +222,6 @@ public class RecipeInProgress extends Recipe {
 
         return commonPartsMerged;
     }
-
 
     /**
      * If two lists share some identical elements then these elements will be merged with the element that comes
@@ -254,5 +277,45 @@ public class RecipeInProgress extends Recipe {
                 list.remove(index);
             }
         }
+    }
+
+    /**
+     * Default getter
+     *
+     * @return the list of the steps in progress
+     */
+    public List<RecipeStepInProgress> getStepsInProgress() {
+        return mStepsInProgress;
+    }
+
+    /**
+     * Default setter, if the argument is null then the existing list is cleared
+     *
+     * @param stepsInProgress the new list of steps in progress
+     */
+    public void setStepsInProgress(List<RecipeStepInProgress> stepsInProgress) {
+        if (stepsInProgress == null) {
+            mStepsInProgress.clear();
+            return;
+        }
+        mStepsInProgress = stepsInProgress;
+    }
+
+    /**
+     * Default getter
+     *
+     * @return the map mapping listingredients to the words of its name
+     */
+    public Map<ListIngredient, List<String>> getNamePartsMap() {
+        return mNamePartsMap;
+    }
+
+    /**
+     * Default getter
+     *
+     * @return the map mapping listingredients to the unique words or wordgroups of its name
+     */
+    public Map<ListIngredient, List<String>> getNamePartsCommonElementsMergedMap() {
+        return mNamePartsCommonElementsMergedMap;
     }
 }

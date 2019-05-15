@@ -52,6 +52,7 @@ public class Ingredient {
 
     /**
      * Default getter
+     *
      * @return the unit of this amount
      */
     public String getUnit() {
@@ -60,6 +61,7 @@ public class Ingredient {
 
     /**
      * Default setter
+     *
      * @param unit the new unit of this ingredient
      */
     public void setUnit(String unit) {
@@ -68,6 +70,7 @@ public class Ingredient {
 
     /**
      * Default getter
+     *
      * @return the quantity of this ingredient
      */
     public double getQuantity() {
@@ -76,6 +79,7 @@ public class Ingredient {
 
     /**
      * Default getter
+     *
      * @return the quantity of this ingredient
      */
     public void setQuantity(double quantity) {
@@ -98,6 +102,7 @@ public class Ingredient {
 
     /**
      * Default getter
+     *
      * @return the amount of this ingredient (has both quantity and unit)
      */
     public Amount getAmount() {
@@ -106,6 +111,7 @@ public class Ingredient {
 
     /**
      * Default getter
+     *
      * @return the name of this ingredient
      */
     public String getName() {
@@ -114,6 +120,7 @@ public class Ingredient {
 
     /**
      * Default setter
+     *
      * @param name the new name of this ingredient
      */
     public void setName(String name) {
@@ -165,7 +172,8 @@ public class Ingredient {
 
     /**
      * Converts the units of this ingredient (which is located in a given description) to metric or to US imperial
-     * @param toMetric a boolean; if true the ingredient will be converted to metric, if false to US imperial system
+     *
+     * @param toMetric    a boolean; if true the ingredient will be converted to metric, if false to US imperial system
      * @param description the description where this ingredient is located in
      * @return the new description with converted units
      */
@@ -312,6 +320,7 @@ public class Ingredient {
 
     /**
      * Sets the position of the name
+     *
      * @param namePosition the new name position
      */
     public void setNamePosition(Position namePosition) {
@@ -320,6 +329,7 @@ public class Ingredient {
 
     /**
      * Sets the position of the quantity
+     *
      * @param quantityPosition the new quantity position
      */
     public void setQuantityPosition(Position quantityPosition) {
@@ -328,6 +338,7 @@ public class Ingredient {
 
     /**
      * Sets the position of the unit
+     *
      * @param unitPosition the new unit position
      */
     public void setUnitPosition(Position unitPosition) {
@@ -347,7 +358,11 @@ public class Ingredient {
         }
     }
 
-
+    /**
+     * Default getter
+     *
+     * @return the positions of NAME UNIT and QUANTITY
+     */
     public Map<PositionKeysForIngredients, Position> getPositions() {
         return mPositions;
     }

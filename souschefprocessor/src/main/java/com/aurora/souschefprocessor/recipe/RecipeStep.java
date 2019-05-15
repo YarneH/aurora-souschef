@@ -85,26 +85,56 @@ public class RecipeStep {
         return new RecipeStep(mIngredients, mRecipeTimers, mDescription, mIngredientDetectionDone, mTimerDetectionDone);
     }
 
+    /**
+     * default getter
+     *
+     * @return true if the ingredient detection has been done
+     */
     public boolean isIngredientDetectionDone() {
         return mIngredientDetectionDone;
     }
 
+    /**
+     * Default setter
+     *
+     * @param ingredientDetectionDone the new value for {@link #mIngredientDetectionDone}
+     */
     public void setIngredientDetectionDone(boolean ingredientDetectionDone) {
         this.mIngredientDetectionDone = ingredientDetectionDone;
     }
 
+    /**
+     * default getter
+     *
+     * @return true if the timer detection has been done
+     */
     public boolean isTimerDetectionDone() {
         return mTimerDetectionDone;
     }
 
+    /**
+     * Default setter
+     *
+     * @param timerDetectionDone the new value for {@link #mTimerDetectionDone}
+     */
     public void setTimerDetectionDone(boolean timerDetectionDone) {
         mTimerDetectionDone = timerDetectionDone;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the description of this step
+     */
     public String getDescription() {
         return mDescription;
     }
 
+    /**
+     * Default setter
+     *
+     * @param description the new description of this recipe
+     */
     public void setDescription(String description) {
         mDescription = description;
     }
@@ -134,6 +164,11 @@ public class RecipeStep {
         return false;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the list of ingredients in this step
+     */
     public synchronized List<Ingredient> getIngredients() {
         return mIngredients;
     }
@@ -190,6 +225,11 @@ public class RecipeStep {
         }
     }
 
+    /**
+     * Default getter
+     *
+     * @return the list of timers in this recipe step
+     */
     public synchronized List<RecipeTimer> getRecipeTimers() {
         return mRecipeTimers;
     }

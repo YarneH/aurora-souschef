@@ -21,17 +21,15 @@ import edu.stanford.nlp.ling.CoreLabel;
  * Communicates with the kernel and the UI of souschefprocessor
  */
 public class SouschefProcessorCommunicator extends ProcessorCommunicator {
+    private static final String TAG = SouschefProcessorCommunicator.class.getSimpleName();
     /**
      * An atomicInteger to showcase the update of the creating of the pipelines
      */
     private static AtomicInteger mProgressAnnotationPipelines = new AtomicInteger(0);
-
     /**
      * The delgator that executes the processing
      */
     private Delegator mDelegator;
-
-    private static final String TAG = SouschefProcessorCommunicator.class.getSimpleName();
 
     /**
      * Create a communicator using a CRFClassifier that was loaded in and is used to classify the

@@ -55,17 +55,17 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private static final String OF_PREPOSITION = "of";
 
     /**
-     * TODO: @Piet
+     * TODO: @Piet piet verheyhe
      */
     private static final int PREPOSITION_LENGTH = 1;
 
     /**
-     * TODO: @Piet
+     * TODO: @Piet piet verheye
      */
     private static final int FRACTIONS_LENGTH = 1;
 
     /**
-     * TODO: @Piet
+     * TODO: @Piet piet verhey
      */
     private static final int MAX_QUANTITY_LENGTH = 2;
 
@@ -234,8 +234,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
      * Detects the set of mIngredients in a recipeStep. It also checks if this corresponds with the mIngredients of the
      * recipe.
      *
-     * @param recipeStep           The recipeStep on which to detect the mIngredients
-     * @param ingredientListRecipe The set of mIngredients contained in the recipe of which the recipeStep is a part
+     * @param recipeStep The recipeStep on which to detect the mIngredients
      * @return A set of Ingredient objects that represent the mIngredients contained in the recipeStep
      */
     private List<Ingredient> detectIngredients(RecipeStepInProgress recipeStep) {
@@ -466,7 +465,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private Ingredient constructIngredient(int nameIndex, List<String> nameParts,
                                            Ingredient listIngredient, List<CoreLabel> tokens) {
 
-        int beginPosOffset = mRecipeStep.getBeginPosition();
+        int beginPosOffset = mRecipeStep.getBeginPositionOffset();
         Ingredient stepIngredient = defaultStepIngredient();
         stepIngredient.setName(listIngredient.getName());
 
@@ -630,7 +629,6 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         // Add common units to the possible unit names
         unitPartsWithSingulars.addAll(UnitConversionUtils.getCommonUnits());
 
-        // TODO add additional condition that it should stop when no more unit strings are found
         int i = precedingTokens.size() - 1;
         while (i > 0) {
 
@@ -768,7 +766,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
         double quantityMultiplier = 1.0;
         boolean tokenIsQuantity = false;
         if ("CD".equals(precedingTokens.get(tokenIndex).tag())) {
-            quantityMultiplier *= calculateQuantity(Arrays.asList(precedingTokens.get(tokenIndex)));
+            quantityMultiplier *= calculateQuantity(Collections.singletonList(precedingTokens.get(tokenIndex)));
             tokenIsQuantity = true;
         }
 

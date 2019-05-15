@@ -258,7 +258,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             int endPosition = line.indexOf(nameList.get(nameList.size() - 1).word()) +
                     nameList.get(nameList.size() - 1).word().length();
 
-            line = makeNewLine(line, beginPosition, endPosition, name);
 
             positions.put(Ingredient.PositionKeysForIngredients.NAME, new Position(beginPosition, endPosition));
 
@@ -471,32 +470,10 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         return bld.toString();
     }
 
-    /**
-     * A private helper function for updating the line after the name component has been identiefied
-     *
-     * @param line
-     * @param beginPosition
-     * @param endPosition
-     * @param name
-     * @return
-     */
-    private static String makeNewLine(String line, int beginPosition, int endPosition, String name) {
-        if (beginPosition < 0 || endPosition < 0 || beginPosition >= line.length() || endPosition > line.length()) {
-            // the positions are not in this line
-            return line;
-        }
-
-        String newLine = line.substring(0, beginPosition) + name;
-        if (endPosition < line.length()) {
-            newLine += line.substring(endPosition);
-        }
-
-        return newLine;
-    }
 
     /**
      * Removes the part of the line that matches the pattern for each pattern in the list, in order,
-     * so the second pattern is mathced against the result of the operation with the first pattern.
+     * so the second pattern is matched against the result of the operation with the first pattern.
      *
      * @param line     The line to match against the patterns
      * @param patterns the patterns to match

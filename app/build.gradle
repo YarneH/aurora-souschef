@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-//apply plugin: 'com.google.firebase.firebase-perf'
 apply plugin: 'io.fabric'
 
 android {
@@ -65,11 +64,9 @@ dependencies {
     implementation group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.7.1'
 
     // Firebase statistics
-    implementation 'com.google.firebase:firebase-core:16.0.8'
-    // For perfomance monitoring
-    implementation 'com.google.firebase:firebase-perf:16.2.5'
+    implementation 'com.google.firebase:firebase-core:16.0.9'
     // crashalytics
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.9'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.10.0'
     //gestures
     implementation 'com.github.nisrulz:sensey:1.8.0'
     // Better annotations in android studio

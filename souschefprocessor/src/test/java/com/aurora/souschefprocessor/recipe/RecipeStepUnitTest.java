@@ -23,14 +23,16 @@ import edu.stanford.nlp.util.CoreMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class RecipeStepUnitTest {
 
     @Test
     public void RecipeStep_addTimer_PositionOfTimerBiggerThanLengthOfStepDescriptionThrowsException() {
-        /**
-         * The positon of a timer cannot be bigger than the length of the original text
+        /*
+         * The position of a timer cannot be bigger than the length of the original text, constructing this should
+         * throw an exception
          */
 
         // Arrange
@@ -55,7 +57,7 @@ public class RecipeStepUnitTest {
             case1Thrown = true;
         }
         // Assert
-        assert (case1Thrown);
+        assertTrue ("No exception was thrown for postion "+ pos +"in step " +step, case1Thrown);
 
         // case 2 both too big
         // Arrange
@@ -70,22 +72,27 @@ public class RecipeStepUnitTest {
             case2Thrown = true;
         }
         // Assert
-        assert (case2Thrown);
+        assertTrue ("No exception was thrown for postion "+ pos +"in step " +step, case2Thrown);
     }
 
     @Test
     public void RecipeStep_convertUnit_correctConversion() {
+        /*
+         * The conversion for as step is correct
+         */
+        // arrange
         // Create an empty ExtractedText for RecipeInProgress argument
         ExtractedText emptyExtractedText = new ExtractedText("", null);
-        // Add the ingredient to the recipe
+
         RecipeInProgress rip = new RecipeInProgress(emptyExtractedText);
         EnumMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);
+        // Add the ingredients to the recipe
         Position pos = new Position(0, 1);
         for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantPositions.put(key, pos);
         }
         ListIngredient ingredient = new ListIngredient("olive oil", "cup", 1 / 2.0, "1/2 cup extra-virgin olive oil, divided", irrelevantPositions);
-        rip.setIngredients(new ArrayList<>(Arrays.asList(ingredient)));
+        rip.setIngredients(new ArrayList<>(Collections.singleton(ingredient)));
 
         // construct the step and add it to the recipe
         String originalDescription = "Heat 0.25 cup oil in a large deep-sided skillet over medium-high";
@@ -105,14 +112,16 @@ public class RecipeStepUnitTest {
 
         rip.setStepsInProgress(Collections.singletonList(step));
 
-        // detect the ingredients in the step
+        // detect the ingredients in the step (so the positions are set)
         DetectIngredientsInStepTask task = new DetectIngredientsInStepTask(rip, 0);
         task.doTask();
 
+        // act & assert
         // convert the step
         step.convertUnit(true);
         assertNotEquals("The description is not as expected after conversion", "Heat 60 milliliter oil in a large deep-sided skillet over medium-high", step.getDescription());
 
+        // act & assert
         // convert back
         step.convertUnit(false);
         assertEquals("The description is not the same after converting twice", originalDescription, step.getDescription());

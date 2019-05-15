@@ -32,6 +32,11 @@ public class ListIngredient extends Ingredient {
         }
     }
 
+    /**
+     * Standard getter
+     *
+     * @return the original line this listIngredient was detected
+     */
     public String getOriginalLine() {
         return mOriginalLine;
     }

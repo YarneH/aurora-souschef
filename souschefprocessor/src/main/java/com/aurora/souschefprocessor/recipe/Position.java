@@ -99,10 +99,20 @@ public class Position {
         return false;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the beginindex of the position
+     */
     public int getBeginIndex() {
         return mBeginIndex;
     }
 
+    /**
+     * Set the beginIndex, this cannot be equal or bigger than {@link #mEndIndex} and cannot be negative
+     *
+     * @param beginIndex the new beginindex of this position
+     */
     public void setBeginIndex(int beginIndex) {
         // first check if this is a legal argument and throw if illegal
         checkLegality(beginIndex, mEndIndex);
@@ -117,10 +127,20 @@ public class Position {
         }
     }
 
+    /**
+     * Default getter
+     *
+     * @return the endIndex of this position
+     */
     public int getEndIndex() {
         return mEndIndex;
     }
 
+    /**
+     * Set the endIndex, this cannot be equal or smaller than than {@link #mBeginIndex} or be negative
+     *
+     * @param endIndex the new endIndex of this position
+     */
     public void setEndIndex(int endIndex) {
         // first check if this is a legal argument and throw if illegal
         checkLegality(mBeginIndex, endIndex);
@@ -182,6 +202,7 @@ public class Position {
 
     /**
      * subtracts an offset form both begin and endindex
+     *
      * @param offset the offset to subtract, this cannot be higher than the beginindex
      */
     public void subtractOffset(int offset) {
@@ -196,6 +217,7 @@ public class Position {
 
     /**
      * Adds an offset to both begin and endindex
+     *
      * @param offset the offste to add
      */
     public void addOffset(int offset) {

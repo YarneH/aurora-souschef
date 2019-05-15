@@ -34,7 +34,7 @@ import static android.content.ContentValues.TAG;
  * A task that detects timers in mRecipeSteps
  */
 public class DetectTimersInStepTask extends AbstractProcessingTask {
-    //TODO change detection of fractions and symbol notations into a non hard-coded solution
+
     /**
      * A string representing the word half
      */
@@ -92,13 +92,17 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * for souschef (e.g "overnight")
      */
     private static final ArrayList<String> TIME_WORDS_NOT_TO_INCLUDE =
-            new ArrayList<>(Arrays.asList("overnight", "spring", "summer", "fall", "autumn"));
+            new ArrayList<>(Arrays.asList("overnight", "spring", "summer", "fall", "autumn", "winter"));
 
     /**
      * A static map that matches the {@link #FRACTION_HALF} and {@link #FRACTION_QUARTER} strings to
      * their numerical values
      */
     private static final Map<String, Double> FRACTION_MULTIPLIERS = new HashMap<>();
+    /**
+     * A tag for logging purposes
+     */
+    private static final String LOG_TAG = DetectTimersInStepTask.class.getSimpleName();
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
@@ -112,8 +116,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
     static {
         FRACTION_MULTIPLIERS.put(FRACTION_HALF, FRACTION_HALF_MUL);
         FRACTION_MULTIPLIERS.put(FRACTION_QUARTER, FRACTION_QUARTER_MUL);
-        // overnight should not be a timer
-        // this might be expanded to other tokens that do not require a timer
+
+        // statically create the annotator as to only create this object once
         initializeAnnotationPipeline();
     }
 
@@ -170,8 +174,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      */
     private static AnnotationPipeline createTimerAnnotationPipeline() {
         Properties props = new Properties();
-        // Do not use binders, these are necessary for Hollidays but those are not needed for
-        // recipesteps
+        // Do not use binders, these are necessary for Hollidays but those are not needed for recipesteps
         // see https://mailman.stanford.edu/pipermail/java-nlp-user/2015-April/007006.html
         props.setProperty("sutime.binders", "0");
 
@@ -179,53 +182,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
 
         pipeline.addAnnotator(new TimeAnnotator("sutime", props));
-        Delegator.incrementProgressAnnotationPipelines(); //3
+        Delegator.incrementProgressAnnotationPipelines();
         return pipeline;
-    }
-
-    /**
-     * Add spaces in a recipestep, needed for detection of timers. A space is needed if a dash is
-     * present between two numbers so that the pipeline can see this as seprate tokens (e.g. 4-5 minutes
-     * should become 4 - 5 minutes)
-     *
-     * @param recipeStepDescription The description in which to add spaces
-     * @return the description with the necessary spaces added
-     */
-    private static String addSpaces(String recipeStepDescription) {
-        // if the description is empyt this is not a step
-        if (recipeStepDescription.length() == 0) {
-            return "";
-        }
-
-        StringBuilder bld = new StringBuilder();
-        char[] chars = recipeStepDescription.toCharArray();
-
-        bld.append(chars[0]);
-        int length = chars.length;
-
-        // loop for the second character to the second to last
-        for (int index = 1; index < length - 1; index++) {
-            char previous = chars[index - 1];
-            char current = chars[index];
-            char next = chars[index + 1];
-
-            boolean previousIsNumber = Character.isDigit(previous);
-            boolean currentIsDash = (current == '-');
-            boolean nexIsNumber = Character.isDigit(next);
-
-            if (previousIsNumber && currentIsDash && nexIsNumber) {
-                // add spaces in the case of 4-5 -> 4 - 5
-                bld.append(" ");
-                bld.append(current);
-                bld.append(" ");
-            } else {
-                bld.append(current);
-            }
-        }
-        // add final character
-        bld.append(chars[length - 1]);
-
-        return bld.toString();
     }
 
     /**
@@ -396,7 +354,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     LOCK_DETECT_TIMERS_IN_STEP_PIPELINE.wait();
                 }
             } catch (InterruptedException e) {
-                Log.e("Interrupted", "detecttimer", e);
+                Log.e(LOG_TAG, "detecttimer", e);
                 Thread.currentThread().interrupt();
             }
         }
@@ -419,7 +377,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                             ("PT" + token.originalText()), timerPosition));
                 } catch (IllegalArgumentException iae) {
                     //TODO do something meaningful
-                    Log.e(TAG, "detectTimer: ", iae);
+                    Log.e(LOG_TAG, "detectTimer: ", iae);
                 }
             }
         }
@@ -580,7 +538,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         } catch (IllegalArgumentException iae) {
             // if adding failed just log the failure
             // TODO can this log be added to analytics?
-            Log.e(TAG, "detectTimer: ", iae);
+            Log.e(LOG_TAG, "detectTimer: ", iae);
         }
     }
 
@@ -592,7 +550,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * @return seconds from this formatted string
      */
     private static int getSecondsFromFormattedString(String string) {
-        //TODO maybe this can be done less hardcoded, although for souschef I think this is good enough
+
         String number = string.substring(TIMEX_NUM_POSITION, string.length() - 1);
         int num = Integer.parseInt(number);
         char unit = string.charAt(string.length() - 1);

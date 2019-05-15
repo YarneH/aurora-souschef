@@ -35,26 +35,47 @@ public class RecipeStepInProgress extends RecipeStep {
 
     }
 
+    /**
+     * Default getter
+     *
+     * @return the annotations of the description of this step
+     */
     public List<CoreMap> getSentenceAnnotations() {
         return mSentenceAnnotations;
     }
 
+    /**
+     * Default setter
+     *
+     * @param annotations the new annotations for the description of this step
+     */
     public void setSentenceAnnotations(List<CoreMap> annotations) {
         this.mSentenceAnnotations = annotations;
     }
 
-    public int getBeginPosition() {
+    /**
+     * Default setter
+     *
+     * @return the begin position offset of the annotations of the description of this step
+     */
+    public int getBeginPositionOffset() {
         return mBeginPostitionOffset;
     }
 
+    /**
+     * Default setter
+     *
+     * @param mBeginPositionOffset the new begin position offset of the annotations of the description of this step
+     */
     public void setBeginPosition(int mBeginPositionOffset) {
         this.mBeginPostitionOffset = mBeginPositionOffset;
     }
 
     /**
-     * Converts this to a {@link RecipeStep}
+     * Converts this to a {@link RecipeStep} by first cleaning up and trimming the description and then calling the
+     * {@link RecipeStep#convertToRecipeStep()} method
      *
-     * @return the
+     * @return the recipe
      */
     public RecipeStep convertToRecipeStep() {
         cleanUp();

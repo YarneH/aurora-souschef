@@ -161,13 +161,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setUpRecipeDataObject() {
         long startTime = System.currentTimeMillis();
-        mRecipeViewModel.getProgressStep().observe(this, (Integer step) -> {
-                    ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                    pb.setProgress(mRecipeViewModel.getProgress());
-
-                    // TODO: set TextView to visualize progress
-                }
-        );
         mRecipeViewModel.getInitialised().observe(this, (Boolean isInitialised) -> {
             if (isInitialised == null) {
                 return;

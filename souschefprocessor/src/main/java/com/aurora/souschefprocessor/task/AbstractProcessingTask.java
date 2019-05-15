@@ -21,6 +21,9 @@ public abstract class AbstractProcessingTask {
 
     /**
      * Do the task on the {@link #mRecipeInProgress} attribute
+     *
+     * @throws RecipeDetectionException an indication that this step could not be executed. The input received from
+     *                                  Aurora does probably not represent a recipe.
      */
     public abstract void doTask() throws RecipeDetectionException;
 }

@@ -49,6 +49,8 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
      * Launches parallel threads for each type of task in {@link #mStepTaskNames} submitted and for
      * each {@link RecipeStep} in {@link #mRecipeInProgress}. If no steps are detected this throws a
      * RecipeDetectionException
+     *
+     * @throws RecipeDetectionException Is thrown when no steps are detected, most probably this is not a recipe.
      */
     public void doTask() throws RecipeDetectionException {
 

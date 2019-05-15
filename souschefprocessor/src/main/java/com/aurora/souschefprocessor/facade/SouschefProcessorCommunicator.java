@@ -106,6 +106,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
      *
      * @param extractedText the text to be processed
      * @return A Recipe object (which extends PLuginObject) that is the result of the processed text
+     * @throws RecipeDetectionException an indication that something went wrong during the processing of the recipe
      */
     @Override
     protected PluginObject process(@NonNull ExtractedText extractedText) throws RecipeDetectionException {

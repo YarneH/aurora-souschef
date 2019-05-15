@@ -29,8 +29,11 @@ public class SplitStepsTask extends AbstractProcessingTask {
     /**
      * This will split the stepsString in the RecipeInProgress Object into mRecipeSteps and modifies the
      * recipe object so that the mRecipeSteps are set
+     *
+     * @throws RecipeDetectionException An indication that the splitting to steps failed. This is probably not a
+     *                                  recipe or something went wrong in Aurora
      */
-    public void doTask() throws RecipeDetectionException{
+    public void doTask() throws RecipeDetectionException {
         String text = mRecipeInProgress.getStepsString();
 
         List<RecipeStepInProgress> recipeStepList = divideIntoSteps(text);
@@ -74,7 +77,13 @@ public class SplitStepsTask extends AbstractProcessingTask {
         return list;
     }
 
-    private void setAnnotations(List<RecipeStepInProgress> list) throws RecipeDetectionException  {
+    /**
+     * private helper function that calls {@link #fillInAnnotation(RecipeStepInProgress)} on all the steps
+     *
+     * @param list the list of steps to fill in the annotation
+     * @throws RecipeDetectionException Is thrown when the annotation could not be found
+     */
+    private void setAnnotations(List<RecipeStepInProgress> list) throws RecipeDetectionException {
         for (RecipeStepInProgress step : list) {
             fillInAnnotation(step);
         }
@@ -125,6 +134,8 @@ public class SplitStepsTask extends AbstractProcessingTask {
      * and {@link RecipeStepInProgress#setSentenceAnnotations(List)} methods
      *
      * @param step the step whose annotations are filled in
+     * @throws RecipeDetectionException Is thrown when the no annotation can be found. This is a problem in Aurora or
+     *                                  the formatting of the input is not as expected
      */
     private void fillInAnnotation(RecipeStepInProgress step) throws RecipeDetectionException {
 
@@ -186,12 +197,12 @@ public class SplitStepsTask extends AbstractProcessingTask {
 
         // sections
         for (Section s : text.getSections()) {
-            if ( s.getTitle().replace("\n", " ").trim().contains
+            if (s.getTitle().replace("\n", " ").trim().contains
                     (description)) {
                 return s.getTitleAnnotation();
             }
 
-            if ( s.getBody().replace("\n", " ").trim().contains
+            if (s.getBody().replace("\n", " ").trim().contains
                     (description)) {
 
                 return s.getBodyAnnotation();

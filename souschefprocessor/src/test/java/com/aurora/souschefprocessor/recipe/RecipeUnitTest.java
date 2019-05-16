@@ -31,7 +31,7 @@ public class RecipeUnitTest {
         for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantPositions.put(key, irrelevantPosition);
         }
-        rip = new RecipeInProgress(emptyExtractedText);
+        rip = new RecipeInProgress(emptyExtractedText, "");
         RecipeStepInProgress step1 = new RecipeStepInProgress("Let the pasta boil for 10 minutes");
         RecipeTimer timer1 = new RecipeTimer(10 * 60, irrelevantPosition);
 

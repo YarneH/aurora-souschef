@@ -10,7 +10,7 @@ import com.aurora.auroralib.PluginObject;
 
 
 import com.aurora.auroralib.ProcessorCommunicator;
-import com.aurora.souschefprocessor.PluginConstants;
+
 import com.aurora.souschefprocessor.R;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
@@ -118,7 +118,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
 
         Recipe recipe = null;
         try {
-            recipe = mDelegator.processText(extractedText);
+            recipe = mDelegator.processText(extractedText, mUniquePluginName);
         } catch (RecipeDetectionException rde) {
             Log.e(TAG, "detection failure", rde);
             // if something went wrong with the detection rethrow the error and let the

@@ -135,7 +135,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
         String allIngredients = initializeIngredientsString();
         String[] ingredientsPerRecipe = allIngredients.split("\n\n");
         for (String ingredientsForOneRecipe : ingredientsPerRecipe) {
-            RecipeInProgress rip = new RecipeInProgress(emptyExtractedText);
+            RecipeInProgress rip = new RecipeInProgress(emptyExtractedText, "");
             rip.setIngredientsString(ingredientsForOneRecipe);
             List<ListIngredient> listIngredients = new ArrayList<>();
 

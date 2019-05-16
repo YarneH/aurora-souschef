@@ -25,6 +25,9 @@ import edu.stanford.nlp.ling.CoreLabel;
  * Communicates with the kernel and the UI of souschefprocessor
  */
 public class SouschefProcessorCommunicator extends ProcessorCommunicator {
+    /**
+     * The tag for logging purposes
+     */
     private static final String TAG = SouschefProcessorCommunicator.class.getSimpleName();
     /**
      * An atomicInteger to showcase the update of the creating of the pipelines
@@ -48,7 +51,8 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
          * A UNIQUE_PLUGIN_NAME needs to be passed to the constructor of ProcessorCommunicator for
          * proper configuration of the cache
          */
-        super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
+        super(context.getPackageName(), context);
+        Log.d(TAG, "this is the package name "+ context.getPackageName());
         mDelegator = new Delegator(classifier, false);
     }
 
@@ -128,7 +132,8 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
         } catch (Exception e) {
             // something else went wrong
             Log.e(TAG, "unexpected exception", e);
-            throw new RecipeDetectionException("Something unexpected happened: " + e.getMessage());
+            throw new RecipeDetectionException("Something unexpected happened: " + e.getMessage() + "\n\nAre you sure" +
+                    " this is a recipe?");
         }
 
         return recipe;

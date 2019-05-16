@@ -20,7 +20,6 @@ import com.aurora.souschefprocessor.recipe.Recipe;
  */
 public class RecipeViewModel extends AndroidViewModel {
 
-
     /**
      * The amount of steps it takes to detect a recipe.
      * This is used to pick the interval updates of the progress bar.
@@ -33,7 +32,6 @@ public class RecipeViewModel extends AndroidViewModel {
      * The maximum amount of people you can cook for.
      */
     private static final int MAX_PEOPLE = 99;
-
 
     /**
      * Percentages in 100%
@@ -322,7 +320,6 @@ public class RecipeViewModel extends AndroidViewModel {
     public void setBeingProcessed(boolean isBeingProcessed) {
         this.isBeingProcessed = isBeingProcessed;
     }
-
 
     /**
      * Async taks executing the Souschef initialisation.

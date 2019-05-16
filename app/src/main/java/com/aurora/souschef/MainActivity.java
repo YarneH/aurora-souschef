@@ -161,7 +161,8 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Sets up the observation of the recipeviewmodel
      */
-    private void  setUpRecipeDataObject() {
+    private void setUpRecipeDataObject() {
+        long startTime = System.currentTimeMillis();
         mRecipeViewModel.getInitialised().observe(this, (Boolean isInitialised) -> {
             if (isInitialised == null) {
                 return;
@@ -170,6 +171,10 @@ public class MainActivity extends AppCompatActivity {
                 showProgress();
                 return;
             }
+
+            Bundle params = new Bundle();
+            params.putLong("processing_time", System.currentTimeMillis() - startTime);
+            FirebaseAnalytics.getInstance(this).logEvent("processing_performance", params);
             hideProgress();
         });
         mRecipeViewModel.getProcessFailed().observe(this, (Boolean failed) -> {

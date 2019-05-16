@@ -52,7 +52,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
          * proper configuration of the cache
          */
         super(context.getPackageName(), context);
-        Log.d(TAG, "this is the package name "+ context.getPackageName());
+        Log.d(TAG + " PACKAGENAME", "this is the package name "+ context.getPackageName());
         mDelegator = new Delegator(classifier, false);
     }
 

@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Date;
 
 import edu.stanford.nlp.pipeline.Annotation;
@@ -43,7 +44,7 @@ public class SplitStepsTaskUnitTest {
         }
         sPipeline.annotate(annotatedList);
         ProtobufAnnotationSerializer serializer = new ProtobufAnnotationSerializer(true);
-        ExtractedText aurora = new ExtractedText("", new Date(System.currentTimeMillis()));
+        ExtractedText aurora = new ExtractedText("");
         aurora.setTitle("");
         Section s = new Section();
         s.setBody(stepList);
@@ -71,7 +72,7 @@ public class SplitStepsTaskUnitTest {
         recipeAcrossNewline = new RecipeInProgress(ExtractedText.fromJson(json));
         recipeAcrossNewline.setStepsString(stepListAcrossNewline);
         splitStepsTaskAcrossNewline = new SplitStepsTask(recipeAcrossNewline);
-        testEmptyExtractedText = new ExtractedText("", null);
+        testEmptyExtractedText = new ExtractedText("", Collections.emptyList());
     }
 
 

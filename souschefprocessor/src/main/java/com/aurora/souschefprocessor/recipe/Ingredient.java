@@ -34,6 +34,7 @@ public class Ingredient {
      */
     private Map<PositionKeysForIngredients, Position> mPositions;
 
+
     public Ingredient(String name, String unit, double value, Map<PositionKeysForIngredients, Position> positions) {
         this.mName = name;
         this.mAmount = new Amount(value, unit);
@@ -49,20 +50,40 @@ public class Ingredient {
         this.mPositions = positions;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the unit of this amount
+     */
     public String getUnit() {
         return mAmount.getUnit();
     }
 
-    public void setUnit(String u) {
-        mAmount.setUnit(u);
+    /**
+     * Default setter
+     *
+     * @param unit the new unit of this ingredient
+     */
+    public void setUnit(String unit) {
+        mAmount.setUnit(unit);
     }
 
+    /**
+     * Default getter
+     *
+     * @return the quantity of this ingredient
+     */
     public double getQuantity() {
         return mAmount.getValue();
     }
 
-    public void setQuantity(double q) {
-        mAmount.setValue(q);
+    /**
+     * Default getter
+     *
+     * @return the quantity of this ingredient
+     */
+    public void setQuantity(double quantity) {
+        mAmount.setValue(quantity);
     }
 
     @Override
@@ -79,14 +100,29 @@ public class Ingredient {
         return false;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the amount of this ingredient (has both quantity and unit)
+     */
     public Amount getAmount() {
         return mAmount;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the name of this ingredient
+     */
     public String getName() {
         return mName;
     }
 
+    /**
+     * Default setter
+     *
+     * @param name the new name of this ingredient
+     */
     public void setName(String name) {
         this.mName = name;
     }
@@ -134,6 +170,13 @@ public class Ingredient {
         }
     }
 
+    /**
+     * Converts the units of this ingredient (which is located in a given description) to metric or to US imperial
+     *
+     * @param toMetric    a boolean; if true the ingredient will be converted to metric, if false to US imperial system
+     * @param description the description where this ingredient is located in
+     * @return the new description with converted units
+     */
     String convertUnit(boolean toMetric, String description) {
 
         // only convert if the unit and quantity are detected
@@ -251,26 +294,53 @@ public class Ingredient {
         return list;
     }
 
+    /**
+     * Gets the unit position of this ingredient
+     * @return the unit of this ingredient
+     */
     public Position getUnitPosition() {
         return mPositions.get(PositionKeysForIngredients.UNIT);
     }
 
+    /**
+     * Gets the quantity position of this ingredient
+     * @return the quantity of this ingredient
+     */
     public Position getQuantityPosition() {
         return mPositions.get(PositionKeysForIngredients.QUANTITY);
     }
 
+    /**
+     * Gets the name position of this ingredient
+     * @return the name of this ingredient
+     */
     public Position getNamePosition() {
         return mPositions.get(PositionKeysForIngredients.NAME);
     }
 
+    /**
+     * Sets the position of the name
+     *
+     * @param namePosition the new name position
+     */
     public void setNamePosition(Position namePosition) {
         mPositions.put(PositionKeysForIngredients.NAME, namePosition);
     }
 
+    /**
+     * Sets the position of the quantity
+     *
+     * @param quantityPosition the new quantity position
+     */
     public void setQuantityPosition(Position quantityPosition) {
         mPositions.put(PositionKeysForIngredients.QUANTITY, quantityPosition);
     }
 
+    /**
+     * Sets the position of the unit
+     *
+     * @param unitPosition the new unit position
+     */
     public void setUnitPosition(Position unitPosition) {
         mPositions.put(PositionKeysForIngredients.UNIT, unitPosition);
     }
@@ -288,7 +358,11 @@ public class Ingredient {
         }
     }
 
-
+    /**
+     * Default getter
+     *
+     * @return the positions of NAME UNIT and QUANTITY
+     */
     public Map<PositionKeysForIngredients, Position> getPositions() {
         return mPositions;
     }
@@ -310,6 +384,9 @@ public class Ingredient {
 
     }
 
+    /**
+     * An enum of the core elements of an ingredient: namely NAME UNIT and QUANTITY
+     */
     public enum PositionKeysForIngredients {
         NAME, QUANTITY, UNIT
     }

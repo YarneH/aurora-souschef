@@ -80,30 +80,65 @@ public class Recipe extends PluginObject {
         return false;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the list of ListIngredients
+     */
     public synchronized List<ListIngredient> getIngredients() {
         return mIngredients;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the number of people this recipe is for
+     */
     public synchronized int getNumberOfPeople() {
         return mNumberOfPeople;
     }
 
+    /**
+     * Default setter
+     *
+     * @param numberOfPeople the new number of people this recipe is for
+     */
     public synchronized void setNumberOfPeople(int numberOfPeople) {
         this.mNumberOfPeople = numberOfPeople;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the list of RecipeSteps of this recipe
+     */
     public synchronized List<RecipeStep> getRecipeSteps() {
         return mRecipeSteps;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the description of this recipe
+     */
     public synchronized String getDescription() {
         return mDescription;
     }
 
+    /**
+     * Default setter
+     *
+     * @param description the new description of this recipe
+     */
     public synchronized void setDescription(String description) {
         this.mDescription = description;
     }
 
+    /**
+     * Sets the recipesteps
+     *
+     * @param recipeSteps the new recipesteps, if this is null then the existing list is cleared
+     */
     public synchronized void setRecipeSteps(List<RecipeStep> recipeSteps) {
         if (recipeSteps == null) {
             mRecipeSteps.clear();
@@ -112,6 +147,11 @@ public class Recipe extends PluginObject {
         }
     }
 
+    /**
+     * Sets the ingredients
+     *
+     * @param ingredients the new ingredients, if this is null then the existing list is cleared
+     */
     public synchronized void setIngredients(List<ListIngredient> ingredients) {
         if (ingredients == null) {
             mIngredients.clear();

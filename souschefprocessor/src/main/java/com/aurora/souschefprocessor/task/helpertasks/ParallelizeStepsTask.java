@@ -47,7 +47,8 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
 
     /**
      * Launches parallel threads for each type of task in {@link #mStepTaskNames} submitted and for
-     * each {@link RecipeStep} in {@link #mRecipeInProgress}
+     * each {@link RecipeStep} in {@link #mRecipeInProgress}. If no steps are detected this throws a
+     * RecipeDetectionException
      */
     public void doTask() {
 
@@ -83,7 +84,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
                                                 StepTaskNames taskName) {
         StepTaskThread stepTaskThread;
 
-        if (taskName.equals(StepTaskNames.INGR)) {
+        if (taskName.equals(StepTaskNames.INGREDIENT)) {
             // Ingredient
             stepTaskThread = new StepTaskThread(new DetectIngredientsInStepTask(
                     this.mRecipeInProgress, stepIndex), latch);

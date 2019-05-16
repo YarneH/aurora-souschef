@@ -16,4 +16,8 @@
     <string name="timer_icon_description">This is the icon for a timer card</string>
     <string name="indicator_dot_description">Contains indicator dot to provide navigation through the steps.</string>
     <string name="settings_use_imperial_units">Use imperial units</string>
+    <!-- Strings for dialogbox that redirects to Aurora -->
+    <string name="dialog_title">Oh nooooooo</string>
+    <string name="dialog_message">Your ingredients have expired.\nYou can find fresh ingredients in Aurora</string>
+    <string name="ok">OK</string>
 </resources>

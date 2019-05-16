@@ -19,7 +19,7 @@ public class RecipeStep {
     /**
      * A set of {@link Ingredient}s that were detected in this step
      */
-    protected List<Ingredient> mIngredients;
+    protected List<Ingredient> mIngredients = new ArrayList<>();
 
     /**
      * A list of {@link RecipeTimer}s that were detected in this step (in order)
@@ -46,19 +46,19 @@ public class RecipeStep {
      */
     protected boolean mTimerDetectionDone;
 
-    /**
-     * A private constructor for converting one of the subclasses
-     *
-     * @param mIngredients
-     * @param mRecipeTimers
-     * @param mDescription
-     * @param mIngredientDetectionDone
-     * @param mTimerDetectionDone
-     */
-    private RecipeStep(List<Ingredient> mIngredients, List<RecipeTimer> mRecipeTimers, String mDescription,
+
+    private RecipeStep(List<Ingredient> ingredients, List<RecipeTimer> recipeTimers, String mDescription,
                        boolean mIngredientDetectionDone, boolean mTimerDetectionDone) {
-        this.mIngredients = mIngredients;
-        this.mRecipeTimers = mRecipeTimers;
+        if (ingredients == null) {
+            this.mIngredients = new ArrayList<>();
+        } else {
+            this.mIngredients = ingredients;
+        }
+        if (recipeTimers == null) {
+            this.mRecipeTimers = new ArrayList<>();
+        } else {
+            this.mRecipeTimers = recipeTimers;
+        }
         this.mDescription = mDescription;
         this.mIngredientDetectionDone = mIngredientDetectionDone;
         this.mTimerDetectionDone = mTimerDetectionDone;
@@ -85,26 +85,56 @@ public class RecipeStep {
         return new RecipeStep(mIngredients, mRecipeTimers, mDescription, mIngredientDetectionDone, mTimerDetectionDone);
     }
 
+    /**
+     * default getter
+     *
+     * @return true if the ingredient detection has been done
+     */
     public boolean isIngredientDetectionDone() {
         return mIngredientDetectionDone;
     }
 
+    /**
+     * Default setter
+     *
+     * @param ingredientDetectionDone the new value for {@link #mIngredientDetectionDone}
+     */
     public void setIngredientDetectionDone(boolean ingredientDetectionDone) {
         this.mIngredientDetectionDone = ingredientDetectionDone;
     }
 
+    /**
+     * default getter
+     *
+     * @return true if the timer detection has been done
+     */
     public boolean isTimerDetectionDone() {
         return mTimerDetectionDone;
     }
 
+    /**
+     * Default setter
+     *
+     * @param timerDetectionDone the new value for {@link #mTimerDetectionDone}
+     */
     public void setTimerDetectionDone(boolean timerDetectionDone) {
         mTimerDetectionDone = timerDetectionDone;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the description of this step
+     */
     public String getDescription() {
         return mDescription;
     }
 
+    /**
+     * Default setter
+     *
+     * @param description the new description of this recipe
+     */
     public void setDescription(String description) {
         mDescription = description;
     }
@@ -134,6 +164,11 @@ public class RecipeStep {
         return false;
     }
 
+    /**
+     * Default getter
+     *
+     * @return the list of ingredients in this step
+     */
     public synchronized List<Ingredient> getIngredients() {
         return mIngredients;
     }
@@ -190,6 +225,11 @@ public class RecipeStep {
         }
     }
 
+    /**
+     * Default getter
+     *
+     * @return the list of timers in this recipe step
+     */
     public synchronized List<RecipeTimer> getRecipeTimers() {
         return mRecipeTimers;
     }

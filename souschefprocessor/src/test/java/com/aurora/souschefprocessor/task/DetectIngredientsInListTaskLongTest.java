@@ -10,17 +10,19 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
+
+import static org.junit.Assert.assertTrue;
 
 
 public class DetectIngredientsInListTaskLongTest {
 
     private static RecipeInProgress testRecipe;
     private static DetectIngredientsInListTask testDetector;
-    private static String originalText = "irrelevant";
     private static CRFClassifier<CoreLabel> crfClassifier;
 
     private static ExtractedText testEmptyExtractedText;
@@ -35,15 +37,15 @@ public class DetectIngredientsInListTaskLongTest {
     public static void initialize() throws IOException, ClassNotFoundException {
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
         crfClassifier = CRFClassifier.getClassifier(modelName);
-        testEmptyExtractedText = new ExtractedText("", null);
+        testEmptyExtractedText = new ExtractedText("", Collections.emptyList());
     }
 
 
     /**
      * A function to check if the strings only differ in one character
      *
-     * @param a
-     * @param b
+     * @param a first char
+     * @param b second char
      * @return
      */
     private boolean oneCharOff(String a, String b) {
@@ -290,26 +292,29 @@ public class DetectIngredientsInListTaskLongTest {
             initializeTestIngredients();
 
         }
+
+        // Act
         testDetector.doTask();
 
+        // initialize the correct number on zeros
         int correct = 0;
         List<ListIngredient> list = testRecipe.getIngredients();
 
-        // Act
         for (int i = 0; i < testIngredientsUnits.length; i++) {
             // check if they are equal up to 3 decimal places
-            System.out.println(list.get(i));
             list.get(i).getQuantity();
             if ((int) (1000 * list.get(i).getQuantity()) == (int) (1000 * testIngredientsQuantities[i])) {
                 correct++;
             } else {
                 System.out.println(testIngredientsQuantities[i] + " " + list.get(i).getQuantity());
                 System.out.println(testIngredientsList.get(i));
+                System.out.println("-----------------");
             }
         }
         // Assert
         System.out.println("Correct: " + correct * 100.0 / testIngredientsQuantities.length + "%");
-        assert (correct * 100.0 / testIngredientsUnits.length >= 95);
+        assertTrue ("The correct percentage is lower than the threshold",
+                correct * 100.0 / testIngredientsQuantities.length >= 95);
     }
 
 
@@ -345,8 +350,10 @@ public class DetectIngredientsInListTaskLongTest {
 
         // Assert
         double multiplier = 100.0 / testIngredientsUnits.length;
-        assert ((correct + correctButOneCharOff) * multiplier >= 85);
-        assert (correctButOneCharOff * multiplier < 5);
+        assertTrue ("The correct percentage is lower than the threshold",
+                (correct + correctButOneCharOff) * multiplier >= 85);
+        assertTrue ("The amount of one character differences is bigger than the threshold",
+        correctButOneCharOff * multiplier < 5);
         System.out.println(correct + " units were correctly set and " + correctButOneCharOff + " were correct with one char off out of " + testIngredientsQuantities.length + " examples");
     }
 }

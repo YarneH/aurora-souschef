@@ -270,6 +270,15 @@ final class TranslateHelper {
         return new Ingredient(name, unit, quantity, map);
     }
 
+    /**
+     * A private helper function that translates the oldStep using the Queue of translated sentences this queue is a
+     * result of the translation operation on the {@link #createSentencesToTranslate(Recipe)} where the elements that
+     * come before this step have already been popped from the queue
+     *
+     * @param oldStep             the original step in English
+     * @param translatedSentences the queue of translated sentences, this will be altered during this method
+     * @return the new translated recipe step
+     */
     private static RecipeStep getTranslatedStep(RecipeStep oldStep, Queue<String> translatedSentences) {
         // start with the description
         String description = translatedSentences.poll();
@@ -371,7 +380,7 @@ final class TranslateHelper {
                 return new Position(beginIndex, endIndex);
             }
         }
-        // nothing found, set timer at endinex
+        // nothing found, set timer at endIndex
         return new Position(description.length() - 1, description.length());
 
     }

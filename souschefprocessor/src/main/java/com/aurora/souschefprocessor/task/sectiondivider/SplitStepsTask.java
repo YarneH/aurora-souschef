@@ -17,7 +17,8 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
- * A AbstractProcessingTask that splits the string representing the mRecipeSteps into RecipeStep objects
+ * A AbstractProcessingTask that splits the string representing the mRecipeSteps into RecipeStep objects, it also
+ * allocates the correct annotations received from Aurora to the correct step
  */
 public class SplitStepsTask extends AbstractProcessingTask {
 
@@ -34,7 +35,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
 
         List<RecipeStepInProgress> recipeStepList = divideIntoSteps(text);
         setAnnotations(recipeStepList);
-        if (recipeStepList == null || recipeStepList.isEmpty()) {
+        if (recipeStepList.isEmpty()) {
             throw new RecipeDetectionException("No steps were detected, this is probably not a recipe");
         }
 
@@ -155,7 +156,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
             throw new IllegalStateException("No annotations were found for this step " + step.getDescription());
         }
 
-        sentenceAnnotationsForStep = findAllSentences(sentencesInAnnotation, sentenceAnnotationsForStep,
+        findAllSentences(sentencesInAnnotation, sentenceAnnotationsForStep,
                 step.getDescription());
 
         // Calculate the beginPositionOffset
@@ -181,8 +182,9 @@ public class SplitStepsTask extends AbstractProcessingTask {
                 (description)) {
             return text.getTitleAnnotation();
         }
-        // sections
 
+
+        // sections
         for (Section s : text.getSections()) {
             if (s.getTitle() != null && s.getTitle().replace("\n", " ").trim().contains
                     (description)) {
@@ -228,21 +230,19 @@ public class SplitStepsTask extends AbstractProcessingTask {
      *
      * @param allSentences   all the sentences from the section that this description was in
      * @param description    The description to find the first token of
-     * @param foundSentences The already found sentences
-     *                       annotation that has
-     *                       firstToken as its first token
-     * @return the actual all the sentences that are part of this description
+     * @param foundSentences The already found sentences annotation that has firstToken as its first token, this list
+     *                       can be altered during the executing by putting elements in the front of this list
      */
-    private List<CoreMap> findAllSentences(List<CoreMap> allSentences, List<CoreMap> foundSentences,
-                                           String description) {
+    private void findAllSentences(List<CoreMap> allSentences, List<CoreMap> foundSentences,
+                                  String description) {
         // Calculate the current firstToken
         CoreLabel firstToken = foundSentences.get(0).get(CoreAnnotations.TokensAnnotation.class).get(0);
 
         // find the actual first token
         int firstAnnotationIndex = allSentences.indexOf(foundSentences.get(0));
         StringBuilder bld = new StringBuilder();
-        // get the description withoutspaces == all tokens concatenated
-        String spaceLessDescription = description.replace(" ", "");
+        // get the description without spaces == all tokens concatenated
+        String spacelessDescription = description.replace(" ", "");
 
         // check if there is a previous sentence
         if (firstAnnotationIndex > 0) {
@@ -259,7 +259,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
                 for (CoreLabel token : tokens) {
                     bld.insert(0, token.originalText());
 
-                    if (!spaceLessDescription.contains(bld.toString())) {
+                    if (!spacelessDescription.contains(bld.toString())) {
                         // found one that is not in the description, no expanding possible reverse tokens again and
                         Collections.reverse(tokens);
                         // create a new sentence with all the token annotations
@@ -277,7 +277,6 @@ public class SplitStepsTask extends AbstractProcessingTask {
                 }
             }
         }
-        return foundSentences;
 
     }
 

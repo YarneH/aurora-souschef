@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 //TODO add more testing data to increase acceptance test reliability
@@ -21,7 +22,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
     private static RecipeInProgress recipe;
     private static DetectNumberOfPeopleTask detectNumberOfPeopleTask;
     private static String originalText;
-    private static ExtractedText emptyExtractedText = new ExtractedText("", null);
+    private static ExtractedText emptyExtractedText = new ExtractedText("", Collections.emptyList());
 
 
     @BeforeClass

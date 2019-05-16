@@ -21,11 +21,11 @@ import edu.stanford.nlp.ling.CoreLabel;
  * Communicates with the kernel and the UI of souschefprocessor
  */
 public class SouschefProcessorCommunicator extends ProcessorCommunicator {
+    private static final String TAG = SouschefProcessorCommunicator.class.getSimpleName();
     /**
      * An atomicInteger to showcase the update of the creating of the pipelines
      */
     private static AtomicInteger mProgressAnnotationPipelines = new AtomicInteger(0);
-
     /**
      * The delgator that executes the processing
      */
@@ -45,7 +45,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
          * proper configuration of the cache
          */
         super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
-        mDelegator = new Delegator(classifier, true);
+        mDelegator = new Delegator(classifier, false);
     }
 
     /**
@@ -62,12 +62,12 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
                 openRawResource(R.raw.detect_ingr_list_model))) {
             // log for the opening
             incrementProgressAnnotationPipelines(); // 1
-            Log.i("COMMUNICATOR", "start loading model");
+            Log.i(TAG, "start loading model");
             CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
             incrementProgressAnnotationPipelines(); // 2
             return new SouschefProcessorCommunicator(context, crf);
         } catch (IOException | ClassNotFoundException e) {
-            Log.e("COMMUNICATOR", "createCommunicator ", e);
+            Log.e(TAG, "createCommunicator ", e);
         }
         return null;
     }
@@ -77,7 +77,6 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
      * your program
      */
     public static void createAnnotationPipelines() {
-
         Delegator.createAnnotationPipelines();
     }
 
@@ -86,7 +85,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
      */
     static void incrementProgressAnnotationPipelines() {
         mProgressAnnotationPipelines.incrementAndGet();
-        Log.i("STEP", "" + mProgressAnnotationPipelines);
+        Log.i(TAG, "creating pipeline step " + mProgressAnnotationPipelines);
     }
 
     /**
@@ -114,18 +113,18 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
         try {
             recipe = mDelegator.processText(extractedText);
         } catch (RecipeDetectionException rde) {
-            Log.e("DETECTION", "process text", rde);
+            Log.e(TAG, "detection failure", rde);
             // if something went wrong with the detection rethrow the error and let the
             // environment decide what to do in this case
             throw new RecipeDetectionException(rde.getMessage());
         } catch (IllegalArgumentException iae) {
             // This means something is programmatically wrong, so let the programmer know extra
             // checks are needed somewhere in the code
-            Log.e("ILLEGAL", "processText", iae);
+            Log.e(TAG, "illegal state or argument", iae);
 
         } catch (Exception e) {
             // something else went wrong
-            Log.e("COMMUNICATOR", "unexpected exception", e);
+            Log.e(TAG, "unexpected exception", e);
             throw new RecipeDetectionException("Something unexpected happened: " + e.getMessage());
         }
 

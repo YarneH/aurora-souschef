@@ -2,13 +2,17 @@ package com.aurora.souschefprocessor.recipe;
 
 import org.junit.Test;
 
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 public class RecipeTimerUnitTest {
     private Position irrelevant = new Position(0, 1);
 
     @Test
     public void RecipeTimer_Constructor_LowerBoundNotBiggerThanUpperBound() throws IllegalArgumentException {
-        /**
-         * After construction of the lowerbound is never  bigger than the upperbound
+        /*
+         * After construction of the timer, the lowerbound is never  bigger than the upperbound
          */
 
         //four cases
@@ -20,7 +24,8 @@ public class RecipeTimerUnitTest {
         RecipeTimer recipeTimer = new RecipeTimer(upperbound, lowerbound, irrelevant);
         // Assert
 
-        assert (recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
+        assertThat ("The lowerbound is bigger than the upperbound "+ recipeTimer,
+                recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
 
         //case 2 upperbound argument same as lowerbound
         // Arrange
@@ -28,13 +33,15 @@ public class RecipeTimerUnitTest {
         // Act
         recipeTimer = new RecipeTimer(upperbound, lowerbound, irrelevant);
         // Assert
-        assert (recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
+        assertThat ("The lowerbound is bigger than the upperbound "+ recipeTimer,
+                recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
 
         //case 3 only one argument
         // Act
         recipeTimer = new RecipeTimer(upperbound, irrelevant);
         // Assert
-        assert (recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
+        assertThat ("The lowerbound is bigger than the upperbound "+ recipeTimer,
+                recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
 
         //case 4 upperbound argument smaller than lowerbound argument
         // Arrange
@@ -42,14 +49,14 @@ public class RecipeTimerUnitTest {
         // Act
         recipeTimer = new RecipeTimer(upperbound, lowerbound, irrelevant);
         // Assert
-        assert (recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
-
+        assertThat ("The lowerbound is bigger than the upperbound "+ recipeTimer,
+                recipeTimer.getLowerBound() <= recipeTimer.getUpperBound());
 
     }
 
     @Test
     public void RecipeTimer_Constructor_NegativeArgumentRaisesException() {
-        /**
+        /*
          * The bounds of a timer cannot be negative, constructing this throws an error
          */
         //case 1 upperbound negative
@@ -64,7 +71,7 @@ public class RecipeTimerUnitTest {
             thrown = true;
         }
         // Assert
-        assert (thrown);
+        assertTrue ("No exception was thrown for negative upperbound", thrown);
 
         //case 2 lowerbound negative
         // Arrange
@@ -78,7 +85,7 @@ public class RecipeTimerUnitTest {
             thrown = true;
         }
         // Assert
-        assert (thrown);
+        assertTrue ("No exception was thrown for negative lowerbound", thrown);
 
         //case 3 time negative
         // Arrange
@@ -91,7 +98,7 @@ public class RecipeTimerUnitTest {
             thrown = true;
         }
         // Assert
-        assert (thrown);
+        assertTrue ("No exception was thrown for negative time", thrown);
 
 
     }

@@ -16,19 +16,21 @@ import java.util.regex.Pattern;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.ProtobufAnnotationSerializer;
 import edu.stanford.nlp.util.CoreMap;
 
 
 /**
- * A AbstractProcessingTask that divides the original text into usable sections
+ * An AbstractProcessingTask that divides the original text into usable sections. It uses some domain knowledge by
+ * first trying if some common words are present and if that fails by analyzing the grammatical structure of some
+ * parts to identify the correct sections
  */
 public class SplitToMainSectionsTask extends AbstractProcessingTask {
     /**
-     * Some cooking verbs that are wrongly tagged by corenlp
+     * Some cooking verbs that are wrongly tagged by corenlp. If this word is the first word of a sentence it is most
+     * probably a verb and not a noun
      */
     private static final String[] VERBS_NOT_DETECTED_BY_NLP = {"reserve", "seal", "butter", "season",
-            "place", "preheat", "toast", "layer", "beat", "heat"};
+            "place", "preheat", "toast", "layer", "beat", "heat", "cook"};
     /**
      * Words often preceded by a number but that are not ingredients needed for {@link #findIngredientsDigit()}
      */
@@ -96,17 +98,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 }
             }
         }
-        //create a copy of the cleaned section
-        Section copy = new Section(section.getBody());
-        copy.setTitle(section.getTitle());
-        ProtobufAnnotationSerializer annotationSerializer = new ProtobufAnnotationSerializer(true);
-        if (section.getTitleAnnotation() != null) {
-            copy.setTitleAnnotationProto(annotationSerializer.toProto(section.getTitleAnnotation()));
-        }
-        if (section.getBodyAnnotation() != null) {
-            copy.setBodyAnnotationProto(annotationSerializer.toProto(section.getBodyAnnotation()));
-        }
-        return copy;
+        //return a copy of the cleaned section
+        return new Section(section);
     }
 
     /**
@@ -276,7 +269,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      *
      * @param ingredients The string representing the mIngredients
      * @param steps       The string representing the mRecipeSteps
-     * @param description The string representing the desription
+     * @param description The string representing the description
      */
     private void modifyRecipe(String ingredients, String steps, String
             description) {
@@ -314,13 +307,13 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
 
         StringBuilder bld = new StringBuilder();
         List<Section> sectionsToRemove = new ArrayList<>();
+        // boolean that states if the first sentence starting with a verb has already been found
         boolean alreadyFound = false;
         for (Section section : mSections) {
 
             if (!alreadyFound) {
-                boolean verbDetected = verbDetected(section);
-
-                alreadyFound = verbDetected;
+                // if not found yet check if this has a verb
+                alreadyFound = verbDetected(section);
             }
 
             if (alreadyFound) {
@@ -434,9 +427,11 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             return bld.toString();
 
         }
-
+        // let the caller know nothing was found
         return "";
+
     }
+
 
     /**
      * Find the steps or ingredients based on their regex

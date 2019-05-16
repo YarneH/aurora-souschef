@@ -342,12 +342,16 @@ public class RecipeViewModel extends AndroidViewModel {
 
         @Override
         protected Recipe doInBackground(Void... voids) {
-            // Progressupdates are in demostate
 
             SouschefProcessorCommunicator comm = SouschefProcessorCommunicator.createCommunicator(mContext);
+
             if (comm != null) {
-                return (Recipe) comm.pipeline(mExtractedText);
+                Recipe processedRecipe = (Recipe) comm.pipeline(mExtractedText);
+                // the processing has succeeded, set the flag to false en return the processedRecipe
+                mProcessingFailed.postValue(false);
+                return processedRecipe;
             }
+            // if the communicator was not created return null to let onPostExecute know it failed
             return null;
         }
 
@@ -355,9 +359,13 @@ public class RecipeViewModel extends AndroidViewModel {
         @Override
         protected void onPostExecute(Recipe recipe) {
             // only initialize if the processing has not failed
-            if (!mProcessingFailed.getValue() && recipe != null) {
+            if (recipe != null) {
                 initialiseWithRecipe(recipe);
+            }else{
+                // let everyone know processing failed
+                mProcessingFailed.postValue(true);
             }
+
         }
     }
 

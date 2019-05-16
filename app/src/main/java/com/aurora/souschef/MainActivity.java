@@ -177,6 +177,10 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Detection failed: " +
                                 mRecipeViewModel.getFailureMessage().getValue(),
                         Toast.LENGTH_LONG).show();
+                // We get here because SouschefInit in RecipeViewModel failed and as its last operation posted this
+                // value, we can be sure that this task is done and so all references to the context are cleaned up
+                // and no task is running in the background
+                finish();
             }
         });
         mRecipeViewModel.getDefaultAmountSet().observe(this, (Boolean set) -> {

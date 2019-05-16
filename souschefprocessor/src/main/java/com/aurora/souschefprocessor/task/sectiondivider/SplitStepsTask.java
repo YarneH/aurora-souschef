@@ -134,7 +134,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
      * and {@link RecipeStepInProgress#setSentenceAnnotations(List)} methods
      *
      * @param step the step whose annotations are filled in
-     * @throws RecipeDetectionException Is thrown when the no annotation can be found. This is a problem in Aurora or
+     * @throws RecipeDetectionException Is thrown when no annotation can be found. This is a problem in Aurora or
      *                                  the formatting of the input is not as expected
      */
     private void fillInAnnotation(RecipeStepInProgress step) throws RecipeDetectionException {

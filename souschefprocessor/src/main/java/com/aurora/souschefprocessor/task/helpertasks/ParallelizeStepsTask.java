@@ -29,6 +29,10 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
      * The names of the tasks that will be done by this task on steps {@link StepTaskNames}
      */
     private StepTaskNames[] mStepTaskNames;
+    /**
+     * A private variable for when one of threads encounters an exception
+     */
+    private RecipeDetectionException mRecipeDetectionException = null;
 
     /**
      * Constructs the ParallelizeStepsTask
@@ -73,13 +77,11 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
         // wait unitl all threads have finished
         waitForThreads(latch);
 
-        if(mRecipeDetectionException != null){
+        if (mRecipeDetectionException != null) {
             // something went wrong in at least one of the threads
             throw mRecipeDetectionException;
         }
     }
-
-    private RecipeDetectionException mRecipeDetectionException = null;
 
     /**
      * Creates a StepTaskThread for a step and task

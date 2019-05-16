@@ -79,8 +79,10 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
     /**
      * Detects the ListIngredients presented in the ingredientsString and sets the mIngredients field
      * in the recipe to this set of ListIngredients.
+     *
+     * @throws RecipeDetectionException The detecting of ingredients failed, this is probably not a recipe
      */
-    public void doTask() {
+    public void doTask() throws RecipeDetectionException {
         List<ListIngredient> list = detectIngredients(this.mRecipeInProgress.getIngredientsString());
         if (list == null || list.isEmpty()) {
             throw new RecipeDetectionException("No ingredients were detected, this is probably not a recipe");

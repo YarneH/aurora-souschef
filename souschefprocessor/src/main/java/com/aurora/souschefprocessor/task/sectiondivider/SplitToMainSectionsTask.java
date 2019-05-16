@@ -168,8 +168,11 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * a list of mRecipeSteps, string representing the mDescription of the recipe (if present) and an integer
      * representing the amount of people the original recipe is for. It will then modify the recipe
      * with these fields
+     *
+     * @throws RecipeDetectionException an indication that the recipe could not be split in to main sections. Most
+     *                                  likely the input is not formatted as expected
      */
-    public void doTask() {
+    public void doTask() throws RecipeDetectionException {
         String ingredients;
         String steps;
         String description;
@@ -196,8 +199,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * Finds the mRecipeSteps in a text by using the {@link #mSections} field
      *
      * @return The string representing the mRecipeSteps
+     * @throws RecipeDetectionException an indication that the steps could not be found
      */
-    private String findSteps() {
+    private String findSteps() throws RecipeDetectionException {
         String steps = findStepsRegexBased();
 
         if (steps.isEmpty()) {
@@ -302,8 +306,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * list. This list is altered during the method, in that the steps are removed from the list
      *
      * @return A string representing the steps
+     * @throws RecipeDetectionException An indication that the steps could not be found using NLP
      */
-    private String findStepsNLP() {
+    private String findStepsNLP() throws RecipeDetectionException {
 
         StringBuilder bld = new StringBuilder();
         List<Section> sectionsToRemove = new ArrayList<>();
@@ -485,8 +490,10 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      *
      * @param section The section to analyze
      * @return a boolean that indicates if a verb was detected
+     * @throws RecipeDetectionException an indication that the verb could not be detected because the annotation
+     *                                  filled in by Aurora are not correct.
      */
-    private boolean verbDetected(Section section) {
+    private boolean verbDetected(Section section) throws RecipeDetectionException {
         Annotation annotatedText = getAnnotatedText(section);
         List<CoreMap> sentences = annotatedText.get(CoreAnnotations.SentencesAnnotation.class);
 
@@ -514,8 +521,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * Gets the annotation of the section
      *
      * @return the annotated text
+     * @throws RecipeDetectionException Is thrown when some sections are not annotated in Aurora
      */
-    private Annotation getAnnotatedText(Section section) {
+    private Annotation getAnnotatedText(Section section) throws RecipeDetectionException {
         if (section.getBodyAnnotation() == null) {
             throw new RecipeDetectionException("At least one section was not annotated for this text. " +
                     "Please contact Aurora to resolve this");

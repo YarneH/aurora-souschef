@@ -1,10 +1,14 @@
 package com.aurora.souschefprocessor.facade;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
+
+
+
 import com.aurora.auroralib.ProcessorCommunicator;
 import com.aurora.souschefprocessor.PluginConstants;
 import com.aurora.souschefprocessor.R;
@@ -102,13 +106,12 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
      *
      * @param extractedText the text to be processed
      * @return A Recipe object (which extends PLuginObject) that is the result of the processed text
+     * @throws RecipeDetectionException an indication that something went wrong during the processing of the recipe
      */
     @Override
-    protected PluginObject process(ExtractedText extractedText) {
+    protected PluginObject process(@NonNull ExtractedText extractedText) throws RecipeDetectionException {
 
-        if (extractedText == null) {
-            throw new RecipeDetectionException("No text was extracted. Something went wrong in Aurora!");
-        }
+
         Recipe recipe = null;
         try {
             recipe = mDelegator.processText(extractedText);

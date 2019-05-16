@@ -155,7 +155,7 @@ public class DelegatorLongTest {
     }
 
     @Test
-    public void Delegator_processText_timeForDoingTasksNonParallelIsLowerThanThreshold() {
+    public void Delegator_processText_timeForDoingTasksNonParallelIsLowerThanThreshold() throws RecipeDetectionException {
         /**
          * Check that the average time on the test suite for doing the processing non parallel is lower than a
          * certain threshold
@@ -196,7 +196,7 @@ public class DelegatorLongTest {
     }
 
     @Test
-    public void Delegator_processText_timeForDoingTasksParallelIsLowerThanThreshold() {
+    public void Delegator_processText_timeForDoingTasksParallelIsLowerThanThreshold() throws RecipeDetectionException {
         /**
          * Check that the average time on the test suite for doing the processing  parallel is lower than a
          * certain threshold
@@ -241,7 +241,7 @@ public class DelegatorLongTest {
 
 
     @Test
-    public void Delegator_process_AnnotatedFileByAuroraIsCorrectlyProcessed() {
+    public void Delegator_process_AnnotatedFileByAuroraIsCorrectlyProcessed() throws RecipeDetectionException {
         // arrange
         // read in the file line by line
         String contents = null;
@@ -420,7 +420,7 @@ public class DelegatorLongTest {
     }
 
     @Test
-    public void Delegator_process_noExceptionsForFileWithWeirdSections() {
+    public void Delegator_process_noExceptionsForFileWithWeirdSections() throws RecipeDetectionException{
         /*
         Check that extracted text object with only one section does not throw exceptions, also manual check on
         correctness of this recipe via print out

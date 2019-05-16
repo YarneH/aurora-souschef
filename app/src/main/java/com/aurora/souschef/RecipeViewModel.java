@@ -9,10 +9,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
@@ -344,26 +342,16 @@ public class RecipeViewModel extends AndroidViewModel {
 
         @Override
         protected Recipe doInBackground(Void... voids) {
-            // Progressupdates are in demostate
 
             SouschefProcessorCommunicator comm = SouschefProcessorCommunicator.createCommunicator(mContext);
+
             if (comm != null) {
-
-                try {
-
-                    if (mExtractedText == null) {
-                        throw new RecipeDetectionException("null object. This will be replaced by throwing exception " +
-                                "in the pipeline and processing function, waiting voor the lib");
-                    }
-                    return (Recipe) comm.pipeline(mExtractedText);
-
-                } catch (RecipeDetectionException rde) {
-                    Log.d("FAILURE", rde.getMessage());
-                    mFailureMessage.postValue(rde.getMessage());
-                    mProcessingFailed.postValue(true);
-
-                }
+                Recipe processedRecipe = (Recipe) comm.pipeline(mExtractedText);
+                // the processing has succeeded, set the flag to false en return the processedRecipe
+                mProcessingFailed.postValue(false);
+                return processedRecipe;
             }
+            // if the communicator was not created return null to let onPostExecute know it failed
             return null;
         }
 
@@ -371,9 +359,13 @@ public class RecipeViewModel extends AndroidViewModel {
         @Override
         protected void onPostExecute(Recipe recipe) {
             // only initialize if the processing has not failed
-            if (!mProcessingFailed.getValue() && recipe != null) {
+            if (recipe != null) {
                 initialiseWithRecipe(recipe);
+            }else{
+                // let everyone know processing failed
+                mProcessingFailed.postValue(true);
             }
+
         }
     }
 

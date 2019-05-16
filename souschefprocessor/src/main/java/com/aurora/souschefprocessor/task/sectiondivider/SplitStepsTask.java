@@ -29,8 +29,11 @@ public class SplitStepsTask extends AbstractProcessingTask {
     /**
      * This will split the stepsString in the RecipeInProgress Object into mRecipeSteps and modifies the
      * recipe object so that the mRecipeSteps are set
+     *
+     * @throws RecipeDetectionException An indication that the splitting to steps failed. This is probably not a
+     *                                  recipe or something went wrong in Aurora
      */
-    public void doTask() {
+    public void doTask() throws RecipeDetectionException {
         String text = mRecipeInProgress.getStepsString();
 
         List<RecipeStepInProgress> recipeStepList = divideIntoSteps(text);
@@ -74,7 +77,13 @@ public class SplitStepsTask extends AbstractProcessingTask {
         return list;
     }
 
-    private void setAnnotations(List<RecipeStepInProgress> list) {
+    /**
+     * private helper function that calls {@link #fillInAnnotation(RecipeStepInProgress)} on all the steps
+     *
+     * @param list the list of steps to fill in the annotation
+     * @throws RecipeDetectionException Is thrown when the annotation could not be found
+     */
+    private void setAnnotations(List<RecipeStepInProgress> list) throws RecipeDetectionException {
         for (RecipeStepInProgress step : list) {
             fillInAnnotation(step);
         }
@@ -125,8 +134,10 @@ public class SplitStepsTask extends AbstractProcessingTask {
      * and {@link RecipeStepInProgress#setSentenceAnnotations(List)} methods
      *
      * @param step the step whose annotations are filled in
+     * @throws RecipeDetectionException Is thrown when no annotation can be found. This is a problem in Aurora or
+     *                                  the formatting of the input is not as expected
      */
-    private void fillInAnnotation(RecipeStepInProgress step) {
+    private void fillInAnnotation(RecipeStepInProgress step) throws RecipeDetectionException {
 
         // trim the description and replace new lines by spaces
         step.setDescription(step.getDescription().replace("\n", " ").trim());
@@ -178,7 +189,7 @@ public class SplitStepsTask extends AbstractProcessingTask {
         ExtractedText text = mRecipeInProgress.getExtractedText();
 
         // first the title
-        if (text.getTitle() != null && text.getTitle().replace("\n", " ").trim().contains
+        if (text.getTitle().replace("\n", " ").trim().contains
                 (description)) {
             return text.getTitleAnnotation();
         }
@@ -186,12 +197,12 @@ public class SplitStepsTask extends AbstractProcessingTask {
 
         // sections
         for (Section s : text.getSections()) {
-            if (s.getTitle() != null && s.getTitle().replace("\n", " ").trim().contains
+            if (s.getTitle().replace("\n", " ").trim().contains
                     (description)) {
                 return s.getTitleAnnotation();
             }
 
-            if (s.getBody() != null && s.getBody().replace("\n", " ").trim().contains
+            if (s.getBody().replace("\n", " ").trim().contains
                     (description)) {
 
                 return s.getBodyAnnotation();

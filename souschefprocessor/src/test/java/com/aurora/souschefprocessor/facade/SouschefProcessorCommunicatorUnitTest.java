@@ -44,7 +44,7 @@ public class SouschefProcessorCommunicatorUnitTest {
      * Assert that invalid recipes will throw an error
      */
     @Test
-    public void Communicator_process_ThrowsExceptionForInvalidRecipe() {
+    public void Communicator_process_ThrowsExceptionForInvalidRecipe() throws RecipeDetectionException{
         for (String json : invalidRecipes) {
             boolean thrown = false;
             try {
@@ -61,7 +61,7 @@ public class SouschefProcessorCommunicatorUnitTest {
      * Assert that the processing for valid recipes does not throw any errors
      */
     @Test
-    public void Communicator_process_NoExceptionForValidRecipe() {
+    public void Communicator_process_NoExceptionForValidRecipe() throws RecipeDetectionException{
         for (String json : validRecipes) {
             boolean thrown = false;
             String message = "";

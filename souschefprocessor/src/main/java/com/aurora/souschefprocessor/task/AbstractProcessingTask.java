@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.task;
 
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
+
 /**
  * An abstract class that has to be implemented by all tasks that do work on a {@link RecipeInProgress}
  * object.
@@ -19,6 +21,9 @@ public abstract class AbstractProcessingTask {
 
     /**
      * Do the task on the {@link #mRecipeInProgress} attribute
+     *
+     * @throws RecipeDetectionException an indication that this step could not be executed. The input received from
+     *                                  Aurora does probably not represent a recipe.
      */
-    public abstract void doTask();
+    public abstract void doTask() throws RecipeDetectionException;
 }

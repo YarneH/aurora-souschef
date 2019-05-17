@@ -98,7 +98,6 @@ public class RecipeInProgress extends Recipe {
     }
 
 
-    private String mPluginName;
     /**
      * Default setter
      *

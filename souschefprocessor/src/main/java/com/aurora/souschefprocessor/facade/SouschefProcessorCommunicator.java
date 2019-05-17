@@ -51,7 +51,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
          * A UNIQUE_PLUGIN_NAME needs to be passed to the constructor of ProcessorCommunicator for
          * proper configuration of the cache
          */
-        super(context.getPackageName(), context);
+        super(context);
         Log.d(TAG + " PACKAGENAME", "this is the package name "+ context.getPackageName());
         mDelegator = new Delegator(classifier, false);
     }

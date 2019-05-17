@@ -10,7 +10,7 @@ import com.aurora.auroralib.PluginObject;
 
 
 import com.aurora.auroralib.ProcessorCommunicator;
-import com.aurora.souschefprocessor.PluginConstants;
+
 import com.aurora.souschefprocessor.R;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
@@ -25,6 +25,9 @@ import edu.stanford.nlp.ling.CoreLabel;
  * Communicates with the kernel and the UI of souschefprocessor
  */
 public class SouschefProcessorCommunicator extends ProcessorCommunicator {
+    /**
+     * The tag for logging purposes
+     */
     private static final String TAG = SouschefProcessorCommunicator.class.getSimpleName();
     /**
      * An atomicInteger to showcase the update of the creating of the pipelines
@@ -48,7 +51,8 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
          * A UNIQUE_PLUGIN_NAME needs to be passed to the constructor of ProcessorCommunicator for
          * proper configuration of the cache
          */
-        super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
+        super(context);
+        Log.d(TAG + " PACKAGENAME", "this is the package name "+ context.getPackageName());
         mDelegator = new Delegator(classifier, false);
     }
 
@@ -114,7 +118,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
 
         Recipe recipe = null;
         try {
-            recipe = mDelegator.processText(extractedText);
+            recipe = mDelegator.processText(extractedText, mUniquePluginName);
         } catch (RecipeDetectionException rde) {
             Log.e(TAG, "detection failure", rde);
             // if something went wrong with the detection rethrow the error and let the
@@ -128,7 +132,8 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
         } catch (Exception e) {
             // something else went wrong
             Log.e(TAG, "unexpected exception", e);
-            throw new RecipeDetectionException("Something unexpected happened: " + e.getMessage());
+            throw new RecipeDetectionException("Something unexpected happened: " + e.getMessage() + "\n\nAre you sure" +
+                    " this is a recipe?");
         }
 
         return recipe;

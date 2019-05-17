@@ -130,7 +130,7 @@ final class TranslateHelper {
      */
     static Recipe getTranslatedRecipe(Recipe originalRecipe, String[] translatedSentences) {
         Queue<String> translations = new LinkedList<>(Arrays.asList(translatedSentences));
-        Recipe recipe = new Recipe(originalRecipe.getFileName());
+        Recipe recipe = new Recipe(originalRecipe.getFileName(), originalRecipe.getUniquePluginName());
 
         // set the number of people (this does not change by translating)
         recipe.setNumberOfPeople(originalRecipe.getNumberOfPeople());

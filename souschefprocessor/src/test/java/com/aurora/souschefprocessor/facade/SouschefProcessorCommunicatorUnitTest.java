@@ -20,10 +20,10 @@ public class SouschefProcessorCommunicatorUnitTest {
     private static List<String> validRecipes;
     private static List<String> invalidRecipes;
     private static SouschefProcessorCommunicator communicator;
-    private static CRFClassifier<CoreLabel> crfClassifier;
+
 
     @BeforeClass
-    public static void initialize() {
+    public static void initialize() throws IOException, ClassNotFoundException {
         // load in the recipes
         List<String> jsonRecipes = DelegatorLongTest.initializeRecipesJSON();
         // split into valid and invalid
@@ -33,18 +33,16 @@ public class SouschefProcessorCommunicatorUnitTest {
 
         // load in the model and create the communicator
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
-        try {
-            crfClassifier = CRFClassifier.getClassifier(modelName);
-            communicator = new SouschefProcessorCommunicator(null, crfClassifier);
-        } catch (IOException | ClassNotFoundException e) {
-        }
+
+        CRFClassifier<CoreLabel> crfClassifier = CRFClassifier.getClassifier(modelName);
+        communicator = new SouschefProcessorCommunicator(new MockContext(), crfClassifier);
     }
 
     /**
      * Assert that invalid recipes will throw an error
      */
     @Test
-    public void Communicator_process_ThrowsExceptionForInvalidRecipe() throws RecipeDetectionException{
+    public void Communicator_process_ThrowsExceptionForInvalidRecipe() throws RecipeDetectionException {
         for (String json : invalidRecipes) {
             boolean thrown = false;
             try {
@@ -61,7 +59,7 @@ public class SouschefProcessorCommunicatorUnitTest {
      * Assert that the processing for valid recipes does not throw any errors
      */
     @Test
-    public void Communicator_process_NoExceptionForValidRecipe() throws RecipeDetectionException{
+    public void Communicator_process_NoExceptionForValidRecipe() throws RecipeDetectionException {
         for (String json : validRecipes) {
             boolean thrown = false;
             String message = "";

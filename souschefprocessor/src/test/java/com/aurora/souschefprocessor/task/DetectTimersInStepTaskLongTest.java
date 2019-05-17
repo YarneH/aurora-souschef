@@ -57,7 +57,7 @@ public class DetectTimersInStepTaskLongTest {
                 s.setBeginPosition(0);
             }
 
-            RecipeInProgress rip = new RecipeInProgress(testEmptyExtractedText);
+            RecipeInProgress rip = new RecipeInProgress(testEmptyExtractedText, "");
             rip.setStepsInProgress(list);
 
             DetectTimersInStepTask detector = new DetectTimersInStepTask(rip, 0);

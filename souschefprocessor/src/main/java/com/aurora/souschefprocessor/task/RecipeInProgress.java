@@ -61,11 +61,12 @@ public class RecipeInProgress extends Recipe {
      */
     private Map<ListIngredient, List<String>> mNamePartsCommonElementsMergedMap;
 
-    public RecipeInProgress(ExtractedText originalText) {
-        super(originalText.getFilename());
+    public RecipeInProgress(ExtractedText originalText, String pluginName) {
+        super(originalText.getFilename(), pluginName);
         this.mExtractedText = originalText;
         this.mDescription = "";
         this.mNumberOfPeople = -1;
+
 
     }
 
@@ -96,6 +97,7 @@ public class RecipeInProgress extends Recipe {
         return mIngredientsString;
     }
 
+
     /**
      * Default setter
      *
@@ -116,7 +118,7 @@ public class RecipeInProgress extends Recipe {
         for (RecipeStepInProgress step : mStepsInProgress) {
             mRecipeSteps.add(step.convertToRecipeStep());
         }
-        return new Recipe(mFileName, mIngredients, mRecipeSteps, mNumberOfPeople, mDescription);
+        return new Recipe(mFileName, mIngredients, mRecipeSteps, mNumberOfPeople, mDescription, mUniquePluginName);
     }
 
     /**

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.aurora.souschefprocessor.PluginConstants.UNIQUE_PLUGIN_NAME;
 
 /**
  * A data class representing a recipe. It has 4 fields:
@@ -39,16 +38,16 @@ public class Recipe extends PluginObject {
 
 
     public Recipe(String fileName, List<ListIngredient> ingredients, List<RecipeStep> recipeSteps,
-                  int numberOfPeople, String description) {
-        super(fileName, UNIQUE_PLUGIN_NAME);
+                  int numberOfPeople, String description, String pluginName) {
+        super(fileName, pluginName);
         this.mIngredients = ingredients;
         this.mRecipeSteps = recipeSteps;
         this.mNumberOfPeople = numberOfPeople;
         this.mDescription = description;
     }
 
-    public Recipe(String fileName) {
-        super(fileName, UNIQUE_PLUGIN_NAME);
+    public Recipe(String fileName, String pluginName) {
+        super(fileName, pluginName);
     }
 
     /**

@@ -42,7 +42,7 @@ public class DetectIngredientsInListTaskUnitTest {
 
 
        // create a recipeInProgress and detector
-        recipe = new RecipeInProgress(emptyExtractedText);
+        recipe = new RecipeInProgress(emptyExtractedText, "");
 
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
         crfClassifier = CRFClassifier.getClassifier(modelName);

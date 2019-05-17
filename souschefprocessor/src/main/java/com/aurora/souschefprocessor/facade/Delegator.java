@@ -118,12 +118,12 @@ public class Delegator {
      * @throws RecipeDetectionException an indication that something went wrong during the processing of the
      * extracted text, most probably this text does not resemble a recipe
      */
-    public Recipe processText(ExtractedText text) throws RecipeDetectionException {
+    public Recipe processText(ExtractedText text, String pluginName) throws RecipeDetectionException {
         if (sThreadPoolExecutor == null) {
             setUpThreadPool();
         }
 
-        RecipeInProgress recipeInProgress = new RecipeInProgress(text);
+        RecipeInProgress recipeInProgress = new RecipeInProgress(text, pluginName);
         List<AbstractProcessingTask> pipeline = setUpPipeline(recipeInProgress);
         if (pipeline != null) {
             for (AbstractProcessingTask task : pipeline) {

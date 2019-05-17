@@ -23,7 +23,7 @@ public class RecipeStepInProgress extends RecipeStep {
      * The offset of the beginposition of this step, defaults to 0. This is the beginposition in the entire
      * text
      */
-    private int mBeginPostitionOffset = 0;
+    private int mBeginPositionOffset = 0;
 
     /**
      * Construct a step using the description that can be used to detect ingredients and timers
@@ -59,7 +59,7 @@ public class RecipeStepInProgress extends RecipeStep {
      * @return the begin position offset of the annotations of the description of this step
      */
     public int getBeginPositionOffset() {
-        return mBeginPostitionOffset;
+        return mBeginPositionOffset;
     }
 
     /**
@@ -68,7 +68,7 @@ public class RecipeStepInProgress extends RecipeStep {
      * @param mBeginPositionOffset the new begin position offset of the annotations of the description of this step
      */
     public void setBeginPosition(int mBeginPositionOffset) {
-        this.mBeginPostitionOffset = mBeginPositionOffset;
+        this.mBeginPositionOffset = mBeginPositionOffset;
     }
 
     /**
@@ -102,7 +102,7 @@ public class RecipeStepInProgress extends RecipeStep {
 
     /**
      * {@inheritDoc}
-     * This overrides the super method by subtracting the {@link #mBeginPostitionOffset} of the position
+     * This overrides the super method by subtracting the {@link #mBeginPositionOffset} of the position
      * of the timers
      *
      * @param recipeTimers The list to set as ingredients
@@ -113,7 +113,7 @@ public class RecipeStepInProgress extends RecipeStep {
         if (recipeTimers != null && !recipeTimers.isEmpty()) {
             for (RecipeTimer timer : recipeTimers) {
                 // change the position of the timer by subtrackting the offset
-                timer.getPosition().subtractOffset(mBeginPostitionOffset);
+                timer.getPosition().subtractOffset(mBeginPositionOffset);
                 // this also checks if the position of the timer is valid
                 add(timer);
             }

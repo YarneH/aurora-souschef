@@ -2,7 +2,6 @@ package com.aurora.souschef;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -92,7 +91,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
     /**
      * ViewHolder for the ingredients.
      */
-    public class CardIngredientViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class CardIngredientViewHolder extends RecyclerView.ViewHolder{
         /**
          * Error margin on the ingredient amounts.
          * The conversion is willing to make a mistake of ROUND_EPSILON
@@ -133,8 +132,6 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
             mIngredientUnit = itemView.findViewById(R.id.tv_ingredient_unit);
             mIngredientCard = itemView.findViewById(R.id.cv_ingredient_item);
             mCheckbox = itemView.findViewById(R.id.cb_ingredient_checked);
-
-            mIngredientCard.setOnClickListener(this);
             mCheckbox.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) ->
                     mChecked[getAdapterPosition()] = isChecked);
         }
@@ -162,18 +159,6 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
 
             // Set checkboxes correctly
             mCheckbox.setChecked(mChecked[getAdapterPosition()]);
-        }
-
-        /**
-         * Show a snackbar with the original text when the ingredient is clicked.
-         *
-         * @param v View registering the click.
-         */
-        @Override
-        public void onClick(View v) {
-            Snackbar.make(this.itemView,
-                    mIngredients.get(getAdapterPosition()).getOriginalLine(),
-                    Snackbar.LENGTH_LONG).show();
         }
     }
 }

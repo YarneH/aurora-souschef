@@ -275,7 +275,7 @@ public class DetectIngredientsInListTaskLongTest {
             index++;
         }
 
-        testRecipe = new RecipeInProgress(testEmptyExtractedText, "");
+        testRecipe = new RecipeInProgress(testEmptyExtractedText);
         testRecipe.setIngredientsString(listForRecipe);
         testDetector = new DetectIngredientsInListTask(testRecipe, crfClassifier);
         testIngredientsInitialized = true;

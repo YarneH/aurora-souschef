@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.ProcessorCommunicator;
 import com.aurora.souschef.utilities.TimerRingtone;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -330,14 +331,8 @@ public class MainActivity extends AppCompatActivity {
 
         builder.setPositiveButton(R.string.ok, (DialogInterface dialog, int id) -> {
             // if the button is clicked (only possible action) the user is sent to Aurora
-            Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.aurora.aurora");
-            if (launchIntent != null) {
-                //null pointer check in case package name was not found
-                launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                finish();
-                startActivity(launchIntent);
-            }
+            ProcessorCommunicator.returnToAurora(this);
+            finish();
         });
 
 

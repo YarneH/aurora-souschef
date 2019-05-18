@@ -31,7 +31,7 @@ public class RecipeUnitTest {
         for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantPositions.put(key, irrelevantPosition);
         }
-        rip = new RecipeInProgress(emptyExtractedText, "");
+        rip = new RecipeInProgress(emptyExtractedText);
         RecipeStepInProgress step1 = new RecipeStepInProgress("Let the pasta boil for 10 minutes");
         RecipeTimer timer1 = new RecipeTimer(10 * 60, irrelevantPosition);
 
@@ -228,7 +228,8 @@ public class RecipeUnitTest {
                 "\"mDescription\":\"Divide pasta among plates. Top with fried capers.\"," +
                 "\"mIngredientDetectionDone\":true,\"mTimerDetectionDone\":true}],\"mNumberOfPeople\":4," +
                 "\"mDescription\":\"Pasta puttanesca\\nYield\\n\\nActive Time\\n30 minutes\\nTotal Time\\n35 " +
-                "minutes\",\"mFileName\":\"\",\"mUniquePluginName\":\"com.aurora.souschef\"}";
+                "minutes\",\"mFileName\":\"\"}";
+
         Recipe recipe = Recipe.fromJson(json, Recipe.class);
         List<String> sentences = recipe.createSentencesToTranslate();
 

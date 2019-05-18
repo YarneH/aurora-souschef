@@ -57,7 +57,7 @@ public class ParallelizableTaskLongTest {
         for (Ingredient.PositionKeysForIngredients key : Ingredient.PositionKeysForIngredients.values()) {
             irrelevantPositions.put(key, pos);
         }
-        RecipeInProgress rip = new RecipeInProgress(emptyExtractedText, "");
+        RecipeInProgress rip = new RecipeInProgress(emptyExtractedText);
 
         DetectTimersInStepTask.initializeAnnotationPipeline();
 

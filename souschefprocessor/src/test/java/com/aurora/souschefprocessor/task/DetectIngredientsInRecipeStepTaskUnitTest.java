@@ -45,7 +45,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
     @BeforeClass
     public static void initialize() {
         // Initialize recipe in progress
-        recipe = new RecipeInProgress(emptyExtractedText, "");
+        recipe = new RecipeInProgress(emptyExtractedText);
 
         // Initialize positions with dummy values
         irrelevantPositions = new HashMap<>();

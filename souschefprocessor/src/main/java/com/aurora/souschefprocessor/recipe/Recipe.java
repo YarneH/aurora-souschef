@@ -38,16 +38,16 @@ public class Recipe extends PluginObject {
 
 
     public Recipe(String fileName, List<ListIngredient> ingredients, List<RecipeStep> recipeSteps,
-                  int numberOfPeople, String description, String pluginName) {
-        super(fileName, pluginName);
+                  int numberOfPeople, String description) {
+        super(fileName);
         this.mIngredients = ingredients;
         this.mRecipeSteps = recipeSteps;
         this.mNumberOfPeople = numberOfPeople;
         this.mDescription = description;
     }
 
-    public Recipe(String fileName, String pluginName) {
-        super(fileName, pluginName);
+    public Recipe(String fileName) {
+        super(fileName);
     }
 
     /**

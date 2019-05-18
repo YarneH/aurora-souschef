@@ -107,7 +107,7 @@ public class DelegatorLongTest {
                 ExtractedText text = ExtractedText.fromJson(json);
                 // Act
                 // do the processing
-                Recipe recipe = delegator.processText(text, "");
+                Recipe recipe = delegator.processText(text);
                 // print out the result for manual checks
                 System.out.println(recipe + "\n--------------------------------");
                 System.out.println(recipe.getDescription());
@@ -139,7 +139,7 @@ public class DelegatorLongTest {
             try {
                 ExtractedText text = ExtractedText.fromJson(json);
                 // Act
-                Recipe recipe = delegator.processText(text, "");
+                Recipe recipe = delegator.processText(text);
             } catch (Exception e) {
                 // set thrown to true, this should not happen
                 thrown = true;
@@ -176,7 +176,7 @@ public class DelegatorLongTest {
             ExtractedText text = ExtractedText.fromJson(json);
             // do the processing and log the time this processing cost
             long start = System.currentTimeMillis();
-            delegator.processText(text, "");
+            delegator.processText(text);
             long finish = System.currentTimeMillis();
             long time = finish - start;
             average_non += time;
@@ -215,7 +215,7 @@ public class DelegatorLongTest {
             ExtractedText text = ExtractedText.fromJson(json);
             // do the processing and log the time it took
             long start = System.currentTimeMillis();
-            delegator.processText(text, "");
+            delegator.processText(text);
             long finish = System.currentTimeMillis();
             long time = finish - start;
             average_para += time;
@@ -264,7 +264,7 @@ public class DelegatorLongTest {
         ExtractedText text = ExtractedText.fromJson(contents);
         // Act
         // process and create the recipe object
-        Recipe r = delegator.processText(text, "");
+        Recipe r = delegator.processText(text);
         System.out.println(r);
 
         //assert
@@ -450,7 +450,7 @@ public class DelegatorLongTest {
 
         // act
         //do the processing
-        Recipe r = delegator.processText(text, "");
+        Recipe r = delegator.processText(text);
         // print out for manual check
         System.out.println(r);
 

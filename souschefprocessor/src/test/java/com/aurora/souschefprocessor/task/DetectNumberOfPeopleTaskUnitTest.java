@@ -29,7 +29,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
     public static void initialize() {
 
         originalText = initializeRecipeText();
-        recipe = new RecipeInProgress(emptyExtractedText, "");
+        recipe = new RecipeInProgress(emptyExtractedText);
         recipe.setDescription(originalText);
         detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipe);
     }
@@ -107,7 +107,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
          */
         // arrange
         String originalTextNoNumber = originalText.substring(0, originalText.indexOf('\n') + 1);
-        RecipeInProgress recipeNoNumber = new RecipeInProgress(emptyExtractedText, "");
+        RecipeInProgress recipeNoNumber = new RecipeInProgress(emptyExtractedText);
         recipeNoNumber.setDescription(originalTextNoNumber);
         DetectNumberOfPeopleTask detectNumberOfPeopleTask = new DetectNumberOfPeopleTask(recipeNoNumber);
         // act
@@ -131,7 +131,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
             ExtractedText recipeText = dataSet.get(i);
             String recipeTag = dataSetTags[i];
 
-            RecipeInProgress recipe = new RecipeInProgress(recipeText, "");
+            RecipeInProgress recipe = new RecipeInProgress(recipeText);
             // just add all the text
             String description = recipeText.getTitle();
             for (Section s : recipeText.getSections()) {

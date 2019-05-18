@@ -61,8 +61,8 @@ public class RecipeInProgress extends Recipe {
      */
     private Map<ListIngredient, List<String>> mNamePartsCommonElementsMergedMap;
 
-    public RecipeInProgress(ExtractedText originalText, String pluginName) {
-        super(originalText.getFilename(), pluginName);
+    public RecipeInProgress(ExtractedText originalText) {
+        super(originalText.getFilename());
         this.mExtractedText = originalText;
         this.mDescription = "";
         this.mNumberOfPeople = -1;
@@ -118,7 +118,7 @@ public class RecipeInProgress extends Recipe {
         for (RecipeStepInProgress step : mStepsInProgress) {
             mRecipeSteps.add(step.convertToRecipeStep());
         }
-        return new Recipe(mFileName, mIngredients, mRecipeSteps, mNumberOfPeople, mDescription, mUniquePluginName);
+        return new Recipe(mFileName, mIngredients, mRecipeSteps, mNumberOfPeople, mDescription);
     }
 
     /**

@@ -63,7 +63,7 @@ public class SplitStepsTaskUnitTest {
 
         stepList = initializeStepList();
         String json = mockAuroraOutput(stepList);
-        recipe = new RecipeInProgress(ExtractedText.fromJson(json), "");
+        recipe = new RecipeInProgress(ExtractedText.fromJson(json));
         recipe.setStepsString(stepList);
         splitStepsTask = new SplitStepsTask(recipe);
 
@@ -71,7 +71,7 @@ public class SplitStepsTaskUnitTest {
         json = mockAuroraOutput(stepListAcrossNewline);
         ExtractedText text = ExtractedText.fromJson(json);
 
-        recipeAcrossNewline = new RecipeInProgress(ExtractedText.fromJson(json), "");
+        recipeAcrossNewline = new RecipeInProgress(ExtractedText.fromJson(json));
         recipeAcrossNewline.setStepsString(stepListAcrossNewline);
         splitStepsTaskAcrossNewline = new SplitStepsTask(recipeAcrossNewline);
         testEmptyExtractedText = new ExtractedText("", Collections.emptyList());
@@ -159,7 +159,7 @@ public class SplitStepsTaskUnitTest {
          * If the step string is empty then this is probably not a recipe, throw an error
          */
         // Arrange
-        RecipeInProgress emptyStep = new RecipeInProgress(testEmptyExtractedText, "");
+        RecipeInProgress emptyStep = new RecipeInProgress(testEmptyExtractedText);
         emptyStep.setStepsString("");
         SplitStepsTask task = new SplitStepsTask(emptyStep);
         boolean thrown = false;

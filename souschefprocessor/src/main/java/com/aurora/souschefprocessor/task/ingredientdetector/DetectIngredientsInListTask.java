@@ -290,6 +290,12 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         return line;
     }
 
+    /**
+     * Private helper function for {@link #standardizeLine(String)}. It checks whether the spaces and points should
+     * be in the line and if extra spaces might be needed
+     * @param line the line to check
+     * @return the line with the points and spaces as expected
+     */
     private static String checkSpacesAndPoints(String line) {
         StringBuilder bld = new StringBuilder();
         char[] chars = line.toCharArray();

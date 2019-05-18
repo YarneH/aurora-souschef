@@ -1,5 +1,7 @@
 package com.aurora.souschefprocessor.recipe;
 
+import android.support.annotation.NonNull;
+
 import java.util.Objects;
 
 /**
@@ -70,10 +72,8 @@ public class Position {
      * @param string the string to check the legality of the position in
      * @return A boolean that indicates whether this position is legal in the string
      */
-    boolean isLegalInString(String string) {
-        if (string == null) {
-            return false;
-        }
+    boolean isLegalInString(@NonNull String string) {
+
         int length = string.length();
 
         // beginIndex should be at least as small as the length of the string - 1

@@ -186,7 +186,7 @@ public class SplitToMainSectionsTaskUnitTest {
         for (ExtractedText text : recipeTexts) {
             System.out.println(i);
             // Arrange
-            RecipeInProgress rip = new RecipeInProgress(text, "");
+            RecipeInProgress rip = new RecipeInProgress(text);
             SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
             // Act
             task.doTask();
@@ -211,7 +211,7 @@ public class SplitToMainSectionsTaskUnitTest {
         for (int i = 0; i < fieldsList.size(); i++) {
             // Arrange
             ExtractedText text = recipeTexts.get(i);
-            RecipeInProgress rip = new RecipeInProgress(text, "");
+            RecipeInProgress rip = new RecipeInProgress(text);
             SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
             // Act
             task.doTask();
@@ -229,7 +229,7 @@ public class SplitToMainSectionsTaskUnitTest {
         boolean thrown = false;
         try {
             for (ExtractedText text : array) {
-                RecipeInProgress rip = new RecipeInProgress(text, "");
+                RecipeInProgress rip = new RecipeInProgress(text);
                 SplitToMainSectionsTask task = new SplitToMainSectionsTask(rip);
                 task.doTask();
 
@@ -357,7 +357,7 @@ public class SplitToMainSectionsTaskUnitTest {
 
         // Act
         ExtractedText text = ExtractedText.fromJson(json);
-        RecipeInProgress rip = new RecipeInProgress(text, "");
+        RecipeInProgress rip = new RecipeInProgress(text);
         (new SplitToMainSectionsTask(rip)).doTask();
 
         // Assert

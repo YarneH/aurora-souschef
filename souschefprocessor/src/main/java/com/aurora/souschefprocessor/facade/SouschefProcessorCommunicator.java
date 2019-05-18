@@ -118,7 +118,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
 
         Recipe recipe = null;
         try {
-            recipe = mDelegator.processText(extractedText, mUniquePluginName);
+            recipe = mDelegator.processText(extractedText);
         } catch (RecipeDetectionException rde) {
             Log.e(TAG, "detection failure", rde);
             // if something went wrong with the detection rethrow the error and let the

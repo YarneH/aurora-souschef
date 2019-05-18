@@ -48,7 +48,7 @@ public class DetectTimersInStepTaskUnitTest {
         recipeSteps.add(new RecipeStepInProgress("Put in the oven for 50 minutes to 1 hour")); //9 to case
 
         String originalText = "irrelevant";
-        recipe = new RecipeInProgress(emptyExtractedText, "");
+        recipe = new RecipeInProgress(emptyExtractedText);
         recipe.setStepsInProgress(recipeSteps);
 
         for (int stepIndex = 0; stepIndex < recipeSteps.size(); stepIndex++) {

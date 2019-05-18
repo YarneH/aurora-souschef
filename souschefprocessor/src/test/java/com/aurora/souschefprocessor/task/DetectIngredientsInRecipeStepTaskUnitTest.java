@@ -257,6 +257,7 @@ public class DetectIngredientsInRecipeStepTaskUnitTest {
         assertThat(recipeSteps.get(stepIndex).getIngredients(), CoreMatchers.hasItem(stepIngredient));
     }
 
+
     @Test
     public void IngredientDetectorStep_doTask_ingredientDetectedWithUnitAndNumericalQuantity() {
         /*

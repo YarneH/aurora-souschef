@@ -154,40 +154,9 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         }
 
         line = removeClutter(line);
-        StringBuilder bld = new StringBuilder();
-        char[] chars = line.toCharArray();
 
+        return checkSpacesAndPoints(line);
 
-        // add the first character
-        bld.append(chars[0]);
-
-        for (int i = 1; i < chars.length - 1; i++) {
-            char previous = chars[i - 1];
-            char current = chars[i];
-            char next = chars[i + 1];
-
-            // do not append automatically if it is a point
-            if (current != '.') {
-                if (spaceNeededBetweenPreviousAndCurrent(previous, current)) {
-                    bld.append(" ");
-                    bld.append(current);
-
-                } else {
-                    bld.append(current);
-                }
-
-            } else {
-                if (pointNeededBetweenPreviousAndNext(previous, next)) {
-                    bld.append(current);
-                }
-            }
-        }
-
-        // add the last character
-        bld.append(chars[chars.length - 1]);
-
-        // return the builder
-        return bld.toString();
     }
 
     /**
@@ -322,35 +291,51 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
     }
 
     /**
-     * Checks if a space is needed between the first and second character. this is the case if either
-     * a number is followed by a letter or a letter is followed by a dash or a slash
-     *
-     * @param first  The first character
-     * @param second The second character
-     * @return a boolean indicating if a space is needed
+     * Private helper function for {@link #standardizeLine(String)}. It checks whether the spaces and points should
+     * be in the line and if extra spaces might be needed
+     * @param line the line to check
+     * @return the line with the points and spaces as expected
      */
-    private static boolean spaceNeededBetweenPreviousAndCurrent(char first, char second) {
-        if ((Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)
-                && Character.isAlphabetic(second)) {
-            // if a number is followed by a letter, add a space
-            return true;
+    private static String checkSpacesAndPoints(String line) {
+        StringBuilder bld = new StringBuilder();
+        char[] chars = line.toCharArray();
 
-        } else {
-            // if a letter is followed by a slash, add a space
-            return Character.isAlphabetic(first) && second == '/';
+
+        // add the first character
+        bld.append(chars[0]);
+
+        for (int i = 1; i < chars.length - 1; i++) {
+            char previous = chars[i - 1];
+            char current = chars[i];
+            char next = chars[i + 1];
+
+            // do not append automatically if it is a point or a space
+            if (current == '.') {
+                if (pointNeededBetweenPreviousAndNext(previous, next)) {
+                    bld.append(current);
+                }
+            } else if (current == ' ') {
+                // do not append space in case of 1 /4 cup sugar, since then the 1/4 will not be seen as a fraction
+                if (spaceNeededBetweenPreviousAndNext(previous, next)) {
+                    bld.append(current);
+                }
+                // check if an extra space is needed
+            } else if (extraSpaceNeededBetweenPreviousAndCurrent(previous, current)) {
+                bld.append(" ");
+                bld.append(current);
+
+            } else {
+                // default
+                bld.append(current);
+            }
+
         }
-    }
 
-    /**
-     * Checks if the "." is still needed between these characters, which is the case if both characters
-     * are digits
-     *
-     * @param previous The character before the "."
-     * @param next     The character after the "."
-     * @return A boolean indicating whether the "." character is needed
-     */
-    private static boolean pointNeededBetweenPreviousAndNext(char previous, char next) {
-        return Character.isDigit(previous) && Character.isDigit(next);
+        // add the last character
+        bld.append(chars[chars.length - 1]);
+
+        // return the builder
+        return bld.toString();
     }
 
     /**
@@ -442,13 +427,14 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : succeedingUnitList) {
-            bld.append(UnitConversionUtils.getBase(cl.word()));
+            bld.append((cl.word()));
             bld.append(" ");
         }
         // delete last added space
         bld.deleteCharAt(bld.length() - 1);
 
-        return bld.toString();
+        // get the base unit
+        return UnitConversionUtils.getBase(bld.toString());
     }
 
     /**
@@ -472,7 +458,6 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         return bld.toString();
     }
 
-
     /**
      * Removes the part of the line that matches the pattern for each pattern in the list, in order,
      * so the second pattern is matched against the result of the operation with the first pattern.
@@ -492,6 +477,62 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
         }
 
         return line;
+    }
+
+    /**
+     * Checks if the "." is still needed between these characters, which is the case if both characters
+     * are digits
+     *
+     * @param previous The character before the "."
+     * @param next     The character after the "."
+     * @return A boolean indicating whether the "." character is needed
+     */
+    private static boolean pointNeededBetweenPreviousAndNext(char previous, char next) {
+        return Character.isDigit(previous) && Character.isDigit(next);
+    }
+
+    /**
+     * Checks if a space character is still needed between these characters. This is the case if this is not the
+     * format: 1 /4 or 1/ 3. So if previous is a digit and next is a slash or previous is a slash and next is a digit
+     * it will return false
+     *
+     * @param previous the previous character
+     * @param next     the next character
+     * @return true if the space is still needed
+     */
+    private static boolean spaceNeededBetweenPreviousAndNext(char previous, char next) {
+        // check case digit space slash (e.g 1 /4)
+        boolean digitPrev = Character.isDigit(previous);
+        boolean slashNext = (next == '/' || next == '⁄');
+        boolean caseDigitSpaceSlash = digitPrev && slashNext;
+
+        // check case digit slash space (e.g 1/ 3)
+        boolean slashPrev = (previous == '/' || previous == '⁄');
+        boolean digitNext = Character.isDigit(next);
+        boolean caseSlashSpaceDigit = digitNext && slashPrev;
+
+        return !caseDigitSpaceSlash && !caseSlashSpaceDigit;
+
+    }
+
+    /**
+     * Checks if a space is needed between the first and second character. this is the case if either
+     * a number is followed by a letter or a letter is followed by a dash or a slash
+     *
+     * @param first  The first character
+     * @param second The second character
+     * @return a boolean indicating if a space is needed
+     */
+    private static boolean extraSpaceNeededBetweenPreviousAndCurrent(char first, char second) {
+        if ((Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)
+                && Character.isAlphabetic(second)) {
+            // if a number is followed by a letter, add a space
+            return true;
+
+        } else {
+            // if a letter is followed by a slash, add a space
+            return Character.isAlphabetic(first) && second == '/';
+        }
     }
 
 }

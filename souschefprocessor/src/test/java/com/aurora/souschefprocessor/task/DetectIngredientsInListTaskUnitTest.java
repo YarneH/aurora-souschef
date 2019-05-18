@@ -10,14 +10,19 @@ import com.aurora.souschefprocessor.task.ingredientdetector.DetectIngredientsInL
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 
 import static org.junit.Assert.assertEquals;
@@ -378,6 +383,80 @@ The detection is correct in case of a multiplication sign in the quantity
     }
 
     @Test
+    public void DetectIngredientsInList_doTask_correctWhenSpaceBetweenFraction() throws RecipeDetectionException{
+        String ingredientsWithSpaces = "1 /4 c. sugar\n 1 /2 teaspoon salt\n1/ 3 ml milk";
+
+        ListIngredient sugarIngredient = new ListIngredient("sugar", "cup", 0.25, "irrelevant",
+                irrelevantPositions);
+        ListIngredient salt = new ListIngredient("salt", "teaspoon", 0.5, "irrelevant",
+                irrelevantPositions);
+        ListIngredient milk = new ListIngredient("milk", "milliliter", 1.0/3, "irrelevant",
+                irrelevantPositions);
+
+        recipe.setIngredientsString(ingredientsWithSpaces);
+        detector.doTask();
+
+        // Assert
+        List<ListIngredient> list = recipe.getIngredients();
+        assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(sugarIngredient));
+        assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(salt ));
+        assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(milk ));
+
+
+    }
+
+    @Test
+    public void DetectIngredientsInListTask_doTask_correctDetectionForAbbreviatedUnits() throws RecipeDetectionException{
+
+        /*
+        The detection is correct for abbreviated descriptions
+         */
+        // Arrange
+        String clutterExamples = "1 T sugar\n" +
+                "2 lb meat\n" +
+                "0.5 kg chocolate\n" +
+                "20 g salt\n" +
+                "5 fl oz fromage frais\n" +
+                "20 ml vanilla extract\n" +
+                "5 dl milk\n2 t black pepper";
+
+
+        ListIngredient sugar = new ListIngredient("sugar", "tablespoon", 1, "irrelevant",
+                irrelevantPositions);
+        ListIngredient meat = new ListIngredient("meat", "pound", 2, "irrelevant",
+                irrelevantPositions);
+        ListIngredient chocolate = new ListIngredient("chocolate", "kilogram", 0.5, "irrelevant",
+                irrelevantPositions);
+        ListIngredient salt = new ListIngredient("salt", "gram", 20, "irrelevant",
+                irrelevantPositions);
+        ListIngredient vanilla = new ListIngredient("vanilla extract", "milliliter", 20, "irrelevant",
+                irrelevantPositions);
+        ListIngredient fromageIngredient = new ListIngredient("fromage frais", "fluid ounce", 5, "irrelevant",
+                irrelevantPositions);
+        ListIngredient milk = new ListIngredient("milk", "deciliter", 5, "irrelevant",
+                irrelevantPositions);
+        ListIngredient pepper = new ListIngredient("black pepper", "teaspoon", 2, "irrelevant",
+                irrelevantPositions);
+        // Act
+        recipe.setIngredientsString(clutterExamples);
+        detector.doTask();
+
+        // Assert
+        List<ListIngredient> list = recipe.getIngredients();
+        assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(sugar));
+        assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(sugar));
+        assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(meat));
+        assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(chocolate));
+        assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(salt));
+        assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(vanilla));
+        assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(pepper));
+        assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(milk));
+
+        assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(fromageIngredient));
+
+    }
+
+    @Test
     public void DetectIngredientsInList_CorrectPositons() throws RecipeDetectionException{
 
         /*
@@ -504,5 +583,8 @@ The detection is correct in case of a multiplication sign in the quantity
         assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(garlicSalt));
         assertThat("The ingredient is not contained", list, CoreMatchers.hasItem(pepper));
     }
+
+
+
 
 }

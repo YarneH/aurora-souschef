@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -305,7 +306,7 @@ public class DelegatorLongTest {
                         "1 pound linguine or other long pasta", irrelevantpositions),
                 new ListIngredient("Kosher " + "salt", "", 1,
                         "Kosher salt", irrelevantpositions),
-                new ListIngredient("can diced tomatoes", "", 1,
+                new ListIngredient("diced tomatoes", "can", 1,
                         "1 (14-oz.) can diced tomatoes", irrelevantpositions),
                 new ListIngredient("extra-virgin olive oil", "cup", 0.5,
                         "1/2 cup extra-virgin olive oil, divided", irrelevantpositions),
@@ -397,7 +398,7 @@ public class DelegatorLongTest {
         ));
         assertThat("The ingredients for the second step are not correct", step1.getIngredients(), CoreMatchers.hasItems(
                 new Ingredient("linguine or other long pasta", "", 1, irrelevantpositions),
-                new Ingredient("can diced tomatoes", "", 1, irrelevantpositions)
+                new Ingredient("diced tomatoes", "", 1, irrelevantpositions)
         ));
         assertThat("The ingredients for the third step are not correct", step2.getIngredients(), CoreMatchers.hasItems(
                 new Ingredient("extra-virgin olive oil", "cup", 0.25, irrelevantpositions),
@@ -407,7 +408,7 @@ public class DelegatorLongTest {
                 new Ingredient("linguine or other long pasta", "", 1, irrelevantpositions),
                 new Ingredient("extra-virgin olive oil", "", 1, irrelevantpositions),
                 new Ingredient("tomato paste", "", 1, irrelevantpositions),
-                new Ingredient("can diced tomatoes", "", 1, irrelevantpositions),
+                new Ingredient("diced tomatoes", "", 1, irrelevantpositions),
                 new Ingredient("dried oregano", "", 1, irrelevantpositions),
                 new Ingredient("crushed red pepper flakes", "", 1, irrelevantpositions),
                 new Ingredient("oil-packed tuna", "", 1, irrelevantpositions)

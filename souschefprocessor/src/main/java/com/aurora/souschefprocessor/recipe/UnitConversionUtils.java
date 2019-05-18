@@ -2,8 +2,13 @@ package com.aurora.souschefprocessor.recipe;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
+import edu.stanford.nlp.ling.tokensregex.MultiPatternMatcher;
 
 /**
  * A utility class for conversion of units. The plurals and abreviations of metric and US units are
@@ -153,6 +158,26 @@ public final class UnitConversionUtils {
         throw new IllegalStateException("Utility class");
     }
 
+    private static final  Map<String, List<String>> BASE_UNITS_TO_OTHER_REPRESENTATIONS  = new HashMap<>() ;
+
+    // populate the map
+    static {
+        // add the US units
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(TBSP, Arrays.asList("tbsp","tablespoons", "T"));
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(CUP, Arrays.asList("c", "cups"));
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(TSP, Arrays.asList("tsp","teaspoons", "t"));
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(POUND, Arrays.asList("lb", "pounds"));
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(FLOZ, Arrays.asList("fl oz","fluid ounces"));
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(OUNCE, Arrays.asList("oz", "ounces"));
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(QUART, Arrays.asList("qt","quarts"));
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(PINT, Arrays.asList("pt", "pints"));
+        // add the metric units
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(KILO, Arrays.asList("kg", "kilograms"));
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(GRAM, Arrays.asList("grams", "g"));
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(MILLI, Arrays.asList("ml", "milliliters"));
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(LITER, Arrays.asList("l", "liters"));
+        BASE_UNITS_TO_OTHER_REPRESENTATIONS.put(DECI, Arrays.asList("dl", "deciliter"));
+    }
     /**
      * Finds the base unit of the string that was passed. This matches plurals and abbreviations to a base
      *
@@ -161,20 +186,23 @@ public final class UnitConversionUtils {
      */
     public static String getBase(String original) {
 
-        String lowerCase = original.toLowerCase(Locale.ENGLISH).trim();
+        String trim = original.trim();
+        String lowerCase = trim.toLowerCase();
 
-        String base = getBaseMetric(lowerCase);
-        // base is found, return base
-        if (base != null) {
-            return base;
+
+        for(String base: BASE_UNITS_US){
+            List<String> others = BASE_UNITS_TO_OTHER_REPRESENTATIONS.get(base);
+            if(others != null && (others.contains(trim) || others.contains(lowerCase))){
+                return base;
+            }
         }
-        // if base was not found via metric
-        base = getBaseUS(lowerCase);
 
-        if (base != null) {
-
-            return base;
-        }
+       for(String base: BASE_UNITS_METRIC){
+           List<String> others = BASE_UNITS_TO_OTHER_REPRESENTATIONS.get(base);
+           if(others != null && (others.contains(trim) || others.contains(lowerCase))){
+               return base;
+           }
+       }
 
         // nothing found -> return the original
         return original;
@@ -226,10 +254,12 @@ public final class UnitConversionUtils {
     public static List<String> getCommonUnits() {
         List<String> list = new ArrayList<>(Arrays.asList(BASE_UNITS_METRIC));
         list.addAll(Arrays.asList(BASE_UNITS_US));
-        list.addAll(Arrays.asList(ABBREVIATIONS_METRIC));
-        list.addAll(Arrays.asList(ABBREVIATIONS_US));
-        list.addAll(Arrays.asList(PLURALS_US));
-        list.addAll(Arrays.asList(PLURALS_METRIC));
+       for(String base: BASE_UNITS_METRIC){
+           list.addAll(BASE_UNITS_TO_OTHER_REPRESENTATIONS.get(base));
+       }
+       for(String base: BASE_UNITS_US){
+           list.addAll(BASE_UNITS_TO_OTHER_REPRESENTATIONS.get(base));
+       }
         return list;
 
     }

@@ -166,9 +166,9 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
             char current = chars[i];
             char next = chars[i + 1];
 
-            // do not append automatically if it is a point
-            if (current != '.') {
-                if (spaceNeededBetweenPreviousAndCurrent(previous, current)) {
+            // do not append automatically if it is a point or a space
+            if (current != '.' && current != ' ') {// && current != ' ') {
+                if (extraSpaceNeededBetweenPreviousAndCurrent(previous, current)) {
                     bld.append(" ");
                     bld.append(current);
 
@@ -176,8 +176,16 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
                     bld.append(current);
                 }
 
-            } else {
+            } else if (current == '.') {
                 if (pointNeededBetweenPreviousAndNext(previous, next)) {
+
+                    bld.append(current);
+                }
+
+            } else {
+                // current is a space character
+                // do not append space in case of 1 /4 cup sugar, since then the 1/4 will not be seen as a fraction
+                if (spaceNeededBetweenPreviousAndNext(previous, next)) {
                     bld.append(current);
                 }
             }
@@ -329,7 +337,7 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
      * @param second The second character
      * @return a boolean indicating if a space is needed
      */
-    private static boolean spaceNeededBetweenPreviousAndCurrent(char first, char second) {
+    private static boolean extraSpaceNeededBetweenPreviousAndCurrent(char first, char second) {
         if ((Character.isDigit(first) || Character.getType(first) == Character.OTHER_NUMBER)
                 && Character.isAlphabetic(second)) {
             // if a number is followed by a letter, add a space
@@ -351,6 +359,30 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
      */
     private static boolean pointNeededBetweenPreviousAndNext(char previous, char next) {
         return Character.isDigit(previous) && Character.isDigit(next);
+    }
+
+    /**
+     * Checks if a space character is still needed between these characters. This is the case if this is not the
+     * format: 1 /4 or 1/ 3. So if previous is a digit and next is a slash or previous is a slash and next is a digit
+     * it will return false
+     *
+     * @param previous the previous character
+     * @param next     the next character
+     * @return true if the space is still needed
+     */
+    private static boolean spaceNeededBetweenPreviousAndNext(char previous, char next) {
+        // check case digit space slash (e.g 1 /4)
+        boolean digitPrev = Character.isDigit(previous);
+        boolean slashNext = (next == '/' || next == '⁄');
+        boolean caseDigitSpaceSlash = digitPrev && slashNext;
+
+        // check case digit slash space (e.g 1/ 3)
+        boolean slashPrev = (previous == '/' || previous == '⁄');
+        boolean digitNext = Character.isDigit(next);
+        boolean caseSlashSpaceDigit = digitNext && slashPrev;
+
+        return !caseDigitSpaceSlash && !caseSlashSpaceDigit;
+
     }
 
     /**
@@ -442,13 +474,14 @@ public class DetectIngredientsInListTask extends DetectIngredientsTask {
 
         StringBuilder bld = new StringBuilder();
         for (CoreLabel cl : succeedingUnitList) {
-            bld.append(UnitConversionUtils.getBase(cl.word()));
+            bld.append((cl.word()));
             bld.append(" ");
         }
         // delete last added space
         bld.deleteCharAt(bld.length() - 1);
 
-        return bld.toString();
+        // get the base unit
+        return UnitConversionUtils.getBase(bld.toString());
     }
 
     /**

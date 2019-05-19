@@ -409,12 +409,12 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * the timer with "50 minutes" and not be to seperate timers)
      *
      * @param list     the list to add to
-     * @param cm       the new coremap to use the annotatio to add
+     * @param coreMap       the coremap that came after the "to" in the sentence
      * @param endIndex the endindex of the coremap
      */
-    private void addAfterTo(List<RecipeTimer> list, CoreMap cm, int endIndex) {
+    private void addAfterTo(List<RecipeTimer> list, CoreMap coreMap, int endIndex) {
 
-        if (TIME_WORDS_NOT_TO_INCLUDE.contains(cm.toString())) {
+        if (TIME_WORDS_NOT_TO_INCLUDE.contains(coreMap.toString())) {
             // these words should not be included so just return
             return;
         }
@@ -426,7 +426,7 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
         Position position = new Position(prevStartIndex, endIndex);
 
         // The detected annotation
-        SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();
+        SUTime.Temporal temporal = coreMap.get(TimeExpression.Annotation.class).getTemporal();
 
         int recipeStepSecondsAfterTo = (int) temporal
                 .getDuration().getJodaTimeDuration().getStandardSeconds();
@@ -479,15 +479,14 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * @param temporal          The temporal of which a timer needs to be constructed
      * @param list              The list to add the timer to
      * @param timerPosition     The position of the temporal
-     * @param cm                The Coremap which his the original representation of the temporal
+     * @param coreMap                The Coremap which his the original representation of the temporal
      * @param fractionPositions The map of fractionpositions in the entire sentence
      */
-    private void addNonDurationToList(SUTime.Temporal temporal, List<RecipeTimer> list,
-                                      Position timerPosition, CoreMap cm,
-                                      SparseArray<String> fractionPositions) {
+    private void addNonDurationToList(SUTime.Temporal temporal, List<RecipeTimer> list, Position timerPosition,
+                                      CoreMap coreMap, SparseArray<String> fractionPositions) {
         // the detected seconds
         int recipeStepSeconds;
-        if (TIME_WORDS_NOT_TO_INCLUDE.contains(cm.toString())) {
+        if (TIME_WORDS_NOT_TO_INCLUDE.contains(coreMap.toString())) {
             // these tokens do not require a timer
             recipeStepSeconds = 0;
 
@@ -573,8 +572,8 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
      * @param recipeStepSeconds the seconds detected in this timex token
      * @return The updated value of recipeStepSeconds
      */
-    private int changeToFractions(SparseArray<String> fractionPositions,
-                                  Position originalPosition, int recipeStepSeconds) {
+    private int changeToFractions(SparseArray<String> fractionPositions, Position originalPosition,
+                                  int recipeStepSeconds) {
 
         for (int index = 0; index < fractionPositions.size(); index++) {
             int key = fractionPositions.keyAt(index);

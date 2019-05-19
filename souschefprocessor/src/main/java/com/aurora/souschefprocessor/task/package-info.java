@@ -1,5 +1,6 @@
 /**
- * This package is responsible for constructing a {@link com.aurora.souschefprocessor.recipe.Recipe} from an {@link android.view.inputmethod.ExtractedText}
+ * This package is responsible for constructing a {@link com.aurora.souschefprocessor.recipe.Recipe} from an
+ * {@link com.aurora.auroralib.ExtractedText}
  * object. This is done by executing {@link com.aurora.souschefprocessor.task.AbstractProcessingTask} tasks on a
  * {@link com.aurora.souschefprocessor.task.RecipeInProgress} that has
  * {@link com.aurora.souschefprocessor.task.RecipeStepInProgress} steps.
@@ -17,14 +18,14 @@
  * detected in each step
  * 6{@link com.aurora.souschefprocessor.task.timerdetector.DetectTimersInStepTask}: The timers are detected in each step
  *
- * Some of these steps can be done in parallel. The dependencies are as follows
- *     |-- 2
- *     |         |-- 6
- *     |         |
- * 1 --|-- 3 ----|
- *     |         |
- *     |         |-- 5
- *     |-- 4 ----|
+ * Some of these steps can be done in parallel. The dependencies are as follows <br>
+ *     |-- 2<br>
+ *     |         |-- 6<br>
+ *     |         |<br>
+ * 1 --|-- 3 ----|<br>
+ *     |         |<br>
+ *     |         |-- 5<br>
+ *     |-- 4 ----|<br>
  *
  * With element to the right depending on element to their left
  *

@@ -158,7 +158,7 @@ public final class UnitConversionUtils {
      * Finds the base unit of the string that was passed. This matches plurals and abbreviations to a base
      *
      * @param original the string to get the base of
-     * @return the base of the string, if no base was found it just retuns the orignal
+     * @return the base of the string, if no base was found it just returns the original
      */
     public static String getBase(String original) {
 

@@ -123,12 +123,11 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
             Log.e(TAG, "detection failure", rde);
             // if something went wrong with the detection rethrow the error and let the
             // environment decide what to do in this case
-            throw new RecipeDetectionException(rde.getMessage());
+            throw rde;
         } catch (IllegalArgumentException iae) {
             // This means something is programmatically wrong, so let the programmer know extra
             // checks are needed somewhere in the code
             Log.e(TAG, "illegal state or argument", iae);
-
         } catch (Exception e) {
             // something else went wrong
             Log.e(TAG, "unexpected exception", e);

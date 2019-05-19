@@ -169,7 +169,6 @@ public class Delegator {
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
      */
-
     private List<AbstractProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
         List<AbstractProcessingTask> pipeline = new ArrayList<>();
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));

@@ -52,7 +52,7 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
     @Override
     public CardIngredientViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         Context context = viewGroup.getContext();
-        // TODO: change to R.layout.ingredient_item if a checkbox needs to be added!
+
         View view = LayoutInflater.from(context).inflate(R.layout.step_ingredient_item, viewGroup, false);
 
         return new CardIngredientViewHolder(view);

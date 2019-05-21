@@ -90,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
         mRecipeViewModel = ViewModelProviders.of(this).get(RecipeViewModel.class);
 
         super.onCreate(savedInstanceState);
-        // TODO: Change back to the correct view
         setContentView(R.layout.activity_main);
 
         // Initiate the TimerRingtone with the application context
@@ -316,7 +315,7 @@ public class MainActivity extends AppCompatActivity {
                 line = reader.readLine();
             }
         } catch (IOException e) {
-            Log.e("MAIN", "opening default file failed", e);
+            Log.e(TAG, "opening default file failed", e);
         }
         Log.d("read", bld.toString());
         return bld.toString();

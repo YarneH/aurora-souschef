@@ -455,7 +455,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
     /**
      * Finds the attributes (name, unit and quantity) of the step ingredient in the recipe step sentence
-     * If some attributes can'searchInMap be found they are set to their default absent value
+     * If some attributes can't be found they are set to their default absent value
      *
      * @param nameIndex      Index of the found ingredient name in the list of tokens
      * @param listIngredient ListIngredient corresponding to this found ingredient name

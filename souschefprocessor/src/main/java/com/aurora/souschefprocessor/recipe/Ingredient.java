@@ -78,9 +78,9 @@ public class Ingredient {
     }
 
     /**
-     * Default getter
+     * Default setter
      *
-     * @return the quantity of this ingredient
+     * @param quantity the quantity of this ingredient
      */
     public void setQuantity(double quantity) {
         mAmount.setValue(quantity);

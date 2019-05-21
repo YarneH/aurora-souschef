@@ -212,7 +212,6 @@ public class DetectTimersInStepTaskUnitTest {
 
     @Test
     public void DetectTimersInStep_doTask_PositionOfTimersCorrectlyDetected() {
-        // TODO: make these seprate tests
 
         // first case: "Put 500 gram sauce in the microwave for 3 minutes"
         // timer = "3 minutes"

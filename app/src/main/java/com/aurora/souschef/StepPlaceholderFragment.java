@@ -3,6 +3,7 @@ package com.aurora.souschef;
 import android.arch.lifecycle.ViewModelProviders;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -94,7 +95,7 @@ public class StepPlaceholderFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         int index = Objects.requireNonNull(getArguments()).getInt(ARG_SECTION_NUMBER);
 
         // Inflate a CardView with a step and get the View
@@ -132,7 +133,7 @@ public class StepPlaceholderFragment extends Fragment {
         ViewGroup insertPoint = mRootView.findViewById(R.id.ll_step);
 
         RecipeTimerViewModel recipeTimerViewModel = ViewModelProviders
-                .of(getActivity())
+                .of(requireActivity())
                 .get(RecipeTimerViewModel.class);
         recipeTimerViewModel.init(recipe);
 
@@ -242,11 +243,12 @@ public class StepPlaceholderFragment extends Fragment {
      * @param newAmount the new set amount of people
      */
     protected void update(int newAmount) {
-        if(mIngredientList == null){
+        if (mIngredientList == null) {
             // got here without a valid ingredientList just return
             return;
         }
-        ((StepIngredientAdapter) mIngredientList.getAdapter()).setCurrentAmount(newAmount);
+        ((StepIngredientAdapter) Objects.requireNonNull(mIngredientList.getAdapter()))
+                .setCurrentAmount(newAmount);
         mIngredientList.getAdapter().notifyDataSetChanged();
 
         // Put ingredients in ascending beginIndex
@@ -369,10 +371,10 @@ public class StepPlaceholderFragment extends Fragment {
             tempView = (ImageView) inflater.inflate(R.layout.dot_image_view, linearLayout, false);
             Drawable dot;
             if (i == index) {
-                dot = ContextCompat.getDrawable(getContext(),
+                dot = ContextCompat.getDrawable(requireContext(),
                         R.drawable.selected_dot);
             } else {
-                dot = ContextCompat.getDrawable(getContext(),
+                dot = ContextCompat.getDrawable(requireContext(),
                         R.drawable.not_selected_dot);
             }
             tempView.setImageDrawable(dot);

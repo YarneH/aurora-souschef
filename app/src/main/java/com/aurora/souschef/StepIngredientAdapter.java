@@ -25,23 +25,23 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
     /**
      * The current amount of servings, set by the user
      */
-    private int mCurrentAmount = 0;
+    private int mCurrentAmount;
     /**
      * The original amount of servings, extracted from the recipe
      */
-    private int mOriginalAmount = 0;
+    private int mOriginalAmount;
     /**
      * The length of the description of the current step
      */
-    private int mStepDescriptionLength = 0;
+    private int mStepDescriptionLength;
 
     /**
      * Constructs the adapter with a list
      *
      * @param ingredients list for construction
      */
-    public StepIngredientAdapter(List<Ingredient> ingredients, int originalAmount, int currentAmount,
-                                 int descriptionLength) {
+    StepIngredientAdapter(List<Ingredient> ingredients, int originalAmount, int currentAmount,
+                          int descriptionLength) {
         this.ingredients = ingredients;
         this.mCurrentAmount = currentAmount;
         this.mOriginalAmount = originalAmount;
@@ -55,7 +55,7 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
         // TODO: change to R.layout.ingredient_item if a checkbox needs to be added!
         View view = LayoutInflater.from(context).inflate(R.layout.step_ingredient_item, viewGroup, false);
 
-        return new CardIngredientViewHolder(view, i);
+        return new CardIngredientViewHolder(view);
     }
 
     @Override
@@ -72,11 +72,11 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
         }
     }
 
-    public void setCurrentAmount(int currentAmount) {
+    void setCurrentAmount(int currentAmount) {
         mCurrentAmount = currentAmount;
     }
 
-    public class CardIngredientViewHolder extends RecyclerView.ViewHolder {
+    class CardIngredientViewHolder extends RecyclerView.ViewHolder {
         private int mIndex;
         private TextView mIngredientName;
         private TextView mIngredientAmount;
@@ -86,9 +86,8 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
          * Initialises views inside the layout.
          *
          * @param itemView containing view
-         * @param index    mIndex in the array of ingredients
          */
-        public CardIngredientViewHolder(@NonNull View itemView, final int index) {
+        CardIngredientViewHolder(@NonNull View itemView) {
             super(itemView);
             mIngredientName = itemView.findViewById(R.id.tv_ingredient_name);
             mIngredientAmount = itemView.findViewById(R.id.tv_ingredient_amount);

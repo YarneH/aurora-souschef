@@ -2,7 +2,6 @@ package com.aurora.souschef;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,14 +20,6 @@ import java.util.Locale;
  * Adapter for populating the ingredient list.
  */
 public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.CardIngredientViewHolder> {
-    /**
-     * Minimum denominator for ingredient quantities
-     */
-    private static final int MIN_DENOMINATOR_OF_FRACTIONS = 3;
-    /**
-     * Maximum denominator for ingredient quantities
-     */
-    private static final int MAX_DENOMINATOR_OF_FRACTIONS = 10;
     /**
      * List with ingredients.
      */
@@ -52,7 +43,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
      * @param ingredients              list for construction
      * @param originalAmountOfServings the number of servings in the original text
      */
-    public IngredientAdapter(List<ListIngredient> ingredients, int originalAmountOfServings) {
+    IngredientAdapter(List<ListIngredient> ingredients, int originalAmountOfServings) {
         mChecked = new boolean[ingredients.size()];
         this.mIngredients = ingredients;
         mChosenAmountOfServings = originalAmountOfServings;
@@ -65,7 +56,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
      *
      * @param chosenAmount new amount of people.
      */
-    public void setChoseAmountOfServings(int chosenAmount) {
+    void setChoseAmountOfServings(int chosenAmount) {
         mChosenAmountOfServings = chosenAmount;
         notifyDataSetChanged();
     }
@@ -91,13 +82,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
     /**
      * ViewHolder for the ingredients.
      */
-    public class CardIngredientViewHolder extends RecyclerView.ViewHolder{
-        /**
-         * Error margin on the ingredient amounts.
-         * The conversion is willing to make a mistake of ROUND_EPSILON
-         * to display fractions. Currently at 5%.
-         */
-        private static final double ROUND_EPSILON = 0.05;
+    class CardIngredientViewHolder extends RecyclerView.ViewHolder{
 
         /**
          * View for the ingredient name.
@@ -112,10 +97,6 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
          */
         private TextView mIngredientUnit;
         /**
-         * The full ingredient card, used to register clicks.
-         */
-        private CardView mIngredientCard;
-        /**
          * Checkbox indicating if an ingredient is available, or whatever the user wants.
          */
         private CheckBox mCheckbox;
@@ -125,12 +106,11 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
          *
          * @param itemView containing view
          */
-        public CardIngredientViewHolder(@NonNull View itemView) {
+        CardIngredientViewHolder(@NonNull View itemView) {
             super(itemView);
             mIngredientName = itemView.findViewById(R.id.tv_ingredient_name);
             mIngredientAmount = itemView.findViewById(R.id.tv_ingredient_amount);
             mIngredientUnit = itemView.findViewById(R.id.tv_ingredient_unit);
-            mIngredientCard = itemView.findViewById(R.id.cv_ingredient_item);
             mCheckbox = itemView.findViewById(R.id.cb_ingredient_checked);
             mCheckbox.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) ->
                     mChecked[getAdapterPosition()] = isChecked);

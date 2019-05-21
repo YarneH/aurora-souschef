@@ -4,12 +4,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PositionUnitTest {
 
     @Test
-    public void Positon_Constructor_BeginSmallerThanEnd() {
-        /**
+    public void Position_Constructor_BeginSmallerThanEnd() {
+        /*
          * After constructing a Postion the beginindex should always be smaller than the endindex
          */
         // two cases
@@ -20,21 +21,23 @@ public class PositionUnitTest {
         // Act
         Position case1 = new Position(beginIndex, endIndex);
         // Assert
-        assert (case1.getBeginIndex() < case1.getEndIndex());
+        assertTrue("Beginindex (" + case1.getBeginIndex() + ") is not smaller than endindex (" + case1.getEndIndex() + ") ",
+                case1.getBeginIndex() < case1.getEndIndex());
 
-        // case 2: beginIndex > endIndex
+        // case 2: beginIndex > endIndex as arguments
         // Arrange
         endIndex = 1;
         beginIndex = 2;
         // Act
         Position case2 = new Position(beginIndex, endIndex);
         // Assert
-        assert (case2.getBeginIndex() < case1.getEndIndex());
+        assertTrue("Beginindex (" + case2.getBeginIndex() + ") is not smaller than endindex (" + case2.getEndIndex() + ") ",
+                case2.getBeginIndex() < case2.getEndIndex());
     }
 
     @Test
     public void Position_Constructor_NegativeArgumentThrowsException() {
-        /**
+        /*
          * The positions can never be negative, constructing throws an error
          */
         // three cases:
@@ -78,7 +81,6 @@ public class PositionUnitTest {
         // Assert
         assert (thrown);
 
-
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -110,7 +112,6 @@ public class PositionUnitTest {
         assertEquals("Equality is not commutative", pos2, pos1);
         assertNotEquals("Different upperbound gives equality", pos1, pos3);
         assertNotEquals("Differnt lowerbound gives equality", pos4, pos1);
-
 
     }
 }

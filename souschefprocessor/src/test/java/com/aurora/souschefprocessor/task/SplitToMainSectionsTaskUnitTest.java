@@ -1,6 +1,7 @@
 package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitToMainSectionsTask;
 
 import org.junit.After;
@@ -77,7 +78,7 @@ public class SplitToMainSectionsTaskUnitTest {
                 "Spoon the chocolate mixture into small teacups or ramekins and refrigerate for about two hours.\n" +
                 "\n" +
                 "Just before serving, top each marquise with a dollop of crème fraîche and two fresh cherries, then sprinkle with cocoa powder.");
-        map.put("INGR", "225g/8oz dark chocolate\n" +
+        map.put("INGREDIENT", "225g/8oz dark chocolate\n" +
                 "5 medium free-range eggs\n" +
                 "100g/3½oz caster sugar\n" +
                 "170g/6oz unsalted butter\n" +
@@ -93,7 +94,7 @@ public class SplitToMainSectionsTaskUnitTest {
                 "Heat 1/4 cup oil in a large deep-sided skillet over medium-high. Add capers and cook, swirling pan occasionally, until they burst and are crisp, about 3 minutes. Using a slotted spoon, transfer capers to a paper towel-lined plate, reserving oil in skillet.\n" +
                 "Combine anchovies, tomato paste, and drained tomatoes in skillet. Cook over medium-high heat, stirring occasionally, until tomatoes begin to caramelize and anchovies start to break down, about 5 minutes. Add collected tomato juices, olives, oregano, and red pepper flakes and bring to a simmer. Cook, stirring occasionally, until sauce is slightly thickened, about 5 minutes. Add pasta, remaining 1/4 cup oil, and 3/4 cup pasta cooking liquid to pan. Cook over medium heat, stirring and adding remaining 1/4 cup pasta cooking liquid to loosen if needed, until sauce is thickened and emulsified, about 2 minutes. Flake tuna into pasta and toss to combine.\n" +
                 "Divide pasta among plates. Top with fried capers.");
-        map.put("INGR", "1 lb. linguine or other long pasta\n" +
+        map.put("INGREDIENT", "1 lb. linguine or other long pasta\n" +
                 "kosher salt\n" +
                 "1 (14-oz.) can diced tomatoes\n" +
                 "1/2 cup extra-virgin olive oil, divided\n" +
@@ -109,7 +110,7 @@ public class SplitToMainSectionsTaskUnitTest {
         // recipe 4
         map = new HashMap<>();
         map.put("STEPS", "Brown ground meat, onions, and bell pepper. Drain and return to skillet or Dutch oven. Add salt, garlic salt, and black pepper. Add rice, salt, dry onion soup, and water. Cover and simmer for 20 minutes. Stir in soup and milk. Pour mixture into 8” x 8” baking dish. Top with crushed chips. Bake at 350F for 20 minutes.");
-        map.put("INGR", "1 lb. lean ground beef\n" +
+        map.put("INGREDIENT", "1 lb. lean ground beef\n" +
                 "1⁄2 c. chopped onion\n" +
                 "1⁄4 c. chopped bell pepper\n" +
                 "1⁄4 tsp. salt\n" +
@@ -133,7 +134,7 @@ public class SplitToMainSectionsTaskUnitTest {
                 "\n" +
                 "Cooks' Note\n" +
                 "Zucchini is easy to shred on the large holes of a box grater, with the shredding attachment of a food processor, or with a mandoline.");
-        map.put("INGR", "salt\n" +
+        map.put("INGREDIENT", "salt\n" +
                 "1 pound fettuccine\n" +
                 "4 tablespoons extra-virgin olive oil\n" +
                 "3 or 4 garlic cloves, finely chopped or grated\n" +
@@ -160,7 +161,7 @@ public class SplitToMainSectionsTaskUnitTest {
                 "6) Slide the cooked tortilla onto a covered plate to stay warm and repeat from step 4 until you've cooked all 8 tortillas. I generally roll one tortilla out while another is cooking, so that there is always a tortilla on the griddle.\n" +
                 "\n" +
                 "7) Serve these warm with your favorite filling!");
-        map.put("INGR", "2 c. Gluten-free all purpose flour (or 2 c. White rice flour)\n" +
+        map.put("INGREDIENT", "2 c. Gluten-free all purpose flour (or 2 c. White rice flour)\n" +
                 "2 tsp. Xanthan gum or Guar gum\n" +
                 "1 tsp. Gluten-free baking powder\n" +
                 "2 tsp. Brown sugar\n" +
@@ -177,7 +178,7 @@ public class SplitToMainSectionsTaskUnitTest {
     }
 
     @Test
-    public void SplitToMainSections_doTask_sectionsAreSet() {
+    public void SplitToMainSections_doTask_sectionsAreSet() throws RecipeDetectionException {
         /**
          * After the task the sections are not null
          */
@@ -199,7 +200,7 @@ public class SplitToMainSectionsTaskUnitTest {
     }
 
     @Test
-    public void SplitToMainSections_doTask_sectionsHaveCorrectValues() {
+    public void SplitToMainSections_doTask_sectionsHaveCorrectValues() throws RecipeDetectionException {
         recipeTexts = initializeRecipeText();
         /**
          * The correct sections are detected
@@ -217,13 +218,13 @@ public class SplitToMainSectionsTaskUnitTest {
 
             // Assert
             assertEquals("steps", fieldsList.get(i).get("STEPS"), rip.getStepsString());
-            assertEquals("ingredients", fieldsList.get(i).get("INGR").toLowerCase(), rip.getIngredientsString().toLowerCase());
+            assertEquals("ingredients", fieldsList.get(i).get("INGREDIENT").toLowerCase(), rip.getIngredientsString().toLowerCase());
 
         }
     }
 
     @Test
-    public void SplitToMainSectionsTaskTest_doTask_NoExceptionsAreThrown() {
+    public void SplitToMainSectionsTaskTest_doTask_NoExceptionsAreThrown() throws RecipeDetectionException {
         List<ExtractedText> array = initializeRecipeText();
         boolean thrown = false;
         try {
@@ -249,7 +250,7 @@ public class SplitToMainSectionsTaskUnitTest {
      * to the ingredientssection
      */
     @Test
-    public void SplitToMainSectionsTask_doTask_NotAllIngredientsInSameSection() {
+    public void SplitToMainSectionsTask_doTask_NotAllIngredientsInSameSection() throws RecipeDetectionException{
         // Arrange
 
         String json = "{\n" +

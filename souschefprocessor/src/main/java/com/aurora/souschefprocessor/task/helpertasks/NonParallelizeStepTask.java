@@ -31,9 +31,11 @@ public class NonParallelizeStepTask extends AbstractProcessingTask {
     }
 
     /**
-     * Does the tasks sequentially for each step
+     * Does the tasks sequentially for each step. If no steps are detected this throws a RecipeDetectionException
+     *
+     * @throws RecipeDetectionException Is thrown when no steps are detected, most probably this is not a recipe.
      */
-    public void doTask() {
+    public void doTask() throws RecipeDetectionException {
         List<RecipeStepInProgress> recipeSteps = mRecipeInProgress.getStepsInProgress();
 
         if (recipeSteps.isEmpty()) {

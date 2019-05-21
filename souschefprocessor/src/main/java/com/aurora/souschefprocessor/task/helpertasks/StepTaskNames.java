@@ -5,5 +5,5 @@ package com.aurora.souschefprocessor.task.helpertasks;
  * and {@link ParallelizeStepsTask}
  */
 public enum StepTaskNames {
-    INGR, TIMER
+    INGREDIENT, TIMER
 }

@@ -1,12 +1,16 @@
 package com.aurora.souschefprocessor.facade;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
+
+
+
 import com.aurora.auroralib.ProcessorCommunicator;
-import com.aurora.souschefprocessor.PluginConstants;
+
 import com.aurora.souschefprocessor.R;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
@@ -22,10 +26,13 @@ import edu.stanford.nlp.ling.CoreLabel;
  */
 public class SouschefProcessorCommunicator extends ProcessorCommunicator {
     /**
+     * The tag for logging purposes
+     */
+    private static final String TAG = SouschefProcessorCommunicator.class.getSimpleName();
+    /**
      * An atomicInteger to showcase the update of the creating of the pipelines
      */
     private static AtomicInteger mProgressAnnotationPipelines = new AtomicInteger(0);
-
     /**
      * The delgator that executes the processing
      */
@@ -44,8 +51,9 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
          * A UNIQUE_PLUGIN_NAME needs to be passed to the constructor of ProcessorCommunicator for
          * proper configuration of the cache
          */
-        super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
-        mDelegator = new Delegator(classifier, true);
+        super(context);
+        Log.d(TAG + " PACKAGENAME", "this is the package name "+ context.getPackageName());
+        mDelegator = new Delegator(classifier, false);
     }
 
     /**
@@ -62,12 +70,12 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
                 openRawResource(R.raw.detect_ingr_list_model))) {
             // log for the opening
             incrementProgressAnnotationPipelines(); // 1
-            Log.i("COMMUNICATOR", "start loading model");
+            Log.i(TAG, "start loading model");
             CRFClassifier<CoreLabel> crf = CRFClassifier.getClassifier(is);
             incrementProgressAnnotationPipelines(); // 2
             return new SouschefProcessorCommunicator(context, crf);
         } catch (IOException | ClassNotFoundException e) {
-            Log.e("COMMUNICATOR", "createCommunicator ", e);
+            Log.e(TAG, "createCommunicator ", e);
         }
         return null;
     }
@@ -77,7 +85,6 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
      * your program
      */
     public static void createAnnotationPipelines() {
-
         Delegator.createAnnotationPipelines();
     }
 
@@ -86,7 +93,7 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
      */
     static void incrementProgressAnnotationPipelines() {
         mProgressAnnotationPipelines.incrementAndGet();
-        Log.i("STEP", "" + mProgressAnnotationPipelines);
+        Log.i(TAG, "creating pipeline step " + mProgressAnnotationPipelines);
     }
 
     /**
@@ -103,30 +110,29 @@ public class SouschefProcessorCommunicator extends ProcessorCommunicator {
      *
      * @param extractedText the text to be processed
      * @return A Recipe object (which extends PLuginObject) that is the result of the processed text
+     * @throws RecipeDetectionException an indication that something went wrong during the processing of the recipe
      */
     @Override
-    protected PluginObject process(ExtractedText extractedText) {
+    protected PluginObject process(@NonNull ExtractedText extractedText) throws RecipeDetectionException {
 
-        if (extractedText == null) {
-            throw new RecipeDetectionException("No text was extracted. Something went wrong in Aurora!");
-        }
+
         Recipe recipe = null;
         try {
             recipe = mDelegator.processText(extractedText);
         } catch (RecipeDetectionException rde) {
-            Log.e("DETECTION", "process text", rde);
+            Log.e(TAG, "detection failure", rde);
             // if something went wrong with the detection rethrow the error and let the
             // environment decide what to do in this case
-            throw new RecipeDetectionException(rde.getMessage());
+            throw rde;
         } catch (IllegalArgumentException iae) {
             // This means something is programmatically wrong, so let the programmer know extra
             // checks are needed somewhere in the code
-            Log.e("ILLEGAL", "processText", iae);
-
+            Log.e(TAG, "illegal state or argument", iae);
         } catch (Exception e) {
             // something else went wrong
-            Log.e("COMMUNICATOR", "unexpected exception", e);
-            throw new RecipeDetectionException("Something unexpected happened: " + e.getMessage());
+            Log.e(TAG, "unexpected exception", e);
+            throw new RecipeDetectionException("Something unexpected happened: " + e.getMessage() + "\n\nAre you sure" +
+                    " this is a recipe?");
         }
 
         return recipe;

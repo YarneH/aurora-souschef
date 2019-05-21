@@ -29,7 +29,7 @@ public class DetectTimersInStepTaskUnitTest {
     private static RecipeInProgress recipe;
     private static ArrayList<RecipeStepInProgress> recipeSteps;
     private static Position irrelevantPosition = new Position(0, 1);
-    private static ExtractedText emptyExtractedText = new ExtractedText("", null);
+    private static ExtractedText emptyExtractedText = new ExtractedText("", "");
 
 
     @BeforeClass
@@ -212,7 +212,6 @@ public class DetectTimersInStepTaskUnitTest {
 
     @Test
     public void DetectTimersInStep_doTask_PositionOfTimersCorrectlyDetected() {
-        // TODO: make these seprate tests
 
         // first case: "Put 500 gram sauce in the microwave for 3 minutes"
         // timer = "3 minutes"

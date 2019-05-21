@@ -50,7 +50,7 @@ final class TranslateHelper {
         // Add the steps
         sentences.addAll(createStepSentencesToTranslate(recipe.getRecipeSteps()));
 
-        // replace ° by " degrees" otherwise it does not get translated
+        // replace ° by " degrees" otherwise it might not get translated
         for (String s : sentences) {
             sentences.set(sentences.indexOf(s), s.replace("°", " degrees"));
         }
@@ -58,7 +58,7 @@ final class TranslateHelper {
     }
 
     /**
-     * Private helper method to create the sentences to translate of a list of Listingredients
+     * Private helper method to create the sentences to translate of a list of ListIngredients
      *
      * @param originalIngredients the list of ingredients to translate
      * @return the list of sentences to translate
@@ -126,9 +126,11 @@ final class TranslateHelper {
      *
      * @param translatedSentences the translated sentences, this is the response from aurora to the
      *                            result of {@link #createSentencesToTranslate(Recipe)}
+     * @param originalRecipe The original untranslated recipe
      * @return The new translated recipe
      */
     static Recipe getTranslatedRecipe(Recipe originalRecipe, String[] translatedSentences) {
+
         Queue<String> translations = new LinkedList<>(Arrays.asList(translatedSentences));
         Recipe recipe = new Recipe(originalRecipe.getFileName());
 
@@ -188,6 +190,7 @@ final class TranslateHelper {
      * @return the list with the translated steps of this recipe
      */
     private static List<RecipeStep> getTranslatedSteps(Queue<String> translatedSentences, Recipe originalRecipe) {
+
         List<RecipeStep> newSteps = new ArrayList<>();
         for (RecipeStep oldStep : originalRecipe.getRecipeSteps()) {
 
@@ -270,6 +273,15 @@ final class TranslateHelper {
         return new Ingredient(name, unit, quantity, map);
     }
 
+    /**
+     * A private helper function that translates the oldStep using the Queue of translated sentences this queue is a
+     * result of the translation operation on the {@link #createSentencesToTranslate(Recipe)} where the elements that
+     * come before this step have already been popped from the queue
+     *
+     * @param oldStep             the original step in English
+     * @param translatedSentences the queue of translated sentences, this will be altered during this method
+     * @return the new translated recipe step
+     */
     private static RecipeStep getTranslatedStep(RecipeStep oldStep, Queue<String> translatedSentences) {
         // start with the description
         String description = translatedSentences.poll();
@@ -371,7 +383,7 @@ final class TranslateHelper {
                 return new Position(beginIndex, endIndex);
             }
         }
-        // nothing found, set timer at endinex
+        // nothing found, set timer at endIndex
         return new Position(description.length() - 1, description.length());
 
     }

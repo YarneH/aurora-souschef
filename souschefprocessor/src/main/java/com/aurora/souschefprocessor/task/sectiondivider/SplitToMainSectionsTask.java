@@ -16,19 +16,21 @@ import java.util.regex.Pattern;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.ProtobufAnnotationSerializer;
 import edu.stanford.nlp.util.CoreMap;
 
 
 /**
- * A AbstractProcessingTask that divides the original text into usable sections
+ * An AbstractProcessingTask that divides the original text into usable sections. It uses some domain knowledge by
+ * first trying if some common words are present and if that fails by analyzing the grammatical structure of some
+ * parts to identify the correct sections
  */
 public class SplitToMainSectionsTask extends AbstractProcessingTask {
     /**
-     * Some cooking verbs that are wrongly tagged by corenlp
+     * Some cooking verbs that are wrongly tagged by corenlp. If this word is the first word of a sentence it is most
+     * probably a verb and not a noun
      */
     private static final String[] VERBS_NOT_DETECTED_BY_NLP = {"reserve", "seal", "butter", "season",
-            "place", "preheat", "toast", "layer", "beat", "heat"};
+            "place", "preheat", "toast", "layer", "beat", "heat", "cook"};
     /**
      * Words often preceded by a number but that are not ingredients needed for {@link #findIngredientsDigit()}
      */
@@ -96,17 +98,8 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
                 }
             }
         }
-        //create a copy of the cleaned section
-        Section copy = new Section(section.getBody());
-        copy.setTitle(section.getTitle());
-        ProtobufAnnotationSerializer annotationSerializer = new ProtobufAnnotationSerializer(true);
-        if (section.getTitleAnnotation() != null) {
-            copy.setTitleAnnotationProto(annotationSerializer.toProto(section.getTitleAnnotation()));
-        }
-        if (section.getBodyAnnotation() != null) {
-            copy.setBodyAnnotationProto(annotationSerializer.toProto(section.getBodyAnnotation()));
-        }
-        return copy;
+        //return a copy of the cleaned section
+        return new Section(section);
     }
 
     /**
@@ -175,8 +168,11 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * a list of mRecipeSteps, string representing the mDescription of the recipe (if present) and an integer
      * representing the amount of people the original recipe is for. It will then modify the recipe
      * with these fields
+     *
+     * @throws RecipeDetectionException an indication that the recipe could not be split in to main sections. Most
+     *                                  likely the input is not formatted as expected
      */
-    public void doTask() {
+    public void doTask() throws RecipeDetectionException {
         String ingredients;
         String steps;
         String description;
@@ -203,8 +199,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * Finds the mRecipeSteps in a text by using the {@link #mSections} field
      *
      * @return The string representing the mRecipeSteps
+     * @throws RecipeDetectionException an indication that the steps could not be found
      */
-    private String findSteps() {
+    private String findSteps() throws RecipeDetectionException {
         String steps = findStepsRegexBased();
 
         if (steps.isEmpty()) {
@@ -276,7 +273,7 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      *
      * @param ingredients The string representing the mIngredients
      * @param steps       The string representing the mRecipeSteps
-     * @param description The string representing the desription
+     * @param description The string representing the description
      */
     private void modifyRecipe(String ingredients, String steps, String
             description) {
@@ -309,18 +306,19 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * list. This list is altered during the method, in that the steps are removed from the list
      *
      * @return A string representing the steps
+     * @throws RecipeDetectionException An indication that the steps could not be found using NLP
      */
-    private String findStepsNLP() {
+    private String findStepsNLP() throws RecipeDetectionException {
 
         StringBuilder bld = new StringBuilder();
         List<Section> sectionsToRemove = new ArrayList<>();
+        // boolean that states if the first sentence starting with a verb has already been found
         boolean alreadyFound = false;
         for (Section section : mSections) {
 
             if (!alreadyFound) {
-                boolean verbDetected = verbDetected(section);
-
-                alreadyFound = verbDetected;
+                // if not found yet check if this has a verb
+                alreadyFound = verbDetected(section);
             }
 
             if (alreadyFound) {
@@ -434,9 +432,11 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
             return bld.toString();
 
         }
-
+        // let the caller know nothing was found
         return "";
+
     }
+
 
     /**
      * Find the steps or ingredients based on their regex
@@ -490,8 +490,10 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      *
      * @param section The section to analyze
      * @return a boolean that indicates if a verb was detected
+     * @throws RecipeDetectionException an indication that the verb could not be detected because the annotation
+     *                                  filled in by Aurora are not correct.
      */
-    private boolean verbDetected(Section section) {
+    private boolean verbDetected(Section section) throws RecipeDetectionException {
         Annotation annotatedText = getAnnotatedText(section);
         List<CoreMap> sentences = annotatedText.get(CoreAnnotations.SentencesAnnotation.class);
 
@@ -519,8 +521,9 @@ public class SplitToMainSectionsTask extends AbstractProcessingTask {
      * Gets the annotation of the section
      *
      * @return the annotated text
+     * @throws RecipeDetectionException Is thrown when some sections are not annotated in Aurora
      */
-    private Annotation getAnnotatedText(Section section) {
+    private Annotation getAnnotatedText(Section section) throws RecipeDetectionException {
         if (section.getBodyAnnotation() == null) {
             throw new RecipeDetectionException("At least one section was not annotated for this text. " +
                     "Please contact Aurora to resolve this");

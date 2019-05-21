@@ -9,46 +9,23 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
+
+import java.util.Objects;
 
 /**
  * Holds the data of a recipe. Is responsible for keeping that data up to date,
  * and updating the UI when necessary.
  */
 public class RecipeViewModel extends AndroidViewModel {
-    /**
-     * When initialising Souschef, poll every MILLIS_BETWEEN_UPDATES milliseconds
-     * for updates on the progressbar. This could also be done with an observable.
-     */
-    private static final int MILLIS_BETWEEN_UPDATES = 500;
-
-    /**
-     * The amount of steps it takes to detect a recipe.
-     * This is used to pick the interval updates of the progress bar.
-     * These steps are hard-coded-counted. This means that when the implementation
-     * of the Souschef-processor takes longer or shorter, this value must be changed.
-     */
-    private static final int DETECTION_STEPS = 3;
 
     /**
      * The maximum amount of people you can cook for.
      */
     private static final int MAX_PEOPLE = 99;
-
-    /**
-     * Stop actively updating the progressbar after MAX_WAIT_TIME.
-     */
-    private static final int MAX_WAIT_TIME = 15000;
-
-    /**
-     * Percentages in 100%
-     */
-    private static final double MAX_PERCENTAGE = 100.0;
 
     /**
      * Default amount of people
@@ -60,11 +37,6 @@ public class RecipeViewModel extends AndroidViewModel {
      * especially tab 2.
      */
     private MutableLiveData<Integer> mCurrentPeople;
-
-    /**
-     * LiveData of the progress. Used to update the UI according to the progress.
-     */
-    private MutableLiveData<Integer> mProgressStep;
 
     /**
      * This LiveData value updates when the initialisation is finished.
@@ -82,11 +54,6 @@ public class RecipeViewModel extends AndroidViewModel {
     private MutableLiveData<Boolean> mProcessingFailed = new MutableLiveData<>();
 
     /**
-     * This LiveData value updates when the processing has failed and sets the failing message
-     */
-    private MutableLiveData<String> mFailureMessage = new MutableLiveData<>();
-
-    /**
      * This LiveData value updates when the amount of people is not found and set to default
      */
     private MutableLiveData<Boolean> mDefaultAmountSet = new MutableLiveData<>();
@@ -95,6 +62,14 @@ public class RecipeViewModel extends AndroidViewModel {
      * Indicates whether or not this recipe is already being processed
      */
     private boolean isBeingProcessed = false;
+
+    /**
+     * Listener that listens to changes in the shared preferences. It is used to check when the user
+     * changes the settings from metric to imperial or back.
+     * <p>
+     * Must be a variable of this class to prevent garbage collection and stop listening
+     */
+    private SharedPreferences.OnSharedPreferenceChangeListener mListener = null;
 
 
     /**
@@ -107,14 +82,6 @@ public class RecipeViewModel extends AndroidViewModel {
     private Context mContext;
 
     /**
-     * Listener that listens to changes in the shared preferences. It is used to check when the user
-     * changes the settings from metric to imperial or back.
-     * <p>
-     * Must be a variable of this class to prevent garbage collection and stop listening
-     */
-    private SharedPreferences.OnSharedPreferenceChangeListener mListener = null;
-
-    /**
      * Constructor that initialises the pipeline and LiveData.
      *
      * @param application Needed for the initialisation and lifetime of a viewModel
@@ -122,8 +89,8 @@ public class RecipeViewModel extends AndroidViewModel {
     public RecipeViewModel(@NonNull Application application) {
         super(application);
         this.mContext = application;
-        mProgressStep = new MutableLiveData<>();
-        mProgressStep.setValue(0);
+        MutableLiveData<Integer> progressStep = new MutableLiveData<>();
+        progressStep.setValue(0);
         mInitialised = new MutableLiveData<>();
         mInitialised.setValue(false);
         mCurrentPeople = new MutableLiveData<>();
@@ -148,7 +115,7 @@ public class RecipeViewModel extends AndroidViewModel {
      *
      * @param toMetric boolean that indicates if the units should be converted to metric or to US
      */
-    public void convertRecipeUnits(boolean toMetric) {
+    private void convertRecipeUnits(boolean toMetric) {
         // creating the recipe
         Recipe recipe = mRecipe.getValue();
         if (recipe != null) {
@@ -157,41 +124,15 @@ public class RecipeViewModel extends AndroidViewModel {
         mRecipe.postValue(recipe);
     }
 
-    public LiveData<String> getFailureMessage() {
-        return mFailureMessage;
-    }
-
-    /**
-     * Get the progress LiveData object
-     *
-     * @return live progress
-     */
-    public LiveData<Integer> getProgressStep() {
-        return mProgressStep;
-    }
-
-    /**
-     * Get the actual progress, in percentages.
-     *
-     * @return progress-percentage
-     */
-    public int getProgress() {
-        if (mProgressStep == null || mProgressStep.getValue() == null) {
-            return 0;
-        }
-        return (int) (MAX_PERCENTAGE / DETECTION_STEPS * mProgressStep.getValue());
-    }
-
     /**
      * Initialise the data from plain text.
      *
      * @param plainText where to extract recipe from.
      */
-    public void initialiseWithPlainText(String plainText) {
+    void initialiseWithPlainText(String plainText) {
         if (mInitialised != null && mInitialised.getValue() != null && mInitialised.getValue()) {
             return;
         }
-        (new ProgressUpdate()).execute();
         (new SouschefInit(plainText)).execute();
     }
 
@@ -200,11 +141,10 @@ public class RecipeViewModel extends AndroidViewModel {
      *
      * @param extractedText where to get recipe from.
      */
-    public void initialiseWithExtractedText(ExtractedText extractedText) {
+    void initialiseWithExtractedText(ExtractedText extractedText) {
         if (mInitialised != null && mInitialised.getValue() != null && mInitialised.getValue()) {
             return;
         }
-        (new ProgressUpdate()).execute();
         (new SouschefInit(extractedText)).execute();
 
     }
@@ -214,10 +154,10 @@ public class RecipeViewModel extends AndroidViewModel {
      *
      * @param recipe the recipe for data extraction.
      */
-    public void initialiseWithRecipe(Recipe recipe) {
+    void initialiseWithRecipe(Recipe recipe) {
         recipe.convertUnit(!isImperial());
         RecipeViewModel.this.mRecipe.setValue(recipe);
-        if (mRecipe.getValue().getNumberOfPeople() == -1) {
+        if (Objects.requireNonNull(mRecipe.getValue()).getNumberOfPeople() == -1) {
             mRecipe.getValue().setNumberOfPeople(DEFAULT_SERVINGS_AMOUNT);
             mDefaultAmountSet.setValue(true);
         }
@@ -225,6 +165,13 @@ public class RecipeViewModel extends AndroidViewModel {
         mInitialised.setValue(true);
     }
 
+    /**
+     * Returns whether or not the settings are set to imperial.
+     * <p>
+     * Accesses shared preferences.
+     *
+     * @return True if imperial
+     */
     private boolean isImperial() {
         SharedPreferences sharedPreferences = getApplication().getSharedPreferences(
                 Tab1Overview.SETTINGS_PREFERENCES,
@@ -232,23 +179,50 @@ public class RecipeViewModel extends AndroidViewModel {
         return sharedPreferences.getBoolean(Tab1Overview.IMPERIAL_SETTING, false);
     }
 
-    public LiveData<Boolean> getInitialised() {
+    /**
+     * Get whether or not the recipe is initialized yet.
+     *
+     * @return true if initialized
+     */
+    LiveData<Boolean> getInitialised() {
         return mInitialised;
     }
 
-    public LiveData<Integer> getNumberOfPeople() {
+    /**
+     * Get the <b>current</b> number of people that is being cooked for
+     *
+     * @return number of people the user is cooking for
+     */
+    LiveData<Integer> getNumberOfPeople() {
         return mCurrentPeople;
     }
 
+    /**
+     * Get the Observable of the recipe object.
+     * <p>
+     * Updates when the recipe is loaded.
+     *
+     * @return LiveData with the recipe object
+     */
     public LiveData<Recipe> getRecipe() {
         return mRecipe;
     }
 
-    public LiveData<Boolean> getProcessFailed() {
+    /**
+     * Observable with boolean whether or not the default amount of guests is set.
+     *
+     * @return LiveData with boolean
+     */
+    LiveData<Boolean> getProcessFailed() {
         return mProcessingFailed;
     }
 
-    public LiveData<Boolean> getDefaultAmountSet() {
+    /**
+     * Observable with boolean whether or not the default amount of guests is set.
+     *
+     * @return LiveData with boolean
+     */
+    LiveData<Boolean> getDefaultAmountSet() {
         return mDefaultAmountSet;
     }
 
@@ -256,7 +230,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * Increment the amount of people.
      * A maximum of {@value MAX_PEOPLE} people can be cooked for.
      */
-    public void incrementPeople() {
+    void incrementPeople() {
         if (mCurrentPeople == null || mCurrentPeople.getValue() == null) {
             return;
         }
@@ -269,7 +243,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * Decrement the amount of people.
      * Decrementing cannot go below 1.
      */
-    public void decrementPeople() {
+    void decrementPeople() {
         if (mCurrentPeople == null || mCurrentPeople.getValue() == null) {
             return;
         }
@@ -278,47 +252,22 @@ public class RecipeViewModel extends AndroidViewModel {
         }
     }
 
-    public boolean isBeingProcessed() {
+    /**
+     * Whether or not the recipe is being processed.
+     *
+     * @return true if processing
+     */
+    boolean isBeingProcessed() {
         return isBeingProcessed;
     }
 
-    public void setBeingProcessed(boolean isBeingProcessed) {
-        this.isBeingProcessed = isBeingProcessed;
-    }
-
     /**
-     * Async task executing the logic for the progress bar.
-     * If leaked, it will stop after {@value MAX_WAIT_TIME} milliseconds.
+     * Sets whether or not a recipe is being processed.
+     *
+     * @param isBeingProcessed boolean
      */
-    @SuppressLint("StaticFieldLeak")
-    class ProgressUpdate extends AsyncTask<Void, Integer, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            int upTime = 0;
-            try {
-                while (!mInitialised.getValue()) {
-                    Thread.sleep(MILLIS_BETWEEN_UPDATES);
-                    upTime += MILLIS_BETWEEN_UPDATES;
-
-                    publishProgress(SouschefProcessorCommunicator.getProgressAnnotationPipelines());
-                    if (SouschefProcessorCommunicator.getProgressAnnotationPipelines()
-                            >= DETECTION_STEPS || upTime > MAX_WAIT_TIME) {
-                        break;
-                    }
-                }
-            } catch (InterruptedException e) {
-                Log.e(RecipeViewModel.class.getSimpleName(), "Caught interruptedException");
-                Thread.currentThread().interrupt();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-            mProgressStep.setValue(values[0]);
-        }
+    void setBeingProcessed(boolean isBeingProcessed) {
+        this.isBeingProcessed = isBeingProcessed;
     }
 
     /**
@@ -339,28 +288,16 @@ public class RecipeViewModel extends AndroidViewModel {
 
         @Override
         protected Recipe doInBackground(Void... voids) {
-            // Progressupdates are in demostate
 
-            SouschefProcessorCommunicator comm = SouschefProcessorCommunicator.createCommunicator(mContext);
-            if (comm != null) {
+            SouschefProcessorCommunicator communicator = SouschefProcessorCommunicator.createCommunicator(mContext);
 
-                try {
-
-                    if (mExtractedText.getSections() == null) {
-                        throw new RecipeDetectionException("The received text from Aurora did " +
-                                "not contain sections" +
-                                ", make sure you can open this type of file. If the problem" +
-                                " persists, please send feedback in Aurora");
-                    }
-                    return (Recipe) comm.pipeline(mExtractedText);
-
-                } catch (RecipeDetectionException rde) {
-                    Log.d("FAILURE", rde.getMessage());
-                    mFailureMessage.postValue(rde.getMessage());
-                    mProcessingFailed.postValue(true);
-
-                }
+            if (communicator != null) {
+                Recipe processedRecipe = (Recipe) communicator.pipeline(mExtractedText);
+                // the processing has succeeded, set the flag to false and return the processedRecipe
+                mProcessingFailed.postValue(false);
+                return processedRecipe;
             }
+            // if the communicator was not created return null to let onPostExecute know it failed
             return null;
         }
 
@@ -368,9 +305,13 @@ public class RecipeViewModel extends AndroidViewModel {
         @Override
         protected void onPostExecute(Recipe recipe) {
             // only initialize if the processing has not failed
-            if (!mProcessingFailed.getValue()) {
+            if (recipe != null) {
                 initialiseWithRecipe(recipe);
+            }else{
+                // let everyone know processing failed
+                mProcessingFailed.postValue(true);
             }
+
         }
     }
 

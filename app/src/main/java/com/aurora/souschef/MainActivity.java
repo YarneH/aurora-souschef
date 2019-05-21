@@ -1,6 +1,8 @@
 package com.aurora.souschef;
 
+import android.app.AlertDialog;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,11 +18,11 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.ProcessorCommunicator;
 import com.aurora.souschef.utilities.TimerRingtone;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -30,6 +32,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * {@inheritDoc}
+ */
 public class MainActivity extends AppCompatActivity {
 
     /**
@@ -85,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
         mRecipeViewModel = ViewModelProviders.of(this).get(RecipeViewModel.class);
 
         super.onCreate(savedInstanceState);
-        // TODO: Change back to the correct view
         setContentView(R.layout.activity_main);
 
         // Initiate the TimerRingtone with the application context
@@ -161,13 +165,7 @@ public class MainActivity extends AppCompatActivity {
      * Sets up the observation of the recipeviewmodel
      */
     private void setUpRecipeDataObject() {
-        mRecipeViewModel.getProgressStep().observe(this, (Integer step) -> {
-                    ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                    pb.setProgress(mRecipeViewModel.getProgress());
-
-                    // TODO: set TextView to visualize progress
-                }
-        );
+        long startTime = System.currentTimeMillis();
         mRecipeViewModel.getInitialised().observe(this, (Boolean isInitialised) -> {
             if (isInitialised == null) {
                 return;
@@ -176,15 +174,20 @@ public class MainActivity extends AppCompatActivity {
                 showProgress();
                 return;
             }
+
+            Bundle params = new Bundle();
+            params.putLong("processing_time", System.currentTimeMillis() - startTime);
+            FirebaseAnalytics.getInstance(this).logEvent("processing_performance", params);
             hideProgress();
         });
         mRecipeViewModel.getProcessFailed().observe(this, (Boolean failed) -> {
             if (failed != null && failed) {
-                Toast.makeText(this, "Detection failed: " +
-                                mRecipeViewModel.getFailureMessage().getValue(),
+                Toast.makeText(this, "Souschef: Detection failed",
                         Toast.LENGTH_LONG).show();
-                ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                pb.setProgress(0);
+                // We get here because SouschefInit in RecipeViewModel failed and as its last operation posted this
+                // value, we can be sure that this task is done and so all references to the context are cleaned up
+                // and no task is running in the background
+                finish();
             }
         });
         mRecipeViewModel.getDefaultAmountSet().observe(this, (Boolean set) -> {
@@ -230,31 +233,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Hardcoded recipe with extracted text and annotations
-     *
-     * @return the json of the annotated extracted text
-     */
-    private String getText() {
-
-
-        InputStream stream = getResources().openRawResource(R.raw.input);
-        StringBuilder bld = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-        try {
-            String line = reader.readLine();
-            while (line != null) {
-                bld.append(line);
-
-                line = reader.readLine();
-            }
-        } catch (IOException e) {
-            Log.e("MAIN", "opening default file failed", e);
-        }
-        Log.d("read", bld.toString());
-        return bld.toString();
-    }
-
-    /**
      * Hide the progress-screen.
      */
     private void hideProgress() {
@@ -290,10 +268,12 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 // Error in case ExtractedText was null.
                 Log.e(TAG, "ExtractedText-object was null.");
+                showGoBackToAuroraBox();
             }
         } catch (IOException e) {
             Log.e(TAG,
                     "IOException while loading data from aurora", e);
+            showGoBackToAuroraBox();
         }
     }
 
@@ -312,7 +292,57 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (IOException e) {
             Log.e(TAG, "IOException while loading data from aurora", e);
+            showGoBackToAuroraBox();
         }
+    }
+
+    /**
+     * Hardcoded recipe with extracted text and annotations
+     *
+     * @return the json of the annotated extracted text
+     */
+    private String getText() {
+
+
+        InputStream stream = getResources().openRawResource(R.raw.input);
+        StringBuilder bld = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        try {
+            String line = reader.readLine();
+            while (line != null) {
+                bld.append(line);
+
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "opening default file failed", e);
+        }
+        Log.d("read", bld.toString());
+        return bld.toString();
+    }
+
+    /**
+     * Private function that shows a dialog box if the recipe has disappeared from memory. This dialog box redirects
+     * the user to Aurora
+     */
+    private void showGoBackToAuroraBox() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setMessage(R.string.dialog_message)
+                .setTitle(R.string.dialog_title);
+
+        builder.setPositiveButton(R.string.ok, (DialogInterface dialog, int id) -> {
+            // if the button is clicked (only possible action) the user is sent to Aurora
+            ProcessorCommunicator.returnToAurora(this);
+            finish();
+        });
+
+
+        AlertDialog dialog = builder.create();
+        // you cannot cancel this box only press the ok button
+        dialog.setCancelable(false);
+        dialog.show();
+
     }
 
     /**
@@ -321,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
 
-        public SectionsPagerAdapter(FragmentManager fm) {
+        SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
@@ -372,6 +402,7 @@ public class MainActivity extends AppCompatActivity {
             return tabName;
         }
     }
+
 }
 
 

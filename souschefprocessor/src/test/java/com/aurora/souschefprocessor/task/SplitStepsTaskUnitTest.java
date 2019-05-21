@@ -3,12 +3,15 @@ package com.aurora.souschefprocessor.task;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.Section;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.task.sectiondivider.SplitStepsTask;
 
+import org.apache.xerces.impl.xpath.regex.REUtil;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Date;
 
 import edu.stanford.nlp.pipeline.Annotation;
@@ -43,7 +46,7 @@ public class SplitStepsTaskUnitTest {
         }
         sPipeline.annotate(annotatedList);
         ProtobufAnnotationSerializer serializer = new ProtobufAnnotationSerializer(true);
-        ExtractedText aurora = new ExtractedText("", new Date(System.currentTimeMillis()));
+        ExtractedText aurora = new ExtractedText("", "");
         aurora.setTitle("");
         Section s = new Section();
         s.setBody(stepList);
@@ -71,7 +74,7 @@ public class SplitStepsTaskUnitTest {
         recipeAcrossNewline = new RecipeInProgress(ExtractedText.fromJson(json));
         recipeAcrossNewline.setStepsString(stepListAcrossNewline);
         splitStepsTaskAcrossNewline = new SplitStepsTask(recipeAcrossNewline);
-        testEmptyExtractedText = new ExtractedText("", null);
+        testEmptyExtractedText = new ExtractedText("", "");
     }
 
 
@@ -99,7 +102,7 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
-    public void SplitStepsTask_doTask_setHasBeenSet() {
+    public void SplitStepsTask_doTask_setHasBeenSet() throws RecipeDetectionException {
         /**
          * After doing the tasks the recipeSteps list cannot be null
          */
@@ -110,7 +113,7 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
-    public void SplitStepsTask_doTask_setHasCorrectSize() {
+    public void SplitStepsTask_doTask_setHasCorrectSize() throws RecipeDetectionException {
         /**
          * The correct amount of steps is detected
          */
@@ -122,7 +125,7 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
-    public void SplitStepsTask_doTask_setHasCorrectValues() {
+    public void SplitStepsTask_doTask_setHasCorrectValues() throws RecipeDetectionException {
         /**
          * The correct steps are detected
          */
@@ -139,7 +142,7 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
-    public void SplitStepsTask_doTask_setHasCorrectSizeAcrossNewline() {
+    public void SplitStepsTask_doTask_setHasCorrectSizeAcrossNewline() throws RecipeDetectionException{
         /**
          * If the steps have a new line in the middle of a sentence, the correct amount of steps
          * is detected
@@ -171,7 +174,7 @@ public class SplitStepsTaskUnitTest {
     }
 
     @Test
-    public void SplitStepsTask_doTask_setHasCorrectValuesAcrossNewline() {
+    public void SplitStepsTask_doTask_setHasCorrectValuesAcrossNewline() throws RecipeDetectionException{
         /**
          * If the steps have a new line in the middle of a sentence, the correct steps are detected
          */

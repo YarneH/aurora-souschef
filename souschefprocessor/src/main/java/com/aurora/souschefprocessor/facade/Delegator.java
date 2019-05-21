@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotator;
 
 /**
  * Implements the processing by applying the filters. This implements the order of the pipeline as
@@ -39,15 +38,9 @@ public class Delegator {
      */
     private static final Object LOCK = new Object();
     /**
-     * A list of basic annotators needed for every step that has a pipeline (tokenizer, wordstosentence
-     * and POS)
+     * The tag for logging purposes
      */
-    private static final List<Annotator> sBasicAnnotators = new ArrayList<>();
-
-    /**
-     * The number of basic annotator, for now 3 (tokenize, words to sentence and POS)
-     */
-    private static final int BASIC_ANNOTATOR_SIZE = 3;
+    private static final String TAG = Delegator.class.getSimpleName();
     /**
      * A boolean that indicates if the pipelines have been created (or the creation has started)
      */
@@ -69,7 +62,6 @@ public class Delegator {
      * The classifier to classify ingredients
      */
     private CRFClassifier<CoreLabel> mIngredientClassifier;
-
     /**
      * A boolean that indicates whether the processing should be parallelized
      */
@@ -113,7 +105,7 @@ public class Delegator {
      */
     public static void incrementProgressAnnotationPipelines() {
         SouschefProcessorCommunicator.incrementProgressAnnotationPipelines();
-        Log.i("DELEGATOR", "STEP");
+        Log.i(TAG, "STEP");
 
     }
 
@@ -123,9 +115,10 @@ public class Delegator {
      *
      * @param text The text to be processed in to a recipe Object
      * @return A Recipe object that was constructed from the text
+     * @throws RecipeDetectionException an indication that something went wrong during the processing of the
+     * extracted text, most probably this text does not resemble a recipe
      */
-    public Recipe processText(ExtractedText text) {
-        //TODO implement this function so that at runtime it is decided which tasks should be performed
+    public Recipe processText(ExtractedText text) throws RecipeDetectionException {
         if (sThreadPoolExecutor == null) {
             setUpThreadPool();
         }
@@ -135,7 +128,7 @@ public class Delegator {
         if (pipeline != null) {
             for (AbstractProcessingTask task : pipeline) {
                 task.doTask();
-                Log.i("DELEGATOR", task.getClass().toString());
+                Log.i(TAG, task.getClass().toString());
             }
         }
 
@@ -176,7 +169,6 @@ public class Delegator {
      * The function creates all the tasks that could be used for the processing. If new tasks are added to the
      * codebase they should be created here as well.
      */
-
     private List<AbstractProcessingTask> setUpPipeline(RecipeInProgress recipeInProgress) {
         List<AbstractProcessingTask> pipeline = new ArrayList<>();
         pipeline.add(new SplitToMainSectionsTask(recipeInProgress));
@@ -184,7 +176,7 @@ public class Delegator {
         pipeline.add(new DetectNumberOfPeopleTask(recipeInProgress));
         pipeline.add(new SplitStepsTask(recipeInProgress));
         pipeline.add(new DetectIngredientsInListTask(recipeInProgress, mIngredientClassifier));
-        StepTaskNames[] taskNames = {StepTaskNames.INGR, StepTaskNames.TIMER};
+        StepTaskNames[] taskNames = {StepTaskNames.INGREDIENT, StepTaskNames.TIMER};
         if (mParallelize) {
             pipeline.add(new ParallelizeStepsTask(recipeInProgress, sThreadPoolExecutor, taskNames));
 

@@ -29,6 +29,10 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
      * The names of the tasks that will be done by this task on steps {@link StepTaskNames}
      */
     private StepTaskNames[] mStepTaskNames;
+    /**
+     * A private variable for when one of threads encounters an exception
+     */
+    private RecipeDetectionException mRecipeDetectionException = null;
 
     /**
      * Constructs the ParallelizeStepsTask
@@ -47,9 +51,12 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
 
     /**
      * Launches parallel threads for each type of task in {@link #mStepTaskNames} submitted and for
-     * each {@link RecipeStep} in {@link #mRecipeInProgress}
+     * each {@link RecipeStep} in {@link #mRecipeInProgress}. If no steps are detected this throws a
+     * RecipeDetectionException
+     *
+     * @throws RecipeDetectionException Is thrown when no steps are detected, most probably this is not a recipe.
      */
-    public void doTask() {
+    public void doTask() throws RecipeDetectionException {
 
         List<RecipeStepInProgress> recipeSteps = mRecipeInProgress.getStepsInProgress();
         if (recipeSteps.isEmpty()) {
@@ -69,6 +76,11 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
         }
         // wait unitl all threads have finished
         waitForThreads(latch);
+
+        if (mRecipeDetectionException != null) {
+            // something went wrong in at least one of the threads
+            throw mRecipeDetectionException;
+        }
     }
 
     /**
@@ -83,7 +95,7 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
                                                 StepTaskNames taskName) {
         StepTaskThread stepTaskThread;
 
-        if (taskName.equals(StepTaskNames.INGR)) {
+        if (taskName.equals(StepTaskNames.INGREDIENT)) {
             // Ingredient
             stepTaskThread = new StepTaskThread(new DetectIngredientsInStepTask(
                     this.mRecipeInProgress, stepIndex), latch);
@@ -137,7 +149,12 @@ public class ParallelizeStepsTask extends AbstractProcessingTask {
          */
         @Override
         public void run() {
-            task.doTask();
+            try {
+                task.doTask();
+            } catch (RecipeDetectionException rde) {
+                // set the exception to this one to let the caller know something went wrong
+                mRecipeDetectionException = rde;
+            }
             latch.countDown();
         }
     }

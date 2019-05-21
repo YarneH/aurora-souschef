@@ -40,7 +40,7 @@ public class RecipeInProgress extends Recipe {
 
 
     /**
-     * An extractedText object from Aurora
+     * An ExtractedText object from Aurora
      */
     private ExtractedText mExtractedText;
 
@@ -49,11 +49,13 @@ public class RecipeInProgress extends Recipe {
      * converted to {@link com.aurora.souschefprocessor.recipe.RecipeStep}
      */
     private List<RecipeStepInProgress> mStepsInProgress = new ArrayList<>();
+
     /**
-     * Maps ListIngredients to a an array of words in their name for matching the name in the step
+     * Maps ListIngredients to an array of words in their name for matching the name in the step
      * Necessary in case only a certain word of the list ingredient is used to describe it in the step
      */
     private Map<ListIngredient, List<String>> mNamePartsMap;
+
     /**
      * Maps ListIngredients to a an array of words in their name for matching the name in the step
      * Necessary in case only a certain word of the list ingredient is used to describe it in the step. However here
@@ -66,7 +68,6 @@ public class RecipeInProgress extends Recipe {
         this.mExtractedText = originalText;
         this.mDescription = "";
         this.mNumberOfPeople = -1;
-
 
     }
 
@@ -130,6 +131,11 @@ public class RecipeInProgress extends Recipe {
         return mExtractedText;
     }
 
+    /**
+     * The hash code is the same for objects that have the same {@link #mIngredients}, {@link #mStepsInProgress},
+     * {@link #mNumberOfPeople} and {@link #mDescription}
+     * @return the hash of all the objects mentioned above
+     */
     @Override
     public int hashCode() {
         return Objects.hash(mIngredients, mNumberOfPeople, mStepsInProgress, mDescription);

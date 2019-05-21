@@ -159,7 +159,6 @@ public class LiveDataTimer {
             public void onFinish() {
                 mFinished.setValue(true);
                 mAlarming.setValue(true);
-                //TODO: check if running needs to be set to false
                 mRunning = false;
             }
         };

@@ -54,7 +54,6 @@ public class SplitStepsTask extends AbstractProcessingTask {
 
         List<RecipeStepInProgress> list = new ArrayList<>();
 
-        // TODO based on numeric
         //split based on sections (punctuation followed by newline indicates block of text)
         String[] pointAndNewLine = steps.split("([.!?])+\\n");
         if (pointAndNewLine.length > 1) {

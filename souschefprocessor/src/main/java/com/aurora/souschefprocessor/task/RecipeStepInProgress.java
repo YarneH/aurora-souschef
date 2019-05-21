@@ -54,7 +54,7 @@ public class RecipeStepInProgress extends RecipeStep {
     }
 
     /**
-     * Default setter
+     * Default getter
      *
      * @return the begin position offset of the annotations of the description of this step
      */

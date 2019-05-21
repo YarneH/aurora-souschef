@@ -89,8 +89,8 @@ public class RecipeViewModel extends AndroidViewModel {
     public RecipeViewModel(@NonNull Application application) {
         super(application);
         this.mContext = application;
-        MutableLiveData<Integer> mProgressStep = new MutableLiveData<>();
-        mProgressStep.setValue(0);
+        MutableLiveData<Integer> progressStep = new MutableLiveData<>();
+        progressStep.setValue(0);
         mInitialised = new MutableLiveData<>();
         mInitialised.setValue(false);
         mCurrentPeople = new MutableLiveData<>();
@@ -289,10 +289,10 @@ public class RecipeViewModel extends AndroidViewModel {
         @Override
         protected Recipe doInBackground(Void... voids) {
 
-            SouschefProcessorCommunicator comm = SouschefProcessorCommunicator.createCommunicator(mContext);
+            SouschefProcessorCommunicator communicator = SouschefProcessorCommunicator.createCommunicator(mContext);
 
-            if (comm != null) {
-                Recipe processedRecipe = (Recipe) comm.pipeline(mExtractedText);
+            if (communicator != null) {
+                Recipe processedRecipe = (Recipe) communicator.pipeline(mExtractedText);
                 // the processing has succeeded, set the flag to false en return the processedRecipe
                 mProcessingFailed.postValue(false);
                 return processedRecipe;

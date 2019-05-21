@@ -210,7 +210,8 @@ public class SplitStepsTask extends AbstractProcessingTask {
 
         }
         // should not happen
-        throw new IllegalStateException("no section found for step with description " + description);
+        throw new IllegalStateException("No section found for step with description " + description+ "\n\n This file " +
+                "is too badly formatted for Souschef.");
 
     }
 

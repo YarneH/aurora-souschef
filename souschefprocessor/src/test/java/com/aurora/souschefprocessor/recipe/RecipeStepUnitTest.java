@@ -82,7 +82,7 @@ public class RecipeStepUnitTest {
          */
         // arrange
         // Create an empty ExtractedText for RecipeInProgress argument
-        ExtractedText emptyExtractedText = new ExtractedText("", Collections.emptyList());
+        ExtractedText emptyExtractedText = new ExtractedText("", "");
 
         RecipeInProgress rip = new RecipeInProgress(emptyExtractedText);
         EnumMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new EnumMap<>(Ingredient.PositionKeysForIngredients.class);

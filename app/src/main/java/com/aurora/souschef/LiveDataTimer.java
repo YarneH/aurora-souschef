@@ -16,15 +16,15 @@ public class LiveDataTimer {
     /**
      * One of the states of the timer
      */
-    static final int TIMER_INITIALISED = 0;
+    public static final int TIMER_INITIALISED = 0;
     /**
      * One of the states of the timer
      */
-    static final int TIMER_RUNNING = 1;
+    public static final int TIMER_RUNNING = 1;
     /**
      * One of the states of the timer
      */
-    static final int TIMER_PAUSED = 2;
+    public static final int TIMER_PAUSED = 2;
     /**
      * The amount of milliseconds in a second. Needed to convert
      * RecipeTimers (which are in seconds) to actual timers.

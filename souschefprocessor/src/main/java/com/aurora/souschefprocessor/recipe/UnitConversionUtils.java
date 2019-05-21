@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -163,7 +164,7 @@ public final class UnitConversionUtils {
     public static String getBase(String original) {
 
         String trim = original.trim();
-        String lowerCase = trim.toLowerCase();
+        String lowerCase = trim.toLowerCase(Locale.ENGLISH);
 
 
         for (String base : BASE_UNITS_US) {

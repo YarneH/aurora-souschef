@@ -20,4 +20,6 @@
     <string name="dialog_title">Oh nooooooo</string>
     <string name="dialog_message">Your ingredients have expired.\nYou can find fresh ingredients in Aurora</string>
     <string name="ok">OK</string>
+    <string name="people_icon">People icon</string>
+    <string name="plus_button">plus button</string>
 </resources>

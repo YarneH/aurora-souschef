@@ -16,15 +16,15 @@ public class LiveDataTimer {
     /**
      * One of the states of the timer
      */
-    protected static final int TIMER_INITIALISED = 0;
+    static final int TIMER_INITIALISED = 0;
     /**
      * One of the states of the timer
      */
-    protected static final int TIMER_RUNNING = 1;
+    static final int TIMER_RUNNING = 1;
     /**
      * One of the states of the timer
      */
-    protected static final int TIMER_PAUSED = 2;
+    static final int TIMER_PAUSED = 2;
     /**
      * The amount of milliseconds in a second. Needed to convert
      * RecipeTimers (which are in seconds) to actual timers.
@@ -46,7 +46,7 @@ public class LiveDataTimer {
     /**
      * State of the timer. Is not running when false.
      */
-    private boolean mRunning = false;
+    private boolean mRunning;
     /**
      * A boolean representing whether the timer is ringing or not
      */
@@ -77,7 +77,7 @@ public class LiveDataTimer {
      *
      * @param recipeTimer the timer it is based on.
      */
-    public LiveDataTimer(RecipeTimer recipeTimer) {
+    LiveDataTimer(RecipeTimer recipeTimer) {
         mRecipeTimer = new RecipeTimer(recipeTimer.getUpperBound(), recipeTimer.getLowerBound(), null);
         mTimeSetByUser = recipeTimer.getLowerBound();
         mFinished.setValue(false);
@@ -109,7 +109,7 @@ public class LiveDataTimer {
      * @param amountMilliSeconds long representing the amount of milliseconds
      * @return a String representation of the time
      */
-    public static String convertTimeToString(long amountMilliSeconds) {
+    static String convertTimeToString(long amountMilliSeconds) {
         int amountSeconds = (int) (amountMilliSeconds / MILLIS);
         // seconds / 3600, or divide twice by 60.
         int amountHours = amountSeconds / TIME_BABIES / TIME_BABIES;
@@ -132,7 +132,7 @@ public class LiveDataTimer {
     /**
      * Toggles playing paused state of the timer.
      */
-    public void toggleTimer() {
+    void toggleTimer() {
 
         if (mAlarming.getValue()) {
             mAlarming.setValue(false);
@@ -168,7 +168,7 @@ public class LiveDataTimer {
         mRunning = true;
     }
 
-    public LiveData<Long> getMillisLeft() {
+    LiveData<Long> getMillisLeft() {
         return mMillisLeft;
     }
 
@@ -180,7 +180,7 @@ public class LiveDataTimer {
      *
      * @param timeInSeconds set time.
      */
-    public void setTimeSetByUser(int timeInSeconds) {
+    void setTimeSetByUser(int timeInSeconds) {
         mTimeSetByUser = timeInSeconds;
         resetTimer();
     }
@@ -188,7 +188,7 @@ public class LiveDataTimer {
     /**
      * Resets the timer to it's original time
      */
-    public void resetTimer() {
+    void resetTimer() {
         mFinished.setValue(false);
         mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));
         mTimerState.setValue(TIMER_INITIALISED);
@@ -203,7 +203,7 @@ public class LiveDataTimer {
      *
      * @return true if timer is changeable.
      */
-    public boolean canChangeTimer() {
+    boolean canChangeTimer() {
         return mRecipeTimer.getLowerBound() != mRecipeTimer.getUpperBound();
     }
 
@@ -212,7 +212,7 @@ public class LiveDataTimer {
      *
      * @return upper bound in seconds
      */
-    public int getUpperBound() {
+    int getUpperBound() {
         return mRecipeTimer.getUpperBound();
     }
 
@@ -221,17 +221,8 @@ public class LiveDataTimer {
      *
      * @return lower bound in seconds
      */
-    public int getLowerBound() {
+    int getLowerBound() {
         return mRecipeTimer.getLowerBound();
-    }
-
-    /**
-     * LiveData with a boolean whether or not the timer is finished.
-     *
-     * @return LiveData with boolean
-     */
-    public LiveData<Boolean> getIsFinished() {
-        return mFinished;
     }
 
     /**
@@ -239,7 +230,7 @@ public class LiveDataTimer {
      *
      * @return Livedata with boolean whether or not alarming
      */
-    public LiveData<Boolean> isAlarming() {
+    LiveData<Boolean> isAlarming() {
         return mAlarming;
     }
 
@@ -248,7 +239,7 @@ public class LiveDataTimer {
      *
      * @return LiveData with the state-ID of the timer
      */
-    public LiveData<Integer> getTimerState() {
+    LiveData<Integer> getTimerState() {
         return mTimerState;
     }
 
@@ -257,7 +248,7 @@ public class LiveDataTimer {
      *
      * @return boolean representing whether the Ringtone is ringing or not
      */
-    public boolean isRinging(){
+    boolean isRinging(){
         return mRinging;
     }
 
@@ -265,7 +256,7 @@ public class LiveDataTimer {
      * Set the ringing state of the timer
      * @param ringing true if the Ringtone is ringing, false if not
      */
-    public void setRinging(boolean ringing){
+    void setRinging(boolean ringing){
         mRinging = ringing;
     }
 }

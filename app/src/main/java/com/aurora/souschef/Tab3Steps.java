@@ -72,7 +72,7 @@ public class Tab3Steps extends Fragment {
      */
     public class StepsPagerAdapter extends FragmentStatePagerAdapter {
 
-        public StepsPagerAdapter(FragmentManager fm) {
+        StepsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 

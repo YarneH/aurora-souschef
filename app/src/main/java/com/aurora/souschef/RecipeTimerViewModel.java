@@ -27,7 +27,7 @@ public class RecipeTimerViewModel extends ViewModel {
      *
      * @param recipe The recipe to extract the timers from.
      */
-    public void init(Recipe recipe) {
+    void init(Recipe recipe) {
         if (mAllTimers != null) {
             // init was already called.
             return;
@@ -50,7 +50,7 @@ public class RecipeTimerViewModel extends ViewModel {
      * @param timerIndex the index of the requested timer in the step
      * @return The requested timer.
      */
-    public LiveDataTimer getTimerInStep(int stepIndex, int timerIndex) {
+    LiveDataTimer getTimerInStep(int stepIndex, int timerIndex) {
         return mAllTimers.get(stepIndex).get(timerIndex);
     }
 }

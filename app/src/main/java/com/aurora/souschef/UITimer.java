@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.arch.lifecycle.LifecycleOwner;
 import android.content.DialogInterface;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,10 +30,6 @@ public class UITimer {
      * Time constant: seconds in a quarter hour.
      */
     private static final int AMOUNT_SEC_IN_QUARTER = 900;
-    /**
-     * Time constant: seconds in a minute.
-     */
-    private static final int AMOUNT_SEC_IN_MIN = 60;
     /**
      * The time it takes before the color of a timer changes when it is alarming.
      */
@@ -87,7 +84,7 @@ public class UITimer {
      * @param owner         LifeCycleOwner responsible for the LiveData objects.
      *                      Normally the activity.
      */
-    public UITimer(LiveDataTimer liveDataTimer, View timerCard, LifecycleOwner owner) {
+    UITimer(LiveDataTimer liveDataTimer, View timerCard, LifecycleOwner owner) {
         this.mLiveDataTimer = liveDataTimer;
         this.mTimerCard = timerCard;
 
@@ -126,6 +123,7 @@ public class UITimer {
 
     /**
      * Set the icons and background according to the state of the timer
+     *
      * @param timerState The current state of the timer
      */
     private void setIconsAndBackground(int timerState) {
@@ -144,13 +142,13 @@ public class UITimer {
         // Change color and icon according to the timer state
         if (timerState == LiveDataTimer.TIMER_RUNNING) {
             imageView.setImageResource(R.drawable.ic_pause_white);
-            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimary));
+            contentView.setBackgroundColor(ContextCompat.getColor(mTimerCard.getContext(), R.color.colorPrimary));
         } else if (timerState == LiveDataTimer.TIMER_PAUSED) {
             imageView.setImageResource(R.drawable.ic_play_white);
-            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
+            contentView.setBackgroundColor(ContextCompat.getColor(mTimerCard.getContext(), R.color.colorPrimaryDark));
         } else if (timerState == LiveDataTimer.TIMER_INITIALISED) {
             imageView.setImageResource(R.drawable.ic_timer_white);
-            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
+            contentView.setBackgroundColor(ContextCompat.getColor(mTimerCard.getContext(), R.color.colorPrimaryDark));
         }
     }
 
@@ -173,6 +171,7 @@ public class UITimer {
 
     /**
      * Set the flickering of a timer on or off
+     *
      * @param flicker a boolean, true if flickering must be turned on, false otherwise
      */
     private void setFlickering(boolean flicker) {
@@ -188,11 +187,11 @@ public class UITimer {
                 public void run() {
                     if (mColorDark) {
                         contentView.setBackgroundColor(
-                                mTimerCard.getResources().getColor(R.color.colorPrimary));
+                                ContextCompat.getColor(mTimerCard.getContext(), R.color.colorPrimary));
                         mColorDark = false;
                     } else {
                         contentView.setBackgroundColor(
-                                mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
+                                ContextCompat.getColor(mTimerCard.getContext(), R.color.colorPrimaryDark));
                         mColorDark = true;
                     }
                     mHandler.postDelayed(this, CHANGE_COLOR_MILLISEC_DELAY);

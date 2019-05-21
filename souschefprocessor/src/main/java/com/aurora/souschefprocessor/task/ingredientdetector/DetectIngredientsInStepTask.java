@@ -55,17 +55,20 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
     private static final String OF_PREPOSITION = "of";
 
     /**
-     * TODO: @Piet piet verheyhe
+     * A constant for the length of a preposition in front of an ingredient in the step,
+     * it is used for setting a search bound for finding the properties of the ingredient
      */
     private static final int PREPOSITION_LENGTH = 1;
 
     /**
-     * TODO: @Piet piet verheye
+     * A constant for the length of a fraction in front of an ingredient in the step,
+     * it is used for setting a search bound for finding the properties of the ingredient
      */
     private static final int FRACTIONS_LENGTH = 1;
 
     /**
-     * TODO: @Piet piet verhey
+     * A constant for the maximum length of a quantity in front of an ingredient in the step,
+     * it is used for setting a search bound for finding the properties of the ingredient
      */
     private static final int MAX_QUANTITY_LENGTH = 2;
 
@@ -455,7 +458,7 @@ public class DetectIngredientsInStepTask extends DetectIngredientsTask {
 
     /**
      * Finds the attributes (name, unit and quantity) of the step ingredient in the recipe step sentence
-     * If some attributes can'searchInMap be found they are set to their default absent value
+     * If some attributes can't be found they are set to their default absent value
      *
      * @param nameIndex      Index of the found ingredient name in the list of tokens
      * @param listIngredient ListIngredient corresponding to this found ingredient name

@@ -53,7 +53,7 @@ public class RecipeTimer {
         if (lowerBound <= 0) {
             throw new IllegalArgumentException("LowerBound is negative");
         }
-        //TODO maybe also a check for too high values?
+
         if (upperBound >= lowerBound) {
             this.mUpperBound = upperBound;
             this.mLowerBound = lowerBound;

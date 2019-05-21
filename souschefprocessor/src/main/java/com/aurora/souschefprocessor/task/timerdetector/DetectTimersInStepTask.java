@@ -376,7 +376,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
                     recipeTimers.add(new RecipeTimer(getSecondsFromFormattedString
                             ("PT" + token.originalText()), timerPosition));
                 } catch (IllegalArgumentException iae) {
-                    //TODO do something meaningful
                     Log.e(LOG_TAG, "detectTimer: ", iae);
                 }
             }
@@ -536,7 +535,6 @@ public class DetectTimersInStepTask extends AbstractProcessingTask {
 
         } catch (IllegalArgumentException iae) {
             // if adding failed just log the failure
-            // TODO can this log be added to analytics?
             Log.e(LOG_TAG, "detectTimer: ", iae);
         }
     }

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-//TODO add more testing data to increase acceptance test reliability
+
 public class DetectNumberOfPeopleTaskUnitTest {
 
     private static final int DEFAULT_NO_NUMBER = -1;

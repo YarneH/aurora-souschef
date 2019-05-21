@@ -166,7 +166,7 @@ public class RecipeViewModel extends AndroidViewModel {
     }
 
     /**
-     * Returns whether or not the settings are set to imperial or not.
+     * Returns whether or not the settings are set to imperial.
      * <p>
      * Accesses shared preferences.
      *
@@ -293,7 +293,7 @@ public class RecipeViewModel extends AndroidViewModel {
 
             if (communicator != null) {
                 Recipe processedRecipe = (Recipe) communicator.pipeline(mExtractedText);
-                // the processing has succeeded, set the flag to false en return the processedRecipe
+                // the processing has succeeded, set the flag to false and return the processedRecipe
                 mProcessingFailed.postValue(false);
                 return processedRecipe;
             }

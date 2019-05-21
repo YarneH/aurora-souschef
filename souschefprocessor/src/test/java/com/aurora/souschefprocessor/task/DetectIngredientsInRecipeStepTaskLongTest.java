@@ -33,7 +33,7 @@ public class DetectIngredientsInRecipeStepTaskLongTest {
     // Irrelevant properties
     private static String originalIngredientText = "irrelevant";
     private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
-    private static ExtractedText emptyExtractedText = new ExtractedText("", Collections.emptyList());
+    private static ExtractedText emptyExtractedText = new ExtractedText("","");
 
 
     // Container for the detected recipes

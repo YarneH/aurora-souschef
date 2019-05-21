@@ -38,7 +38,7 @@ public class DetectIngredientsInListTaskLongTest {
     public static void initialize() throws IOException, ClassNotFoundException {
         String modelName = "src/main/res/raw/detect_ingr_list_model.gz";
         crfClassifier = CRFClassifier.getClassifier(modelName);
-        testEmptyExtractedText = new ExtractedText("", Collections.emptyList());
+        testEmptyExtractedText = new ExtractedText("", "");
     }
 
 

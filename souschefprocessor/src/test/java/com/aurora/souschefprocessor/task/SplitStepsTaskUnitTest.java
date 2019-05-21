@@ -46,7 +46,7 @@ public class SplitStepsTaskUnitTest {
         }
         sPipeline.annotate(annotatedList);
         ProtobufAnnotationSerializer serializer = new ProtobufAnnotationSerializer(true);
-        ExtractedText aurora = new ExtractedText("", Collections.emptyList());
+        ExtractedText aurora = new ExtractedText("", "");
         aurora.setTitle("");
         Section s = new Section();
         s.setBody(stepList);
@@ -74,7 +74,7 @@ public class SplitStepsTaskUnitTest {
         recipeAcrossNewline = new RecipeInProgress(ExtractedText.fromJson(json));
         recipeAcrossNewline.setStepsString(stepListAcrossNewline);
         splitStepsTaskAcrossNewline = new SplitStepsTask(recipeAcrossNewline);
-        testEmptyExtractedText = new ExtractedText("", Collections.emptyList());
+        testEmptyExtractedText = new ExtractedText("", "");
     }
 
 

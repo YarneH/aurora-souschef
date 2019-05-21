@@ -39,7 +39,7 @@ public class DetectIngredientsInListTaskUnitTest {
 
 
     private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
-    private static ExtractedText emptyExtractedText = new ExtractedText("", Collections.emptyList());
+    private static ExtractedText emptyExtractedText = new ExtractedText("", "");
 
 
     @BeforeClass

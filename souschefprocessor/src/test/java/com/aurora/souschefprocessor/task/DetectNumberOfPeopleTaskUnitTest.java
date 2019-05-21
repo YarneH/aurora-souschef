@@ -22,7 +22,7 @@ public class DetectNumberOfPeopleTaskUnitTest {
     private static RecipeInProgress recipe;
     private static DetectNumberOfPeopleTask detectNumberOfPeopleTask;
     private static String originalText;
-    private static ExtractedText emptyExtractedText = new ExtractedText("", Collections.emptyList());
+    private static ExtractedText emptyExtractedText = new ExtractedText("", "");
 
 
     @BeforeClass

@@ -21,7 +21,7 @@ public class RecipeUnitTest {
     private static Position irrelevantPosition = new Position(0, 1);
     private static HashMap<Ingredient.PositionKeysForIngredients, Position> irrelevantPositions = new HashMap<>();
     private static RecipeInProgress rip;
-    private static ExtractedText emptyExtractedText = new ExtractedText("", Collections.emptyList());
+    private static ExtractedText emptyExtractedText = new ExtractedText("", "");
 
 
     @BeforeClass
